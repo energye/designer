@@ -39,5 +39,10 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	for _, prop := range testProp {
 		fmt.Printf("%+v\n", prop)
 	}
+
+	font := lcl.NewFont()
+	fmt.Println("font.GetNamePath():", font.GetNamePath())
+	lcl.Screen.Fonts()
+
 	return box
 }
