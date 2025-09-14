@@ -48,5 +48,5 @@ func (m *TAppWindow) createMenu() {
 
 // 创建工具栏
 func (m *TAppWindow) createToolbar() {
-
+	lcl.NewPanel(m)
 }

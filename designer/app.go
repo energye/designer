@@ -10,7 +10,9 @@ import (
 // 设计器应用窗口
 type TAppWindow struct {
 	lcl.TEngForm
-	mainMenu lcl.IMainMenu
+	mainMenu lcl.IMainMenu // 主菜单
+	toolbar  *TopToolbar   // 顶部工具栏
+	box      *BottomBox    // 底部布局盒子
 }
 
 var (
