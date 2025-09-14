@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -30,6 +31,9 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	// 左侧-面板
 
 	// 右侧-设计器主体
-
+	testProp := lcl.GetComponentProperties(box.IPanel)
+	for _, prop := range testProp {
+		fmt.Printf("%+v\n", prop)
+	}
 	return box
 }
