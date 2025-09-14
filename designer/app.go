@@ -27,12 +27,16 @@ func Run() {
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
+	// 属性
 	m.SetDoubleBuffered(true)
 	m.SetWidth(int32(cfg.Window.Width))
 	m.SetHeight(int32(cfg.Window.Height))
 	m.WorkAreaCenter()
 	m.SetWindowIcon()
+	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
+	// 创建设计器布局
+	m.CreateDesignerLayout()
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
