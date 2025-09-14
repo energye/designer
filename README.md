@@ -21,4 +21,5 @@ ENERGY GUI 设计器
 lazarus 设计器 
 
 - 对象查看器 TObjectInspectorDlg :  E:\lazarus4.2\components\ideintf\objectinspector.pp
+- TreeView
 - 
