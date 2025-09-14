@@ -10,8 +10,9 @@ import (
 
 type BottomBox struct {
 	lcl.IPanel
-	left  lcl.IPanel
-	right lcl.IPanel
+	leftBox  lcl.IPanel    // 左侧-面板
+	spliter  lcl.ISplitter // 分割线
+	rightBox lcl.IPanel    // 右侧-设计器主体
 }
 
 func (m *TAppWindow) createBottomBox() *BottomBox {
@@ -26,5 +27,9 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.IPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
 	box.IPanel.SetColor(colors.RGBToColor(100, 120, 140))
 	m.box = box
+	// 左侧-面板
+
+	// 右侧-设计器主体
+
 	return box
 }
