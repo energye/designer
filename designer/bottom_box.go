@@ -31,7 +31,11 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	// 左侧-面板
 
 	// 右侧-设计器主体
-	testProp := lcl.GetComponentProperties(box.IPanel)
+
+	// 测试属性
+	btn := lcl.NewButton(m)
+	btn.SetParent(m)
+	testProp := lcl.GetComponentProperties(btn)
 	for _, prop := range testProp {
 		fmt.Printf("%+v\n", prop)
 	}
