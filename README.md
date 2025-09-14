@@ -1,11 +1,11 @@
-# energy-designer
+# designer
 
 #### 介绍
 ENERGY GUI 设计器
 
 #### 软件架构
 - Golang
-- lcl + liblcl
+- lcl + lib
 
 
 #### 安装教程
