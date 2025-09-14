@@ -16,7 +16,8 @@ type TAppWindow struct {
 }
 
 var (
-	mainWindow TAppWindow
+	mainWindow    TAppWindow
+	toolbarHeight int32 = 60
 )
 
 func Run() {

@@ -12,7 +12,9 @@ func (m *TAppWindow) createDesignerLayout() {
 	// 顶部菜单
 	m.createMenu()
 	// 工具栏
-	m.createToolbar()
+	m.CreateTopToolbar()
+	// 底部布局
+	m.CreateBottomBox()
 }
 
 // 顶部菜单
@@ -44,9 +46,4 @@ func (m *TAppWindow) createMenu() {
 	if tool.IsDarwin() {
 
 	}
-}
-
-// 创建工具栏
-func (m *TAppWindow) createToolbar() {
-	lcl.NewPanel(m)
 }
