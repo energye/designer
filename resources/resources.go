@@ -2,11 +2,22 @@ package resources
 
 import "embed"
 
-//go:embed config.json
-var config embed.FS
+var (
+	//go:embed config.json
+	config embed.FS
+	//go:embed assets
+	assets embed.FS
+)
 
 func Config() []byte {
 	if d, err := config.ReadFile("config.json"); err == nil {
+		return d
+	}
+	return nil
+}
+
+func Assets(fileName string) []byte {
+	if d, err := assets.ReadFile("assets/" + fileName); err == nil {
 		return d
 	}
 	return nil

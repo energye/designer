@@ -24,9 +24,16 @@ func Run() {
 func (m *TApp) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
+	m.SetDoubleBuffered(true)
 	m.SetWidth(int32(cfg.Window.Width))
 	m.SetHeight(int32(cfg.Window.Height))
 	m.WorkAreaCenter()
+	m.SetWindowIcon()
+	m.SetOnShow(m.OnShow)
+}
+
+func (m *TApp) OnShow(sender lcl.IObject) {
+	m.ShowInMonitor()
 }
 
 func (m *TApp) FormAfterCreate(sender lcl.IObject) {
