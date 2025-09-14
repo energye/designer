@@ -10,6 +10,8 @@ import (
 
 type BottomBox struct {
 	lcl.IPanel
+	left  lcl.IPanel
+	right lcl.IPanel
 }
 
 func (m *TAppWindow) CreateBottomBox() *BottomBox {

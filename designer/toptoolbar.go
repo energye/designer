@@ -10,6 +10,9 @@ import (
 
 type TopToolbar struct {
 	lcl.IPanel
+	toolbar        lcl.IPanel    // 工具按钮
+	spliter        lcl.ISplitter // 分割线
+	componentsTabs lcl.IPanel    // 组件面板选项卡
 }
 
 func (m *TAppWindow) CreateTopToolbar() *TopToolbar {
@@ -23,5 +26,7 @@ func (m *TAppWindow) CreateTopToolbar() *TopToolbar {
 	bar.IPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 	bar.IPanel.SetColor(colors.RGBToColor(56, 57, 60))
 	m.toolbar = bar
+	// 创建工具按钮
+
 	return bar
 }
