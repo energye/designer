@@ -14,7 +14,7 @@ type BottomBox struct {
 	right lcl.IPanel
 }
 
-func (m *TAppWindow) CreateBottomBox() *BottomBox {
+func (m *TAppWindow) createBottomBox() *BottomBox {
 	box := &BottomBox{}
 	box.IPanel = lcl.NewPanel(m)
 	box.IPanel.SetParent(m)

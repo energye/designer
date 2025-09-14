@@ -5,7 +5,7 @@ func (m *TAppWindow) createDesignerLayout() {
 	// 顶部菜单
 	m.createMenu()
 	// 工具栏
-	m.CreateTopToolbar()
+	m.createTopToolbar()
 	// 底部布局
-	m.CreateBottomBox()
+	m.createBottomBox()
 }

@@ -15,7 +15,7 @@ type TopToolbar struct {
 	componentsTabs lcl.IPanel    // 组件面板选项卡
 }
 
-func (m *TAppWindow) CreateTopToolbar() *TopToolbar {
+func (m *TAppWindow) createTopToolbar() *TopToolbar {
 	bar := &TopToolbar{}
 	bar.IPanel = lcl.NewPanel(m)
 	bar.IPanel.SetParent(m)
