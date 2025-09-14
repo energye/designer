@@ -42,7 +42,9 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 
 	font := lcl.NewFont()
 	fmt.Println("font.GetNamePath():", font.GetNamePath())
-	lcl.Screen.Fonts()
-
+	fs := lcl.Screen.Fonts()
+	for i := 0; i < int(fs.Count()); i++ {
+		fmt.Println(fs.Strings(int32(i)))
+	}
 	return box
 }
