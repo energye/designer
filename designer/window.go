@@ -5,7 +5,8 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
-func (m *TApp) SetWindowIcon() {
+// 设置窗口图标
+func (m *TAppWindow) SetWindowIcon() {
 	if iconData := resources.Assets("window-icon_256x256.png"); iconData != nil {
 		stream := lcl.NewMemoryStream()
 		lcl.StreamHelper.Write(stream, iconData)
@@ -18,7 +19,8 @@ func (m *TApp) SetWindowIcon() {
 	}
 }
 
-func (m *TApp) ShowInMonitor() {
+// 窗口显示在鼠标所在的窗口
+func (m *TAppWindow) ShowInMonitor() {
 	// 控制窗口显示鼠标所在显示器
 	centerOnMonitor := func(monitor lcl.IMonitor) {
 		m.SetLeft(monitor.Left() + (monitor.Width()-m.Width())/2)

@@ -7,21 +7,24 @@ import (
 	"log"
 )
 
-type TApp struct {
+// 设计器应用窗口
+type TAppWindow struct {
 	lcl.TEngForm
 }
 
-var app TApp
+var (
+	mainWindow TAppWindow
+)
 
 func Run() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms(&app)
+	lcl.Application.NewForms(&mainWindow)
 	lcl.Application.Run()
 }
 
-func (m *TApp) FormCreate(sender lcl.IObject) {
+func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
 	m.SetDoubleBuffered(true)
@@ -32,22 +35,23 @@ func (m *TApp) FormCreate(sender lcl.IObject) {
 	m.SetOnShow(m.OnShow)
 }
 
-func (m *TApp) OnShow(sender lcl.IObject) {
+func (m *TAppWindow) OnShow(sender lcl.IObject) {
+	log.Println("OnShow")
 	m.ShowInMonitor()
 }
 
-func (m *TApp) FormAfterCreate(sender lcl.IObject) {
+func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	log.Println("FormAfterCreate")
 }
 
-func (m *TApp) CreateParams(params *types.TCreateParams) {
+func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
 	log.Println("CreateParams")
 }
 
-func (m *TApp) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	log.Println("OnCloseQuery")
 }
 
-func (m *TApp) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	log.Println("OnClose")
 }
