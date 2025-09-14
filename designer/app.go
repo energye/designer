@@ -10,6 +10,7 @@ import (
 // 设计器应用窗口
 type TAppWindow struct {
 	lcl.TEngForm
+	mainMenu lcl.IMainMenu
 }
 
 var (
@@ -28,20 +29,23 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
 	// 属性
+	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
 	m.SetWidth(int32(cfg.Window.Width))
 	m.SetHeight(int32(cfg.Window.Height))
 	m.WorkAreaCenter()
-	m.SetWindowIcon()
+	// 设置窗口图标
+	m.setWindowIcon()
 	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
-	m.CreateDesignerLayout()
+	m.createDesignerLayout()
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
 	log.Println("OnShow")
-	m.ShowInMonitor()
+	// 窗口显示在鼠标所在的窗口
+	m.showInMonitor()
 }
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {

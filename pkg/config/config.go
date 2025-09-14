@@ -7,7 +7,9 @@ import (
 )
 
 type config struct {
-	Window window `json:"window"`
+	Title   string `json:"title"`
+	Version string `json:"version"`
+	Window  window `json:"window"`
 }
 
 type window struct {

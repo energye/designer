@@ -1,4 +1,6 @@
 {
+  "title": "ENERGY Designer",
+  "version": "1.0.0",
   "window": {
     "width": 1200,
     "height": 800
