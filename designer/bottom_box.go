@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -33,18 +32,18 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	// 右侧-设计器主体
 
 	// 测试属性
-	btn := lcl.NewButton(m)
-	btn.SetParent(m)
-	testProp := lcl.GetComponentProperties(btn)
-	for _, prop := range testProp {
-		fmt.Printf("%+v\n", prop)
-	}
-
-	font := lcl.NewFont()
-	fmt.Println("font.GetNamePath():", font.GetNamePath())
-	fs := lcl.Screen.Fonts()
-	for i := 0; i < int(fs.Count()); i++ {
-		fmt.Println(fs.Strings(int32(i)))
-	}
+	//btn := lcl.NewButton(m)
+	//btn.SetParent(m)
+	//testProp := lcl.GetComponentProperties(btn)
+	//for _, prop := range testProp {
+	//	fmt.Printf("%+v\n", prop)
+	//}
+	//
+	//font := lcl.NewFont()
+	//fmt.Println("font.GetNamePath():", font.GetNamePath())
+	//fs := lcl.Screen.Fonts()
+	//for i := 0; i < int(fs.Count()); i++ {
+	//	fmt.Println(fs.Strings(int32(i)))
+	//}
 	return box
 }

@@ -9,24 +9,29 @@ import (
 // 顶部工具栏
 
 type TopToolbar struct {
-	lcl.IPanel
-	toolbar        lcl.IPanel    // 工具按钮
+	toolbarPnl     lcl.IPanel
 	spliter        lcl.ISplitter // 分割线
 	componentsTabs lcl.IPanel    // 组件面板选项卡
 }
 
 func (m *TAppWindow) createTopToolbar() *TopToolbar {
 	bar := &TopToolbar{}
-	bar.IPanel = lcl.NewPanel(m)
-	bar.IPanel.SetParent(m)
-	bar.IPanel.SetBevelOuter(types.BvNone)
-	bar.IPanel.SetDoubleBuffered(true)
-	bar.IPanel.SetWidth(m.Width())
-	bar.IPanel.SetHeight(toolbarHeight)
-	bar.IPanel.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
-	bar.IPanel.SetColor(colors.RGBToColor(56, 57, 60))
+	bar.toolbarPnl = lcl.NewPanel(m)
+	bar.toolbarPnl.SetParent(m)
+	bar.toolbarPnl.SetBevelOuter(types.BvNone)
+	bar.toolbarPnl.SetDoubleBuffered(true)
+	bar.toolbarPnl.SetWidth(m.Width())
+	bar.toolbarPnl.SetHeight(toolbarHeight)
+	bar.toolbarPnl.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	bar.toolbarPnl.SetColor(colors.RGBToColor(56, 57, 60))
 	m.toolbar = bar
 	// 创建工具按钮
+	toolbar := lcl.NewToolBar(m)
+	toolbar.SetParent(bar.toolbarPnl)
 
+	toolBtn := lcl.NewToolButton(toolbar)
+	toolBtn.SetParent(toolbar)
+	toolBtn.SetCaption("asdf")
+	toolBtn.SetHint("提示")
 	return bar
 }
