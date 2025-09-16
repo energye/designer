@@ -81,7 +81,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolBtn = lcl.NewToolButton(toolbar)
 	toolBtn.SetParent(toolbar)
 	toolBtn.SetHint("提示")
-	toolBtn.SetImageIndex(0)
+	toolBtn.SetImageIndex(2)
 	toolBtn.SetShowHint(true)
 }
 
@@ -106,5 +106,7 @@ func (m *TopToolbar) createComponentTabs() {
 func (m *TopToolbar) LoadImageList() lcl.IImageList {
 	images := lcl.NewImageList(m.leftTools)
 	tool.ImageListAddPng(images, "components/default.png")
+	tool.ImageListAddPng(images, "components/tactionlist.png")
+	tool.ImageListAddPng(images, "menu/menu_run.png")
 	return images
 }

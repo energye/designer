@@ -4,5 +4,77 @@
   "window": {
     "width": 1200,
     "height": 800
+  },
+  "componentTabs": {
+    "standard": {
+      "cn": "标准",
+      "en": "standard",
+      "component": [
+        "TMainMenu",
+        "TPopupMenu",
+        "TButton",
+        "TLabel",
+        "TEdit",
+        "TMemo",
+        "TToggleBox",
+        "TCheckBox",
+        "TRadioButton",
+        "TListBox",
+        "TComboBox",
+        "TScrollBar",
+        "TGroupBox",
+        "TRadioGroup",
+        "TCheckGroup",
+        "TPanel",
+        "TFrame",
+        "TActionList"
+      ]
+    },
+    "additional":  {
+      "cn": "附加",
+      "en": "additional",
+      "component": [
+        "TBitBtn",
+        "TSpeedButton",
+        "TStaticText",
+        "TImage",
+        "TShape",
+        "TBevel",
+        "TPaintBox",
+        "TLabeledEdit",
+        "TSplitter",
+        "TTrayIcon",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "common": {
+      "cn": "通用",
+      "en": "common",
+      "component": [
+        ""
+      ]
+    },
+    "dialogs": {
+      "cn": "弹框",
+      "en": "dialogs",
+      "component": [
+        ""
+      ]
+    },
+    "laz": {
+      "cn": "Laz控件",
+      "en": "LazControl",
+      "component": [
+        ""
+      ]
+    }
   }
 }
