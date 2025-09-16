@@ -5,10 +5,15 @@ import (
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
+	"os"
+	"path/filepath"
 )
 
 func main() {
-	libname.LibName = "E:\\SWT\\gopath\\src\\github.com\\energye\\workspace\\gen\\gout\\liblcl.dll"
+	libname.LibName = func() string {
+		wd, _ := os.Getwd()
+		return filepath.Join(wd, "../", "gen", "gout", "liblcl.dll")
+	}()
 	lcl.Init(nil, nil)
 	designer.Run()
 }
