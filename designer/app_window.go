@@ -4,12 +4,14 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 	"log"
 )
 
 var (
 	mainWindow    TAppWindow
 	toolbarHeight int32 = 60
+	bgColor             = colors.RGBToColor(56, 57, 60)
 )
 
 // 设计器应用窗口

@@ -26,7 +26,7 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.box.SetWidth(m.Width())
 	bar.box.SetHeight(toolbarHeight)
 	bar.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
-	//bar.box.SetColor(colors.RGBToColor(56, 57, 60))
+	bar.box.SetParentColor(true)
 
 	// 工具栏-分隔线
 	bar.splitter = lcl.NewSplitter(m)
@@ -60,6 +60,7 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.createComponentTabs()
 }
 
+// 工具按钮
 func (m *TopToolbar) createToolBarBtns() {
 	toolbar := lcl.NewToolBar(m.box)
 	toolbar.SetParent(m.leftTools)
@@ -84,10 +85,12 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolBtn.SetShowHint(true)
 }
 
+// 组件选项卡
 func (m *TopToolbar) createComponentTabs() {
 	page := lcl.NewPageControl(m.box)
 	page.SetParent(m.rightTabs)
 	page.SetAlign(types.AlClient)
+	page.SetTabStop(true)
 
 	standard := lcl.NewTabSheet(page)
 	standard.SetParent(page)
