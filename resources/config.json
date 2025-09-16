@@ -8,7 +8,7 @@
   "componentTabs": {
     "standard": {
       "cn": "标准",
-      "en": "standard",
+      "en": "Standard",
       "component": [
         "TMainMenu",
         "TPopupMenu",
@@ -32,7 +32,7 @@
     },
     "additional":  {
       "cn": "附加",
-      "en": "additional",
+      "en": "Additional",
       "component": [
         "TBitBtn",
         "TSpeedButton",
@@ -60,7 +60,7 @@
     },
     "common": {
       "cn": "通用",
-      "en": "common",
+      "en": "Common",
       "component": [
         "TTrackBar",
         "TProgressBar",
@@ -80,8 +80,20 @@
     },
     "dialogs": {
       "cn": "弹框",
-      "en": "dialogs",
+      "en": "Dialogs",
       "component": [
+        "TOpenDialog",
+        "TSaveDialog",
+        "TSelectDirectoryDialog",
+        "TColorDialog",
+        "TFontDialog",
+        "TFindDialog",
+        "TReplaceDialog",
+        "TTaskDialog",
+        "TOpenPictureDialog",
+        "TSavePictureDialog",
+        "TCalendarDialog",
+        "TCalculatorDialog",
         ""
       ]
     },
