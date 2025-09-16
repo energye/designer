@@ -73,9 +73,9 @@
         "TPageControl",
         "THeaderControl",
         "TImageList",
-        "",
-        "",
-        ""
+        "TPopupNotifier",
+        "TDateTimePicker",
+        "TRichMemo"
       ]
     },
     "dialogs": {
