@@ -99,7 +99,24 @@
         "TPageSetupDialog"
       ]
     },
-    "laz": {
+    "misc": {
+      "cn": "Misc",
+      "en": "Misc",
+      "component": [
+        "TColorButton",
+        "TSpinEdit",
+        "TFloatSpinEdit",
+        "TCalendar",
+        "TEditButton",
+        "TFileNameEdit",
+        "TDirectoryEdit",
+        "TDateEdit",
+        "TTimeEdit",
+        "TComboBoxEx",
+        "TButtonPanel"
+      ]
+    },
+    "lazcontrol": {
       "cn": "Laz控件",
       "en": "LazControl",
       "component": [
