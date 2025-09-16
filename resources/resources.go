@@ -5,8 +5,8 @@ import "embed"
 var (
 	//go:embed config.json
 	config embed.FS
-	//go:embed assets
-	assets embed.FS
+	//go:embed images
+	images embed.FS
 )
 
 // 配置文件
@@ -18,8 +18,8 @@ func Config() []byte {
 }
 
 // 静态资源
-func Assets(fileName string) []byte {
-	if d, err := assets.ReadFile("assets/" + fileName); err == nil {
+func Images(filePath string) []byte {
+	if d, err := images.ReadFile("images/" + filePath); err == nil {
 		return d
 	}
 	return nil
