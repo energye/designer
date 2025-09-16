@@ -15,7 +15,6 @@ func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 		defer mem.Free()
 		lcl.StreamHelper.WriteBuffer(mem, data)
 		mem.SetPosition(0)
-
 		pic.LoadFromStream(mem)
 		imageList.Add(pic.Bitmap(), nil)
 	}

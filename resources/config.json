@@ -7,7 +7,7 @@
   },
   "componentTabs": {
     "standard": {
-      "cn": "标准",
+      "cn": "  标准  ",
       "en": "Standard",
       "component": [
         "TMainMenu",
@@ -31,7 +31,7 @@
       ]
     },
     "additional":  {
-      "cn": "附加",
+      "cn": "  附加  ",
       "en": "Additional",
       "component": [
         "TBitBtn",
@@ -59,7 +59,7 @@
       ]
     },
     "common": {
-      "cn": "通用",
+      "cn": "  通用  ",
       "en": "Common",
       "component": [
         "TTrackBar",
@@ -79,7 +79,7 @@
       ]
     },
     "dialogs": {
-      "cn": "弹框",
+      "cn": "  弹框  ",
       "en": "Dialogs",
       "component": [
         "TOpenDialog",
@@ -100,7 +100,7 @@
       ]
     },
     "misc": {
-      "cn": "Misc",
+      "cn": "  Misc  ",
       "en": "Misc",
       "component": [
         "TColorButton",
@@ -120,14 +120,14 @@
       ]
     },
     "system": {
-      "cn": "系统",
+      "cn": "  系统  ",
       "en": "System",
       "component": [
         "TTimer"
       ]
     },
     "lazcontrol": {
-      "cn": "Laz控件",
+      "cn": "  Laz控件  ",
       "en": "LazControl",
       "component": [
         "TLazVirtualDrawTree",

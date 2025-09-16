@@ -1,9 +1,12 @@
 package designer
 
 import (
+	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"strings"
 )
 
 // 顶部工具栏
@@ -65,7 +68,11 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbar := lcl.NewToolBar(m.box)
 	toolbar.SetParent(m.leftTools)
 	toolbar.SetBorderStyleToBorderStyle(types.BsNone)
-	toolbar.SetImages(m.LoadImageList())
+	toolbar.SetImages(m.LoadImageList([]string{
+		"components/default.png",
+		"components/tactionlist.png",
+		"menu/menu_run.png",
+	}, 24, 24))
 	toolbar.SetAlign(types.AlTop)
 
 	toolBtn := lcl.NewToolButton(toolbar)
@@ -92,21 +99,50 @@ func (m *TopToolbar) createComponentTabs() {
 	page.SetAlign(types.AlClient)
 	page.SetTabStop(true)
 
-	standard := lcl.NewTabSheet(page)
-	standard.SetParent(page)
-	standard.SetCaption("标准控件")
-	standard.SetAlign(types.AlClient)
+	newComponentTab := func(tab config.Tab) {
+		standard := lcl.NewTabSheet(page)
+		standard.SetParent(page)
+		standard.SetCaption(tab.Cn)
+		standard.SetAlign(types.AlClient)
+		var imageList []string
+		for _, name := range tab.Component {
+			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
+		}
 
-	additional := lcl.NewTabSheet(page)
-	additional.SetParent(page)
-	additional.SetCaption("额外控件")
-	additional.SetAlign(types.AlClient)
+		toolbar := lcl.NewToolBar(standard)
+		toolbar.SetParent(standard)
+		toolbar.SetImages(m.LoadImageList(imageList, 36, 36))
+		toolbar.SetButtonWidth(36)
+		toolbar.SetButtonHeight(36)
+		toolbar.SetHeight(38)
+		toolbar.ChildSizing().SetLayout(types.CclLeftToRightThenTopToBottom)
+
+		for i, name := range tab.Component {
+			toolBtn := lcl.NewToolButton(toolbar)
+			toolBtn.SetParent(toolbar)
+			toolBtn.SetHint(name)
+			toolBtn.SetImageIndex(int32(i))
+			toolBtn.SetShowHint(true)
+		}
+
+	}
+
+	newComponentTab(config.Config.ComponentTabs.Standard)
+	newComponentTab(config.Config.ComponentTabs.Additional)
+	newComponentTab(config.Config.ComponentTabs.Common)
+	newComponentTab(config.Config.ComponentTabs.Dialogs)
+	newComponentTab(config.Config.ComponentTabs.Misc)
+	newComponentTab(config.Config.ComponentTabs.System)
+	newComponentTab(config.Config.ComponentTabs.LazControl)
+
 }
 
-func (m *TopToolbar) LoadImageList() lcl.IImageList {
+func (m *TopToolbar) LoadImageList(imageList []string, width, height int32) lcl.IImageList {
 	images := lcl.NewImageList(m.leftTools)
-	tool.ImageListAddPng(images, "components/default.png")
-	tool.ImageListAddPng(images, "components/tactionlist.png")
-	tool.ImageListAddPng(images, "menu/menu_run.png")
+	images.SetWidth(width)
+	images.SetHeight(height)
+	for _, image := range imageList {
+		tool.ImageListAddPng(images, image)
+	}
 	return images
 }
