@@ -94,14 +94,17 @@
         "TSavePictureDialog",
         "TCalendarDialog",
         "TCalculatorDialog",
-        ""
+        "TPrinterSetupDialog",
+        "TPrintDialog",
+        "TPageSetupDialog"
       ]
     },
     "laz": {
       "cn": "Laz控件",
       "en": "LazControl",
       "component": [
-        ""
+        "TLazVirtualDrawTree",
+        "TLazVirtualStringTree"
       ]
     }
   }
