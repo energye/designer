@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -28,10 +29,18 @@ func (m *TAppWindow) createTopToolbar() *TopToolbar {
 	// 创建工具按钮
 	toolbar := lcl.NewToolBar(m)
 	toolbar.SetParent(bar.toolbarPnl)
+	toolbar.SetImages(bar.NewImageList())
 
 	toolBtn := lcl.NewToolButton(toolbar)
 	toolBtn.SetParent(toolbar)
 	toolBtn.SetCaption("asdf")
 	toolBtn.SetHint("提示")
+	toolBtn.SetImageIndex(0)
 	return bar
+}
+
+func (m *TopToolbar) NewImageList() lcl.IImageList {
+	images := lcl.NewImageList(m.toolbarPnl)
+	tool.ImageListAddPng(images, "components/default.png")
+	return images
 }
