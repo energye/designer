@@ -113,7 +113,10 @@
         "TDateEdit",
         "TTimeEdit",
         "TComboBoxEx",
-        "TButtonPanel"
+        "TButtonPanel",
+        "TCheckComboBox",
+        "TLinkLabel",
+        "TXButton"
       ]
     },
     "system": {
