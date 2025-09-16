@@ -52,18 +52,29 @@
         "TApplicationProperties",
         "TStringGrid",
         "TDrawGrid",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
+        "TPairSplitter",
+        "TColorBox",
+        "TColorListBox",
+        "TValueListEditor"
       ]
     },
     "common": {
       "cn": "通用",
       "en": "common",
       "component": [
+        "TTrackBar",
+        "TProgressBar",
+        "TTreeView",
+        "TListView",
+        "TStatusBar",
+        "TToolBar",
+        "TCoolBar",
+        "TUpDown",
+        "TPageControl",
+        "THeaderControl",
+        "TImageList",
+        "",
+        "",
         ""
       ]
     },
