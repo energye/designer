@@ -116,6 +116,13 @@
         "TButtonPanel"
       ]
     },
+    "system": {
+      "cn": "系统",
+      "en": "System",
+      "component": [
+        "TTimer"
+      ]
+    },
     "lazcontrol": {
       "cn": "Laz控件",
       "en": "LazControl",
