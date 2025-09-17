@@ -67,29 +67,60 @@ func (m *TAppWindow) createTopToolbar() {
 func (m *TopToolbar) createToolBarBtns() {
 	toolbar := lcl.NewToolBar(m.box)
 	toolbar.SetParent(m.leftTools)
-	toolbar.SetBorderStyleToBorderStyle(types.BsNone)
+	toolbar.SetAlign(types.AlCustom)
+	toolbar.SetTop(15)
+	toolbar.SetButtonWidth(32)
+	toolbar.SetButtonHeight(32)
+	toolbar.SetHeight(32)
+	toolbar.SetWidth(m.leftTools.Width())
+	toolbar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
+	toolbar.SetEdgeBorders(types.NewSet())
 	toolbar.SetImages(m.LoadImageList([]string{
-		"components/default.png",
-		"components/tactionlist.png",
-		"menu/menu_run.png",
+		"menu/menu_new_form_150.png",
+		"menu/menu_project_open_150.png",
+		"menu/menu_saveas_150.png",
+		"menu/menu_save_all_150.png",
+		"menu/menu_run_150.png",
 	}, 24, 24))
-	toolbar.SetAlign(types.AlTop)
 
-	toolBtn := lcl.NewToolButton(toolbar)
-	toolBtn.SetParent(toolbar)
-	toolBtn.SetHint("提示")
-	toolBtn.SetImageIndex(0)
-	toolBtn.SetShowHint(true)
+	newSepa := func() {
+		seap := lcl.NewToolButton(toolbar)
+		seap.SetParent(toolbar)
+		seap.SetStyle(types.TbsSeparator)
+	}
 
-	sepc := lcl.NewToolButton(toolbar)
-	sepc.SetParent(toolbar)
-	sepc.SetStyle(types.TbsSeparator)
+	newBtn := func(imageIndex int32, hint string) lcl.IToolButton {
+		btn := lcl.NewToolButton(toolbar)
+		btn.SetParent(toolbar)
+		btn.SetHint(hint)
+		btn.SetImageIndex(imageIndex)
+		btn.SetShowHint(true)
+		return btn
+	}
 
-	toolBtn = lcl.NewToolButton(toolbar)
-	toolBtn.SetParent(toolbar)
-	toolBtn.SetHint("提示")
-	toolBtn.SetImageIndex(2)
-	toolBtn.SetShowHint(true)
+	newFormBtn := newBtn(0, "新建窗体")
+	newFormBtn.SetOnClick(func(sender lcl.IObject) {
+
+	})
+	openFormBtn := newBtn(1, "打开窗体")
+	openFormBtn.SetOnClick(func(sender lcl.IObject) {
+
+	})
+	newSepa()
+	saveFormBtn := newBtn(2, "保存窗体")
+	saveFormBtn.SetOnClick(func(sender lcl.IObject) {
+
+	})
+	saveAllFormBtn := newBtn(3, "保存所有窗体")
+	saveAllFormBtn.SetOnClick(func(sender lcl.IObject) {
+
+	})
+	newSepa()
+	runFormBtn := newBtn(4, "运行预览窗体")
+	runFormBtn.SetOnClick(func(sender lcl.IObject) {
+
+	})
+
 }
 
 // 组件选项卡
@@ -117,7 +148,7 @@ func (m *TopToolbar) createComponentTabs() {
 		toolbar.SetButtonWidth(36)
 		toolbar.SetButtonHeight(36)
 		toolbar.SetHeight(36)
-		toolbar.ChildSizing().SetLayout(types.CclLeftToRightThenTopToBottom)
+		toolbar.SetEdgeBorders(types.NewSet())
 		// 创建组件按钮
 		for i, name := range tab.Component {
 			toolBtn := lcl.NewToolButton(toolbar)
