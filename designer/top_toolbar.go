@@ -99,16 +99,18 @@ func (m *TopToolbar) createComponentTabs() {
 	page.SetAlign(types.AlClient)
 	page.SetTabStop(true)
 
+	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
 		standard := lcl.NewTabSheet(page)
 		standard.SetParent(page)
 		standard.SetCaption(tab.Cn)
 		standard.SetAlign(types.AlClient)
+		// 组件图标
 		var imageList []string
 		for _, name := range tab.Component {
 			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
 		}
-
+		// 显示组件工具按钮
 		toolbar := lcl.NewToolBar(standard)
 		toolbar.SetParent(standard)
 		toolbar.SetImages(m.LoadImageList(imageList, 36, 36))
@@ -116,17 +118,21 @@ func (m *TopToolbar) createComponentTabs() {
 		toolbar.SetButtonHeight(36)
 		toolbar.SetHeight(36)
 		toolbar.ChildSizing().SetLayout(types.CclLeftToRightThenTopToBottom)
-
+		// 创建组件按钮
 		for i, name := range tab.Component {
 			toolBtn := lcl.NewToolButton(toolbar)
 			toolBtn.SetParent(toolbar)
 			toolBtn.SetHint(name)
 			toolBtn.SetImageIndex(int32(i))
 			toolBtn.SetShowHint(true)
+			cIdx, cName := i, name
+			toolBtn.SetOnClick(func(sender lcl.IObject) {
+				println(cIdx, cName)
+			})
 		}
 
 	}
-
+	// 创建组件选项卡
 	newComponentTab(config.Config.ComponentTabs.Standard)
 	newComponentTab(config.Config.ComponentTabs.Additional)
 	newComponentTab(config.Config.ComponentTabs.Common)
