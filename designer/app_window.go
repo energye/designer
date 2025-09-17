@@ -23,14 +23,6 @@ type TAppWindow struct {
 	box                 *BottomBox                 // 底部布局盒子
 }
 
-func Run() {
-	lcl.Application.Initialize()
-	lcl.Application.SetMainFormOnTaskBar(true)
-	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms(&mainWindow)
-	lcl.Application.Run()
-}
-
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
