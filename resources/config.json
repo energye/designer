@@ -116,7 +116,10 @@
         "TButtonPanel",
         "TCheckComboBox",
         "TLinkLabel",
-        "TXButton"
+        "TXButton",
+        "TImageButton",
+        "TATGauge",
+        "TOpenGLControl"
       ]
     },
     "system": {
