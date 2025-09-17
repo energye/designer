@@ -114,7 +114,7 @@ func (m *TopToolbar) createComponentTabs() {
 		toolbar.SetImages(m.LoadImageList(imageList, 36, 36))
 		toolbar.SetButtonWidth(36)
 		toolbar.SetButtonHeight(36)
-		toolbar.SetHeight(38)
+		toolbar.SetHeight(36)
 		toolbar.ChildSizing().SetLayout(types.CclLeftToRightThenTopToBottom)
 
 		for i, name := range tab.Component {

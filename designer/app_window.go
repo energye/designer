@@ -10,7 +10,7 @@ import (
 
 var (
 	mainWindow    TAppWindow
-	toolbarHeight int32 = 68
+	toolbarHeight int32 = 66
 	bgColor             = colors.RGBToColor(56, 57, 60)
 )
 
