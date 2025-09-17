@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	mainWindow    TAppWindow
-	toolbarHeight int32 = 66
-	bgColor             = colors.RGBToColor(56, 57, 60)
+	mainWindow       TAppWindow
+	toolbarHeight    int32 = 66
+	bgColor                = colors.RGBToColor(56, 57, 60)
+	windowShowEvents []func()
 )
 
 // 设计器应用窗口
@@ -46,6 +47,9 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 	log.Println("OnShow")
 	// 窗口显示在鼠标所在的窗口
 	m.showInMonitor()
+	for _, fn := range windowShowEvents {
+		fn()
+	}
 }
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
@@ -62,4 +66,8 @@ func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 
 func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	log.Println("OnClose")
+}
+
+func AddOnShow(fn func()) {
+	windowShowEvents = append(windowShowEvents, fn)
 }

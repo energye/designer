@@ -12,33 +12,96 @@ var (
 )
 
 type Inspector struct {
-	componentTreeFilter lcl.IListFilterEdit
-	componentTree       lcl.ITreeView           // 组件树
-	splitter            lcl.ISplitter           // 分割线
-	componentProperty   lcl.ILazVirtualDrawTree // 组件属性
+	componentTreeFilter     lcl.ITreeFilterEdit     // 组件树过滤框
+	componentTree           lcl.ITreeView           // 组件树
+	componentTreeBox        lcl.IPanel              // 组件树盒子
+	componentPropertyFilter lcl.ITreeFilterEdit     // 组件属性过滤框
+	componentProperty       lcl.ILazVirtualDrawTree // 组件属性
+	componentPropertyBox    lcl.IPanel              // 组件属性盒子
+	boxSplitter             lcl.ISplitter           // 分割线
 }
 
 func (m *BottomBox) createInspector() *Inspector {
 	ins := new(Inspector)
+	{
+		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
+		ins.boxSplitter.SetParent(m.leftBox)
+		ins.boxSplitter.SetAlign(types.AlTop)
 
-	// 分隔线
-	ins.splitter = lcl.NewSplitter(m.leftBox)
-	ins.splitter.SetParent(m.leftBox)
-	ins.splitter.SetAlign(types.AlTop)
-	ins.splitter.SetWidth(3)
+		ins.componentTreeBox = lcl.NewPanel(m.leftBox)
+		ins.componentTreeBox.SetParent(m.leftBox)
+		ins.componentTreeBox.SetBevelOuter(types.BvNone)
+		ins.componentTreeBox.SetDoubleBuffered(true)
+		ins.componentTreeBox.SetWidth(m.leftBox.Width())
+		ins.componentTreeBox.SetHeight(componentTreeHeight)
+		ins.componentTreeBox.Constraints().SetMinWidth(50)
+		ins.componentTreeBox.Constraints().SetMinHeight(50)
+		ins.componentTreeBox.SetAlign(types.AlTop)
+		//ins.componentTreeBox.SetColor(colors.ClAliceblue)
 
-	// 组件树
-	ins.componentTree = lcl.NewTreeView(m.leftBox)
-	ins.componentTree.SetParent(m.leftBox)
-	ins.componentTree.SetWidth(m.leftBox.Width())
-	ins.componentTree.SetHeight(componentTreeHeight)
-	ins.componentTree.SetAlign(types.AlTop)
+		ins.componentPropertyBox = lcl.NewPanel(m.leftBox)
+		ins.componentPropertyBox.SetParent(m.leftBox)
+		ins.componentPropertyBox.SetBevelOuter(types.BvNone)
+		ins.componentPropertyBox.SetDoubleBuffered(true)
+		ins.componentPropertyBox.SetWidth(m.leftBox.Width())
+		ins.componentPropertyBox.SetHeight(componentTreeHeight)
+		ins.componentPropertyBox.Constraints().SetMinWidth(50)
+		ins.componentPropertyBox.Constraints().SetMinHeight(50)
+		ins.componentPropertyBox.SetAlign(types.AlClient)
+		//ins.componentPropertyBox.SetColor(colors.Cl3DDkShadow)
+	}
 
-	// 组件树搜索过滤
-	ins.componentTreeFilter = lcl.NewListFilterEdit(m.leftBox)
-	ins.componentTreeFilter.SetParent(m.leftBox)
-	ins.componentTreeFilter.SetAlign(types.AlTop)
+	{
+		// 组件树搜索过滤
+		componentTreeTitle := lcl.NewLabel(ins.componentTreeBox)
+		componentTreeTitle.SetParent(ins.componentTreeBox)
+		componentTreeTitle.SetCaption("组件")
+		componentTreeTitle.Font().SetStyle(types.NewSet(types.FsBold))
+		componentTreeTitle.SetTop(8)
+		componentTreeTitle.SetLeft(5)
 
+		ins.componentTreeFilter = lcl.NewTreeFilterEdit(ins.componentTreeBox)
+		ins.componentTreeFilter.SetParent(ins.componentTreeBox)
+		ins.componentTreeFilter.SetTop(5)
+		ins.componentTreeFilter.SetLeft(30)
+		ins.componentTreeFilter.SetWidth(m.leftBox.Width() - ins.componentTreeFilter.Left())
+		ins.componentTreeFilter.SetAlign(types.AlCustom)
+		ins.componentTreeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+
+		// 组件树
+		ins.componentTree = lcl.NewTreeView(ins.componentTreeBox)
+		ins.componentTree.SetParent(ins.componentTreeBox)
+		ins.componentTree.SetTop(35)
+		ins.componentTree.SetWidth(m.leftBox.Width())
+		ins.componentTree.SetHeight(componentTreeHeight - ins.componentTree.Top())
+		ins.componentTree.SetAlign(types.AlCustom)
+		ins.componentTree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+	}
+	{
+		componentPropertyTitle := lcl.NewLabel(ins.componentPropertyBox)
+		componentPropertyTitle.SetParent(ins.componentPropertyBox)
+		componentPropertyTitle.SetCaption("属性")
+		componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
+		componentPropertyTitle.SetTop(8)
+		componentPropertyTitle.SetLeft(5)
+
+		ins.componentPropertyFilter = lcl.NewTreeFilterEdit(ins.componentPropertyBox)
+		ins.componentPropertyFilter.SetParent(ins.componentPropertyBox)
+		ins.componentPropertyFilter.SetTop(5)
+		ins.componentPropertyFilter.SetLeft(30)
+		ins.componentPropertyFilter.SetWidth(m.leftBox.Width() - ins.componentPropertyFilter.Left())
+		ins.componentPropertyFilter.SetAlign(types.AlCustom)
+		ins.componentPropertyFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+
+		// 组件属性
+		ins.componentProperty = lcl.NewLazVirtualDrawTree(ins.componentPropertyBox)
+		ins.componentProperty.SetParent(ins.componentPropertyBox)
+		ins.componentProperty.SetTop(35)
+		ins.componentProperty.SetWidth(m.leftBox.Width())
+		ins.componentProperty.SetHeight(ins.componentPropertyBox.Height() - (ins.componentTree.Top()))
+		ins.componentProperty.SetAlign(types.AlCustom)
+		ins.componentProperty.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+	}
 	// 组件属性
 	return ins
 }
