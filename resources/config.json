@@ -100,7 +100,7 @@
       ]
     },
     "misc": {
-      "cn": "  Misc  ",
+      "cn": "  杂项  ",
       "en": "Misc",
       "component": [
         "TColorButton",
@@ -131,7 +131,12 @@
       "en": "LazControl",
       "component": [
         "TLazVirtualDrawTree",
-        "TLazVirtualStringTree"
+        "TLazVirtualStringTree",
+        "TDividerBevel",
+        "TCheckBoxThemed",
+        "TExtendedNotebook",
+        "TListFilterEdit",
+        "TVTHeaderPopupMenu"
       ]
     }
   }
