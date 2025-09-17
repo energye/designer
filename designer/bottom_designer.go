@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 )
 
 var (
@@ -73,15 +74,53 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.sheet.SetCaption(formName)
 	form.sheet.SetAlign(types.AlClient)
 
-	form.designerBox = lcl.NewPanel(form.sheet)
-	form.designerBox.SetParent(form.sheet)
+	scroll := lcl.NewScrollBox(form.sheet)
+	scroll.SetParent(form.sheet)
+	scroll.SetAlign(types.AlClient)
+	scroll.SetAutoScroll(true)
+	scroll.SetBorderStyleToBorderStyle(types.BsNone)
+	scroll.SetColor(colors.ClWhite)
+	scroll.SetOnPaint(func(sender lcl.IObject) {
+
+	})
+
+	form.designerBox = lcl.NewPanel(scroll)
+	form.designerBox.SetParent(scroll)
 	form.designerBox.SetBevelOuter(types.BvNone)
 	form.designerBox.SetDoubleBuffered(true)
+	form.designerBox.SetParentColor(false)
+	form.designerBox.SetColor(colors.ClBtnFace)
+	form.designerBox.SetLeft(40)
+	form.designerBox.SetTop(40)
 	form.designerBox.SetWidth(600)
 	form.designerBox.SetHeight(400)
 	form.designerBox.SetAlign(types.AlCustom)
-
+	form.designerBox.SetOnPaint(form.OnPaint)
+	form.designerBox.SetOnMouseMove(form.OnMouseMove)
+	form.designerBox.SetOnMouseDown(form.OnMouseDown)
+	form.designerBox.SetOnMouseUp(form.OnMouseUp)
 	return form
+}
+
+// 激活指定的 tab
+func (m *Designer) ActiveFormTab(tab *FormTab) {
+	m.page.SetActivePage(tab.sheet)
+}
+
+func (m *FormTab) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) OnPaint(sender lcl.IObject) {
+
 }
 
 // 测试属性
