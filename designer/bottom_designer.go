@@ -5,10 +5,12 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"strconv"
 )
 
 var (
 	designer *Designer
+	margin   int32 = 40
 )
 
 // 窗体设计功能
@@ -20,10 +22,11 @@ type Designer struct {
 }
 
 type FormTab struct {
-	id          int           // 索引, 关联 forms key: index
-	name        string        // 窗体名称
-	sheet       lcl.ITabSheet // tab sheet
-	designerBox lcl.IPanel    // 设计器
+	id          int            // 索引, 关联 forms key: index
+	name        string         // 窗体名称
+	scroll      lcl.IScrollBox // 外 滚动条
+	sheet       lcl.ITabSheet  // tab sheet
+	designerBox lcl.IPanel     // 设计器
 }
 
 // 创建主窗口设计器的布局
@@ -83,6 +86,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	scroll.SetOnPaint(func(sender lcl.IObject) {
 
 	})
+	form.scroll = scroll
 
 	form.designerBox = lcl.NewPanel(scroll)
 	form.designerBox.SetParent(scroll)
@@ -90,15 +94,15 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox.SetDoubleBuffered(true)
 	form.designerBox.SetParentColor(false)
 	form.designerBox.SetColor(colors.ClBtnFace)
-	form.designerBox.SetLeft(40)
-	form.designerBox.SetTop(40)
+	form.designerBox.SetLeft(margin)
+	form.designerBox.SetTop(margin)
 	form.designerBox.SetWidth(600)
 	form.designerBox.SetHeight(400)
 	form.designerBox.SetAlign(types.AlCustom)
-	form.designerBox.SetOnPaint(form.OnPaint)
-	form.designerBox.SetOnMouseMove(form.OnMouseMove)
-	form.designerBox.SetOnMouseDown(form.OnMouseDown)
-	form.designerBox.SetOnMouseUp(form.OnMouseUp)
+	form.designerBox.SetOnPaint(form.designerOnPaint)
+	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)
+	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
+	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
 	return form
 }
 
@@ -107,19 +111,62 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	m.page.SetActivePage(tab.sheet)
 }
 
-func (m *FormTab) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+// 绘制刻度尺, 在外层 scroll 上
+func (m *FormTab) scrollDrawRuler() {
+	gridSize := 5 // 10px 一个小刻度
+	canvas := m.scroll.Canvas()
+	canvas.PenToPen().SetColor(colors.ClBlack)
+	width, height := m.designerBox.Width(), m.designerBox.Height()
+	println("width, height:", width, height)
+	// X
+	for i := 0; i <= int(width)/gridSize; i++ {
+		x := int32(i * gridSize)
+		x = x + margin
+		if i%10 == 0 { // 长
+			canvas.LineWithIntX4(x, margin-35, x, margin-10)
+			text := strconv.Itoa(i * gridSize)
+			textWidth := canvas.TextWidthWithUnicodestring(text)
+			canvas.TextOutWithIntX2Unicodestring(x-(textWidth/2), 0, text)
+		} else if i%5 == 0 { // 中
+			canvas.LineWithIntX4(x, margin-25, x, margin-10)
+		} else { // 小
+			canvas.LineWithIntX4(x, margin-15, x, margin-10)
+		}
+	}
+	// Y
+	for i := 0; i <= int(height)/gridSize; i++ {
+		y := int32(i * gridSize)
+		y = y + margin
+		if i%10 == 0 { // 长
+			canvas.LineWithIntX4(margin-35, y, margin-10, y)
+			text := strconv.Itoa(i * gridSize)
+			textWidth := canvas.TextWidthWithUnicodestring(text)
+			canvas.TextOutWithIntX2Unicodestring(0, y-(textWidth/2), text)
+		} else if i%5 == 0 { // 中
+			canvas.LineWithIntX4(margin-25, y, margin-10, y)
+		} else { // 小
+			canvas.LineWithIntX4(margin-15, y, margin-10, y)
+		}
+	}
+}
+
+func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 
 }
 
-func (m *FormTab) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 
 }
 
-func (m *FormTab) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 
 }
 
-func (m *FormTab) OnPaint(sender lcl.IObject) {
+func (m *FormTab) designerOnPaint(sender lcl.IObject) {
+	println("designerOnPaint")
+	// 绘制刻度
+	m.scrollDrawRuler()
+	// 绘制网格
 
 }
 
