@@ -60,9 +60,9 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.rightBox.SetColor(colors.Cl3DLight)
 
 	// 创建对象查看器
-	box.createInspector()
+	inspector = box.createInspectorLayout()
 
 	// 创建窗体设计器
-	box.createFromDesigner()
+	designer = box.createFromDesignerLayout()
 	return box
 }

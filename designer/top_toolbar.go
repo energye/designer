@@ -3,7 +3,6 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"strings"
@@ -12,6 +11,7 @@ import (
 // 顶部工具栏
 
 type TopToolbar struct {
+	page      lcl.IPageControl
 	box       lcl.IPanel
 	leftTools lcl.IPanel
 	splitter  lcl.ISplitter // 分割线
@@ -75,7 +75,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbar.SetWidth(m.leftTools.Width())
 	toolbar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	toolbar.SetEdgeBorders(types.NewSet())
-	toolbar.SetImages(m.LoadImageList([]string{
+	toolbar.SetImages(LoadImageList(m.leftTools, []string{
 		"menu/menu_new_form_150.png",
 		"menu/menu_project_open_150.png",
 		"actions/laz_save_150.png",
@@ -129,6 +129,7 @@ func (m *TopToolbar) createComponentTabs() {
 	page.SetParent(m.rightTabs)
 	page.SetAlign(types.AlClient)
 	page.SetTabStop(true)
+	m.page = page
 
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
@@ -145,7 +146,7 @@ func (m *TopToolbar) createComponentTabs() {
 		// 显示组件工具按钮
 		toolbar := lcl.NewToolBar(standard)
 		toolbar.SetParent(standard)
-		toolbar.SetImages(m.LoadImageList(imageList, 36, 36))
+		toolbar.SetImages(LoadImageList(m.rightTabs, imageList, 36, 36))
 		toolbar.SetButtonWidth(36)
 		toolbar.SetButtonHeight(36)
 		toolbar.SetHeight(36)
@@ -186,14 +187,4 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.Config.ComponentTabs.LazControl)
 	newComponentTab(config.Config.ComponentTabs.WebView)
 
-}
-
-func (m *TopToolbar) LoadImageList(imageList []string, width, height int32) lcl.IImageList {
-	images := lcl.NewImageList(m.leftTools)
-	images.SetWidth(width)
-	images.SetHeight(height)
-	for _, image := range imageList {
-		tool.ImageListAddPng(images, image)
-	}
-	return images
 }

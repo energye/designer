@@ -9,6 +9,7 @@ import (
 
 var (
 	componentTreeHeight int32 = 150
+	inspector           *Inspector
 )
 
 type Inspector struct {
@@ -21,7 +22,7 @@ type Inspector struct {
 	boxSplitter             lcl.ISplitter           // 分割线
 }
 
-func (m *BottomBox) createInspector() *Inspector {
+func (m *BottomBox) createInspectorLayout() *Inspector {
 	ins := new(Inspector)
 	// 对象查看器面板分隔
 	{
