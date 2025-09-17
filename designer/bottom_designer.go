@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -12,17 +13,22 @@ var (
 // 窗体设计功能
 
 type Designer struct {
-	page    lcl.IPageControl    // 设计器 tabs
-	tabMenu lcl.IPopupMenu      // tab 菜单
-	forms   map[string]*FormTab // 设计器窗体列表
+	page    lcl.IPageControl // 设计器 tabs
+	tabMenu lcl.IPopupMenu   // tab 菜单
+	forms   map[int]*FormTab // 设计器窗体列表
 }
 
 type FormTab struct {
+	id          int           // 索引, 关联 forms key: index
+	name        string        // 窗体名称
+	sheet       lcl.ITabSheet // tab sheet
+	designerBox lcl.IPanel    // 设计器
 }
 
+// 创建主窗口设计器的布局
 func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
-	des.forms = make(map[string]*FormTab)
+	des.forms = make(map[int]*FormTab)
 	des.page = lcl.NewPageControl(m.box)
 	des.page.SetParent(m.rightBox)
 	des.page.SetAlign(types.AlClient)
@@ -35,6 +41,9 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 
 // 创建tab上的右键菜单
 func (m *Designer) createTabMenu() {
+	if m.tabMenu != nil {
+		return
+	}
 	m.tabMenu = lcl.NewPopupMenu(m.page)
 	m.tabMenu.SetImages(LoadImageList(m.page, []string{"actions/laz_cancel.png"}, 16, 16))
 	items := m.tabMenu.Items()
@@ -46,9 +55,29 @@ func (m *Designer) createTabMenu() {
 	m.page.SetPopupMenu(m.tabMenu)
 }
 
-// 创建设计器 tab
-func (m *Designer) newFormDesignerTab() {
+// 创建窗体设计器 tab
+func (m *Designer) newFormDesignerTab() *FormTab {
+	form := new(FormTab)
+	id := len(m.forms) + 1
+	formName := fmt.Sprintf("Form%d", id) // 默认名
+	form.name = formName
+	form.id = id
+	m.forms[id] = form
 
+	form.sheet = lcl.NewTabSheet(m.page)
+	form.sheet.SetParent(m.page)
+	form.sheet.SetCaption(formName)
+	form.sheet.SetAlign(types.AlClient)
+
+	form.designerBox = lcl.NewPanel(form.sheet)
+	form.designerBox.SetParent(form.sheet)
+	form.designerBox.SetBevelOuter(types.BvNone)
+	form.designerBox.SetDoubleBuffered(true)
+	form.designerBox.SetWidth(400)
+	form.designerBox.SetHeight(400)
+	form.designerBox.SetAlign(types.AlCustom)
+
+	return form
 }
 
 // 测试属性
