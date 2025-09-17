@@ -34,6 +34,10 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.page.SetAlign(types.AlClient)
 	des.page.SetTabStop(true)
 
+	des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
+
+	})
+
 	// 创建tab上的右键菜单
 	des.createTabMenu()
 	return des
@@ -48,11 +52,11 @@ func (m *Designer) createTabMenu() {
 	m.tabMenu.SetImages(LoadImageList(m.page, []string{"actions/laz_cancel.png"}, 16, 16))
 	items := m.tabMenu.Items()
 	closeMenuItem := lcl.NewMenuItem(m.page)
-	closeMenuItem.SetCaption("关闭")
+	closeMenuItem.SetCaption("关闭窗体")
 	closeMenuItem.SetImageIndex(0)
 	items.Add(closeMenuItem)
 
-	m.page.SetPopupMenu(m.tabMenu)
+	//m.page.SetPopupMenu(m.tabMenu)
 }
 
 // 创建窗体设计器 tab
@@ -73,7 +77,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox.SetParent(form.sheet)
 	form.designerBox.SetBevelOuter(types.BvNone)
 	form.designerBox.SetDoubleBuffered(true)
-	form.designerBox.SetWidth(400)
+	form.designerBox.SetWidth(600)
 	form.designerBox.SetHeight(400)
 	form.designerBox.SetAlign(types.AlCustom)
 
