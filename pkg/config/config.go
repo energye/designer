@@ -26,6 +26,7 @@ type ComponentTabs struct {
 	Misc       Tab `json:"misc"`
 	System     Tab `json:"system"`
 	LazControl Tab `json:"lazcontrol"`
+	WebView    Tab `json:"webview"`
 }
 
 type Tab struct {

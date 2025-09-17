@@ -141,6 +141,12 @@
         "TListFilterEdit",
         "TVTHeaderPopupMenu"
       ]
+    },
+    "webview": {
+      "cn": "  WebView  ",
+      "en": "WebView",
+      "component": [
+      ]
     }
   }
 }

@@ -140,6 +140,7 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.Config.ComponentTabs.Misc)
 	newComponentTab(config.Config.ComponentTabs.System)
 	newComponentTab(config.Config.ComponentTabs.LazControl)
+	newComponentTab(config.Config.ComponentTabs.WebView)
 
 }
 
