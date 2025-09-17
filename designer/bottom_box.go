@@ -59,19 +59,10 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.rightBox.SetAlign(types.AlClient)
 	box.rightBox.SetColor(colors.Cl3DLight)
 
-	// 测试属性
-	//btn := lcl.NewButton(m)
-	//btn.SetParent(m)
-	//testProp := lcl.GetComponentProperties(btn)
-	//for _, prop := range testProp {
-	//	fmt.Printf("%+v\n", prop)
-	//}
-	//
-	//font := lcl.NewFont()
-	//fmt.Println("font.GetNamePath():", font.GetNamePath())
-	//fs := lcl.Screen.Fonts()
-	//for i := 0; i < int(fs.Count()); i++ {
-	//	fmt.Println(fs.Strings(int32(i)))
-	//}
+	// 创建对象查看器
+	box.createInspector()
+
+	// 创建窗体设计器
+	box.createFromDesigner()
 	return box
 }

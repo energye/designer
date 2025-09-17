@@ -1,5 +1,7 @@
 package designer
 
+import "github.com/energye/lcl/lcl"
+
 func Run() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
