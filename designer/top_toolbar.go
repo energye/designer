@@ -78,7 +78,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbar.SetImages(m.LoadImageList([]string{
 		"menu/menu_new_form_150.png",
 		"menu/menu_project_open_150.png",
-		"menu/menu_saveas_150.png",
+		"actions/laz_save_150.png",
 		"menu/menu_save_all_150.png",
 		"menu/menu_run_150.png",
 	}, 24, 24))
