@@ -83,17 +83,17 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.scroll.SetAlign(types.AlClient)
 	form.scroll.SetAutoScroll(true)
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
-	//form.scroll.SetColor(colors.ClWhite)
+	form.scroll.SetColor(colors.ClWhite)
 	form.scroll.SetDoubleBuffered(true)
 	form.scroll.HorzScrollBar().SetIncrement(1)
 	form.scroll.VertScrollBar().SetIncrement(1)
 
-	form.bg = lcl.NewPanel(form.scroll)
-	form.bg.SetParent(form.scroll)
-	form.bg.SetAlign(types.AlClient)
+	//form.bg = lcl.NewPanel(form.scroll)
+	//form.bg.SetParent(form.scroll)
+	//form.bg.SetAlign(types.AlClient)
 
-	form.designerBox = lcl.NewPanel(form.bg)
-	form.designerBox.SetParent(form.bg)
+	form.designerBox = lcl.NewPanel(form.scroll)
+	form.designerBox.SetParent(form.scroll)
 	form.designerBox.SetBevelOuter(types.BvNone)
 	form.designerBox.SetDoubleBuffered(true)
 	form.designerBox.SetParentColor(false)
@@ -177,8 +177,9 @@ func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftStat
 func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 	//println("designerOnPaint")
 	// 绘制刻度
-	m.scrollDrawRuler()
+	// m.scrollDrawRuler() // 有问题不要了
 	// 绘制网格
+
 }
 
 // 测试属性
