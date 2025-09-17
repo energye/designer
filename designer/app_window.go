@@ -42,7 +42,6 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
-	m.WorkAreaCenter()
 	// 设置窗口图标
 	m.setWindowIcon()
 	// 窗口显示事件
