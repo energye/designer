@@ -25,8 +25,9 @@ type FormTab struct {
 	id          int            // 索引, 关联 forms key: index
 	name        string         // 窗体名称
 	scroll      lcl.IScrollBox // 外 滚动条
-	sheet       lcl.ITabSheet  // tab sheet
-	designerBox lcl.IPanel     // 设计器
+	bg          lcl.IPanel
+	sheet       lcl.ITabSheet // tab sheet
+	designerBox lcl.IPanel    // 设计器
 }
 
 // 创建主窗口设计器的布局
@@ -77,19 +78,22 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.sheet.SetCaption(formName)
 	form.sheet.SetAlign(types.AlClient)
 
-	scroll := lcl.NewScrollBox(form.sheet)
-	scroll.SetParent(form.sheet)
-	scroll.SetAlign(types.AlClient)
-	scroll.SetAutoScroll(true)
-	scroll.SetBorderStyleToBorderStyle(types.BsNone)
-	scroll.SetColor(colors.ClWhite)
-	scroll.SetOnPaint(func(sender lcl.IObject) {
+	form.scroll = lcl.NewScrollBox(form.sheet)
+	form.scroll.SetParent(form.sheet)
+	form.scroll.SetAlign(types.AlClient)
+	form.scroll.SetAutoScroll(true)
+	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
+	//form.scroll.SetColor(colors.ClWhite)
+	form.scroll.SetDoubleBuffered(true)
+	form.scroll.HorzScrollBar().SetIncrement(1)
+	form.scroll.VertScrollBar().SetIncrement(1)
 
-	})
-	form.scroll = scroll
+	form.bg = lcl.NewPanel(form.scroll)
+	form.bg.SetParent(form.scroll)
+	form.bg.SetAlign(types.AlClient)
 
-	form.designerBox = lcl.NewPanel(scroll)
-	form.designerBox.SetParent(scroll)
+	form.designerBox = lcl.NewPanel(form.bg)
+	form.designerBox.SetParent(form.bg)
 	form.designerBox.SetBevelOuter(types.BvNone)
 	form.designerBox.SetDoubleBuffered(true)
 	form.designerBox.SetParentColor(false)
@@ -103,6 +107,14 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)
 	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
+
+	// 测试控件
+	testBtn := lcl.NewButton(form.designerBox)
+	testBtn.SetParent(form.designerBox)
+	testBtn.SetLeft(50)
+	testBtn.SetTop(50)
+	testBtn.SetCaption("测试按钮")
+
 	return form
 }
 
@@ -114,7 +126,7 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 // 绘制刻度尺, 在外层 scroll 上
 func (m *FormTab) scrollDrawRuler() {
 	gridSize := 5 // 10px 一个小刻度
-	canvas := m.scroll.Canvas()
+	canvas := m.bg.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
 	width, height := m.designerBox.Width(), m.designerBox.Height()
 	println("width, height:", width, height)
@@ -163,11 +175,10 @@ func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftStat
 }
 
 func (m *FormTab) designerOnPaint(sender lcl.IObject) {
-	println("designerOnPaint")
+	//println("designerOnPaint")
 	// 绘制刻度
 	m.scrollDrawRuler()
 	// 绘制网格
-
 }
 
 // 测试属性
