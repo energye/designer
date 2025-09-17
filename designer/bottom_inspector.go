@@ -23,6 +23,7 @@ type Inspector struct {
 
 func (m *BottomBox) createInspector() *Inspector {
 	ins := new(Inspector)
+	// 对象查看器面板分隔
 	{
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
 		ins.boxSplitter.SetParent(m.leftBox)
@@ -50,9 +51,8 @@ func (m *BottomBox) createInspector() *Inspector {
 		ins.componentPropertyBox.SetAlign(types.AlClient)
 		//ins.componentPropertyBox.SetColor(colors.Cl3DDkShadow)
 	}
-
+	// 组件树
 	{
-		// 组件树搜索过滤
 		componentTreeTitle := lcl.NewLabel(ins.componentTreeBox)
 		componentTreeTitle.SetParent(ins.componentTreeBox)
 		componentTreeTitle.SetCaption("组件")
@@ -68,7 +68,6 @@ func (m *BottomBox) createInspector() *Inspector {
 		ins.componentTreeFilter.SetAlign(types.AlCustom)
 		ins.componentTreeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 
-		// 组件树
 		ins.componentTree = lcl.NewTreeView(ins.componentTreeBox)
 		ins.componentTree.SetParent(ins.componentTreeBox)
 		ins.componentTree.SetTop(35)
@@ -77,6 +76,7 @@ func (m *BottomBox) createInspector() *Inspector {
 		ins.componentTree.SetAlign(types.AlCustom)
 		ins.componentTree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	}
+	// 组件属性
 	{
 		componentPropertyTitle := lcl.NewLabel(ins.componentPropertyBox)
 		componentPropertyTitle.SetParent(ins.componentPropertyBox)
@@ -93,7 +93,6 @@ func (m *BottomBox) createInspector() *Inspector {
 		ins.componentPropertyFilter.SetAlign(types.AlCustom)
 		ins.componentPropertyFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 
-		// 组件属性
 		ins.componentProperty = lcl.NewLazVirtualDrawTree(ins.componentPropertyBox)
 		ins.componentProperty.SetParent(ins.componentPropertyBox)
 		ins.componentProperty.SetTop(35)
@@ -102,6 +101,5 @@ func (m *BottomBox) createInspector() *Inspector {
 		ins.componentProperty.SetAlign(types.AlCustom)
 		ins.componentProperty.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	}
-	// 组件属性
 	return ins
 }
