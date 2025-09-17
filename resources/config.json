@@ -139,6 +139,7 @@
         "TCheckBoxThemed",
         "TExtendedNotebook",
         "TListFilterEdit",
+        "TTreeFilterEdit",
         "TVTHeaderPopupMenu"
       ]
     },
