@@ -79,7 +79,7 @@
       ]
     },
     "dialogs": {
-      "cn": "  弹框  ",
+      "cn": "  对话框  ",
       "en": "Dialogs",
       "component": [
         "TOpenDialog",

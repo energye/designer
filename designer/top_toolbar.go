@@ -138,6 +138,7 @@ func (m *TopToolbar) createComponentTabs() {
 		standard.SetAlign(types.AlClient)
 		// 组件图标
 		var imageList []string
+		imageList = append(imageList, "components/cursor_tool_150.png")
 		for _, name := range tab.Component {
 			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
 		}
@@ -149,15 +150,27 @@ func (m *TopToolbar) createComponentTabs() {
 		toolbar.SetButtonHeight(36)
 		toolbar.SetHeight(36)
 		toolbar.SetEdgeBorders(types.NewSet())
+
+		selectToolBtn := lcl.NewToolButton(toolbar)
+		selectToolBtn.SetParent(toolbar)
+		selectToolBtn.SetHint("选择工具")
+		selectToolBtn.SetImageIndex(int32(0))
+		selectToolBtn.SetShowHint(true)
+
+		seap := lcl.NewToolButton(toolbar)
+		seap.SetParent(toolbar)
+		seap.SetStyle(types.TbsSeparator)
+
 		// 创建组件按钮
 		for i, name := range tab.Component {
-			toolBtn := lcl.NewToolButton(toolbar)
-			toolBtn.SetParent(toolbar)
-			toolBtn.SetHint(name)
-			toolBtn.SetImageIndex(int32(i))
-			toolBtn.SetShowHint(true)
-			cIdx, cName := i, name
-			toolBtn.SetOnClick(func(sender lcl.IObject) {
+			imageIndex := i + 1
+			btn := lcl.NewToolButton(toolbar)
+			btn.SetParent(toolbar)
+			btn.SetHint(name)
+			btn.SetImageIndex(int32(imageIndex))
+			btn.SetShowHint(true)
+			cIdx, cName := imageIndex, name
+			btn.SetOnClick(func(sender lcl.IObject) {
 				println(cIdx, cName)
 			})
 		}
