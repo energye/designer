@@ -22,6 +22,7 @@ type TAppWindow struct {
 	componentProperties lcl.IApplicationProperties //
 	toolbar             *TopToolbar                // 顶部工具栏
 	box                 *BottomBox                 // 底部布局盒子
+	bar                 *StatusBar
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
@@ -41,6 +42,8 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
 	m.createDesignerLayout()
+	// status bar
+	m.createStatusBar()
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {

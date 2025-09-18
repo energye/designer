@@ -22,12 +22,13 @@ type Designer struct {
 }
 
 type FormTab struct {
-	id          int            // 索引, 关联 forms key: index
-	name        string         // 窗体名称
-	scroll      lcl.IScrollBox // 外 滚动条
-	bg          lcl.IPanel
-	sheet       lcl.ITabSheet // tab sheet
-	designerBox lcl.IPanel    // 设计器
+	id                   int            // 索引, 关联 forms key: index
+	name                 string         // 窗体名称
+	scroll               lcl.IScrollBox // 外 滚动条
+	bg                   lcl.IPanel
+	sheet                lcl.ITabSheet // tab sheet
+	designerBox          lcl.IPanel    // 设计器
+	isDown, isUp, isMove bool
 }
 
 // 创建主窗口设计器的布局
@@ -104,7 +105,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox.SetWidth(600)
 	form.designerBox.SetHeight(400)
 	form.designerBox.SetAlign(types.AlCustom)
-	form.designerBox.SetOnPaint(form.designerOnPaint)
+	//form.designerBox.SetOnPaint(form.designerOnPaint)
 	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)
 	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
