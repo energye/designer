@@ -69,8 +69,6 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			case DLeft:
 				x := X - dx
 				w := dcw - x
-				//m.relation.SetLeft(dcx + x)
-				//m.relation.SetWidth(dcw - x)
 				m.relation.SetBounds(dcx+x, dcy, w, dch)
 			case DTop:
 			case DRight:
@@ -80,10 +78,10 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			case DLeftBottom:
 			case DRightBottom:
 			}
-			//m.Follow()
 		}
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+		m.Hide()
 		dx, dy = X, Y
 		br := m.relation.BoundsRect()
 		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
@@ -91,6 +89,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		println("SetOnMouseDown")
 	})
 	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+		m.Show()
 		isDown = false
 		println("SetOnMouseUp")
 	})
