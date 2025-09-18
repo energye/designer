@@ -2,27 +2,18 @@ package designer
 
 import (
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"strconv"
 )
 
 type DragShowStatus int32
 
-var dragBorder int32 = 8
+var dragBorder int32 = 4
 
 const (
 	DsAll         DragShowStatus = iota // 显示所有
 	DsRightBottom                       // 显示 右 右下 下
-)
-const (
-	DLeft        = 1
-	DTop         = 2
-	DRight       = 3
-	DBottom      = 4
-	DLeftTop     = 5
-	DRightTop    = 6
-	DLeftBottom  = 7
-	DRightBottom = 8
 )
 
 type drag struct {
@@ -38,18 +29,28 @@ type drag struct {
 	rightBottom lcl.IPanel
 }
 
-func newDragPanel(owner lcl.IWinControl, tag int) lcl.IPanel {
+func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
 	pnl.SetParent(owner)
 	pnl.SetWidth(dragBorder)
 	pnl.SetHeight(dragBorder)
+	pnl.SetBevelOuter(types.BvNone)
 	pnl.SetDoubleBuffered(true)
-	pnl.SetColor(colors.ClGradientActiveCaption)
-	pnl.SetBevelColor(colors.ClHighlight)
+	pnl.SetColor(colors.ClBlack)
 	pnl.SetVisible(false)
-	pnl.SetTag(uintptr(tag))
+	//pnl.SetTag(uintptr(tag))
 	pnl.SetShowHint(true)
-	pnl.SetHint(strconv.Itoa(tag))
+	pnl.SetHint(strconv.Itoa(int(cursor)))
+	pnl.SetCursor(cursor)
+	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+
+	})
+	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+	})
+	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+	})
 	return pnl
 }
 
@@ -57,18 +58,18 @@ func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
 	m := new(drag)
 	m.ds = ds
 	if m.ds == DsAll {
-		m.left = newDragPanel(owner, DLeft)
-		m.top = newDragPanel(owner, DTop)
-		m.right = newDragPanel(owner, DRight)
-		m.bottom = newDragPanel(owner, DBottom)
-		m.leftTop = newDragPanel(owner, DLeftTop)
-		m.rightTop = newDragPanel(owner, DRightTop)
-		m.leftBottom = newDragPanel(owner, DLeftBottom)
-		m.rightBottom = newDragPanel(owner, DRightBottom)
+		m.left = m.newDragPanel(owner, types.CrSizeWE)
+		m.top = m.newDragPanel(owner, types.CrSizeNS)
+		m.right = m.newDragPanel(owner, types.CrSizeWE)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS)
+		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE)
+		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW)
+		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE)
 	} else {
-		m.right = newDragPanel(owner, DRight)
-		m.bottom = newDragPanel(owner, DBottom)
-		m.rightBottom = newDragPanel(owner, DRightBottom)
+		m.right = m.newDragPanel(owner, types.CrSizeWE)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE)
 	}
 	return m
 }

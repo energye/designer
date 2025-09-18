@@ -130,11 +130,15 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	testBtn.SetLeft(50)
 	testBtn.SetTop(50)
 	testBtn.SetCaption("测试按钮")
+	testBtn.SetDesignerDeleting(true)
 	form.dragComponent.SetRelation(testBtn)
 	form.dragComponent.Show()
 	form.dragComponent.Follow()
 
 	return form
+}
+func (m *Designer) NewDragComponent() {
+
 }
 
 // 激活指定的 tab
@@ -151,6 +155,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 }
 
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
+	lcl.Screen.SetCursor(types.CrDefault)
 	//width, height := m.designerBox.Width(), m.designerBox.Height()
 	{
 
