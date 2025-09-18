@@ -46,7 +46,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseUp(m.OnMouseUp)
 	comp.SetOnShowHint(func(sender lcl.IObject, hintInfo lcl.THintInfo) {
 		//fmt.Printf("SetOnShowHint: %+v\n", hintInfo)
-		fmt.Println("SetOnShowHint:", hintInfo.HintStr)
+		fmt.Println("SetOnShowHint:", hintInfo.HintStr, hintInfo.HintPos)
 	})
 	m.drag = newDrag(designerForm.designerBox, DsAll)
 	m.drag.SetRelation(comp)
