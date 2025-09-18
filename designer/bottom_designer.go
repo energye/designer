@@ -142,11 +142,14 @@ func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
 func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
-
-func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
+func (m *FormTab) hideAllDrag() {
 	for _, component := range m.componentList {
 		component.drag.Hide()
 	}
+}
+
+func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
+	m.hideAllDrag()
 }
 
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {

@@ -8,6 +8,7 @@ import (
 // 设计中的组件
 
 type DesigningComponent struct {
+	owner  *FormTab
 	object lcl.IWinControl
 	drag   *drag
 }
@@ -17,6 +18,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 }
 
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	m.owner.hideAllDrag()
 	m.drag.Show()
 }
 
@@ -26,6 +28,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
+	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewButton(designerForm.designerBox)
 	comp.SetParent(designerForm.designerBox)
@@ -44,6 +47,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 
 func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
+	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewEdit(designerForm.designerBox)
 	comp.SetParent(designerForm.designerBox)
