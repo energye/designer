@@ -95,6 +95,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox = lcl.NewPanel(form.scroll)
 	form.designerBox.SetParent(form.scroll)
 	form.designerBox.SetBevelOuter(types.BvNone)
+	form.designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
 	form.designerBox.SetDoubleBuffered(true)
 	form.designerBox.SetParentColor(false)
 	form.designerBox.SetColor(colors.ClBtnFace)
@@ -121,6 +122,24 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 // 激活指定的 tab
 func (m *Designer) ActiveFormTab(tab *FormTab) {
 	m.page.SetActivePage(tab.sheet)
+}
+
+func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+
+}
+
+func (m *FormTab) designerOnPaint(sender lcl.IObject) {
+	// 绘制刻度
+	// m.scrollDrawRuler() // 有问题不要了
+	// 绘制网格
 }
 
 // 绘制刻度尺, 在外层 scroll 上
@@ -160,26 +179,6 @@ func (m *FormTab) scrollDrawRuler() {
 			canvas.LineWithIntX4(margin-15, y, margin-10, y)
 		}
 	}
-}
-
-func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-
-}
-
-func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-
-}
-
-func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-
-}
-
-func (m *FormTab) designerOnPaint(sender lcl.IObject) {
-	//println("designerOnPaint")
-	// 绘制刻度
-	// m.scrollDrawRuler() // 有问题不要了
-	// 绘制网格
-
 }
 
 // 测试属性
