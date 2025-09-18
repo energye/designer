@@ -3,6 +3,7 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types/colors"
+	"strconv"
 )
 
 type DragShowStatus int32
@@ -47,6 +48,8 @@ func newDragPanel(owner lcl.IWinControl, tag int) lcl.IPanel {
 	pnl.SetBevelColor(colors.ClHighlight)
 	pnl.SetVisible(false)
 	pnl.SetTag(uintptr(tag))
+	pnl.SetShowHint(true)
+	pnl.SetHint(strconv.Itoa(tag))
 	return pnl
 }
 
@@ -89,7 +92,7 @@ func (m *drag) Hide() {
 	} else {
 		m.right.SetVisible(false)
 		m.bottom.SetVisible(false)
-		m.leftBottom.SetVisible(false)
+		m.rightBottom.SetVisible(false)
 	}
 }
 
@@ -97,7 +100,6 @@ func (m *drag) Hide() {
 func (m *drag) Show() {
 	if m.ds == DsAll {
 		m.left.SetVisible(true)
-		m.left.BringToFront()
 		m.top.SetVisible(true)
 		m.right.SetVisible(true)
 		m.bottom.SetVisible(true)
@@ -136,18 +138,32 @@ func (m *drag) Follow() {
 		br := m.relation.BoundsRect()
 		x, y := br.Left, br.Top
 		width, height := br.Width(), br.Height()
+		_ = width
+		db := dragBorder / 2
 		if m.ds == DsAll {
-			m.left.SetLeft(x - (dragBorder / 2))
-			m.left.SetTop(y - (dragBorder / 2))
-			m.top.SetLeft(x + (width / 2))
-			m.top.SetTop(y + height - (dragBorder / 2))
+			m.left.SetLeft(x - db)
+			m.left.SetTop(y + (height / 2) - db)
+			m.top.SetLeft(x + (width / 2) - db)
+			m.top.SetTop(y - db)
+			m.right.SetLeft(x + width - db)
+			m.right.SetTop(y + (height / 2) - db)
+			m.bottom.SetLeft(x + (width / 2) - db)
+			m.bottom.SetTop(y + height - db)
+			m.leftTop.SetLeft(x - db)
+			m.leftTop.SetTop(y - db)
+			m.rightTop.SetLeft(x + width - db)
+			m.rightTop.SetTop(y - db)
+			m.rightBottom.SetLeft(x + width - db)
+			m.rightBottom.SetTop(y + height - db)
+			m.leftBottom.SetLeft(x - db)
+			m.leftBottom.SetTop(y + height - db)
 		} else {
-			m.right.SetLeft(x + width - (dragBorder / 2))
-			m.right.SetTop(y + (height / 2))
-			m.bottom.SetLeft(x + (width / 2))
-			m.bottom.SetTop(y + height - (dragBorder / 2))
-			m.rightBottom.SetLeft(x + width - (dragBorder / 2))
-			m.rightBottom.SetTop(y + height - (dragBorder / 2))
+			m.right.SetLeft(x + width - db)
+			m.right.SetTop(y + (height / 2) - db)
+			m.bottom.SetLeft(x + (width / 2) - db)
+			m.bottom.SetTop(y + height - db)
+			m.rightBottom.SetLeft(x + width - db)
+			m.rightBottom.SetTop(y + height - db)
 		}
 	}
 }
