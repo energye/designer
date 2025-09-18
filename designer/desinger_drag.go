@@ -16,9 +16,20 @@ const (
 	DsRightBottom                       // 显示 右 右下 下
 )
 
+const (
+	DLeft = iota
+	DTop
+	DRight
+	DBottom
+	DLeftTop
+	DRightTop
+	DLeftBottom
+	DRightBottom
+)
+
 type drag struct {
 	relation    lcl.IControl   // 关联的控件
-	ds          DragShowStatus // 显示状态
+	ds          DragShowStatus // 显示方向
 	left        lcl.IPanel
 	top         lcl.IPanel
 	right       lcl.IPanel
@@ -29,7 +40,7 @@ type drag struct {
 	rightBottom lcl.IPanel
 }
 
-func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor) lcl.IPanel {
+func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
 	pnl.SetParent(owner)
 	pnl.SetWidth(dragBorder)
@@ -42,14 +53,46 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor) lcl.IPa
 	pnl.SetShowHint(true)
 	pnl.SetHint(strconv.Itoa(int(cursor)))
 	pnl.SetCursor(cursor)
-	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 
+	var (
+		isDown             bool
+		dx, dy             int32
+		dcx, dcy, dcw, dch int32
+	)
+	_, _ = dx, dy
+	_, _, _, _ = dcx, dcy, dcw, dch
+	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+		if isDown {
+			//br := m.relation.BoundsRect()
+			//width, _ := br.Width(), br.Height()
+			switch d {
+			case DLeft:
+				x := X - dx
+				w := dcw - x
+				//m.relation.SetLeft(dcx + x)
+				//m.relation.SetWidth(dcw - x)
+				m.relation.SetBounds(dcx+x, dcy, w, dch)
+			case DTop:
+			case DRight:
+			case DBottom:
+			case DLeftTop:
+			case DRightTop:
+			case DLeftBottom:
+			case DRightBottom:
+			}
+			//m.Follow()
+		}
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-
+		dx, dy = X, Y
+		br := m.relation.BoundsRect()
+		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
+		isDown = true
+		println("SetOnMouseDown")
 	})
 	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-
+		isDown = false
+		println("SetOnMouseUp")
 	})
 	return pnl
 }
@@ -58,18 +101,18 @@ func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
 	m := new(drag)
 	m.ds = ds
 	if m.ds == DsAll {
-		m.left = m.newDragPanel(owner, types.CrSizeWE)
-		m.top = m.newDragPanel(owner, types.CrSizeNS)
-		m.right = m.newDragPanel(owner, types.CrSizeWE)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS)
-		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE)
-		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW)
-		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE)
+		m.left = m.newDragPanel(owner, types.CrSizeWE, DLeft)
+		m.top = m.newDragPanel(owner, types.CrSizeNS, DTop)
+		m.right = m.newDragPanel(owner, types.CrSizeWE, DRight)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS, DBottom)
+		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE, DLeftTop)
+		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW, DRightTop)
+		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW, DLeftBottom)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, DRightBottom)
 	} else {
-		m.right = m.newDragPanel(owner, types.CrSizeWE)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE)
+		m.right = m.newDragPanel(owner, types.CrSizeWE, DRight)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS, DBottom)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, DRightBottom)
 	}
 	return m
 }
@@ -142,29 +185,18 @@ func (m *drag) Follow() {
 		_ = width
 		db := dragBorder / 2
 		if m.ds == DsAll {
-			m.left.SetLeft(x - db)
-			m.left.SetTop(y + (height / 2) - db)
-			m.top.SetLeft(x + (width / 2) - db)
-			m.top.SetTop(y - db)
-			m.right.SetLeft(x + width - db)
-			m.right.SetTop(y + (height / 2) - db)
-			m.bottom.SetLeft(x + (width / 2) - db)
-			m.bottom.SetTop(y + height - db)
-			m.leftTop.SetLeft(x - db)
-			m.leftTop.SetTop(y - db)
-			m.rightTop.SetLeft(x + width - db)
-			m.rightTop.SetTop(y - db)
-			m.rightBottom.SetLeft(x + width - db)
-			m.rightBottom.SetTop(y + height - db)
-			m.leftBottom.SetLeft(x - db)
-			m.leftBottom.SetTop(y + height - db)
+			m.left.SetBounds(x-db, y+(height/2)-db, dragBorder, dragBorder)
+			m.top.SetBounds(x+(width/2)-db, y-db, dragBorder, dragBorder)
+			m.right.SetBounds(x+width-db, y+(height/2)-db, dragBorder, dragBorder)
+			m.bottom.SetBounds(x+(width/2)-db, y+height-db, dragBorder, dragBorder)
+			m.leftTop.SetBounds(x-db, y-db, dragBorder, dragBorder)
+			m.rightTop.SetBounds(x+width-db, y-db, dragBorder, dragBorder)
+			m.rightBottom.SetBounds(x+width-db, y+height-db, dragBorder, dragBorder)
+			m.leftBottom.SetBounds(x-db, y+height-db, dragBorder, dragBorder)
 		} else {
-			m.right.SetLeft(x + width - db)
-			m.right.SetTop(y + (height / 2) - db)
-			m.bottom.SetLeft(x + (width / 2) - db)
-			m.bottom.SetTop(y + height - db)
-			m.rightBottom.SetLeft(x + width - db)
-			m.rightBottom.SetTop(y + height - db)
+			m.right.SetBounds(x+width-db, y+(height/2)-db, dragBorder, dragBorder)
+			m.bottom.SetBounds(x+(width/2)-db, y+height-db, dragBorder, dragBorder)
+			m.rightBottom.SetBounds(x+width-db, y+height-db, dragBorder, dragBorder)
 		}
 	}
 }
