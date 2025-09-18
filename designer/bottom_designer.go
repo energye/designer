@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	designer *Designer
-	margin   int32 = 40
+	designer    *Designer
+	margin      int32 = 40
+	borderWidth int32 = 8
 )
 
 // 窗体设计功能
@@ -25,10 +26,12 @@ type FormTab struct {
 	id                   int            // 索引, 关联 forms key: index
 	name                 string         // 窗体名称
 	scroll               lcl.IScrollBox // 外 滚动条
-	bg                   lcl.IPanel
-	sheet                lcl.ITabSheet // tab sheet
-	designerBox          lcl.IPanel    // 设计器
-	isDown, isUp, isMove bool
+	bg                   lcl.IPanel     //
+	sheet                lcl.ITabSheet  // tab sheet
+	designerBox          lcl.IPanel     // 设计器
+	isDown, isUp, isMove bool           // 鼠标事件
+	dragForm             *drag          // 拖拽窗体控制器
+	dragComponent        *drag          // 拖拽控件控制器
 }
 
 // 创建主窗口设计器的布局
@@ -77,7 +80,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet.SetParent(m.page)
 	form.sheet.SetCaption(formName)
-	form.sheet.SetAlign(types.AlClient)
+	//form.sheet.SetAlign(types.AlClient)
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
 	form.scroll.SetParent(form.sheet)
@@ -86,15 +89,17 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetColor(colors.ClWhite)
 	form.scroll.SetDoubleBuffered(true)
-	form.scroll.HorzScrollBar().SetIncrement(1)
-	form.scroll.VertScrollBar().SetIncrement(1)
+	//form.scroll.HorzScrollBar().SetIncrement(1)
+	//form.scroll.VertScrollBar().SetIncrement(1)
 
-	//form.bg = lcl.NewPanel(form.scroll)
-	//form.bg.SetParent(form.scroll)
-	//form.bg.SetAlign(types.AlClient)
+	newStatusBar(form.scroll)
 
-	form.designerBox = lcl.NewPanel(form.scroll)
-	form.designerBox.SetParent(form.scroll)
+	form.bg = lcl.NewPanel(form.scroll)
+	form.bg.SetParent(form.scroll)
+	form.bg.SetAlign(types.AlClient)
+
+	form.designerBox = lcl.NewPanel(form.bg)
+	form.designerBox.SetParent(form.bg)
 	form.designerBox.SetBevelOuter(types.BvNone)
 	form.designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
 	form.designerBox.SetDoubleBuffered(true)
@@ -105,10 +110,19 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.designerBox.SetWidth(600)
 	form.designerBox.SetHeight(400)
 	form.designerBox.SetAlign(types.AlCustom)
-	//form.designerBox.SetOnPaint(form.designerOnPaint)
+	form.designerBox.SetOnPaint(form.designerOnPaint)
 	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)
 	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
+
+	// 窗体拖拽大小
+	form.dragForm = newDrag(form.bg, DsRightBottom)
+	form.dragForm.SetRelation(form.designerBox)
+	form.dragForm.Show()
+	form.dragForm.Follow()
+
+	// 控件拖拽大小
+	form.dragComponent = newDrag(form.designerBox, DsAll)
 
 	// 测试控件
 	testBtn := lcl.NewButton(form.designerBox)
@@ -116,6 +130,9 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	testBtn.SetLeft(50)
 	testBtn.SetTop(50)
 	testBtn.SetCaption("测试按钮")
+	form.dragComponent.SetRelation(testBtn)
+	form.dragComponent.Show()
+	form.dragComponent.Follow()
 
 	return form
 }
@@ -125,31 +142,49 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	m.page.SetActivePage(tab.sheet)
 }
 
-func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
-func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
-func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
+func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
+	//width, height := m.designerBox.Width(), m.designerBox.Height()
+	{
 
+	}
 }
 
 func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 	// 绘制刻度
-	// m.scrollDrawRuler() // 有问题不要了
+	m.scrollDrawRuler() // 有问题不要了
 	// 绘制网格
+	m.drawGrid()
+}
+func (m *FormTab) drawGrid() {
+	gridSize := 9 // 小刻度
+	canvas := m.designerBox.Canvas()
+	canvas.PenToPen().SetColor(colors.ClBlack)
+	width, height := m.designerBox.Width(), m.designerBox.Height()
+	for i := 1; i < int(width)/gridSize; i++ {
+		x := int32(i * gridSize)
+		for j := 1; j < int(height)/gridSize; j++ {
+			y := int32(j * gridSize)
+			canvas.SetPixels(x, y, colors.ClBlack)
+		}
+	}
 }
 
 // 绘制刻度尺, 在外层 scroll 上
 func (m *FormTab) scrollDrawRuler() {
-	gridSize := 5 // 10px 一个小刻度
+	gridSize := 5 // 小刻度
 	canvas := m.bg.Canvas()
+	//canvas := m.scroll.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
 	width, height := m.designerBox.Width(), m.designerBox.Height()
-	println("width, height:", width, height)
+	//println("width, height:", width, height)
 	// X
 	for i := 0; i <= int(width)/gridSize; i++ {
 		x := int32(i * gridSize)

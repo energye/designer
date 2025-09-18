@@ -43,7 +43,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	// 创建设计器布局
 	m.createDesignerLayout()
 	// status bar
-	m.createStatusBar()
+	//newStatusBar(m)
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
