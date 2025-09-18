@@ -130,6 +130,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	testBtn.SetTop(50)
 	testBtn.SetCaption("测试按钮")
 	testBtn.SetDesignerDeleting(true)
+
 	testBtnDrag := newDrag(form.designerBox, DsAll)
 	testBtnDrag.SetRelation(testBtn)
 	testBtnDrag.Show()
@@ -137,6 +138,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 
 	testEdit := lcl.NewEdit(form.designerBox)
 	testEdit.SetParent(form.designerBox)
+	//form.designerBox.InsertControlWithControl(testEdit)
 	testEdit.SetLeft(150)
 	testEdit.SetTop(150)
 	testEditDrag := newDrag(form.designerBox, DsAll)
@@ -229,6 +231,12 @@ func (m *FormTab) scrollDrawRuler() {
 			canvas.LineWithIntX4(margin-15, y, margin-10, y)
 		}
 	}
+}
+func SetDesignMode(component lcl.IControl) {
+	//lcl.SetDesigningComponent().SetComponentDesignMode(component, true)
+	//lcl.SetDesigningComponent().SetComponentDesignInstanceMode(component, true)
+	//lcl.SetDesigningComponent().SetComponentInlineMode(component, true)
+	//lcl.SetDesigningComponent().SetWidgetSetDesigning(component)
 }
 
 // 测试属性

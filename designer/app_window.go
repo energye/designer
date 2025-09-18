@@ -44,6 +44,10 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.createDesignerLayout()
 	// status bar
 	//newStatusBar(m)
+
+	//lcl.SetDesigningComponent().SetComponentDesignMode(m, true)
+	//lcl.SetDesigningComponent().SetComponentDesignInstanceMode(m, true)
+	//lcl.SetDesigningComponent().SetWidgetSetDesigning(m)
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
