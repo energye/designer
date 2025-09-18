@@ -63,16 +63,21 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	_, _, _, _ = dcx, dcy, dcw, dch
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 		if isDown {
-			//br := m.relation.BoundsRect()
-			//width, _ := br.Width(), br.Height()
 			switch d {
 			case DLeft:
 				x := X - dx
 				w := dcw - x
 				m.relation.SetBounds(dcx+x, dcy, w, dch)
 			case DTop:
+				y := Y - dy
+				h := dch - y
+				m.relation.SetBounds(dcx, dcy+y, dcw, h)
 			case DRight:
+				x := X - dx
+				m.relation.SetBounds(dcx, dcy, dcw+x, dch)
 			case DBottom:
+				y := Y - dy
+				m.relation.SetBounds(dcx, dcy, dcw, dch+y)
 			case DLeftTop:
 			case DRightTop:
 			case DLeftBottom:

@@ -122,7 +122,6 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.dragForm.Follow()
 
 	// 控件拖拽大小
-	form.dragComponent = newDrag(form.designerBox, DsAll)
 
 	// 测试控件
 	testBtn := lcl.NewButton(form.designerBox)
@@ -131,9 +130,19 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	testBtn.SetTop(50)
 	testBtn.SetCaption("测试按钮")
 	testBtn.SetDesignerDeleting(true)
-	form.dragComponent.SetRelation(testBtn)
-	form.dragComponent.Show()
-	form.dragComponent.Follow()
+	testBtnDrag := newDrag(form.designerBox, DsAll)
+	testBtnDrag.SetRelation(testBtn)
+	testBtnDrag.Show()
+	testBtnDrag.Follow()
+
+	testEdit := lcl.NewEdit(form.designerBox)
+	testEdit.SetParent(form.designerBox)
+	testEdit.SetLeft(150)
+	testEdit.SetTop(150)
+	testEditDrag := newDrag(form.designerBox, DsAll)
+	testEditDrag.SetRelation(testEdit)
+	testEditDrag.Show()
+	testEditDrag.Follow()
 
 	return form
 }
@@ -155,7 +164,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 }
 
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	lcl.Screen.SetCursor(types.CrDefault)
+	//lcl.Screen.SetCursor(types.CrDefault)
 	//width, height := m.designerBox.Width(), m.designerBox.Height()
 	{
 
@@ -189,7 +198,7 @@ func (m *FormTab) scrollDrawRuler() {
 	//canvas := m.scroll.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
 	width, height := m.designerBox.Width(), m.designerBox.Height()
-	//println("width, height:", width, height)
+	println("width, height:", width, height)
 	// X
 	for i := 0; i <= int(width)/gridSize; i++ {
 		x := int32(i * gridSize)
