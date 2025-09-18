@@ -10,7 +10,7 @@ import (
 
 var (
 	designer    *Designer
-	margin      int32 = 40
+	margin      int32 = 5
 	borderWidth int32 = 8
 )
 
@@ -23,15 +23,16 @@ type Designer struct {
 }
 
 type FormTab struct {
-	id                   int            // 索引, 关联 forms key: index
-	name                 string         // 窗体名称
-	scroll               lcl.IScrollBox // 外 滚动条
-	bg                   lcl.IPanel     //
-	sheet                lcl.ITabSheet  // tab sheet
-	designerBox          lcl.IPanel     // 设计器
-	isDown, isUp, isMove bool           // 鼠标事件
-	dragForm             *drag          // 拖拽窗体控制器
-	dragComponent        *drag          // 拖拽控件控制器
+	id                   int                   // 索引, 关联 forms key: index
+	name                 string                // 窗体名称
+	scroll               lcl.IScrollBox        // 外 滚动条
+	bg                   lcl.IPanel            //
+	sheet                lcl.ITabSheet         // tab sheet
+	designerBox          lcl.IPanel            // 设计器
+	isDown, isUp, isMove bool                  // 鼠标事件
+	dragForm             *drag                 // 拖拽窗体控制器
+	componentName        map[string]int        // 组件分类名
+	componentList        []*DesigningComponent // 组件列表
 }
 
 // 创建主窗口设计器的布局
@@ -75,6 +76,7 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	formName := fmt.Sprintf("Form%d", id) // 默认名
 	form.name = formName
 	form.id = id
+	form.componentName = make(map[string]int)
 	m.forms[id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
@@ -121,35 +123,11 @@ func (m *Designer) newFormDesignerTab() *FormTab {
 	form.dragForm.Show()
 	form.dragForm.Follow()
 
-	// 控件拖拽大小
-
 	// 测试控件
-	testBtn := lcl.NewButton(form.designerBox)
-	testBtn.SetParent(form.designerBox)
-	testBtn.SetLeft(50)
-	testBtn.SetTop(50)
-	testBtn.SetCaption("测试按钮")
-	testBtn.SetDesignerDeleting(true)
-
-	testBtnDrag := newDrag(form.designerBox, DsAll)
-	testBtnDrag.SetRelation(testBtn)
-	testBtnDrag.Show()
-	testBtnDrag.Follow()
-
-	testEdit := lcl.NewEdit(form.designerBox)
-	testEdit.SetParent(form.designerBox)
-	//form.designerBox.InsertControlWithControl(testEdit)
-	testEdit.SetLeft(150)
-	testEdit.SetTop(150)
-	testEditDrag := newDrag(form.designerBox, DsAll)
-	testEditDrag.SetRelation(testEdit)
-	testEditDrag.Show()
-	testEditDrag.Follow()
+	NewButtonDesigner(form, 50, 50)
+	NewEditDesigner(form, 150, 150)
 
 	return form
-}
-func (m *Designer) NewDragComponent() {
-
 }
 
 // 激活指定的 tab
@@ -157,12 +135,18 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	m.page.SetActivePage(tab.sheet)
 }
 
+func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
+	m.componentList = append(m.componentList, component)
+}
+
 func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-
+	for _, component := range m.componentList {
+		component.drag.Hide()
+	}
 }
 
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
@@ -173,12 +157,24 @@ func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftStat
 	}
 }
 
+// 获取组件名 Caption
+func (m *FormTab) GetComponentCaptionName(component string) string {
+	if c, ok := m.componentName[component]; ok {
+		m.componentName[component] = c + 1
+	} else {
+		m.componentName[component] = 1
+	}
+	component = fmt.Sprintf("%v%d", component, m.componentName[component])
+	return component
+}
+
 func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 	// 绘制刻度
-	m.scrollDrawRuler() // 有问题不要了
+	//m.scrollDrawRuler() // 有问题不要了
 	// 绘制网格
 	m.drawGrid()
 }
+
 func (m *FormTab) drawGrid() {
 	gridSize := 9 // 小刻度
 	canvas := m.designerBox.Canvas()
