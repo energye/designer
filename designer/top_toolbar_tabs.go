@@ -19,10 +19,11 @@ type ComponentTab struct {
 
 // 组件选项卡 组件项
 type ComponentTabItem struct {
-	owner *ComponentTab
-	index int
-	name  string
-	btn   lcl.IToolButton
+	owner                   *ComponentTab
+	index                   int // tab 面板组件图标索引
+	inspectorTreeImageIndex int // 查看器组件树图标索引
+	name                    string
+	btn                     lcl.IToolButton
 }
 
 // 组件选项卡
@@ -37,6 +38,7 @@ func (m *TopToolbar) createComponentTabs() {
 		m.ResetTabComponentDown()
 	})
 
+	inspectorTreeImageIndex := 0 // 查看器组件树图片索引
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
 		compTab := &ComponentTab{components: make(map[string]*ComponentTabItem)}
@@ -85,8 +87,9 @@ func (m *TopToolbar) createComponentTabs() {
 			btn.SetHint(name)
 			btn.SetImageIndex(int32(imageIndex))
 			btn.SetShowHint(true)
-			comp = &ComponentTabItem{owner: compTab, index: i, name: name, btn: btn}
+			comp = &ComponentTabItem{owner: compTab, index: i, inspectorTreeImageIndex: inspectorTreeImageIndex, name: name, btn: btn}
 			compTab.components[name] = comp
+			inspectorTreeImageIndex++
 		}
 		compTab.BindToolBtnEvent()
 	}
