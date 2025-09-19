@@ -142,10 +142,6 @@ func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
 	m.componentList = append(m.componentList, component)
 }
 
-func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-
-}
-
 // 隐藏所有控件的 drag
 func (m *FormTab) hideAllDrag() {
 	for _, component := range m.componentList {
@@ -156,6 +152,10 @@ func (m *FormTab) hideAllDrag() {
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	m.hideAllDrag()
 	// 创建组件
+	fmt.Println("创建组件")
+}
+
+func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
