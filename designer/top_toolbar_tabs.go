@@ -16,6 +16,7 @@ type ComponentTab struct {
 }
 
 type Component struct {
+	owner *ComponentTab
 	index int
 	name  string
 	btn   lcl.IToolButton
@@ -75,7 +76,7 @@ func (m *TopToolbar) createComponentTabs() {
 			btn.SetHint(name)
 			btn.SetImageIndex(int32(imageIndex))
 			btn.SetShowHint(true)
-			comp := &Component{index: i, name: name, btn: btn}
+			comp := &Component{owner: compTab, index: i, name: name, btn: btn}
 			compTab.components[name] = comp
 		}
 		compTab.BindToolBtnEvent()
@@ -99,12 +100,31 @@ func (m *ComponentTab) BindToolBtnEvent() {
 	}
 }
 
+func (m *ComponentTab) UnDownComponents() {
+	for _, com := range m.components {
+		com.btn.SetDown(false)
+	}
+}
+
+func (m *ComponentTab) UnDownSelectTool() {
+	m.selectToolBtn.SetDown(false)
+}
+
+func (m *ComponentTab) DownSelectTool() {
+	m.selectToolBtn.SetDown(true)
+}
+
 // 选择工具按钮事件
 func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 	fmt.Println("SelectToolBtnOnClick")
+	m.UnDownComponents()
+	m.DownSelectTool()
 }
 
 // 组件按钮事件
 func (m *Component) ComponentBtnOnClick(sender lcl.IObject) {
 	fmt.Println("ToolBtnOnClick", m.index, m.name)
+	m.owner.UnDownComponents()
+	m.owner.UnDownSelectTool()
+	m.btn.SetDown(true)
 }

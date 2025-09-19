@@ -49,6 +49,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	m.isDown = false
 }
 
+// 创建设计按钮
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.owner = designerForm
@@ -73,6 +74,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	return m
 }
 
+// 创建设计编辑框
 func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.owner = designerForm
