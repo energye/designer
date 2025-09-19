@@ -1,25 +1,23 @@
 package designer
 
 import (
-	"fmt"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"strings"
 )
 
 // 顶部工具栏
 
 type TopToolbar struct {
-	page      lcl.IPageControl
-	box       lcl.IPanel
-	leftTools lcl.IPanel
-	splitter  lcl.ISplitter // 分割线
-	rightTabs lcl.IPanel    // 组件面板选项卡
+	page          lcl.IPageControl
+	box           lcl.IPanel
+	leftTools     lcl.IPanel
+	splitter      lcl.ISplitter // 分割线
+	rightTabs     lcl.IPanel    // 组件面板选项卡
+	componentTabs map[string]*ComponentTab
 }
 
 func (m *TAppWindow) createTopToolbar() {
-	bar := &TopToolbar{}
+	bar := &TopToolbar{componentTabs: make(map[string]*ComponentTab)}
 	m.toolbar = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
@@ -120,72 +118,5 @@ func (m *TopToolbar) createToolBarBtns() {
 	runFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
-
-}
-
-// 组件选项卡
-func (m *TopToolbar) createComponentTabs() {
-	page := lcl.NewPageControl(m.box)
-	page.SetParent(m.rightTabs)
-	page.SetAlign(types.AlClient)
-	page.SetTabStop(true)
-	m.page = page
-
-	// 创建组件选项卡
-	newComponentTab := func(tab config.Tab) {
-		standard := lcl.NewTabSheet(page)
-		standard.SetParent(page)
-		standard.SetCaption(tab.Cn)
-		standard.SetAlign(types.AlClient)
-		// 组件图标
-		var imageList []string
-		imageList = append(imageList, "components/cursortool_150.png")
-		for _, name := range tab.Component {
-			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
-		}
-		// 显示组件工具按钮
-		toolbar := lcl.NewToolBar(standard)
-		toolbar.SetParent(standard)
-		toolbar.SetImages(LoadImageList(m.rightTabs, imageList, 36, 36))
-		toolbar.SetButtonWidth(36)
-		toolbar.SetButtonHeight(36)
-		toolbar.SetHeight(36)
-		toolbar.SetEdgeBorders(types.NewSet())
-
-		// 选择工具 鼠标
-		selectToolBtn := lcl.NewToolButton(toolbar)
-		selectToolBtn.SetParent(toolbar)
-		selectToolBtn.SetHint("选择工具")
-		selectToolBtn.SetImageIndex(int32(0))
-		selectToolBtn.SetShowHint(true)
-
-		seap := lcl.NewToolButton(toolbar)
-		seap.SetParent(toolbar)
-		seap.SetStyle(types.TbsSeparator)
-
-		// 创建组件按钮
-		for i, name := range tab.Component {
-			imageIndex := i + 1
-			btn := lcl.NewToolButton(toolbar)
-			btn.SetParent(toolbar)
-			btn.SetHint(name)
-			btn.SetImageIndex(int32(imageIndex))
-			btn.SetShowHint(true)
-			cIdx, cName := imageIndex, name
-			btn.SetOnClick(func(sender lcl.IObject) {
-				println(cIdx, cName)
-			})
-		}
-
-	}
-	// 创建组件选项卡
-	newComponentTab(config.Config.ComponentTabs.Standard)
-	newComponentTab(config.Config.ComponentTabs.Additional)
-	newComponentTab(config.Config.ComponentTabs.Common)
-	newComponentTab(config.Config.ComponentTabs.Dialogs)
-	newComponentTab(config.Config.ComponentTabs.Misc)
-	newComponentTab(config.Config.ComponentTabs.System)
-	newComponentTab(config.Config.ComponentTabs.LazControl)
-	newComponentTab(config.Config.ComponentTabs.WebView)
 
 }
