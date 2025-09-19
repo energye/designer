@@ -5,6 +5,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"log"
 	"strings"
 	"unsafe"
 )
@@ -24,13 +25,15 @@ type InspectorComponentTree struct {
 	treeFilter lcl.ITreeFilterEdit   // 组件树过滤框
 	tree       lcl.ITreeView         // 组件树
 	images     lcl.IImageList        // 树图标
-	root       lcl.ITreeNode         // 根 form 窗体
+	root       *TreeNodeData         // 根 form 窗体
 	nodeData   map[int]*TreeNodeData // 组件树节点数据
 }
 
 type TreeNodeData struct {
+	owner     *InspectorComponentTree
 	id        int
 	iconIndex int32
+	node      lcl.ITreeNode
 }
 
 func (m *TreeNodeData) instance() uintptr {
@@ -74,36 +77,64 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		eachTabName(config.Config.ComponentTabs.LazControl)
 		eachTabName(config.Config.ComponentTabs.WebView)
 		images = append(images, "components/form.png")
-		m.images = LoadImageList(m.treeBox, images, 16, 16)
+		m.images = LoadImageList(m.treeBox, images, 20, 20)
 	}
 
 	m.tree = lcl.NewTreeView(m.treeBox)
 	m.tree.SetParent(m.treeBox)
+	m.tree.SetAutoExpand(true)
 	m.tree.SetTop(35)
 	m.tree.SetWidth(leftBoxWidth)
 	m.tree.SetHeight(componentTreeHeight - m.tree.Top())
-	m.tree.SetReadOnly(true)
+	//m.tree.SetReadOnly(true)
 	m.tree.SetAlign(types.AlCustom)
 	m.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	m.tree.SetImages(m.images)
 	m.tree.SetOnGetSelectedIndex(func(sender lcl.IObject, node lcl.ITreeNode) {
-		fmt.Println("SetOnGetSelectedIndex")
 		dataPtr := node.Data()
 		data := m.DataToTreeNodeData(dataPtr)
-		fmt.Println(data)
 		node.SetSelectedIndex(data.iconIndex)
+		log.Println("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
 	})
 
 	// 测试
-	m.AddTreeItem("Form1: TForm")
+	root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
+	s1 := root.AddChild("Test", 1)
+	s1.AddChild("Tes1t", 2)
+	s1.AddChild("Test2", 3)
 }
 
-func (m *InspectorComponentTree) AddTreeItem(name string) {
-	if m.root == nil {
-		data := &TreeNodeData{id: nextTreeDataId(), iconIndex: m.images.Count() - 1}
+func (m *TreeNodeData) AddChild(name string, iconIndex int32) *TreeNodeData {
+	return m.owner.AddTreeNodeItem(m, name, iconIndex)
+}
+
+func (m *TreeNodeData) Remove() {
+	//owner:=m.owner
+	//m.owner=nil
+}
+
+func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name string, iconIndex int32) *TreeNodeData {
+	m.tree.BeginUpdate()
+	defer m.tree.EndUpdate()
+	items := m.tree.Items()
+	if m.root == nil && parent == nil { // 窗体 根菜单
+		data := &TreeNodeData{owner: m, id: nextTreeDataId(), iconIndex: m.images.Count() - 1}
 		m.nodeData[data.id] = data
-		m.root = m.tree.Items().Add(nil, name)
-		m.root.SetData(data.instance())
-		m.root.SetImageIndex(data.iconIndex)
+		node := items.AddChild(nil, name)
+		data.node = node
+		node.SetImageIndex(data.iconIndex)
+		node.SetSelected(true)
+		node.SetData(data.instance())
+		m.root = data
+		return data
+	} else { // 控件 子节点
+		data := &TreeNodeData{owner: m, id: nextTreeDataId(), iconIndex: iconIndex}
+		m.nodeData[data.id] = data
+		node := items.AddChild(parent.node, name)
+		data.node = node
+		node.SetImageIndex(iconIndex)
+		node.SetSelected(true)
+		node.SetData(data.instance())
+		return data
 	}
 }

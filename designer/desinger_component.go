@@ -17,6 +17,7 @@ type DesigningComponent struct {
 	isDown   bool
 }
 
+// 设计组件鼠标移动
 func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 	br := m.object.BoundsRect()
 	hint := fmt.Sprintf(`%v: %v
