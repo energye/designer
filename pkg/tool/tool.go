@@ -6,6 +6,9 @@ import (
 )
 
 func ImageListAddPng(imageList lcl.IImageList, filePath string) {
+	if filePath == "" {
+		return
+	}
 	data := resources.Images(filePath)
 	if data != nil {
 		pic := lcl.NewPicture()

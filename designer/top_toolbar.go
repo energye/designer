@@ -139,7 +139,7 @@ func (m *TopToolbar) createComponentTabs() {
 		standard.SetAlign(types.AlClient)
 		// 组件图标
 		var imageList []string
-		imageList = append(imageList, "components/cursor_tool_150.png")
+		imageList = append(imageList, "components/cursortool_150.png")
 		for _, name := range tab.Component {
 			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
 		}
@@ -152,6 +152,7 @@ func (m *TopToolbar) createComponentTabs() {
 		toolbar.SetHeight(36)
 		toolbar.SetEdgeBorders(types.NewSet())
 
+		// 选择工具 鼠标
 		selectToolBtn := lcl.NewToolButton(toolbar)
 		selectToolBtn.SetParent(toolbar)
 		selectToolBtn.SetHint("选择工具")
