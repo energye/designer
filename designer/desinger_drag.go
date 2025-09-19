@@ -82,9 +82,25 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				y := Y - dy
 				m.relation.SetBounds(dcx, dcy, dcw, dch+y)
 			case DLeftTop:
+				x := X - dx
+				w := dcw - x
+				y := Y - dy
+				h := dch - y
+				m.relation.SetBounds(dcx+x, dcy+y, w, h)
 			case DRightTop:
+				y := Y - dy
+				h := dch - y
+				x := X - dx
+				m.relation.SetBounds(dcx, dcy+y, dcw+x, h)
 			case DLeftBottom:
+				x := X - dx
+				w := dcw - x
+				y := Y - dy
+				m.relation.SetBounds(dcx+x, dcy, w, dch+y)
 			case DRightBottom:
+				x := X - dx
+				y := Y - dy
+				m.relation.SetBounds(dcx, dcy, dcw+x, dch+y)
 			}
 		}
 	})
