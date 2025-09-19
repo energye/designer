@@ -154,7 +154,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 	m.hideAllDrag()
 	// 创建组件
 	fmt.Println("创建组件")
-
+	//mainWindow.toolbar.componentTabs
 }
 
 // 窗体设计界面 鼠标抬起

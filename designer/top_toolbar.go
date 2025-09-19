@@ -7,18 +7,20 @@ import (
 
 // 顶部工具栏
 
+var toolbar *TopToolbar
+
 type TopToolbar struct {
 	page          lcl.IPageControl
 	box           lcl.IPanel
 	leftTools     lcl.IPanel
-	splitter      lcl.ISplitter // 分割线
-	rightTabs     lcl.IPanel    // 组件面板选项卡
-	componentTabs map[string]*ComponentTab
+	splitter      lcl.ISplitter            // 分割线
+	rightTabs     lcl.IPanel               // 组件面板选项卡
+	componentTabs map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
 }
 
 func (m *TAppWindow) createTopToolbar() {
 	bar := &TopToolbar{componentTabs: make(map[string]*ComponentTab)}
-	m.toolbar = bar
+	toolbar = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
 	bar.box.SetParent(m)
@@ -63,17 +65,17 @@ func (m *TAppWindow) createTopToolbar() {
 
 // 工具按钮
 func (m *TopToolbar) createToolBarBtns() {
-	toolbar := lcl.NewToolBar(m.box)
-	toolbar.SetParent(m.leftTools)
-	toolbar.SetAlign(types.AlCustom)
-	toolbar.SetTop(15)
-	toolbar.SetButtonWidth(32)
-	toolbar.SetButtonHeight(32)
-	toolbar.SetHeight(32)
-	toolbar.SetWidth(m.leftTools.Width())
-	toolbar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
-	toolbar.SetEdgeBorders(types.NewSet())
-	toolbar.SetImages(LoadImageList(m.leftTools, []string{
+	toolBtnBar := lcl.NewToolBar(m.box)
+	toolBtnBar.SetParent(m.leftTools)
+	toolBtnBar.SetAlign(types.AlCustom)
+	toolBtnBar.SetTop(15)
+	toolBtnBar.SetButtonWidth(32)
+	toolBtnBar.SetButtonHeight(32)
+	toolBtnBar.SetHeight(32)
+	toolBtnBar.SetWidth(m.leftTools.Width())
+	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
+	toolBtnBar.SetEdgeBorders(types.NewSet())
+	toolBtnBar.SetImages(LoadImageList(m.leftTools, []string{
 		"menu/menu_new_form_150.png",
 		"menu/menu_project_open_150.png",
 		"actions/laz_save_150.png",
@@ -82,14 +84,14 @@ func (m *TopToolbar) createToolBarBtns() {
 	}, 24, 24))
 
 	newSepa := func() {
-		seap := lcl.NewToolButton(toolbar)
-		seap.SetParent(toolbar)
+		seap := lcl.NewToolButton(toolBtnBar)
+		seap.SetParent(toolBtnBar)
 		seap.SetStyle(types.TbsSeparator)
 	}
 
 	newBtn := func(imageIndex int32, hint string) lcl.IToolButton {
-		btn := lcl.NewToolButton(toolbar)
-		btn.SetParent(toolbar)
+		btn := lcl.NewToolButton(toolBtnBar)
+		btn.SetParent(toolBtnBar)
 		btn.SetHint(hint)
 		btn.SetImageIndex(imageIndex)
 		btn.SetShowHint(true)

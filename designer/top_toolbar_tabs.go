@@ -49,18 +49,18 @@ func (m *TopToolbar) createComponentTabs() {
 			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
 		}
 		// 显示组件工具按钮
-		toolbar := lcl.NewToolBar(sheet)
-		toolbar.SetParent(sheet)
-		toolbar.SetImages(LoadImageList(m.rightTabs, imageList, 36, 36))
-		toolbar.SetButtonWidth(36)
-		toolbar.SetButtonHeight(36)
-		toolbar.SetHeight(36)
-		toolbar.SetEdgeBorders(types.NewSet())
-		compTab.toolbar = toolbar
+		componentToolbar := lcl.NewToolBar(sheet)
+		componentToolbar.SetParent(sheet)
+		componentToolbar.SetImages(LoadImageList(m.rightTabs, imageList, 36, 36))
+		componentToolbar.SetButtonWidth(36)
+		componentToolbar.SetButtonHeight(36)
+		componentToolbar.SetHeight(36)
+		componentToolbar.SetEdgeBorders(types.NewSet())
+		compTab.toolbar = componentToolbar
 
 		// 选择工具 鼠标
-		selectToolBtn := lcl.NewToolButton(toolbar)
-		selectToolBtn.SetParent(toolbar)
+		selectToolBtn := lcl.NewToolButton(componentToolbar)
+		selectToolBtn.SetParent(componentToolbar)
 		selectToolBtn.SetHint("选择工具")
 		selectToolBtn.SetImageIndex(int32(0))
 		selectToolBtn.SetShowHint(true)
@@ -68,15 +68,15 @@ func (m *TopToolbar) createComponentTabs() {
 		compTab.components[comp.name] = comp
 		compTab.selectToolBtn = selectToolBtn
 
-		seap := lcl.NewToolButton(toolbar)
-		seap.SetParent(toolbar)
+		seap := lcl.NewToolButton(componentToolbar)
+		seap.SetParent(componentToolbar)
 		seap.SetStyle(types.TbsSeparator)
 
 		// 创建组件按钮
 		for i, name := range tab.Component {
 			imageIndex := i + 1
-			btn := lcl.NewToolButton(toolbar)
-			btn.SetParent(toolbar)
+			btn := lcl.NewToolButton(componentToolbar)
+			btn.SetParent(componentToolbar)
 			btn.SetHint(name)
 			btn.SetImageIndex(int32(imageIndex))
 			btn.SetShowHint(true)
