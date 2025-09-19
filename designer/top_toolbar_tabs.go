@@ -9,13 +9,13 @@ import (
 )
 
 type ComponentTab struct {
-	sheet      lcl.ITabSheet
-	toolbar    lcl.IToolBar
-	toolBtn    lcl.IToolButton
-	components map[string]*component
+	sheet         lcl.ITabSheet
+	toolbar       lcl.IToolBar
+	selectToolBtn lcl.IToolButton
+	components    map[string]*Component
 }
 
-type component struct {
+type Component struct {
 	index int
 	name  string
 	btn   lcl.IToolButton
@@ -31,7 +31,7 @@ func (m *TopToolbar) createComponentTabs() {
 
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
-		compTab := &ComponentTab{components: make(map[string]*component)}
+		compTab := &ComponentTab{components: make(map[string]*Component)}
 		m.componentTabs[tab.En] = compTab
 
 		sheet := lcl.NewTabSheet(page)
@@ -56,12 +56,12 @@ func (m *TopToolbar) createComponentTabs() {
 		compTab.toolbar = toolbar
 
 		// 选择工具 鼠标
-		toolBtn := lcl.NewToolButton(toolbar)
-		toolBtn.SetParent(toolbar)
-		toolBtn.SetHint("选择工具")
-		toolBtn.SetImageIndex(int32(0))
-		toolBtn.SetShowHint(true)
-		compTab.toolBtn = toolBtn
+		selectToolBtn := lcl.NewToolButton(toolbar)
+		selectToolBtn.SetParent(toolbar)
+		selectToolBtn.SetHint("选择工具")
+		selectToolBtn.SetImageIndex(int32(0))
+		selectToolBtn.SetShowHint(true)
+		compTab.selectToolBtn = selectToolBtn
 
 		seap := lcl.NewToolButton(toolbar)
 		seap.SetParent(toolbar)
@@ -75,8 +75,10 @@ func (m *TopToolbar) createComponentTabs() {
 			btn.SetHint(name)
 			btn.SetImageIndex(int32(imageIndex))
 			btn.SetShowHint(true)
-			compTab.components[name] = &component{index: i, name: name, btn: btn}
+			comp := &Component{index: i, name: name, btn: btn}
+			compTab.components[name] = comp
 		}
+		compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡
 	newComponentTab(config.Config.ComponentTabs.Standard)
@@ -87,4 +89,22 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.Config.ComponentTabs.System)
 	newComponentTab(config.Config.ComponentTabs.LazControl)
 	newComponentTab(config.Config.ComponentTabs.WebView)
+}
+
+// 绑定事件
+func (m *ComponentTab) BindToolBtnEvent() {
+	m.selectToolBtn.SetOnClick(m.SelectToolBtnOnClick)
+	for _, comp := range m.components {
+		comp.btn.SetOnClick(comp.ComponentBtnOnClick)
+	}
+}
+
+// 选择工具按钮事件
+func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
+	fmt.Println("SelectToolBtnOnClick")
+}
+
+// 组件按钮事件
+func (m *Component) ComponentBtnOnClick(sender lcl.IObject) {
+	fmt.Println("ToolBtnOnClick", m.index, m.name)
 }
