@@ -10,12 +10,13 @@ import (
 var toolbar *TopToolbar
 
 type TopToolbar struct {
-	page          lcl.IPageControl
-	box           lcl.IPanel
-	leftTools     lcl.IPanel
-	splitter      lcl.ISplitter            // 分割线
-	rightTabs     lcl.IPanel               // 组件面板选项卡
-	componentTabs map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
+	page            lcl.IPageControl
+	box             lcl.IPanel
+	leftTools       lcl.IPanel
+	splitter        lcl.ISplitter            // 分割线
+	rightTabs       lcl.IPanel               // 组件面板选项卡
+	componentTabs   map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
+	selectComponent *ComponentTabItem        // 选中的控件
 }
 
 func (m *TAppWindow) createTopToolbar() {
@@ -69,6 +70,10 @@ func (m *TopToolbar) ResetTabComponentDown() {
 		comp.UnDownComponents()
 		comp.DownSelectTool()
 	}
+}
+
+func (m *TopToolbar) SetSelectComponentItem(item *ComponentTabItem) {
+	m.selectComponent = item
 }
 
 // 工具按钮

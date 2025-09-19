@@ -5,6 +5,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"log"
 )
 
 var (
@@ -153,8 +154,19 @@ func (m *FormTab) hideAllDrag() {
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	m.hideAllDrag()
 	// 创建组件
-	fmt.Println("创建组件")
-	//mainWindow.toolbar.componentTabs
+	log.Println("鼠标点击设计器")
+	if toolbar.selectComponent != nil {
+		componentName := toolbar.selectComponent.name
+		log.Println("当前选中控件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
+		// 创建
+		if create := GetRegisterComponent(componentName); create != nil {
+			create(m, x, y)
+		} else {
+			log.Println("[警告] 当前选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
+		}
+		// 重置
+		toolbar.ResetTabComponentDown()
+	}
 }
 
 // 窗体设计界面 鼠标抬起

@@ -113,14 +113,17 @@ func (m *ComponentTab) UnDownComponents() {
 	for _, com := range m.components {
 		com.btn.SetDown(false)
 	}
+	toolbar.SetSelectComponentItem(nil)
 }
 
 func (m *ComponentTab) UnDownSelectTool() {
 	m.selectToolBtn.SetDown(false)
+	toolbar.SetSelectComponentItem(nil)
 }
 
 func (m *ComponentTab) DownSelectTool() {
 	m.selectToolBtn.SetDown(true)
+	toolbar.SetSelectComponentItem(nil)
 }
 
 // 选择工具按钮事件
@@ -128,6 +131,7 @@ func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 	fmt.Println("SelectToolBtnOnClick")
 	m.UnDownComponents()
 	m.DownSelectTool()
+	toolbar.SetSelectComponentItem(nil)
 }
 
 // 组件按钮事件
@@ -136,4 +140,5 @@ func (m *ComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
 	m.owner.UnDownComponents()
 	m.owner.UnDownSelectTool()
 	m.btn.SetDown(true)
+	toolbar.SetSelectComponentItem(m)
 }
