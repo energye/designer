@@ -67,7 +67,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 
 	AddOnShow(func() {
 		// 显示之后创建一个默认的设计面板
-		designer.newFormDesignerTab()
+		designer.addFormDesignerTab()
 	})
 
 	return box

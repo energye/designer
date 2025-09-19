@@ -69,8 +69,8 @@ func (m *Designer) createTabMenu() {
 	//m.page.SetPopupMenu(m.tabMenu)
 }
 
-// 创建窗体设计器 tab
-func (m *Designer) newFormDesignerTab() *FormTab {
+// 添加一个窗体设计器 tab
+func (m *Designer) addFormDesignerTab() *FormTab {
 	form := new(FormTab)
 	id := len(m.forms) + 1
 	formName := fmt.Sprintf("Form%d", id) // 默认名
