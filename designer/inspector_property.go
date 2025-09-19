@@ -29,6 +29,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.propertyFilter.SetAlign(types.AlCustom)
 	m.propertyFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 
+	// 属性树列表
 	m.property = lcl.NewLazVirtualDrawTree(m.propertyBox)
 	m.property.SetParent(m.propertyBox)
 	m.property.SetTop(32)
@@ -36,4 +37,6 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.property.SetHeight(m.propertyBox.Height() - m.property.Top())
 	m.property.SetAlign(types.AlCustom)
 	m.property.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+
+	// 测试
 }
