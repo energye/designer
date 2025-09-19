@@ -12,6 +12,7 @@ var (
 	inspector           *Inspector
 )
 
+// 组件树和对象查看器
 type Inspector struct {
 	componentTreeFilter     lcl.ITreeFilterEdit     // 组件树过滤框
 	componentTree           lcl.ITreeView           // 组件树

@@ -144,11 +144,11 @@
       ]
     },
     "webview": {
-      "cn": "  WebView  ",
-      "en": "WebView",
+      "cn": "  Web  ",
+      "en": "Web",
       "component": [
-        "CEF",
-        "WebView"
+        "TChromium",
+        "TWebview"
       ]
     }
   }
