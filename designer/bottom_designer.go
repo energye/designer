@@ -142,6 +142,8 @@ func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
 func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
+
+// 隐藏所有控件的 drag
 func (m *FormTab) hideAllDrag() {
 	for _, component := range m.componentList {
 		component.drag.Hide()
@@ -150,6 +152,8 @@ func (m *FormTab) hideAllDrag() {
 
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	m.hideAllDrag()
+	// 判断点击位置控件
+
 }
 
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
@@ -176,6 +180,18 @@ func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 	//m.scrollDrawRuler() // 有问题不要了
 	// 绘制网格
 	m.drawGrid()
+
+	//canvas := m.designerBox.Canvas()
+	//canvas.Clear()
+	//for _, comp := range m.componentList {
+	//	bitmap := lcl.NewBitmap()
+	//	bitmap.SetWidth(comp.object.Width())
+	//	bitmap.SetHeight(comp.object.Height())
+	//	comp.object.PaintToWithCanvasIntX2(bitmap.Canvas(), 0, 0)
+	//	canvas.DrawWithIntX2Graphic(comp.object.Left()+100, comp.object.Top(), bitmap)
+	//	bitmap.Free()
+	//}
+	//canvas.Refresh()
 }
 
 func (m *FormTab) drawGrid() {

@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+// 拖拽控制
+
 type DragShowStatus int32
 
 var dragBorder int32 = 4
@@ -30,6 +32,7 @@ const (
 type drag struct {
 	relation    lcl.IControl   // 关联的控件
 	ds          DragShowStatus // 显示方向
+	isShow      bool
 	left        lcl.IPanel
 	top         lcl.IPanel
 	right       lcl.IPanel
@@ -128,6 +131,10 @@ func (m *drag) SetRelation(relation lcl.IControl) {
 
 // 隐藏所有
 func (m *drag) Hide() {
+	if !m.isShow {
+		return
+	}
+	m.isShow = false
 	if m.ds == DsAll {
 		m.left.SetVisible(false)
 		m.top.SetVisible(false)
@@ -146,6 +153,10 @@ func (m *drag) Hide() {
 
 // 显示
 func (m *drag) Show() {
+	if m.isShow {
+		return
+	}
+	m.isShow = true
 	if m.ds == DsAll {
 		m.left.SetVisible(true)
 		m.top.SetVisible(true)
