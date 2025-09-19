@@ -149,22 +149,22 @@ func (m *FormTab) hideAllDrag() {
 	}
 }
 
+// 窗体设计界面 鼠标按下
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	m.hideAllDrag()
 	// 创建组件
 	fmt.Println("创建组件")
+
 }
 
+// 窗体设计界面 鼠标抬起
 func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
+// 窗体设计界面 鼠标移动
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	//lcl.Screen.SetCursor(types.CrDefault)
 	//width, height := m.designerBox.Width(), m.designerBox.Height()
-	{
-
-	}
 }
 
 // 获取组件名 Caption

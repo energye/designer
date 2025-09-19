@@ -8,14 +8,16 @@ import (
 	"strings"
 )
 
+// 组件选项卡
 type ComponentTab struct {
 	sheet         lcl.ITabSheet
 	toolbar       lcl.IToolBar
 	selectToolBtn lcl.IToolButton
-	components    map[string]*Component
+	components    map[string]*ComponentTabItem
 }
 
-type Component struct {
+// 组件选项卡 组件项
+type ComponentTabItem struct {
 	owner *ComponentTab
 	index int
 	name  string
@@ -32,7 +34,7 @@ func (m *TopToolbar) createComponentTabs() {
 
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
-		compTab := &ComponentTab{components: make(map[string]*Component)}
+		compTab := &ComponentTab{components: make(map[string]*ComponentTabItem)}
 		m.componentTabs[tab.En] = compTab
 
 		sheet := lcl.NewTabSheet(page)
@@ -62,6 +64,8 @@ func (m *TopToolbar) createComponentTabs() {
 		selectToolBtn.SetHint("选择工具")
 		selectToolBtn.SetImageIndex(int32(0))
 		selectToolBtn.SetShowHint(true)
+		comp := &ComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
+		compTab.components[comp.name] = comp
 		compTab.selectToolBtn = selectToolBtn
 
 		seap := lcl.NewToolButton(toolbar)
@@ -76,7 +80,7 @@ func (m *TopToolbar) createComponentTabs() {
 			btn.SetHint(name)
 			btn.SetImageIndex(int32(imageIndex))
 			btn.SetShowHint(true)
-			comp := &Component{owner: compTab, index: i, name: name, btn: btn}
+			comp = &ComponentTabItem{owner: compTab, index: i, name: name, btn: btn}
 			compTab.components[name] = comp
 		}
 		compTab.BindToolBtnEvent()
@@ -122,7 +126,7 @@ func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 }
 
 // 组件按钮事件
-func (m *Component) ComponentBtnOnClick(sender lcl.IObject) {
+func (m *ComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
 	fmt.Println("ToolBtnOnClick", m.index, m.name)
 	m.owner.UnDownComponents()
 	m.owner.UnDownSelectTool()
