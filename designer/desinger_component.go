@@ -49,6 +49,11 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	m.isDown = false
 }
 
+// 更新加载当前属性信息
+func (m *DesigningComponent) UpdateLoadPropertyInfo() {
+
+}
+
 // 创建设计按钮
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
