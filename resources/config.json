@@ -147,6 +147,8 @@
       "cn": "  WebView  ",
       "en": "WebView",
       "component": [
+        "CEF",
+        "WebView"
       ]
     }
   }
