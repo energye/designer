@@ -28,6 +28,7 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		ins.boxSplitter.SetAlign(types.AlTop)
 
 		tree := new(InspectorComponentTree)
+		tree.nodeData = make(map[int]*TreeNodeData)
 		tree.treeBox = lcl.NewPanel(m.leftBox)
 		tree.treeBox.SetParent(m.leftBox)
 		tree.treeBox.SetBevelOuter(types.BvNone)
