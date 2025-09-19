@@ -25,7 +25,7 @@ type Inspector struct {
 
 func (m *BottomBox) createInspectorLayout() *Inspector {
 	ins := new(Inspector)
-	// 对象查看器面板分隔
+	// 面板 对象查看器分隔
 	{
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
 		ins.boxSplitter.SetParent(m.leftBox)
