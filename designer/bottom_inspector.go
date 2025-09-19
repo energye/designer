@@ -8,7 +8,7 @@ import (
 // 对象查看器
 
 var (
-	componentTreeHeight int32 = 150
+	componentTreeHeight int32 = 222
 	inspector           *Inspector
 )
 
@@ -46,7 +46,6 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		property.propertyBox.SetBevelOuter(types.BvNone)
 		property.propertyBox.SetDoubleBuffered(true)
 		property.propertyBox.SetWidth(m.leftBox.Width())
-		property.propertyBox.SetHeight(componentTreeHeight)
 		property.propertyBox.Constraints().SetMinWidth(50)
 		property.propertyBox.Constraints().SetMinHeight(50)
 		property.propertyBox.SetAlign(types.AlClient)

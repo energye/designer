@@ -18,12 +18,12 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	componentPropertyTitle.SetParent(m.propertyBox)
 	componentPropertyTitle.SetCaption("属性")
 	componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
-	componentPropertyTitle.SetTop(8)
+	componentPropertyTitle.SetTop(5)
 	componentPropertyTitle.SetLeft(5)
 
 	m.propertyFilter = lcl.NewTreeFilterEdit(m.propertyBox)
 	m.propertyFilter.SetParent(m.propertyBox)
-	m.propertyFilter.SetTop(5)
+	m.propertyFilter.SetTop(2)
 	m.propertyFilter.SetLeft(30)
 	m.propertyFilter.SetWidth(leftBoxWidth - m.propertyFilter.Left())
 	m.propertyFilter.SetAlign(types.AlCustom)
@@ -31,7 +31,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 	m.property = lcl.NewLazVirtualDrawTree(m.propertyBox)
 	m.property.SetParent(m.propertyBox)
-	m.property.SetTop(35)
+	m.property.SetTop(32)
 	m.property.SetWidth(leftBoxWidth)
 	m.property.SetHeight(m.propertyBox.Height() - m.property.Top())
 	m.property.SetAlign(types.AlCustom)

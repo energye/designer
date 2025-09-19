@@ -86,16 +86,12 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.tree.SetTop(35)
 	m.tree.SetWidth(leftBoxWidth)
 	m.tree.SetHeight(componentTreeHeight - m.tree.Top())
-	//m.tree.SetReadOnly(true)
+	m.tree.SetReadOnly(true)
+	//m.tree.SetMultiSelect(true) // 多选控制
 	m.tree.SetAlign(types.AlCustom)
 	m.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	m.tree.SetImages(m.images)
-	m.tree.SetOnGetSelectedIndex(func(sender lcl.IObject, node lcl.ITreeNode) {
-		dataPtr := node.Data()
-		data := m.DataToTreeNodeData(dataPtr)
-		node.SetSelectedIndex(data.iconIndex)
-		log.Println("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
-	})
+	m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
 
 	// 测试
 	root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
@@ -112,7 +108,6 @@ func (m *TreeNodeData) Remove() {
 	//owner:=m.owner
 	//m.owner=nil
 }
-
 func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name string, iconIndex int32) *TreeNodeData {
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
@@ -122,7 +117,8 @@ func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name stri
 		m.nodeData[data.id] = data
 		node := items.AddChild(nil, name)
 		data.node = node
-		node.SetImageIndex(data.iconIndex)
+		node.SetImageIndex(data.iconIndex)    // 显示图标索引
+		node.SetSelectedIndex(data.iconIndex) // 选中图标索引
 		node.SetSelected(true)
 		node.SetData(data.instance())
 		m.root = data
@@ -132,9 +128,19 @@ func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name stri
 		m.nodeData[data.id] = data
 		node := items.AddChild(parent.node, name)
 		data.node = node
-		node.SetImageIndex(iconIndex)
+		node.SetImageIndex(data.iconIndex)    // 显示图标索引
+		node.SetSelectedIndex(data.iconIndex) // 选中图标索引
 		node.SetSelected(true)
 		node.SetData(data.instance())
 		return data
 	}
+}
+
+// 菜单选择
+func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
+	dataPtr := node.Data()
+	data := m.DataToTreeNodeData(dataPtr)
+	//node.SetSelectedIndex(node.ImageIndex())
+
+	log.Println("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
 }
