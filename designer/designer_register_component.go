@@ -1,5 +1,7 @@
 package designer
 
+// 组件设计注册
+
 // 创建设计组件回调函数
 type TNewComponent func(designerForm *FormTab, x, y int32) *DesigningComponent
 

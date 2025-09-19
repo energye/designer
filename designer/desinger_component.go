@@ -6,7 +6,7 @@ import (
 	"github.com/energye/lcl/types"
 )
 
-// 设计中的组件
+// 组件设计创建管理
 
 type DesigningComponent struct {
 	owner    *FormTab
