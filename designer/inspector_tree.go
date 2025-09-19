@@ -61,6 +61,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilter.SetAlign(types.AlCustom)
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 
+	// 组件树图标 20x20
 	{
 		var images []string
 		var eachTabName = func(tab config.Tab) {
@@ -76,10 +77,13 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		eachTabName(config.Config.ComponentTabs.System)
 		eachTabName(config.Config.ComponentTabs.LazControl)
 		eachTabName(config.Config.ComponentTabs.WebView)
+		// 最后一个图标是 form 窗体图标
 		images = append(images, "components/form.png")
+		// 加载所有图标
 		m.images = LoadImageList(m.treeBox, images, 20, 20)
 	}
 
+	// 创建组件树
 	m.tree = lcl.NewTreeView(m.treeBox)
 	m.tree.SetParent(m.treeBox)
 	m.tree.SetAutoExpand(true)
@@ -100,14 +104,18 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	s1.AddChild("Test2", 3)
 }
 
+// 向当前组件节点添加子组件节点
 func (m *TreeNodeData) AddChild(name string, iconIndex int32) *TreeNodeData {
 	return m.owner.AddTreeNodeItem(m, name, iconIndex)
 }
 
+// 删除当前节点
 func (m *TreeNodeData) Remove() {
 	//owner:=m.owner
 	//m.owner=nil
 }
+
+// 添加一个组件到节点
 func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name string, iconIndex int32) *TreeNodeData {
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
@@ -136,7 +144,7 @@ func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name stri
 	}
 }
 
-// 菜单选择
+// 组件树选择事件
 func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
 	dataPtr := node.Data()
 	data := m.DataToTreeNodeData(dataPtr)
