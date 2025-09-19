@@ -89,12 +89,11 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	form.scroll.SetAlign(types.AlClient)
 	form.scroll.SetAutoScroll(true)
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
-	form.scroll.SetColor(colors.ClWhite)
 	form.scroll.SetDoubleBuffered(true)
 	//form.scroll.HorzScrollBar().SetIncrement(1)
 	//form.scroll.VertScrollBar().SetIncrement(1)
 
-	newStatusBar(form.scroll)
+	//newStatusBar(form.scroll)
 
 	//form.bg = lcl.NewPanel(form.scroll)
 	//form.bg.SetParent(form.scroll)

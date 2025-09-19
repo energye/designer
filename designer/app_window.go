@@ -11,7 +11,8 @@ import (
 var (
 	mainWindow       TAppWindow
 	toolbarHeight    int32 = 66
-	bgColor                = colors.RGBToColor(56, 57, 60)
+	bgDrakColor            = colors.RGBToColor(56, 57, 60)
+	bgLightColor           = colors.ClWhite
 	windowShowEvents []func()
 )
 
@@ -32,6 +33,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.SetDoubleBuffered(true)
 	m.SetWidth(int32(cfg.Window.Width))
 	m.SetHeight(int32(cfg.Window.Height))
+	m.SetColor(bgLightColor)
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)

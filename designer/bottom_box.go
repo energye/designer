@@ -49,7 +49,6 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.leftBox.SetHeight(box.box.Height())
 	box.leftBox.Constraints().SetMinWidth(50)
 	box.leftBox.SetAlign(types.AlLeft)
-	box.leftBox.SetColor(colors.ClAliceblue)
 
 	// 右侧-窗体设计器
 	box.rightBox = lcl.NewPanel(box.box)
@@ -57,7 +56,6 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.rightBox.SetBevelOuter(types.BvNone)
 	box.rightBox.SetDoubleBuffered(true)
 	box.rightBox.SetAlign(types.AlClient)
-	box.rightBox.SetColor(colors.Cl3DLight)
 
 	// 创建对象查看器
 	inspector = box.createInspectorLayout()
