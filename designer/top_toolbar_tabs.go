@@ -5,6 +5,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"log"
 	"strings"
 )
 
@@ -31,12 +32,15 @@ func (m *TopToolbar) createComponentTabs() {
 	page.SetAlign(types.AlClient)
 	page.SetTabStop(true)
 	m.page = page
+	m.page.SetOnChange(func(sender lcl.IObject) {
+		log.Println("Toolbar Tabs Change")
+		m.ResetTabComponentDown()
+	})
 
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
 		compTab := &ComponentTab{components: make(map[string]*ComponentTabItem)}
 		m.componentTabs[tab.En] = compTab
-
 		sheet := lcl.NewTabSheet(page)
 		sheet.SetParent(page)
 		sheet.SetCaption(tab.Cn)
@@ -64,6 +68,7 @@ func (m *TopToolbar) createComponentTabs() {
 		selectToolBtn.SetHint("选择工具")
 		selectToolBtn.SetImageIndex(int32(0))
 		selectToolBtn.SetShowHint(true)
+		selectToolBtn.SetDown(true)
 		comp := &ComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
 		compTab.components[comp.name] = comp
 		compTab.selectToolBtn = selectToolBtn

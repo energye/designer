@@ -63,6 +63,14 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.createComponentTabs()
 }
 
+// 重置Tab组件选项卡按下状态
+func (m *TopToolbar) ResetTabComponentDown() {
+	for _, comp := range m.componentTabs {
+		comp.UnDownComponents()
+		comp.DownSelectTool()
+	}
+}
+
 // 工具按钮
 func (m *TopToolbar) createToolBarBtns() {
 	toolBtnBar := lcl.NewToolBar(m.box)
