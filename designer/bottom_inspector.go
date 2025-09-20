@@ -41,14 +41,14 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		ins.componentTree = tree
 
 		property := new(InspectorComponentProperty)
-		property.propertyBox = lcl.NewPanel(m.leftBox)
-		property.propertyBox.SetParent(m.leftBox)
-		property.propertyBox.SetBevelOuter(types.BvNone)
-		property.propertyBox.SetDoubleBuffered(true)
-		property.propertyBox.SetWidth(m.leftBox.Width())
-		property.propertyBox.Constraints().SetMinWidth(50)
-		property.propertyBox.Constraints().SetMinHeight(50)
-		property.propertyBox.SetAlign(types.AlClient)
+		property.box = lcl.NewPanel(m.leftBox)
+		property.box.SetParent(m.leftBox)
+		property.box.SetBevelOuter(types.BvNone)
+		property.box.SetDoubleBuffered(true)
+		property.box.SetWidth(m.leftBox.Width())
+		property.box.Constraints().SetMinWidth(50)
+		property.box.Constraints().SetMinHeight(50)
+		property.box.SetAlign(types.AlClient)
 		ins.componentProperty = property
 		//ins.componentPropertyBox.SetColor(colors.Cl3DDkShadow)
 	}

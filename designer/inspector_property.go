@@ -8,35 +8,72 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	propertyBox    lcl.IPanel              // 组件属性盒子
-	propertyFilter lcl.ITreeFilterEdit     // 组件属性过滤框
-	property       lcl.ILazVirtualDrawTree // 组件属性
+	box           lcl.IPanel              // 组件属性盒子
+	filter        lcl.ITreeFilterEdit     // 组件属性过滤框
+	page          lcl.IPageControl        // 属性和事件页
+	propertySheet lcl.ITabSheet           // 属性页
+	eventSheet    lcl.ITabSheet           // 事件页
+	propertyTree  lcl.ILazVirtualDrawTree // 组件属性
+	eventTree     lcl.ILazVirtualDrawTree // 组件事件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
-	componentPropertyTitle := lcl.NewLabel(m.propertyBox)
-	componentPropertyTitle.SetParent(m.propertyBox)
+	componentPropertyTitle := lcl.NewLabel(m.box)
+	componentPropertyTitle.SetParent(m.box)
 	componentPropertyTitle.SetCaption("属性")
 	componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
 	componentPropertyTitle.SetTop(5)
 	componentPropertyTitle.SetLeft(5)
 
-	m.propertyFilter = lcl.NewTreeFilterEdit(m.propertyBox)
-	m.propertyFilter.SetParent(m.propertyBox)
-	m.propertyFilter.SetTop(2)
-	m.propertyFilter.SetLeft(30)
-	m.propertyFilter.SetWidth(leftBoxWidth - m.propertyFilter.Left())
-	m.propertyFilter.SetAlign(types.AlCustom)
-	m.propertyFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	m.filter = lcl.NewTreeFilterEdit(m.box)
+	m.filter.SetParent(m.box)
+	m.filter.SetTop(2)
+	m.filter.SetLeft(30)
+	m.filter.SetWidth(leftBoxWidth - m.filter.Left())
+	m.filter.SetAlign(types.AlCustom)
+	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	// 选项卡
+	{
+		m.page = lcl.NewPageControl(m.box)
+		m.page.SetParent(m.box)
+		m.page.SetTabStop(true)
+		m.page.SetTop(32)
+		m.page.SetWidth(leftBoxWidth)
+		m.page.SetHeight(m.box.Height() - m.page.Top())
+		m.page.SetAlign(types.AlCustom)
+		m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 
-	// 属性树列表
-	m.property = lcl.NewLazVirtualDrawTree(m.propertyBox)
-	m.property.SetParent(m.propertyBox)
-	m.property.SetTop(32)
-	m.property.SetWidth(leftBoxWidth)
-	m.property.SetHeight(m.propertyBox.Height() - m.property.Top())
-	m.property.SetAlign(types.AlCustom)
-	m.property.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+		m.propertySheet = lcl.NewTabSheet(m.page)
+		m.propertySheet.SetParent(m.page)
+		m.propertySheet.SetCaption("  属性  ")
+		m.propertySheet.SetAlign(types.AlClient)
+
+		m.eventSheet = lcl.NewTabSheet(m.page)
+		m.eventSheet.SetParent(m.page)
+		m.eventSheet.SetCaption("  事件  ")
+		m.eventSheet.SetAlign(types.AlClient)
+	}
+	// 组件的属性列表和事件列表"树"
+	{
+		// 组件属性树列表
+		m.propertyTree = lcl.NewLazVirtualDrawTree(m.propertySheet)
+		m.propertyTree.SetParent(m.propertySheet)
+		m.propertyTree.SetAlign(types.AlClient)
+		// 组件事件树列表
+		m.eventTree = lcl.NewLazVirtualDrawTree(m.eventSheet)
+		m.eventTree.SetParent(m.eventSheet)
+		m.eventTree.SetAlign(types.AlClient)
+	}
+	// 初始化组件树
+	m.initComponentTree()
 
 	// 测试
+	{
+
+	}
+}
+
+// 初始化组件属性树
+func (m *InspectorComponentProperty) initComponentTree() {
+
 }

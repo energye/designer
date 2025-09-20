@@ -25,7 +25,7 @@ type InspectorComponentTree struct {
 	treeFilter lcl.ITreeFilterEdit   // 组件树过滤框
 	tree       lcl.ITreeView         // 组件树
 	images     lcl.IImageList        // 树图标
-	root       *TreeNodeData         // 根 form 窗体
+	root       *TreeNodeData         // 根节点 form 窗体
 	nodeData   map[int]*TreeNodeData // 组件树节点数据
 }
 
