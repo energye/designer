@@ -1,10 +1,10 @@
 package designer
 
 import (
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"log"
+	"unsafe"
 )
 
 // 设计 - 组件属性
@@ -62,26 +62,63 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.propertyTree.SetParent(m.propertySheet)
 		m.propertyTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.propertyTree.SetAlign(types.AlClient)
+		m.propertyTree.SetLineStyle(types.LsSolid)
+		m.propertyTree.SetIndent(0)
+		propTreeOptions := m.propertyTree.TreeOptions()
+		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
+		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
+		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
+		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+
 		// 组件事件树列表
 		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
 		m.eventTree.SetParent(m.eventSheet)
 		m.eventTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.eventTree.SetAlign(types.AlClient)
+		m.eventTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
+		eventTreeOptions := m.propertyTree.TreeOptions()
+		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
+		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
+		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
+		eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+
 	}
-	// 初始化组件树
-	m.initComponentTree()
+	// 初始化组件属性树
+	m.initComponentPropertyTree()
 
 	// 测试
 	{
-
+		m.propertyTree.SetRootNodeCount(m.propertyTree.RootNodeCount() + uint32(5))
 	}
 }
 
 // 初始化组件属性树
-func (m *InspectorComponentProperty) initComponentTree() {
+func (m *InspectorComponentProperty) initComponentPropertyTree() {
+	header := m.propertyTree.Header()
+	header.SetOptions(header.Options().Exclude(types.HoVisible))
+	columns := header.Columns()
+	columns.Clear()
+	propNameCol := columns.AddToVirtualTreeColumn()
+	propNameCol.SetText("属性名")
+	propNameCol.SetWidth(100)
+	propNameCol.SetAlignment(types.TaLeftJustify)
+	propValueCol := columns.AddToVirtualTreeColumn()
+	propValueCol.SetText("属性值")
+	propValueCol.SetWidth(100)
+	propValueCol.SetAlignment(types.TaLeftJustify)
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
-		log.Println("OnCreateEditor")
-		*outEditLink = vtedit.NewStringEditLink()
+		log.Println("propertyTree OnCreateEditor column:", column)
+		//*outEditLink = vtedit.NewStringEditLink()
 	})
+	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
+		column int32, textType types.TVSTTextType, cellText *string) {
+		log.Println("propertyTree OnGetText column:", column)
+		*cellText = "啊啊"
+	})
+	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
+}
+
+type TTreeNodeData struct {
+	Data uintptr
 }
