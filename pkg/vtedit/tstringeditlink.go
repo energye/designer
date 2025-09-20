@@ -7,26 +7,25 @@ import (
 )
 
 type IStringEditLink interface {
-	lcl.IVTEditLink
 	lcl.ICustomVTEditLink
 }
 
 type TStringEditLink struct {
-	link lcl.ICustomVTEditLink
+	lcl.ICustomVTEditLink
 	edit lcl.IEdit
 }
 
-func NewStringEditLink() *TStringEditLink {
+func NewStringEditLink() IStringEditLink {
 	m := new(TStringEditLink)
-	m.link = lcl.NewCustomVTEditLink()
-	m.link.SetOnBeginEdit(m.BeginEdit)
-	m.link.SetOnCancelEdit(m.CancelEdit)
-	m.link.SetOnEndEdit(m.EndEdit)
-	m.link.SetOnPrepareEdit(m.PrepareEdit)
-	m.link.SetOnGetBounds(m.GetBounds)
-	m.link.SetOnProcessMessage(m.ProcessMessage)
-	m.link.SetOnSetBounds(m.SetBounds)
-	m.link.SetOnDestroy(m.Destroy)
+	m.ICustomVTEditLink = lcl.NewCustomVTEditLink()
+	m.ICustomVTEditLink.SetOnBeginEdit(m.BeginEdit)
+	m.ICustomVTEditLink.SetOnCancelEdit(m.CancelEdit)
+	m.ICustomVTEditLink.SetOnEndEdit(m.EndEdit)
+	m.ICustomVTEditLink.SetOnPrepareEdit(m.PrepareEdit)
+	m.ICustomVTEditLink.SetOnGetBounds(m.GetBounds)
+	m.ICustomVTEditLink.SetOnProcessMessage(m.ProcessMessage)
+	m.ICustomVTEditLink.SetOnSetBounds(m.SetBounds)
+	m.ICustomVTEditLink.SetOnDestroy(m.Destroy)
 	m.edit = lcl.NewEdit(nil)
 	return m
 }

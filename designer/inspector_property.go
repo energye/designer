@@ -1,8 +1,10 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"log"
 )
 
 // 设计 - 组件属性
@@ -79,6 +81,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 func (m *InspectorComponentProperty) initComponentTree() {
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
-
+		log.Println("OnCreateEditor")
+		*outEditLink = vtedit.NewStringEditLink()
 	})
 }
