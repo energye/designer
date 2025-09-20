@@ -66,9 +66,9 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.propertyTree.SetIndent(0)
 		propTreeOptions := m.propertyTree.TreeOptions()
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
-		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
-		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
-		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
+		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToAlwaysSelectNode))
+		propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
 
 		// 组件事件树列表
 		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
@@ -104,16 +104,33 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("Value")
-	propValueCol.SetWidth(150)
+	propValueCol.SetWidth(125)
 	propValueCol.SetAlignment(types.TaLeftJustify)
+	//propValueCol.SetOptions(propValueCol.Options().Exclude(types.CoEditable))
+	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
+		// edit: 1. 触发编辑
+		log.Println("propertyTree OnColumnClick column:", column)
+		m.propertyTree.EditNode(sender.FocusedNode(), column)
+	})
+	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
+		column int32, allowed *bool) {
+		// edit: 2. 第二列可以编辑
+		log.Println("propertyTree OnEditing column:", column)
+		*allowed = column == 1
+	})
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
+		// edit: 3. 创建编辑或组件
 		log.Println("propertyTree OnCreateEditor column:", column)
 		//*outEditLink = vtedit.NewStringEditLink()
 	})
+	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
+		// edit: 4. 编辑结束
+		log.Println("propertyTree OnEdited column:", column)
+	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
-		log.Println("propertyTree OnGetText column:", column)
+		//log.Println("propertyTree OnGetText column:", column)
 		*cellText = "啊啊"
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
