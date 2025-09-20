@@ -78,7 +78,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 // 初始化组件属性树
 func (m *InspectorComponentProperty) initComponentTree() {
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, outEditLink *lcl.IStringEditLink) {
+		column int32, outEditLink *lcl.IVTEditLink) {
 
 	})
 }
