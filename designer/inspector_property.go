@@ -8,13 +8,13 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	box           lcl.IPanel              // 组件属性盒子
-	filter        lcl.ITreeFilterEdit     // 组件属性过滤框
-	page          lcl.IPageControl        // 属性和事件页
-	propertySheet lcl.ITabSheet           // 属性页
-	eventSheet    lcl.ITabSheet           // 事件页
-	propertyTree  lcl.ILazVirtualDrawTree // 组件属性
-	eventTree     lcl.ILazVirtualDrawTree // 组件事件
+	box           lcl.IPanel                // 组件属性盒子
+	filter        lcl.ITreeFilterEdit       // 组件属性过滤框
+	page          lcl.IPageControl          // 属性和事件页
+	propertySheet lcl.ITabSheet             // 属性页
+	eventSheet    lcl.ITabSheet             // 事件页
+	propertyTree  lcl.ILazVirtualStringTree // 组件属性
+	eventTree     lcl.ILazVirtualStringTree // 组件事件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
@@ -56,12 +56,14 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	// 组件的属性列表和事件列表"树"
 	{
 		// 组件属性树列表
-		m.propertyTree = lcl.NewLazVirtualDrawTree(m.propertySheet)
+		m.propertyTree = lcl.NewLazVirtualStringTree(m.propertySheet)
 		m.propertyTree.SetParent(m.propertySheet)
+		m.propertyTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.propertyTree.SetAlign(types.AlClient)
 		// 组件事件树列表
-		m.eventTree = lcl.NewLazVirtualDrawTree(m.eventSheet)
+		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
 		m.eventTree.SetParent(m.eventSheet)
+		m.eventTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.eventTree.SetAlign(types.AlClient)
 	}
 	// 初始化组件树
@@ -75,5 +77,8 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 // 初始化组件属性树
 func (m *InspectorComponentProperty) initComponentTree() {
+	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
+		column int32, outEditLink *lcl.IStringEditLink) {
 
+	})
 }
