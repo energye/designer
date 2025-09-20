@@ -95,16 +95,16 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 // 初始化组件属性树
 func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	header := m.propertyTree.Header()
-	header.SetOptions(header.Options().Exclude(types.HoVisible))
+	header.SetOptions(header.Options().Include(types.HoVisible))
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
-	propNameCol.SetText("属性名")
+	propNameCol.SetText("Name")
 	propNameCol.SetWidth(100)
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	propValueCol := columns.AddToVirtualTreeColumn()
-	propValueCol.SetText("属性值")
-	propValueCol.SetWidth(100)
+	propValueCol.SetText("Value")
+	propValueCol.SetWidth(150)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
