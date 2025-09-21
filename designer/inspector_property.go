@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"log"
@@ -118,19 +119,25 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		log.Println("propertyTree OnEditing column:", column)
 		*allowed = column == 1
 	})
-	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, outEditLink *lcl.IVTEditLink) {
-		// edit: 3. 创建编辑或组件
-		log.Println("propertyTree OnCreateEditor column:", column)
-		//*outEditLink = vtedit.NewStringEditLink()
+	m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
+		log.Println("propertyTree OnEditCancelled column:", column)
 	})
 	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
 		// edit: 4. 编辑结束
 		log.Println("propertyTree OnEdited column:", column)
 	})
+	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
+		column int32, outEditLink *lcl.IVTEditLink) {
+		// edit: 3. 创建编辑或组件
+		log.Println("propertyTree OnCreateEditor column:", column)
+		if column == 1 {
+			strEditLink := vtedit.NewStringEditLink()
+			*outEditLink = strEditLink.AsIVTEditLink()
+		}
+	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
-		//log.Println("propertyTree OnGetText column:", column)
+		log.Println("propertyTree OnGetText column:", column)
 		*cellText = "啊啊"
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
