@@ -8,13 +8,17 @@ import (
 	"log"
 )
 
+type TOnNewData func(node types.PVirtualNode, column int32, value string)
+
 type IStringEditLink interface {
 	lcl.ICustomVTEditLink
 	AsIVTEditLink() lcl.IVTEditLink
+	SetOnNewData(fn TOnNewData)
 }
 
 type TStringEditLink struct {
 	lcl.ICustomVTEditLink
+	newData    TOnNewData
 	edit       lcl.IEdit
 	tree       lcl.ILazVirtualStringTree
 	node       types.PVirtualNode
@@ -38,6 +42,10 @@ func NewStringEditLink() IStringEditLink {
 	m.ICustomVTEditLink.SetOnDestroy(m.Destroy)
 	m.CreateEdit()
 	return m
+}
+
+func (m *TStringEditLink) SetOnNewData(fn TOnNewData) {
+	m.newData = fn
 }
 
 func (m *TStringEditLink) AsIVTEditLink() lcl.IVTEditLink {
@@ -86,9 +94,12 @@ func (m *TStringEditLink) EndEdit() bool {
 		m.stopping = true
 		if m.edit.Modified() {
 			//m.tree.SetText(m.node, m.column, text)
+			if m.newData != nil {
+				m.newData(m.node, m.column, text)
+			}
 		}
-		//m.tree.EndEditNode()
-		m.tree.InvalidateNode(m.node)
+		m.tree.EndEditNode()
+		//m.tree.InvalidateNode(m.node)
 		m.edit.Hide()
 	}
 	return true

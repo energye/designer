@@ -5,6 +5,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"log"
+	"strconv"
 	"unsafe"
 )
 
@@ -89,7 +90,11 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 	// 测试
 	{
-		m.propertyTree.SetRootNodeCount(m.propertyTree.RootNodeCount() + uint32(5))
+		//m.propertyTree.SetRootNodeCount(m.propertyTree.RootNodeCount() + uint32(5))
+		for i := 0; i < 5; i++ {
+			node := m.propertyTree.AddChild(0, 0)
+			treeNodeDatas[node] = &TTreeNodeData{name: "Name" + strconv.Itoa(i), value: "Value" + strconv.Itoa(i)}
+		}
 	}
 }
 
@@ -131,18 +136,31 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		// edit: 3. 创建编辑或组件
 		log.Println("propertyTree OnCreateEditor column:", column)
 		if column == 1 {
+			ceNode := node
 			strEditLink := vtedit.NewStringEditLink()
+			strEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
+				log.Println("StringEditLink NewData:", value, node == ceNode)
+			})
 			*outEditLink = strEditLink.AsIVTEditLink()
 		}
 	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
 		log.Println("propertyTree OnGetText column:", column)
-		*cellText = "啊啊"
+		if data, ok := treeNodeDatas[node]; ok {
+			if column == 0 {
+				*cellText = data.name
+			} else if column == 1 {
+				*cellText = data.value
+			}
+		}
 	})
-	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
+	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
 
+var treeNodeDatas = make(map[types.PVirtualNode]*TTreeNodeData)
+
 type TTreeNodeData struct {
-	Data uintptr
+	name  string
+	value string
 }
