@@ -39,6 +39,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.splitter.SetAlign(types.AlLeft)
 	box.splitter.SetWidth(5)
 	box.splitter.SetMinSize(50)
+	box.splitter.SetResizeStyle(types.RsNone)
 
 	// 左侧-面板组件对象查看器
 	box.leftBox = lcl.NewPanel(box.box)
