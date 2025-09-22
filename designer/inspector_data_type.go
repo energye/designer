@@ -9,7 +9,8 @@ type PropertyDataType int32
 const (
 	PdtText PropertyDataType = iota
 	PdtRadiobutton
-	PdtCheckbox
+	PdtCheckBox
+	PdtComboBox
 	PdtTree
 	PdtClassDialog
 )

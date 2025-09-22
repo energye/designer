@@ -8,6 +8,8 @@ import (
 	"log"
 )
 
+// 文本编辑框
+
 type TOnNewData func(node types.PVirtualNode, column int32, value string)
 
 type IStringEditLink interface {

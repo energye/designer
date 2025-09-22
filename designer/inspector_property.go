@@ -96,7 +96,9 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 			if i == 1 {
 				treePropertyNodeDatas[node].Type = PdtText
 			} else if i == 2 {
-				treePropertyNodeDatas[node].Type = PdtCheckbox
+				treePropertyNodeDatas[node].Type = PdtCheckBox
+			} else if i == 3 {
+				treePropertyNodeDatas[node].Type = PdtComboBox
 			}
 
 		}
