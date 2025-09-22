@@ -99,7 +99,6 @@ func (m *TStringEditLink) EndEdit() bool {
 			}
 		}
 		m.tree.EndEditNode()
-		//m.tree.InvalidateNode(m.node)
 		m.edit.Hide()
 	}
 	return true
@@ -152,19 +151,11 @@ func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
 
 func (m *TStringEditLink) SetBounds(R types.TRect) {
 	log.Println("SetBounds", R)
-
-	//设置编辑控件的外部边界和控件中的实际编辑区域。
-	if !m.stopping {
-		if R.Left < 0 {
-			R.Left = 0
-		}
-		//设置编辑的边界，但要确保有最小宽度，右边界没有
-		//超出父母的左/右边界。
-		if R.Left-R.Left < 30 {
-
-		}
-	}
-	R.SetWidth(150)
+	columnRect := m.tree.GetDisplayRect(m.node, m.column, false, false, true)
+	R.Left = columnRect.Left
+	R.Top = columnRect.Top
+	R.SetHeight(columnRect.Height())
+	R.SetWidth(columnRect.Width())
 	m.edit.SetBoundsRect(R)
 }
 

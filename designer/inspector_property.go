@@ -77,7 +77,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.eventTree.SetParent(m.eventSheet)
 		m.eventTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.eventTree.SetAlign(types.AlClient)
-		m.eventTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreeNodeData{})))
+		m.eventTree.SetNodeDataSize(int32(unsafe.Sizeof(TTreePropertyNodeData{})))
 		eventTreeOptions := m.propertyTree.TreeOptions()
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
@@ -93,7 +93,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		//m.propertyTree.SetRootNodeCount(m.propertyTree.RootNodeCount() + uint32(5))
 		for i := 0; i < 5; i++ {
 			node := m.propertyTree.AddChild(0, 0)
-			treeNodeDatas[node] = &TTreeNodeData{name: "Name" + strconv.Itoa(i), value: "Value" + strconv.Itoa(i)}
+			treePropertyNodeDatas[node] = &TTreePropertyNodeData{name: "Name" + strconv.Itoa(i), value: "Value" + strconv.Itoa(i)}
 		}
 	}
 }
@@ -101,18 +101,20 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 // 初始化组件属性树
 func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	header := m.propertyTree.Header()
-	header.SetOptions(header.Options().Include(types.HoVisible))
+	header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
 	propNameCol.SetText("Name")
 	propNameCol.SetWidth(100)
 	propNameCol.SetAlignment(types.TaLeftJustify)
+	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
+
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("Value")
-	propValueCol.SetWidth(125)
+	propValueCol.SetWidth(leftBoxWidth - 100)
 	propValueCol.SetAlignment(types.TaLeftJustify)
-	//propValueCol.SetOptions(propValueCol.Options().Exclude(types.CoEditable))
+	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
@@ -140,6 +142,9 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			strEditLink := vtedit.NewStringEditLink()
 			strEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
 				log.Println("StringEditLink NewData:", value, node == ceNode)
+				if data, ok := treePropertyNodeDatas[node]; ok {
+					data.value = value
+				}
 			})
 			*outEditLink = strEditLink.AsIVTEditLink()
 		}
@@ -147,7 +152,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
 		log.Println("propertyTree OnGetText column:", column)
-		if data, ok := treeNodeDatas[node]; ok {
+		if data, ok := treePropertyNodeDatas[node]; ok {
 			if column == 0 {
 				*cellText = data.name
 			} else if column == 1 {
@@ -158,9 +163,9 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
 
-var treeNodeDatas = make(map[types.PVirtualNode]*TTreeNodeData)
+var treePropertyNodeDatas = make(map[types.PVirtualNode]*TTreePropertyNodeData)
 
-type TTreeNodeData struct {
+type TTreePropertyNodeData struct {
 	name  string
 	value string
 }
