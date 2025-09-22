@@ -29,7 +29,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	log.Println("FormCreate")
 	cfg := config.Config
 	// 属性
-	m.SetCaption(cfg.Title + " " + cfg.Version)
+	m.SetCaption(cfg.Title)
 	m.SetDoubleBuffered(true)
 	m.SetWidth(int32(cfg.Window.Width))
 	m.SetHeight(int32(cfg.Window.Height))

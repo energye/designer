@@ -2,6 +2,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -32,6 +33,13 @@ func (m *TAppWindow) createMenu() {
 	helper := lcl.NewMenuItem(m)
 	helper.SetCaption("帮助(&H)")
 	m.mainMenu.Items().Add(helper)
+	helperAbout := lcl.NewMenuItem(m)
+	helperAbout.SetCaption("关于")
+	helperAbout.SetOnClick(func(sender lcl.IObject) {
+		versionInfo := api.PasStr("ENERGY Designer " + config.Config.Version)
+		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
+	})
+	helper.Add(helperAbout)
 
 	if tool.IsDarwin() {
 
