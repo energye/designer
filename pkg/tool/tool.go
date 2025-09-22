@@ -5,6 +5,7 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
+// 加载图像到列表
 func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 	data := resources.Images(filePath)
 	if data != nil {

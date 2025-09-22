@@ -90,9 +90,15 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 	// 测试
 	{
-		for i := 0; i < 5; i++ {
+		for i := 1; i <= 5; i++ {
 			node := m.propertyTree.AddChild(0, 0)
-			treePropertyNodeDatas[node] = &TTreePropertyNodeData{name: "Name" + strconv.Itoa(i), value: "Value" + strconv.Itoa(i)}
+			treePropertyNodeDatas[node] = &TTreePropertyNodeData{Name: "Name" + strconv.Itoa(i), Value: "Value" + strconv.Itoa(i)}
+			if i == 1 {
+				treePropertyNodeDatas[node].Type = PdtText
+			} else if i == 2 {
+				treePropertyNodeDatas[node].Type = PdtCheckbox
+			}
+
 		}
 	}
 }
@@ -142,7 +148,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			strEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
 				log.Println("StringEditLink NewData:", value, node == ceNode)
 				if data, ok := treePropertyNodeDatas[node]; ok {
-					data.value = value
+					data.Value = value
 				}
 			})
 			*outEditLink = strEditLink.AsIVTEditLink()
@@ -153,18 +159,11 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		//log.Println("propertyTree OnGetText column:", column)
 		if data, ok := treePropertyNodeDatas[node]; ok {
 			if column == 0 {
-				*cellText = data.name
+				*cellText = data.Name
 			} else if column == 1 {
-				*cellText = data.value
+				*cellText = data.Value
 			}
 		}
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
-}
-
-var treePropertyNodeDatas = make(map[types.PVirtualNode]*TTreePropertyNodeData)
-
-type TTreePropertyNodeData struct {
-	name  string
-	value string
 }
