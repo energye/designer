@@ -11,6 +11,7 @@ const (
 	PdtRadiobutton
 	PdtCheckbox
 	PdtTree
+	PdtClassDialog
 )
 
 var treePropertyNodeDatas = make(map[types.PVirtualNode]*TTreePropertyNodeData)
@@ -25,4 +26,11 @@ type TTreePropertyNodeData struct {
 type ValueList struct {
 	Label string
 	Value string
+}
+
+func GetPropertyNodeData(nodeKey types.PVirtualNode) *TTreePropertyNodeData {
+	if data, ok := treePropertyNodeDatas[nodeKey]; ok {
+		return data
+	}
+	return nil
 }

@@ -123,13 +123,21 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
-		m.propertyTree.EditNode(sender.FocusedNode(), column)
+		node := sender.FocusedNode()
+		if data := GetPropertyNodeData(node); data != nil {
+			m.propertyTree.EditNode(node, column)
+		}
 	})
 	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, allowed *bool) {
 		// edit: 2. 第二列可以编辑
 		log.Println("propertyTree OnEditing column:", column)
-		*allowed = column == 1
+		if column == 1 {
+			if data := GetPropertyNodeData(node); data != nil && data.Type == PdtText {
+				*allowed = true
+				return
+			}
+		}
 	})
 	m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
 		log.Println("propertyTree OnEditCancelled column:", column)
@@ -147,7 +155,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			strEditLink := vtedit.NewStringEditLink()
 			strEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
 				log.Println("StringEditLink NewData:", value, node == ceNode)
-				if data, ok := treePropertyNodeDatas[node]; ok {
+				if data := GetPropertyNodeData(node); data != nil {
 					data.Value = value
 				}
 			})
@@ -157,7 +165,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
 		//log.Println("propertyTree OnGetText column:", column)
-		if data, ok := treePropertyNodeDatas[node]; ok {
+		if data := GetPropertyNodeData(node); data != nil {
 			if column == 0 {
 				*cellText = data.Name
 			} else if column == 1 {
