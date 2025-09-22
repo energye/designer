@@ -140,7 +140,9 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.IBaseVirtualTree, node types.PVir
 }
 
 func (m *TStringEditLink) GetBounds() types.TRect {
-	log.Println("TStringEditLink GetBounds", m.edit.BoundsRect().Width())
+	log.Println("TStringEditLink GetBounds")
+	//columnRect := m.tree.GetDisplayRect(m.node, m.column, false, false, true)
+	//return columnRect
 	return m.edit.BoundsRect()
 }
 

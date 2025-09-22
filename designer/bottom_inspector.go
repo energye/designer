@@ -26,6 +26,12 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
 		ins.boxSplitter.SetParent(m.leftBox)
 		ins.boxSplitter.SetAlign(types.AlTop)
+		//ins.boxSplitter.SetResizeStyle(types.RsUpdate)
+		//ins.boxSplitter.SetOnMoved(func(sender lcl.IObject) {
+		//	lcl.RunOnMainThreadAsync(func(id uint32) {
+		//		lcl.Application.ProcessMessages()
+		//	})
+		//})
 
 		tree := new(InspectorComponentTree)
 		tree.nodeData = make(map[int]*TreeNodeData)
