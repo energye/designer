@@ -90,7 +90,6 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 	// 测试
 	{
-		//m.propertyTree.SetRootNodeCount(m.propertyTree.RootNodeCount() + uint32(5))
 		for i := 0; i < 5; i++ {
 			node := m.propertyTree.AddChild(0, 0)
 			treePropertyNodeDatas[node] = &TTreePropertyNodeData{name: "Name" + strconv.Itoa(i), value: "Value" + strconv.Itoa(i)}
@@ -151,7 +150,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
-		log.Println("propertyTree OnGetText column:", column)
+		//log.Println("propertyTree OnGetText column:", column)
 		if data, ok := treePropertyNodeDatas[node]; ok {
 			if column == 0 {
 				*cellText = data.name
