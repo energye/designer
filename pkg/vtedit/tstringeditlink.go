@@ -10,48 +10,20 @@ import (
 
 // 文本编辑框
 
-type TOnNewData func(node types.PVirtualNode, column int32, value string)
-
-type IStringEditLink interface {
-	lcl.ICustomVTEditLink
-	AsIVTEditLink() lcl.IVTEditLink
-	SetOnNewData(fn TOnNewData)
-}
-
 type TStringEditLink struct {
-	lcl.ICustomVTEditLink
-	newData    TOnNewData
+	*TBaseEditLink
 	edit       lcl.IEdit
-	tree       lcl.ILazVirtualStringTree
-	node       types.PVirtualNode
-	column     int32
 	textBounds types.TRect
 	text       string
 	alignment  types.TAlignment
 	stopping   bool
 }
 
-func NewStringEditLink() IStringEditLink {
+func NewStringEditLink() *TStringEditLink {
 	m := new(TStringEditLink)
-	m.ICustomVTEditLink = lcl.NewCustomVTEditLink()
-	m.ICustomVTEditLink.SetOnBeginEdit(m.BeginEdit)
-	m.ICustomVTEditLink.SetOnCancelEdit(m.CancelEdit)
-	m.ICustomVTEditLink.SetOnEndEdit(m.EndEdit)
-	m.ICustomVTEditLink.SetOnPrepareEdit(m.PrepareEdit)
-	m.ICustomVTEditLink.SetOnGetBounds(m.GetBounds)
-	m.ICustomVTEditLink.SetOnProcessMessage(m.ProcessMessage)
-	m.ICustomVTEditLink.SetOnSetBounds(m.SetBounds)
-	m.ICustomVTEditLink.SetOnDestroy(m.Destroy)
+	m.TBaseEditLink = NewEditLink(m)
 	m.CreateEdit()
 	return m
-}
-
-func (m *TStringEditLink) SetOnNewData(fn TOnNewData) {
-	m.newData = fn
-}
-
-func (m *TStringEditLink) AsIVTEditLink() lcl.IVTEditLink {
-	return lcl.AsVTEditLink(m.ICustomVTEditLink.AsIntfVTEditLink())
 }
 
 func (m *TStringEditLink) CreateEdit() {
@@ -63,7 +35,7 @@ func (m *TStringEditLink) CreateEdit() {
 	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.tree.EndEditNode()
+				m.VTree.EndEditNode()
 			})
 		}
 	})
@@ -85,7 +57,7 @@ func (m *TStringEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
-		m.tree.CancelEditNode()
+		m.VTree.CancelEditNode()
 	}
 	return true
 }
@@ -96,36 +68,36 @@ func (m *TStringEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		if m.edit.Modified() {
-			if m.newData != nil {
-				m.newData(m.node, m.column, text)
+			if m.OnNewData != nil {
+				m.OnNewData(m.Node, m.Column, text)
 			}
 		}
-		m.tree.EndEditNode()
+		m.VTree.EndEditNode()
 		m.edit.Hide()
 	}
 	return true
 }
 
-func (m *TStringEditLink) PrepareEdit(tree lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) bool {
+func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TStringEditLink PrepareEdit")
 	if !m.edit.IsValid() {
 		m.CreateEdit()
 	}
-	m.tree = lcl.AsLazVirtualStringTree(tree)
-	m.node = node
-	m.column = column
+	m.VTree = tree
+	m.Node = node
+	m.Column = column
 	// 节点的初始大小、字体和文本。
-	m.tree.GetTextInfo(node, column, m.edit.Font(), &m.textBounds, &m.text)
+	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.textBounds, &m.text)
 	log.Println("PrepareEdit GetTextInfo:", m.textBounds, m.text)
 	m.edit.Font().SetColor(colors.ClWindowText)
-	m.edit.SetParent(m.tree)
+	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
 	m.edit.SetText(m.text)
 	if column <= -1 {
-		m.edit.SetBiDiMode(m.tree.BiDiMode())
-		m.alignment = m.tree.Alignment()
+		m.edit.SetBiDiMode(m.VTree.BiDiMode())
+		m.alignment = m.VTree.Alignment()
 	} else {
-		columns := m.tree.Header().Columns()
+		columns := m.VTree.Header().Columns()
 		m.edit.SetBiDiMode(columns.ItemsWithColumnIndexToVirtualTreeColumn(column).BiDiMode())
 		m.alignment = columns.ItemsWithColumnIndexToVirtualTreeColumn(column).Alignment()
 	}
@@ -155,7 +127,7 @@ func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
 
 func (m *TStringEditLink) SetBounds(R types.TRect) {
 	log.Println("TStringEditLink SetBounds", R)
-	columnRect := m.tree.GetDisplayRect(m.node, m.column, false, false, true)
+	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetHeight(columnRect.Height())
