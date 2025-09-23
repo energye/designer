@@ -180,6 +180,13 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 						data.Value = value
 					})
 					*outEditLink = checkBoxEditLink.AsIVTEditLink()
+				case PdtComboBox:
+					comboBoxEditLink := vtedit.NewComboBoxEditLink()
+					comboBoxEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
+						log.Println("CheckBoxEditLink NewData:", value, node == ceNode)
+						data.Value = value
+					})
+					*outEditLink = comboBoxEditLink.AsIVTEditLink()
 				}
 			}
 		}
@@ -192,13 +199,6 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				*cellText = data.Name
 			} else if column == 1 {
 				*cellText = data.Value
-				//switch data.Type {
-				//case PdtCheckBox:
-				//	//m.propertyTree.EditNode(node, column)
-				//	*cellText = ""
-				//default:
-				//	*cellText = data.Value
-				//}
 			}
 		}
 	})

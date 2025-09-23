@@ -101,8 +101,6 @@ func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left + 5
 	R.Top = columnRect.Top
-	//R.SetHeight(columnRect.Height())
-	//R.SetWidth(columnRect.Width())
 	m.edit.SetBoundsRect(R)
 
 }

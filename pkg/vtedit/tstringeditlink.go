@@ -12,11 +12,11 @@ import (
 
 type TStringEditLink struct {
 	*TBaseEditLink
-	edit       lcl.IEdit
-	textBounds types.TRect
-	text       string
-	alignment  types.TAlignment
-	stopping   bool
+	edit      lcl.IEdit
+	bounds    types.TRect
+	text      string
+	alignment types.TAlignment
+	stopping  bool
 }
 
 func NewStringEditLink() *TStringEditLink {
@@ -88,8 +88,8 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	m.Node = node
 	m.Column = column
 	// 节点的初始大小、字体和文本。
-	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.textBounds, &m.text)
-	log.Println("  PrepareEdit GetTextInfo:", m.textBounds, m.text)
+	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.bounds, &m.text)
+	log.Println("  PrepareEdit GetTextInfo:", m.bounds, m.text)
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
@@ -111,7 +111,7 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 			m.alignment = types.TaLeftJustify
 		}
 	}
-	m.edit.SetAlignment(m.alignment)
+	//m.edit.SetAlignment(m.alignment)
 	return true
 }
 
