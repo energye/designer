@@ -5,8 +5,11 @@ import (
 	"github.com/energye/lcl/types"
 )
 
+// Laz 虚拟树动态创建组件
+
 type TOnNewData func(node types.PVirtualNode, column int32, value string)
 
+// IBaseEditLink 基础接口，需被实现
 type IBaseEditLink interface {
 	lcl.IObject
 	SetOnNewData(fn TOnNewData)
@@ -20,6 +23,7 @@ type IBaseEditLink interface {
 	Destroy(sender lcl.IObject)
 }
 
+// TBaseEditLink 基础对象，被嵌套继承
 type TBaseEditLink struct {
 	lcl.TObject
 	baseEditLink lcl.ICustomVTEditLink
@@ -34,6 +38,7 @@ func (m *TBaseEditLink) AsIVTEditLink() lcl.IVTEditLink {
 	return lcl.AsVTEditLink(m.baseEditLink.AsIntfVTEditLink())
 }
 
+// NewEditLink 基础实现, 需实现 IBaseEditLink 接口
 func NewEditLink(self IBaseEditLink) *TBaseEditLink {
 	m := new(TBaseEditLink)
 	m.self = self

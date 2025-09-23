@@ -117,6 +117,9 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
 	comp.SetOnMouseUp(m.OnMouseUp)
+	comp.SetOnChange(func(sender lcl.IObject) {
+		comp.SetChecked(false)
+	})
 	m.drag = newDrag(designerForm.designerBox, DsAll)
 	m.drag.SetRelation(comp)
 	m.object = lcl.AsWinControl(comp)
