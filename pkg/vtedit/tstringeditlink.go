@@ -33,7 +33,6 @@ func (m *TStringEditLink) CreateEdit() {
 	m.edit.SetBorderStyle(types.BsSingle)
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
-	m.edit.SetParentColor(false)
 	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -112,6 +111,7 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 			m.alignment = types.TaLeftJustify
 		}
 	}
+	m.edit.SetAlignment(m.alignment)
 	return true
 }
 

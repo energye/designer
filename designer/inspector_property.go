@@ -69,8 +69,10 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		propTreeOptions := m.propertyTree.TreeOptions()
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
-		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToAlwaysSelectNode))
+		//propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToAlwaysSelectNode))
 		propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
+		//propColors := m.propertyTree.Colors()
+		//propColors.SetSelectionTextColor()
 
 		// 组件事件树列表
 		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
@@ -82,7 +84,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
-		//eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+		eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
 
 	}
 	// 初始化组件属性树
@@ -172,10 +174,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 					})
 					*outEditLink = textEditLink.AsIVTEditLink()
 				case PdtCheckBox:
-					checkBoxEditLink := vtedit.NewCheckBoxEditLink(m.propertyTree)
+					checkBoxEditLink := vtedit.NewCheckBoxEditLink()
 					checkBoxEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
 						log.Println("CheckBoxEditLink NewData:", value, node == ceNode)
-						//data.Value = value
+						data.Value = value
 					})
 					*outEditLink = checkBoxEditLink.AsIVTEditLink()
 				}
@@ -189,13 +191,14 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			if column == 0 {
 				*cellText = data.Name
 			} else if column == 1 {
-				switch data.Type {
-				case PdtCheckBox:
-					//m.propertyTree.EditNode(node, column)
-					*cellText = ""
-				default:
-					*cellText = data.Value
-				}
+				*cellText = data.Value
+				//switch data.Type {
+				//case PdtCheckBox:
+				//	//m.propertyTree.EditNode(node, column)
+				//	*cellText = ""
+				//default:
+				//	*cellText = data.Value
+				//}
 			}
 		}
 	})

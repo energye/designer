@@ -4,6 +4,8 @@ import "github.com/energye/lcl/types"
 
 // 查看器的数据类型
 
+// PropertyDataType 属性数据组件类型
+// 有哪些？TODO 0:按钮 1:复选框 2:下拉框 3:进度条 4:微调框 5:日期选择器
 type PropertyDataType int32
 
 const (

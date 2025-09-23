@@ -11,7 +11,6 @@ import (
 
 type TCheckBoxEditLink struct {
 	*TBaseEditLink
-	parent    lcl.IWinControl
 	edit      lcl.ICheckBox
 	bounds    types.TRect
 	value     bool
@@ -19,22 +18,22 @@ type TCheckBoxEditLink struct {
 	stopping  bool
 }
 
-func NewCheckBoxEditLink(parent lcl.IWinControl) *TCheckBoxEditLink {
+func NewCheckBoxEditLink() *TCheckBoxEditLink {
 	m := new(TCheckBoxEditLink)
 	m.TBaseEditLink = NewEditLink(m)
-	m.parent = parent
 	m.CreateEdit()
 	return m
 }
 
 func (m *TCheckBoxEditLink) CreateEdit() {
 	log.Println("TCheckBoxEditLink CreateEdit")
-	m.edit = lcl.NewCheckBox(m.parent)
-	m.edit.SetParent(m.parent)
+	m.edit = lcl.NewCheckBox(nil)
 	m.edit.SetVisible(false)
-	m.edit.SetCaption("(False)")
+	m.edit.SetCaption("(false)")
 	m.edit.SetDoubleBuffered(true)
-	m.edit.SetParentColor(false)
+	m.edit.SetOnChange(func(sender lcl.IObject) {
+		m.edit.SetCaption("(" + strconv.FormatBool(m.edit.Checked()) + ")")
+	})
 }
 func (m *TCheckBoxEditLink) BeginEdit() bool {
 	if !m.stopping {
@@ -79,10 +78,8 @@ func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 	if v, err := strconv.ParseBool(value); err == nil {
 		m.value = v
 	}
-	// 节点的初始大小、字体和文本。
-	log.Println("  PrepareEdit GetTextInfo:", m.bounds, m.value)
-	//m.edit.SetParent(m.VTree)
-	//m.edit.HandleNeeded()
+	m.edit.SetParent(m.VTree)
+	m.edit.HandleNeeded()
 	m.edit.SetChecked(m.value)
 	return true
 }
