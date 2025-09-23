@@ -101,3 +101,24 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.object = lcl.AsWinControl(comp)
 	return m
 }
+
+func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.owner = designerForm
+	designerForm.addDesignerComponent(m)
+	comp := lcl.NewCheckBox(designerForm.designerBox)
+	comp.SetParent(designerForm.designerBox)
+	comp.SetLeft(x)
+	comp.SetTop(y)
+	comp.SetCursor(types.CrSize)
+	comp.SetCaption(designerForm.GetComponentCaptionName("CheckBox"))
+	comp.SetChecked(false)
+	comp.SetShowHint(true)
+	comp.SetOnMouseMove(m.OnMouseMove)
+	comp.SetOnMouseDown(m.OnMouseDown)
+	comp.SetOnMouseUp(m.OnMouseUp)
+	m.drag = newDrag(designerForm.designerBox, DsAll)
+	m.drag.SetRelation(comp)
+	m.object = lcl.AsWinControl(comp)
+	return m
+}

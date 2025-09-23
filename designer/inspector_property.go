@@ -82,7 +82,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
 		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
-		eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+		//eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
 
 	}
 	// 初始化组件属性树
@@ -92,13 +92,18 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	{
 		for i := 1; i <= 5; i++ {
 			node := m.propertyTree.AddChild(0, 0)
-			treePropertyNodeDatas[node] = &TTreePropertyNodeData{Name: "Name" + strconv.Itoa(i), Value: "Value" + strconv.Itoa(i)}
+			treePropertyNodeDatas[node] = &TTreePropertyNodeData{Value: "Value" + strconv.Itoa(i)}
 			if i == 1 {
 				treePropertyNodeDatas[node].Type = PdtText
+				treePropertyNodeDatas[node].Name = "TextEdit"
 			} else if i == 2 {
 				treePropertyNodeDatas[node].Type = PdtCheckBox
+				treePropertyNodeDatas[node].Name = "CheckBox"
 			} else if i == 3 {
 				treePropertyNodeDatas[node].Type = PdtComboBox
+				treePropertyNodeDatas[node].Name = "CombBox"
+			} else {
+				treePropertyNodeDatas[node].Name = "Name" + strconv.Itoa(i)
 			}
 
 		}
@@ -125,9 +130,11 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
-		node := sender.FocusedNode()
-		if data := GetPropertyNodeData(node); data != nil {
-			m.propertyTree.EditNode(node, column)
+		if column == 1 {
+			node := sender.FocusedNode()
+			if data := GetPropertyNodeData(node); data != nil {
+				m.propertyTree.EditNode(node, column)
+			}
 		}
 	})
 	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
@@ -154,14 +161,25 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		log.Println("propertyTree OnCreateEditor column:", column)
 		if column == 1 {
 			ceNode := node
-			strEditLink := vtedit.NewStringEditLink()
-			strEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
-				log.Println("StringEditLink NewData:", value, node == ceNode)
-				if data := GetPropertyNodeData(node); data != nil {
-					data.Value = value
+
+			if data := GetPropertyNodeData(node); data != nil {
+				switch data.Type {
+				case PdtText:
+					textEditLink := vtedit.NewStringEditLink()
+					textEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
+						log.Println("StringEditLink NewData:", value, node == ceNode)
+						data.Value = value
+					})
+					*outEditLink = textEditLink.AsIVTEditLink()
+				case PdtCheckBox:
+					checkBoxEditLink := vtedit.NewCheckBoxEditLink(m.propertyTree)
+					checkBoxEditLink.SetOnNewData(func(node types.PVirtualNode, column int32, value string) {
+						log.Println("CheckBoxEditLink NewData:", value, node == ceNode)
+						//data.Value = value
+					})
+					*outEditLink = checkBoxEditLink.AsIVTEditLink()
 				}
-			})
-			*outEditLink = strEditLink.AsIVTEditLink()
+			}
 		}
 	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
@@ -171,7 +189,13 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			if column == 0 {
 				*cellText = data.Name
 			} else if column == 1 {
-				*cellText = data.Value
+				switch data.Type {
+				case PdtCheckBox:
+					//m.propertyTree.EditNode(node, column)
+					*cellText = ""
+				default:
+					*cellText = data.Value
+				}
 			}
 		}
 	})

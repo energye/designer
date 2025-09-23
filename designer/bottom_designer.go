@@ -125,6 +125,7 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	// 测试控件
 	NewButtonDesigner(form, 50, 50)
 	NewEditDesigner(form, 150, 150)
+	NewCheckBoxDesigner(form, 150, 200)
 
 	return form
 }

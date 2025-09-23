@@ -32,6 +32,8 @@ func (m *TStringEditLink) CreateEdit() {
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
 	m.edit.SetAutoSize(false)
+	m.edit.SetDoubleBuffered(true)
+	m.edit.SetParentColor(false)
 	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -63,13 +65,13 @@ func (m *TStringEditLink) CancelEdit() bool {
 }
 
 func (m *TStringEditLink) EndEdit() bool {
-	text := m.edit.Text()
-	log.Println("TStringEditLink EndEdit Modified:", m.edit.Modified(), text, "m.stopping:", m.stopping)
+	value := m.edit.Text()
+	log.Println("TStringEditLink EndEdit Modified:", m.edit.Modified(), "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		if m.edit.Modified() {
 			if m.OnNewData != nil {
-				m.OnNewData(m.Node, m.Column, text)
+				m.OnNewData(m.Node, m.Column, value)
 			}
 		}
 		m.VTree.EndEditNode()
@@ -80,7 +82,7 @@ func (m *TStringEditLink) EndEdit() bool {
 
 func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TStringEditLink PrepareEdit")
-	if !m.edit.IsValid() {
+	if m.edit == nil || !m.edit.IsValid() {
 		m.CreateEdit()
 	}
 	m.VTree = tree
@@ -88,7 +90,7 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	m.Column = column
 	// 节点的初始大小、字体和文本。
 	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.textBounds, &m.text)
-	log.Println("PrepareEdit GetTextInfo:", m.textBounds, m.text)
+	log.Println("  PrepareEdit GetTextInfo:", m.textBounds, m.text)
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
