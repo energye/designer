@@ -22,11 +22,11 @@ func NewCheckBoxEditLink(bindData *TNodeData) *TCheckBoxEditLink {
 	m := new(TCheckBoxEditLink)
 	m.TBaseEditLink = NewEditLink(m)
 	m.BindData = bindData
-	m.CreateEdit()
+	m.Create()
 	return m
 }
 
-func (m *TCheckBoxEditLink) CreateEdit() {
+func (m *TCheckBoxEditLink) Create() {
 	log.Println("TCheckBoxEditLink CreateEdit")
 	m.checkbox = lcl.NewCheckBox(nil)
 	m.checkbox.SetVisible(false)
@@ -36,6 +36,7 @@ func (m *TCheckBoxEditLink) CreateEdit() {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
 	})
 }
+
 func (m *TCheckBoxEditLink) BeginEdit() bool {
 	if !m.stopping {
 		m.checkbox.SetVisible(true)
@@ -68,7 +69,7 @@ func (m *TCheckBoxEditLink) EndEdit() bool {
 func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TCheckBoxEditLink PrepareEdit")
 	if m.checkbox == nil || m.checkbox.IsValid() {
-		m.CreateEdit()
+		m.Create()
 	}
 	m.VTree = tree
 	m.Node = node
