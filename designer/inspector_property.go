@@ -67,7 +67,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.propertyTree.SetAlign(types.AlClient)
 		m.propertyTree.SetLineStyle(types.LsSolid)
 		m.propertyTree.SetDefaultNodeHeight(28)
-		m.propertyTree.SetIndent(0)
+		m.propertyTree.SetIndent(8)
 		propTreeOptions := m.propertyTree.TreeOptions()
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
@@ -103,12 +103,13 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 		node = m.propertyTree.AddChild(0, 0)
 		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", BoolValue: true, StringValue: "",
-			CheckBoxValue: []vtedit.TNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
+			CheckBoxValue: []*vtedit.TNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", BoolValue: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", BoolValue: false}}}
 		AddPropertyNodeData(node, data)
+		AddPropertyNodeChildNodeData(m.propertyTree, node, data.CheckBoxValue)
 
 		node = m.propertyTree.AddChild(0, 0)
 		data = &vtedit.TNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
-			ComboBoxValue: []vtedit.TNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
+			ComboBoxValue: []*vtedit.TNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
 		AddPropertyNodeData(node, data)
 
 		//node = m.propertyTree.AddChild(0, 0)
@@ -167,10 +168,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	//		}
 	//	}
 	//})
-	m.propertyTree.SetOnHeaderDraw(func(sender lcl.IVTHeader, headerCanvas lcl.ICanvas, column lcl.IVirtualTreeColumn, R types.TRect,
-		hover bool, pressed bool, dropMark types.TVTDropMarkMode) {
 
-	})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
@@ -257,6 +255,13 @@ func ResetPropertyNodeData() {
 
 func AddPropertyNodeData(node types.PVirtualNode, newData *vtedit.TNodeData) {
 	propertyTreeDataList[node] = newData
+}
+
+func AddPropertyNodeChildNodeData(tree lcl.ILazVirtualStringTree, parentNode types.PVirtualNode, dataList []*vtedit.TNodeData) {
+	for _, data := range dataList {
+		childNode := tree.AddChild(parentNode, 0)
+		AddPropertyNodeData(childNode, data)
+	}
 }
 
 func GetPropertyNodeData(nodeKey types.PVirtualNode) *vtedit.TNodeData {

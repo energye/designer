@@ -24,7 +24,7 @@ type TNodeData struct {
 	StringValue   string           // 属性值 string
 	DoubleValue   float64          // 属性值 double
 	BoolValue     bool             // 属性值 boolean
-	CheckBoxValue []TNodeData      // 属性值 checkbox
-	ComboBoxValue []TNodeData      // 属性值 combobox
+	CheckBoxValue []*TNodeData     // 属性值 checkbox
+	ComboBoxValue []*TNodeData     // 属性值 combobox
 	Type          PropertyDataType // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
