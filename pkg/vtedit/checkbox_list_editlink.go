@@ -36,6 +36,10 @@ func (m *TCheckBoxListEditLink) Create() {
 	m.edit.SetReadOnly(true)
 }
 
+func (m *TCheckBoxListEditLink) AddChild() {
+
+}
+
 func (m *TCheckBoxListEditLink) BeginEdit() bool {
 	if !m.stopping {
 		m.edit.Show()
@@ -77,6 +81,9 @@ func (m *TCheckBoxListEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
+
+	m.AddChild()
+
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
 		m.alignment = m.VTree.Alignment()
