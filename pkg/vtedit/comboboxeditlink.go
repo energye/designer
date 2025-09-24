@@ -4,6 +4,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"github.com/energye/lcl/types/keys"
 	"log"
 )
 
@@ -36,10 +37,18 @@ func (m *TComboBoxEditLink) CreateEdit() {
 	m.combobox.SetOnChange(func(sender lcl.IObject) {
 		m.BindData.Index = m.combobox.ItemIndex()
 		m.BindData.StringValue = m.combobox.Text()
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.VTree.EndEditNode()
-		})
 	})
+	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+		if *key == keys.VkReturn {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.VTree.EndEditNode()
+			})
+		}
+	})
+	items := m.combobox.Items()
+	for _, item := range m.BindData.ComboBoxValue {
+		items.Add(item.StringValue)
+	}
 }
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。

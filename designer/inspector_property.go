@@ -96,13 +96,13 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		AddPropertyNodeData(node, data)
 
 		node = m.propertyTree.AddChild(0, 0)
-		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", StringValue: "Value",
+		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", BoolValue: true,
 			CheckBoxValue: []vtedit.TNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
 		AddPropertyNodeData(node, data)
 
 		node = m.propertyTree.AddChild(0, 0)
-		data = &vtedit.TNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value",
-			ComboBoxValue: []vtedit.TNodeData{{Name: "Name1", Index: 0, StringValue: "Value1"}, {Name: "Name2", Index: 1, StringValue: "Value2"}}}
+		data = &vtedit.TNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
+			ComboBoxValue: []vtedit.TNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
 		AddPropertyNodeData(node, data)
 	}
 }
@@ -114,13 +114,13 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
-	propNameCol.SetText("Name")
+	propNameCol.SetText("名")
 	propNameCol.SetWidth(100)
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
-	propValueCol.SetText("Value")
+	propValueCol.SetText("值")
 	propValueCol.SetWidth(leftBoxWidth - 150)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
