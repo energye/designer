@@ -10,6 +10,7 @@ const (
 	PdtText PropertyDataType = iota
 	PdtRadiobutton
 	PdtCheckBox
+	PdtCheckBoxList
 	PdtComboBox
 	PdtTree
 	PdtClassDialog

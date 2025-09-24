@@ -23,12 +23,12 @@ func NewStringEditLink(bindData *TNodeData) *TStringEditLink {
 	m := new(TStringEditLink)
 	m.TBaseEditLink = NewEditLink(m)
 	m.BindData = bindData
-	m.CreateEdit()
+	m.Create()
 	return m
 }
 
-func (m *TStringEditLink) CreateEdit() {
-	log.Println("TStringEditLink CreateEdit")
+func (m *TStringEditLink) Create() {
+	log.Println("TStringEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
@@ -81,7 +81,7 @@ func (m *TStringEditLink) EndEdit() bool {
 func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TStringEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
-		m.CreateEdit()
+		m.Create()
 	}
 	m.VTree = tree
 	m.Node = node
@@ -110,14 +110,11 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 			m.alignment = types.TaLeftJustify
 		}
 	}
-	//m.edit.SetAlignment(m.alignment)
 	return true
 }
 
 func (m *TStringEditLink) GetBounds() types.TRect {
 	log.Println("TStringEditLink GetBounds")
-	//columnRect := m.tree.GetDisplayRect(m.node, m.column, false, false, true)
-	//return columnRect
 	return m.edit.BoundsRect()
 }
 
