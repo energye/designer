@@ -1,6 +1,7 @@
 package vtedit
 
 import (
+	"bytes"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -34,6 +35,26 @@ func (m *TCheckBoxListEditLink) Create() {
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
 	m.edit.SetReadOnly(true)
+	m.UpdateCaptionText()
+}
+
+func (m *TCheckBoxListEditLink) UpdateCaptionText() {
+	values := m.BindData.CheckBoxValue
+	buf := bytes.Buffer{}
+	buf.WriteString("[")
+	i := 0
+	for _, item := range values {
+		if item.Checked {
+			if i > 0 {
+				buf.WriteString(",")
+			}
+			buf.WriteString(item.Name)
+			i++
+		}
+	}
+	buf.WriteString("]")
+	m.BindData.StringValue = buf.String()
+	m.edit.SetText(buf.String())
 }
 
 func (m *TCheckBoxListEditLink) AddChild() {

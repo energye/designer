@@ -93,14 +93,16 @@ func (m *TCheckBoxEditLink) GetBounds() (R types.TRect) {
 
 func (m *TCheckBoxEditLink) ProcessMessage(msg *types.TLMessage) {
 	log.Println("TCheckBoxEditLink ProcessMessage")
-	//lcl.ControlHelper.WindowProc(m.checkbox, msg)
+	lcl.ControlHelper.WindowProc(m.checkbox, msg)
 }
 
 func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
 	log.Println("TCheckBoxEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left + 5
-	R.Top = columnRect.Top
+	R.Top = columnRect.Top + 3
+	//R.SetHeight(columnRect.Height())
+	//R.SetWidth(columnRect.Width())
 	m.checkbox.SetBoundsRect(R)
 
 }

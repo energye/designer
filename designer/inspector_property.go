@@ -4,6 +4,7 @@ import (
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 	"log"
 	"strconv"
 	"unsafe"
@@ -65,6 +66,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.propertyTree.SetBorderStyleToBorderStyle(types.BsNone)
 		m.propertyTree.SetAlign(types.AlClient)
 		m.propertyTree.SetLineStyle(types.LsSolid)
+		m.propertyTree.SetDefaultNodeHeight(28)
 		m.propertyTree.SetIndent(0)
 		propTreeOptions := m.propertyTree.TreeOptions()
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
@@ -100,7 +102,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		AddPropertyNodeData(node, data)
 
 		node = m.propertyTree.AddChild(0, 0)
-		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBoxList, Name: "CheckBoxList", BoolValue: true,
+		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", BoolValue: true, StringValue: "",
 			CheckBoxValue: []vtedit.TNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
 		AddPropertyNodeData(node, data)
 
@@ -109,10 +111,10 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 			ComboBoxValue: []vtedit.TNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
 		AddPropertyNodeData(node, data)
 
-		node = m.propertyTree.AddChild(0, 0)
-		data = &vtedit.TNodeData{Type: vtedit.PdtCheckBoxDraw, Name: "CheckBoxDraw", BoolValue: true,
-			CheckBoxValue: []vtedit.TNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
-		AddPropertyNodeData(node, data)
+		//node = m.propertyTree.AddChild(0, 0)
+		//data = &vtedit.TNodeData{Type: vtedit.PdtCheckBoxDraw, Name: "CheckBoxDraw", BoolValue: true,
+		//	CheckBoxValue: []vtedit.TNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
+		//AddPropertyNodeData(node, data)
 	}
 }
 
@@ -120,6 +122,8 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	header := m.propertyTree.Header()
 	header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
+	header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
+	header.Font().SetColor(colors.ClGray)
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
@@ -163,6 +167,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	//		}
 	//	}
 	//})
+	m.propertyTree.SetOnHeaderDraw(func(sender lcl.IVTHeader, headerCanvas lcl.ICanvas, column lcl.IVirtualTreeColumn, R types.TRect,
+		hover bool, pressed bool, dropMark types.TVTDropMarkMode) {
+
+	})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
@@ -226,6 +234,8 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 					*cellText = data.StringValue
 				case vtedit.PdtCheckBox:
 					*cellText = strconv.FormatBool(data.BoolValue)
+				case vtedit.PdtCheckBoxList:
+					*cellText = data.StringValue
 				case vtedit.PdtComboBox:
 					*cellText = data.StringValue
 				default:
