@@ -46,6 +46,7 @@ func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *TreeNodeDa
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
+
 	componentTreeTitle := lcl.NewLabel(m.treeBox)
 	componentTreeTitle.SetParent(m.treeBox)
 	componentTreeTitle.SetCaption("组件")

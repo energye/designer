@@ -11,33 +11,34 @@ import (
 
 type TCheckBoxEditLink struct {
 	*TBaseEditLink
-	edit      lcl.ICheckBox
+	checkbox  lcl.ICheckBox
 	bounds    types.TRect
 	value     bool
 	alignment types.TAlignment
 	stopping  bool
 }
 
-func NewCheckBoxEditLink() *TCheckBoxEditLink {
+func NewCheckBoxEditLink(bindData *TNodeData) *TCheckBoxEditLink {
 	m := new(TCheckBoxEditLink)
 	m.TBaseEditLink = NewEditLink(m)
+	m.BindData = bindData
 	m.CreateEdit()
 	return m
 }
 
 func (m *TCheckBoxEditLink) CreateEdit() {
 	log.Println("TCheckBoxEditLink CreateEdit")
-	m.edit = lcl.NewCheckBox(nil)
-	m.edit.SetVisible(false)
-	m.edit.SetCaption("(false)")
-	m.edit.SetDoubleBuffered(true)
-	m.edit.SetOnChange(func(sender lcl.IObject) {
-		m.edit.SetCaption("(" + strconv.FormatBool(m.edit.Checked()) + ")")
+	m.checkbox = lcl.NewCheckBox(nil)
+	m.checkbox.SetVisible(false)
+	m.checkbox.SetCaption("(false)")
+	m.checkbox.SetDoubleBuffered(true)
+	m.checkbox.SetOnChange(func(sender lcl.IObject) {
+		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
 	})
 }
 func (m *TCheckBoxEditLink) BeginEdit() bool {
 	if !m.stopping {
-		m.edit.SetVisible(true)
+		m.checkbox.SetVisible(true)
 	}
 	return true
 }
@@ -46,29 +47,27 @@ func (m *TCheckBoxEditLink) CancelEdit() bool {
 	log.Println("TCheckBoxEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
-		m.edit.SetVisible(false)
+		m.checkbox.SetVisible(false)
 		m.VTree.CancelEditNode()
 	}
 	return true
 }
 
 func (m *TCheckBoxEditLink) EndEdit() bool {
-	value := m.edit.Checked()
+	value := m.checkbox.Checked()
 	log.Println("TCheckBoxEditLink EndEdit", "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		if m.OnNewData != nil {
-			m.OnNewData(m.Node, m.Column, strconv.FormatBool(value))
-		}
+		m.BindData.BoolValue = value
 		m.VTree.EndEditNode()
-		m.edit.SetVisible(false)
+		m.checkbox.SetVisible(false)
 	}
 	return true
 }
 
 func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TCheckBoxEditLink PrepareEdit")
-	if m.edit == nil || m.edit.IsValid() {
+	if m.checkbox == nil || m.checkbox.IsValid() {
 		m.CreateEdit()
 	}
 	m.VTree = tree
@@ -78,9 +77,9 @@ func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 	if v, err := strconv.ParseBool(value); err == nil {
 		m.value = v
 	}
-	m.edit.SetParent(m.VTree)
-	m.edit.HandleNeeded()
-	m.edit.SetChecked(m.value)
+	m.checkbox.SetParent(m.VTree)
+	m.checkbox.HandleNeeded()
+	m.checkbox.SetChecked(m.value)
 	return true
 }
 
@@ -93,7 +92,7 @@ func (m *TCheckBoxEditLink) GetBounds() (R types.TRect) {
 
 func (m *TCheckBoxEditLink) ProcessMessage(msg *types.TLMessage) {
 	log.Println("TCheckBoxEditLink ProcessMessage")
-	//lcl.ControlHelper.WindowProc(m.edit, msg)
+	//lcl.ControlHelper.WindowProc(m.checkbox, msg)
 }
 
 func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
@@ -101,11 +100,11 @@ func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left + 5
 	R.Top = columnRect.Top
-	m.edit.SetBoundsRect(R)
+	m.checkbox.SetBoundsRect(R)
 
 }
 
 func (m *TCheckBoxEditLink) Destroy(sender lcl.IObject) {
 	log.Println("TCheckBoxEditLink Destroy")
-	m.edit.Free()
+	m.checkbox.Free()
 }

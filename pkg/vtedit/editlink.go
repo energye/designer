@@ -7,12 +7,9 @@ import (
 
 // Laz 虚拟树动态创建组件
 
-type TOnNewData func(node types.PVirtualNode, column int32, value string)
-
 // IBaseEditLink 基础接口，需被实现
 type IBaseEditLink interface {
 	lcl.IObject
-	SetOnNewData(fn TOnNewData)
 	BeginEdit() bool
 	CancelEdit() bool
 	EndEdit() bool
@@ -28,7 +25,7 @@ type TBaseEditLink struct {
 	lcl.TObject
 	baseEditLink lcl.ICustomVTEditLink
 	self         IBaseEditLink
-	OnNewData    TOnNewData
+	BindData     *TNodeData
 	VTree        lcl.ILazVirtualStringTree
 	Node         types.PVirtualNode
 	Column       int32
@@ -106,8 +103,4 @@ func (m *TBaseEditLink) OnDestroy(sender lcl.IObject) {
 		m.self.Destroy(sender)
 	}
 	m.self = nil
-}
-
-func (m *TBaseEditLink) SetOnNewData(fn TOnNewData) {
-	m.OnNewData = fn
 }

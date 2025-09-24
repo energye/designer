@@ -11,28 +11,31 @@ import (
 
 type TComboBoxEditLink struct {
 	*TBaseEditLink
-	edit      lcl.IComboBox
+	combobox  lcl.IComboBox
 	bounds    types.TRect
 	text      string
 	alignment types.TAlignment
 	stopping  bool
 }
 
-func NewComboBoxEditLink() *TComboBoxEditLink {
+func NewComboBoxEditLink(bindData *TNodeData) *TComboBoxEditLink {
 	m := new(TComboBoxEditLink)
 	m.TBaseEditLink = NewEditLink(m)
+	m.BindData = bindData
 	m.CreateEdit()
 	return m
 }
 
 func (m *TComboBoxEditLink) CreateEdit() {
 	log.Println("TComboBoxEditLink CreateEdit")
-	m.edit = lcl.NewComboBox(nil)
-	m.edit.SetVisible(false)
-	m.edit.SetBorderStyle(types.BsSingle)
-	m.edit.SetAutoSize(false)
-	m.edit.SetDoubleBuffered(true)
-	m.edit.SetOnChange(func(sender lcl.IObject) {
+	m.combobox = lcl.NewComboBox(nil)
+	m.combobox.SetVisible(false)
+	m.combobox.SetBorderStyle(types.BsSingle)
+	m.combobox.SetAutoSize(false)
+	m.combobox.SetDoubleBuffered(true)
+	m.combobox.SetOnChange(func(sender lcl.IObject) {
+		m.BindData.Index = m.combobox.ItemIndex()
+		m.BindData.StringValue = m.combobox.Text()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.VTree.EndEditNode()
 		})
@@ -43,9 +46,9 @@ func (m *TComboBoxEditLink) CreateEdit() {
 func (m *TComboBoxEditLink) BeginEdit() bool {
 	log.Println("TComboBoxEditLink BeginEdit")
 	if !m.stopping {
-		m.edit.Show()
-		m.edit.SelectAll()
-		m.edit.SetFocus()
+		m.combobox.Show()
+		m.combobox.SelectAll()
+		m.combobox.SetFocus()
 	}
 	return true
 }
@@ -54,52 +57,50 @@ func (m *TComboBoxEditLink) CancelEdit() bool {
 	log.Println("TComboBoxEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
-		m.edit.Hide()
+		m.combobox.Hide()
 		m.VTree.CancelEditNode()
 	}
 	return true
 }
 
 func (m *TComboBoxEditLink) EndEdit() bool {
-	value := m.edit.Text()
+	value := m.combobox.Text()
 	log.Println("TComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		if m.OnNewData != nil {
-			m.OnNewData(m.Node, m.Column, value)
-		}
+		m.BindData.Index = m.combobox.ItemIndex()
+		m.BindData.StringValue = m.combobox.Text()
 		m.VTree.EndEditNode()
-		m.edit.Hide()
+		m.combobox.Hide()
 	}
 	return true
 }
 
 func (m *TComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
 	log.Println("TComboBoxEditLink PrepareEdit")
-	if m.edit == nil || !m.edit.IsValid() {
+	if m.combobox == nil || !m.combobox.IsValid() {
 		m.CreateEdit()
 	}
 	m.VTree = tree
 	m.Node = node
 	m.Column = column
-	// 节点的初始大小、字体和文本。
-	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.bounds, &m.text)
+	m.VTree.GetTextInfo(node, column, m.combobox.Font(), &m.bounds, &m.text)
 	log.Println("  PrepareEdit GetTextInfo:", m.bounds, m.text)
-	m.edit.Font().SetColor(colors.ClWindowText)
-	m.edit.SetParent(m.VTree)
-	m.edit.HandleNeeded()
-	m.edit.SetText(m.text)
+	m.combobox.Font().SetColor(colors.ClWindowText)
+	m.combobox.SetParent(m.VTree)
+	m.combobox.HandleNeeded()
+	m.combobox.SetText(m.text)
 	return true
 }
 
 func (m *TComboBoxEditLink) GetBounds() types.TRect {
 	log.Println("TComboBoxEditLink GetBounds")
-	return m.edit.BoundsRect()
+	return m.combobox.BoundsRect()
 }
 
 func (m *TComboBoxEditLink) ProcessMessage(msg *types.TLMessage) {
 	log.Println("TComboBoxEditLink ProcessMessage")
-	lcl.ControlHelper.WindowProc(m.edit, msg)
+	lcl.ControlHelper.WindowProc(m.combobox, msg)
 }
 
 func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
@@ -108,10 +109,10 @@ func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetWidth(columnRect.Width())
-	m.edit.SetBoundsRect(R)
+	m.combobox.SetBoundsRect(R)
 }
 
 func (m *TComboBoxEditLink) Destroy(sender lcl.IObject) {
 	log.Println("TComboBoxEditLink Destroy")
-	m.edit.Free()
+	m.combobox.Free()
 }

@@ -19,9 +19,10 @@ type TStringEditLink struct {
 	stopping  bool
 }
 
-func NewStringEditLink() *TStringEditLink {
+func NewStringEditLink(bindData *TNodeData) *TStringEditLink {
 	m := new(TStringEditLink)
 	m.TBaseEditLink = NewEditLink(m)
+	m.BindData = bindData
 	m.CreateEdit()
 	return m
 }
@@ -69,9 +70,7 @@ func (m *TStringEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		if m.edit.Modified() {
-			if m.OnNewData != nil {
-				m.OnNewData(m.Node, m.Column, value)
-			}
+			m.BindData.StringValue = value
 		}
 		m.VTree.EndEditNode()
 		m.edit.Hide()
