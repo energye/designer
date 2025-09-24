@@ -138,37 +138,23 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	propValueCol.SetWidth(leftBoxWidth - 150)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-	//m.propertyTree.SetOnBeforeCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
-	//	column int32, cellPaintMode types.TVTCellPaintMode, cellRect types.TRect, contentRect *types.TRect) {
-	//	log.Println("propertyTree OnBeforeCellPaint column:", column, "cellRect:", cellRect, "contentRect:", *contentRect)
-	//	if column == 1 {
-	//		if data := GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtCheckBoxDraw {
-	//			BoxRect := cellRect
-	//			BoxRect.Left = BoxRect.Left + (BoxRect.Right-BoxRect.Left-16)/2
-	//			BoxRect.Top = BoxRect.Top + (BoxRect.Bottom-BoxRect.Top-16)/2
-	//			BoxRect.Right = BoxRect.Left + 16
-	//			BoxRect.Bottom = BoxRect.Top + 16
-	//			OldColor := targetCanvas.BrushToBrush().Color()
-	//			defer func() {
-	//				targetCanvas.BrushToBrush().SetColor(OldColor)
-	//			}()
-	//			targetCanvas.BrushToBrush().SetColor(colors.ClWindow)
-	//			targetCanvas.FillRectWithRect(BoxRect)
-	//
-	//			targetCanvas.PenToPen().SetColor(colors.ClGray)
-	//			targetCanvas.RectangleWithRect(BoxRect)
-	//
-	//			//if data.Checked {
-	//			targetCanvas.PenToPen().SetColor(colors.ClBlue)
-	//			targetCanvas.PenToPen().SetWidth(2)
-	//			targetCanvas.MoveToWithIntX2(BoxRect.Left+3, BoxRect.Top+8)
-	//			targetCanvas.LineToWithIntX2(BoxRect.Left+7, BoxRect.Top+12)
-	//			targetCanvas.LineToWithIntX2(BoxRect.Left+13, BoxRect.Top+4)
-	//			//}
-	//		}
-	//	}
-	//})
-
+	m.propertyTree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
+		column int32, textType types.TVSTTextType) {
+		log.Println("propertyTree OnPaintText column:", column)
+		if column == 0 {
+			font := targetCanvas.FontToFont()
+			font.SetStyle(font.Style().Include(types.FsBold))
+			level := sender.GetNodeLevel(node)
+			log.Println("  OnPaintText level:", level)
+			switch level {
+			case 0:
+				font.SetColor(colors.ClBlack)
+			case 1:
+				font.SetColor(colors.ClBlue)
+			default:
+			}
+		}
+	})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
