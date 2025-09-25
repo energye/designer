@@ -1,6 +1,7 @@
 package vtedit
 
 import (
+	"bytes"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"log"
@@ -34,6 +35,27 @@ func (m *TCheckBoxEditLink) Create() {
 	m.checkbox.SetDoubleBuffered(true)
 	m.checkbox.SetOnChange(func(sender lcl.IObject) {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
+		m.BindData.Checked = m.checkbox.Checked()
+		node := m.Node.ToGo()
+		parentNode := node.Parent
+		if pData := GetPropertyNodeData(parentNode); pData != nil {
+			dataList := pData.CheckBoxValue
+			buf := bytes.Buffer{}
+			buf.WriteString("[")
+			i := 0
+			for _, item := range dataList {
+				if item.Checked {
+					if i > 0 {
+						buf.WriteString(",")
+					}
+					buf.WriteString(item.Name)
+					i++
+				}
+			}
+			buf.WriteString("]")
+			pData.StringValue = buf.String()
+			m.VTree.InvalidateNode(parentNode)
+		}
 	})
 }
 

@@ -20,6 +20,9 @@ type IBaseEditLink interface {
 	Destroy(sender lcl.IObject)
 }
 
+type IBaseEditLinkHook interface {
+}
+
 // TBaseEditLink 基础对象，被嵌套继承
 type TBaseEditLink struct {
 	lcl.TObject

@@ -94,18 +94,18 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	// 测试
 	{
 		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
-		AddPropertyNodeData(m.propertyTree, 0, data)
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", BoolValue: true}
-		AddPropertyNodeData(m.propertyTree, 0, data)
+		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", BoolValue: true, StringValue: "",
-			CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", BoolValue: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", BoolValue: false}}}
-		AddPropertyNodeData(m.propertyTree, 0, data)
+			CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
 			ComboBoxValue: []*vtedit.TEditLinkNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
-		AddPropertyNodeData(m.propertyTree, 0, data)
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
 		//node = m.propertyTree.AddChild(0, 0)
 		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxDraw, Name: "CheckBoxDraw", BoolValue: true,
@@ -168,7 +168,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		log.Println("propertyTree OnColumnClick column:", column)
 		if column == 1 {
 			node := sender.FocusedNode()
-			if data := GetPropertyNodeData(node); data != nil {
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				m.propertyTree.EditNode(node, column)
 			}
 		}
@@ -178,7 +178,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		// edit: 2. 第二列可以编辑
 		log.Println("propertyTree OnEditing column:", column)
 		if column == 1 {
-			if data := GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
+			if data := vtedit.GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
 				*allowed = true
 				return
 			}
@@ -196,7 +196,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		// edit: 3. 创建编辑或组件
 		log.Println("propertyTree OnCreateEditor column:", column)
 		if column == 1 {
-			if data := GetPropertyNodeData(node); data != nil {
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type {
 				case vtedit.PdtText:
 					textEditLink := vtedit.NewStringEditLink(data)
@@ -217,7 +217,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
 		//log.Println("propertyTree OnGetText column:", column)
-		if data := GetPropertyNodeData(node); data != nil {
+		if data := vtedit.GetPropertyNodeData(node); data != nil {
 			if column == 0 {
 				*cellText = data.Name
 			} else if column == 1 {
@@ -225,7 +225,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				case vtedit.PdtText:
 					*cellText = data.StringValue
 				case vtedit.PdtCheckBox:
-					*cellText = strconv.FormatBool(data.BoolValue)
+					*cellText = strconv.FormatBool(data.Checked)
 				case vtedit.PdtCheckBoxList:
 					*cellText = data.StringValue
 				case vtedit.PdtComboBox:
@@ -237,31 +237,4 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		}
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
-}
-
-var (
-	propertyTreeDataList = make(map[types.PVirtualNode]*vtedit.TEditLinkNodeData) // 组件属性数据列表
-)
-
-func ResetPropertyNodeData() {
-	propertyTreeDataList = make(map[types.PVirtualNode]*vtedit.TEditLinkNodeData)
-}
-
-func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *vtedit.TEditLinkNodeData) {
-	node := tree.AddChild(parent, 0)
-	propertyTreeDataList[node] = data
-	if data.Type == vtedit.PdtCheckBoxList {
-		dataList := data.CheckBoxValue
-		for _, itemData := range dataList {
-			itemData.Parent = data
-			AddPropertyNodeData(tree, node, itemData)
-		}
-	}
-}
-
-func GetPropertyNodeData(node types.PVirtualNode) *vtedit.TEditLinkNodeData {
-	if data, ok := propertyTreeDataList[node]; ok {
-		return data
-	}
-	return nil
 }
