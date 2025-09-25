@@ -13,8 +13,6 @@ import (
 type TCheckBoxEditLink struct {
 	*TBaseEditLink
 	checkbox  lcl.ICheckBox
-	bounds    types.TRect
-	value     bool
 	alignment types.TAlignment
 	stopping  bool
 }
@@ -98,11 +96,11 @@ func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 	m.Column = column
 	value := m.VTree.Text(m.Node, m.Column)
 	if v, err := strconv.ParseBool(value); err == nil {
-		m.value = v
+		m.BindData.Checked = v
 	}
 	m.checkbox.SetParent(m.VTree)
 	m.checkbox.HandleNeeded()
-	m.checkbox.SetChecked(m.value)
+	m.checkbox.SetChecked(m.BindData.Checked)
 	return true
 }
 

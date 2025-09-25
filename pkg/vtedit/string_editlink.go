@@ -14,7 +14,6 @@ type TStringEditLink struct {
 	*TBaseEditLink
 	edit      lcl.IEdit
 	bounds    types.TRect
-	text      string
 	alignment types.TAlignment
 	stopping  bool
 }
@@ -87,12 +86,10 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	m.Node = node
 	m.Column = column
 	// 节点的初始大小、字体和文本。
-	m.VTree.GetTextInfo(node, column, m.edit.Font(), &m.bounds, &m.text)
-	log.Println("  PrepareEdit GetTextInfo:", m.bounds, m.text)
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	m.edit.SetText(m.text)
+	m.edit.SetText(m.BindData.StringValue)
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
 		m.alignment = m.VTree.Alignment()

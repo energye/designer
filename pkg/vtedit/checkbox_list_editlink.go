@@ -12,8 +12,6 @@ import (
 type TCheckBoxListEditLink struct {
 	*TBaseEditLink
 	edit      lcl.IEdit
-	bounds    types.TRect
-	value     bool
 	alignment types.TAlignment
 	stopping  bool
 }

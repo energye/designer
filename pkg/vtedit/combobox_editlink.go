@@ -12,11 +12,10 @@ import (
 
 type TComboBoxEditLink struct {
 	*TBaseEditLink
-	combobox  lcl.IComboBox
-	bounds    types.TRect
-	text      string
-	alignment types.TAlignment
-	stopping  bool
+	combobox lcl.IComboBox
+	bounds   types.TRect
+	text     string
+	stopping bool
 }
 
 func NewComboBoxEditLink(bindData *TEditLinkNodeData) *TComboBoxEditLink {
