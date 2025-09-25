@@ -71,10 +71,11 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		propTreeOptions := m.propertyTree.TreeOptions()
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
-		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToAlwaysSelectNode))
+		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToLevelSelectConstraint))
 		propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
-		//propColors := m.propertyTree.Colors()
-		//propColors.SetSelectionTextColor()
+		propColors := m.propertyTree.Colors()
+		propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+		propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
 
 		// 组件事件树列表
 		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
@@ -94,6 +95,9 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	// 测试
 	{
 		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+
+		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtInt, Name: "IntEdit", IntValue: 1}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
@@ -130,7 +134,8 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("值")
-	propValueCol.SetWidth(leftBoxWidth - 150)
+	//propValueCol.SetWidth(leftBoxWidth - 150)
+	propValueCol.SetWidth(leftBoxWidth - 100)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 
@@ -154,15 +159,14 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	})
 	m.propertyTree.SetOnBeforeCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, cellPaintMode types.TVTCellPaintMode, cellRect types.TRect, contentRect *types.TRect) {
-		log.Println("propertyTree OnBeforeCellPaint HasChildren:", sender.HasChildren(node))
-		if sender.HasChildren(node) {
-			//contentRect.Left += 15
-		}
+		log.Println("propertyTree OnBeforeCellPaint column:", column)
 	})
-	//m.propertyTree.SetOnBeforeItemErase(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
-	//	itemRect types.TRect, itemColor *types.TColor, eraseAction *types.TItemEraseAction) {
-	//	log.Println("propertyTree OnBeforeItemErase")
-	//})
+
+	m.propertyTree.SetOnAfterCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
+		column int32, cellRect types.TRect) {
+		log.Println("propertyTree OnAfterCellPaint column:", column)
+
+	})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
 		log.Println("propertyTree OnColumnClick column:", column)
@@ -199,17 +203,20 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type {
 				case vtedit.PdtText:
-					textEditLink := vtedit.NewStringEditLink(data)
-					*outEditLink = textEditLink.AsIVTEditLink()
+					link := vtedit.NewStringEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
+				case vtedit.PdtInt:
+					link := vtedit.NewIntEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtCheckBox:
-					checkBoxEditLink := vtedit.NewCheckBoxEditLink(data)
-					*outEditLink = checkBoxEditLink.AsIVTEditLink()
+					link := vtedit.NewCheckBoxEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtCheckBoxList:
-					checkBoxListEditLink := vtedit.NewCheckBoxListEditLink(data)
-					*outEditLink = checkBoxListEditLink.AsIVTEditLink()
+					link := vtedit.NewCheckBoxListEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtComboBox:
-					comboBoxEditLink := vtedit.NewComboBoxEditLink(data)
-					*outEditLink = comboBoxEditLink.AsIVTEditLink()
+					link := vtedit.NewComboBoxEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				}
 			}
 		}
@@ -224,6 +231,8 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				switch data.Type {
 				case vtedit.PdtText:
 					*cellText = data.StringValue
+				case vtedit.PdtInt:
+					*cellText = strconv.Itoa(data.IntValue)
 				case vtedit.PdtCheckBox:
 					*cellText = strconv.FormatBool(data.Checked)
 				case vtedit.PdtCheckBoxList:

@@ -4,13 +4,12 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"github.com/energye/lcl/types/keys"
 	"log"
 )
 
 // 文本编辑框
 
-type TStringEditLink struct {
+type TFloatEditLink struct {
 	*TBaseEditLink
 	edit      lcl.IEdit
 	bounds    types.TRect
@@ -18,33 +17,32 @@ type TStringEditLink struct {
 	stopping  bool
 }
 
-func NewStringEditLink(bindData *TEditLinkNodeData) *TStringEditLink {
-	link := new(TStringEditLink)
+func NewFloatEditLink(bindData *TEditLinkNodeData) *TFloatEditLink {
+	link := new(TFloatEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
 	link.Create()
 	return link
 }
 
-func (m *TStringEditLink) Create() {
-	log.Println("TStringEditLink Create")
+func (m *TFloatEditLink) Create() {
+	log.Println("TFloatEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
-	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
-		if *key == keys.VkReturn {
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.VTree.EndEditNode()
-			})
-		}
+	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
+
+	})
+	m.edit.SetOnChange(func(sender lcl.IObject) {
+
 	})
 }
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
-func (m *TStringEditLink) BeginEdit() bool {
-	log.Println("TStringEditLink BeginEdit")
+func (m *TFloatEditLink) BeginEdit() bool {
+	log.Println("TFloatEditLink BeginEdit")
 	if !m.stopping {
 		m.edit.Show()
 		m.edit.SelectAll()
@@ -53,8 +51,8 @@ func (m *TStringEditLink) BeginEdit() bool {
 	return true
 }
 
-func (m *TStringEditLink) CancelEdit() bool {
-	log.Println("TStringEditLink CancelEdit")
+func (m *TFloatEditLink) CancelEdit() bool {
+	log.Println("TFloatEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
@@ -63,20 +61,22 @@ func (m *TStringEditLink) CancelEdit() bool {
 	return true
 }
 
-func (m *TStringEditLink) EndEdit() bool {
+func (m *TFloatEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TStringEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	log.Println("TFloatEditLink EndEdit Modified:", m.edit.Modified(), "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.StringValue = value
+		if m.edit.Modified() {
+			m.BindData.StringValue = value
+		}
 		m.VTree.EndEditNode()
 		m.edit.Hide()
 	}
 	return true
 }
 
-func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TStringEditLink PrepareEdit")
+func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
+	log.Println("TFloatEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
 		m.Create()
 	}
@@ -108,18 +108,18 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	return true
 }
 
-func (m *TStringEditLink) GetBounds() types.TRect {
-	log.Println("TStringEditLink GetBounds")
+func (m *TFloatEditLink) GetBounds() types.TRect {
+	log.Println("TFloatEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
-func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TStringEditLink ProcessMessage")
+func (m *TFloatEditLink) ProcessMessage(msg *types.TLMessage) {
+	log.Println("TFloatEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.edit, msg)
 }
 
-func (m *TStringEditLink) SetBounds(R types.TRect) {
-	log.Println("TStringEditLink SetBounds", R)
+func (m *TFloatEditLink) SetBounds(R types.TRect) {
+	log.Println("TFloatEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -128,7 +128,7 @@ func (m *TStringEditLink) SetBounds(R types.TRect) {
 	m.edit.SetBoundsRect(R)
 }
 
-func (m *TStringEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TStringEditLink Destroy")
+func (m *TFloatEditLink) Destroy(sender lcl.IObject) {
+	log.Println("TFloatEditLink Destroy")
 	m.edit.Free()
 }

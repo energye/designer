@@ -6,11 +6,12 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
 	"log"
+	"strconv"
 )
 
 // 文本编辑框
 
-type TStringEditLink struct {
+type TIntEditLink struct {
 	*TBaseEditLink
 	edit      lcl.IEdit
 	bounds    types.TRect
@@ -18,33 +19,43 @@ type TStringEditLink struct {
 	stopping  bool
 }
 
-func NewStringEditLink(bindData *TEditLinkNodeData) *TStringEditLink {
-	link := new(TStringEditLink)
+func NewIntEditLink(bindData *TEditLinkNodeData) *TIntEditLink {
+	link := new(TIntEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
 	link.Create()
 	return link
 }
 
-func (m *TStringEditLink) Create() {
-	log.Println("TStringEditLink Create")
+func (m *TIntEditLink) Create() {
+	log.Println("TIntEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
-	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+	oldText := m.edit.Text()
+	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()
 			})
+		} else if !(*key >= keys.Vk0 && *key <= keys.Vk9) {
+			*key = 0
+			return
+		}
+		oldText = m.edit.Text()
+	})
+	m.edit.SetOnChange(func(sender lcl.IObject) {
+		if _, err := strconv.Atoi(m.edit.Text()); err != nil {
+			m.edit.SetText(oldText)
 		}
 	})
 }
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
-func (m *TStringEditLink) BeginEdit() bool {
-	log.Println("TStringEditLink BeginEdit")
+func (m *TIntEditLink) BeginEdit() bool {
+	log.Println("TIntEditLink BeginEdit")
 	if !m.stopping {
 		m.edit.Show()
 		m.edit.SelectAll()
@@ -53,8 +64,8 @@ func (m *TStringEditLink) BeginEdit() bool {
 	return true
 }
 
-func (m *TStringEditLink) CancelEdit() bool {
-	log.Println("TStringEditLink CancelEdit")
+func (m *TIntEditLink) CancelEdit() bool {
+	log.Println("TIntEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
@@ -63,20 +74,22 @@ func (m *TStringEditLink) CancelEdit() bool {
 	return true
 }
 
-func (m *TStringEditLink) EndEdit() bool {
+func (m *TIntEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TStringEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	log.Println("TIntEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.StringValue = value
+		if v, err := strconv.Atoi(value); err == nil {
+			m.BindData.IntValue = v
+		}
 		m.VTree.EndEditNode()
 		m.edit.Hide()
 	}
 	return true
 }
 
-func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TStringEditLink PrepareEdit")
+func (m *TIntEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
+	log.Println("TIntEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
 		m.Create()
 	}
@@ -87,7 +100,7 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	m.edit.SetText(m.BindData.StringValue)
+	m.edit.SetText(strconv.Itoa(m.BindData.IntValue))
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
 		m.alignment = m.VTree.Alignment()
@@ -108,18 +121,18 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	return true
 }
 
-func (m *TStringEditLink) GetBounds() types.TRect {
-	log.Println("TStringEditLink GetBounds")
+func (m *TIntEditLink) GetBounds() types.TRect {
+	log.Println("TIntEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
-func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TStringEditLink ProcessMessage")
+func (m *TIntEditLink) ProcessMessage(msg *types.TLMessage) {
+	log.Println("TIntEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.edit, msg)
 }
 
-func (m *TStringEditLink) SetBounds(R types.TRect) {
-	log.Println("TStringEditLink SetBounds", R)
+func (m *TIntEditLink) SetBounds(R types.TRect) {
+	log.Println("TIntEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -128,7 +141,7 @@ func (m *TStringEditLink) SetBounds(R types.TRect) {
 	m.edit.SetBoundsRect(R)
 }
 
-func (m *TStringEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TStringEditLink Destroy")
+func (m *TIntEditLink) Destroy(sender lcl.IObject) {
+	log.Println("TIntEditLink Destroy")
 	m.edit.Free()
 }

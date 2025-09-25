@@ -28,9 +28,10 @@ lazarus 设计器
 
 ##### 类型
 - edit: 文本
-1. 字符串
-2. 数字
-3. 小数
+1. string
+2. int
+3. float
+4. bool
 - combobox: 下拉框
 1. 文本
 - sub-tree: 子菜单
@@ -38,6 +39,6 @@ lazarus 设计器
 2. class 类
 3. checkbox
 - checkbox: 复选框
-1. 复选框
+1. checkbox
 
 #### 事件设置
