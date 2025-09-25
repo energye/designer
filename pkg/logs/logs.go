@@ -14,26 +14,34 @@ const (
 
 var Level = LevelInfo // 例如：设置为 INFO，只输出 INFO 及以上级别
 
-func Debug(v ...interface{}) {
+func Debug(v ...any) {
 	if Level <= LevelDebug {
-		log.Println("[DEBUG]", v)
+		s := []any{"[DEBUG]"}
+		s = append(s, v...)
+		log.Println(s...)
 	}
 }
 
-func Info(v ...interface{}) {
+func Info(v ...any) {
 	if Level <= LevelInfo {
-		log.Println("[INFO]", v)
+		s := []any{"[INFO]"}
+		s = append(s, v...)
+		log.Println(s...)
 	}
 }
 
-func Warn(v ...interface{}) {
+func Warn(v ...any) {
 	if Level <= LevelWarn {
-		log.Println("[WARN]", v)
+		s := []any{"[WARN]"}
+		s = append(s, v...)
+		log.Println(s...)
 	}
 }
 
-func Error(v ...interface{}) {
+func Error(v ...any) {
 	if Level <= LevelError {
-		log.Println("[ERROR]", v)
+		s := []any{"[ERROR]"}
+		s = append(s, v...)
+		log.Println(s...)
 	}
 }
