@@ -1,11 +1,11 @@
 package vtedit
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
-	"log"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ func NewIntEditLink(bindData *TEditLinkNodeData) *TIntEditLink {
 }
 
 func (m *TIntEditLink) Create() {
-	log.Println("TIntEditLink Create")
+	logs.Debug("TIntEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
@@ -60,7 +60,7 @@ func (m *TIntEditLink) Create() {
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
 func (m *TIntEditLink) BeginEdit() bool {
-	log.Println("TIntEditLink BeginEdit")
+	logs.Debug("TIntEditLink BeginEdit")
 	if !m.stopping {
 		m.edit.Show()
 		m.edit.SelectAll()
@@ -70,7 +70,7 @@ func (m *TIntEditLink) BeginEdit() bool {
 }
 
 func (m *TIntEditLink) CancelEdit() bool {
-	log.Println("TIntEditLink CancelEdit")
+	logs.Debug("TIntEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
@@ -81,7 +81,7 @@ func (m *TIntEditLink) CancelEdit() bool {
 
 func (m *TIntEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TIntEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	logs.Debug("TIntEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		if v, err := strconv.Atoi(value); err == nil {
@@ -94,7 +94,7 @@ func (m *TIntEditLink) EndEdit() bool {
 }
 
 func (m *TIntEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TIntEditLink PrepareEdit")
+	logs.Debug("TIntEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
 		m.Create()
 	}
@@ -126,17 +126,17 @@ func (m *TIntEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PV
 }
 
 func (m *TIntEditLink) GetBounds() types.TRect {
-	log.Println("TIntEditLink GetBounds")
+	logs.Debug("TIntEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
 func (m *TIntEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TIntEditLink ProcessMessage")
+	logs.Debug("TIntEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.edit, msg)
 }
 
 func (m *TIntEditLink) SetBounds(R types.TRect) {
-	log.Println("TIntEditLink SetBounds", R)
+	logs.Debug("TIntEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -146,6 +146,6 @@ func (m *TIntEditLink) SetBounds(R types.TRect) {
 }
 
 func (m *TIntEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TIntEditLink Destroy")
+	logs.Debug("TIntEditLink Destroy")
 	m.edit.Free()
 }

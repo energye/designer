@@ -1,11 +1,11 @@
 package vtedit
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
-	"log"
 )
 
 // 文本编辑框
@@ -27,7 +27,7 @@ func NewStringEditLink(bindData *TEditLinkNodeData) *TStringEditLink {
 }
 
 func (m *TStringEditLink) Create() {
-	log.Println("TStringEditLink Create")
+	logs.Debug("TStringEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
@@ -44,7 +44,7 @@ func (m *TStringEditLink) Create() {
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
 func (m *TStringEditLink) BeginEdit() bool {
-	log.Println("TStringEditLink BeginEdit")
+	logs.Debug("TStringEditLink BeginEdit")
 	if !m.stopping {
 		m.edit.Show()
 		m.edit.SelectAll()
@@ -54,7 +54,7 @@ func (m *TStringEditLink) BeginEdit() bool {
 }
 
 func (m *TStringEditLink) CancelEdit() bool {
-	log.Println("TStringEditLink CancelEdit")
+	logs.Debug("TStringEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
@@ -65,7 +65,7 @@ func (m *TStringEditLink) CancelEdit() bool {
 
 func (m *TStringEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TStringEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	logs.Debug("TStringEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.StringValue = value
@@ -76,7 +76,7 @@ func (m *TStringEditLink) EndEdit() bool {
 }
 
 func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TStringEditLink PrepareEdit")
+	logs.Debug("TStringEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
 		m.Create()
 	}
@@ -109,17 +109,17 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 }
 
 func (m *TStringEditLink) GetBounds() types.TRect {
-	log.Println("TStringEditLink GetBounds")
+	logs.Debug("TStringEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
 func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TStringEditLink ProcessMessage")
+	logs.Debug("TStringEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.edit, msg)
 }
 
 func (m *TStringEditLink) SetBounds(R types.TRect) {
-	log.Println("TStringEditLink SetBounds", R)
+	logs.Debug("TStringEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -129,6 +129,6 @@ func (m *TStringEditLink) SetBounds(R types.TRect) {
 }
 
 func (m *TStringEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TStringEditLink Destroy")
+	logs.Debug("TStringEditLink Destroy")
 	m.edit.Free()
 }

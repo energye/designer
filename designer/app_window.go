@@ -2,10 +2,10 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"log"
 )
 
 var (
@@ -26,7 +26,7 @@ type TAppWindow struct {
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
-	log.Println("FormCreate")
+	logs.Info("FormCreate")
 	cfg := config.Config
 	// 属性
 	m.SetCaption(cfg.Title)
@@ -48,7 +48,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
-	log.Println("OnShow")
+	logs.Info("OnShow")
 	// 窗口显示在鼠标所在的窗口
 	m.showInMonitor()
 	for _, fn := range windowShowEvents {
@@ -57,19 +57,19 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 }
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
-	log.Println("FormAfterCreate")
+	logs.Info("FormAfterCreate")
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
-	log.Println("CreateParams")
+	logs.Info("CreateParams")
 }
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
-	log.Println("OnCloseQuery")
+	logs.Info("OnCloseQuery")
 }
 
 func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
-	log.Println("OnClose")
+	logs.Info("OnClose")
 }
 
 func AddOnShow(fn func()) {

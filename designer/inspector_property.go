@@ -1,11 +1,11 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"log"
 	"strconv"
 	"unsafe"
 )
@@ -144,12 +144,12 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 
 	m.propertyTree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
-		//log.Println("property-inspector OnPaintText column:", column)
+		//logs.Debug("property-inspector OnPaintText column:", column)
 		if column == 0 {
 			font := targetCanvas.FontToFont()
 			font.SetStyle(font.Style().Include(types.FsBold))
 			level := sender.GetNodeLevel(node)
-			//log.Println("  OnPaintText level:", level)
+			//logs.Info("  OnPaintText level:", level)
 			switch level {
 			case 0:
 				font.SetColor(colors.ClBlack)
@@ -162,15 +162,15 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	})
 	//m.propertyTree.SetOnBeforeCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 	//	column int32, cellPaintMode types.TVTCellPaintMode, cellRect types.TRect, contentRect *types.TRect) {
-	//	log.Println("[property-inspector] OnBeforeCellPaint column:", column)
+	//	logs.Debug("[property-inspector] OnBeforeCellPaint column:", column)
 	//})
 	//m.propertyTree.SetOnAfterCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 	//	column int32, cellRect types.TRect) {
-	//	log.Println("[property-inspector] OnAfterCellPaint column:", column)
+	//	logs.Debug("[property-inspector] OnAfterCellPaint column:", column)
 	//})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
-		log.Println("[property-inspector] OnColumnClick column:", column)
+		logs.Debug("[property-inspector] OnColumnClick column:", column)
 		if column == 1 {
 			node := sender.FocusedNode()
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
@@ -181,7 +181,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, allowed *bool) {
 		// edit: 2. 第二列可以编辑
-		log.Println("[property-inspector] OnEditing column:", column)
+		logs.Debug("[property-inspector] OnEditing column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
 				*allowed = true
@@ -190,16 +190,16 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		}
 	})
 	m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
-		log.Println("[property-inspector] OnEditCancelled column:", column)
+		logs.Debug("[property-inspector] OnEditCancelled column:", column)
 	})
 	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
 		// edit: 4. 编辑结束
-		log.Println("[property-inspector] OnEdited column:", column)
+		logs.Debug("[property-inspector] OnEdited column:", column)
 	})
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
 		// edit: 3. 创建编辑或组件
-		log.Println("[property-inspector] OnCreateEditor column:", column)
+		logs.Debug("[property-inspector] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type {
@@ -227,7 +227,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
-		//log.Println("[property-inspector] OnGetText column:", column)
+		//logs.Debug("[property-inspector] OnGetText column:", column)
 		if data := vtedit.GetPropertyNodeData(node); data != nil {
 			if column == 0 {
 				*cellText = data.Name

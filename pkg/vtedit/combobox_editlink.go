@@ -1,11 +1,11 @@
 package vtedit
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
-	"log"
 )
 
 // 下拉框
@@ -27,7 +27,7 @@ func NewComboBoxEditLink(bindData *TEditLinkNodeData) *TComboBoxEditLink {
 }
 
 func (m *TComboBoxEditLink) CreateEdit() {
-	log.Println("TComboBoxEditLink CreateEdit")
+	logs.Debug("TComboBoxEditLink CreateEdit")
 	m.combobox = lcl.NewComboBox(nil)
 	m.combobox.SetVisible(false)
 	m.combobox.SetBorderStyle(types.BsSingle)
@@ -52,7 +52,7 @@ func (m *TComboBoxEditLink) CreateEdit() {
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
 func (m *TComboBoxEditLink) BeginEdit() bool {
-	log.Println("TComboBoxEditLink BeginEdit")
+	logs.Debug("TComboBoxEditLink BeginEdit")
 	if !m.stopping {
 		m.combobox.Show()
 		m.combobox.SelectAll()
@@ -62,7 +62,7 @@ func (m *TComboBoxEditLink) BeginEdit() bool {
 }
 
 func (m *TComboBoxEditLink) CancelEdit() bool {
-	log.Println("TComboBoxEditLink CancelEdit")
+	logs.Debug("TComboBoxEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.combobox.Hide()
@@ -73,7 +73,7 @@ func (m *TComboBoxEditLink) CancelEdit() bool {
 
 func (m *TComboBoxEditLink) EndEdit() bool {
 	value := m.combobox.Text()
-	log.Println("TComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	logs.Debug("TComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.Index = m.combobox.ItemIndex()
@@ -85,7 +85,7 @@ func (m *TComboBoxEditLink) EndEdit() bool {
 }
 
 func (m *TComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TComboBoxEditLink PrepareEdit")
+	logs.Debug("TComboBoxEditLink PrepareEdit")
 	if m.combobox == nil || !m.combobox.IsValid() {
 		m.CreateEdit()
 	}
@@ -93,7 +93,7 @@ func (m *TComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 	m.Node = node
 	m.Column = column
 	m.VTree.GetTextInfo(node, column, m.combobox.Font(), &m.bounds, &m.text)
-	log.Println("  PrepareEdit GetTextInfo:", m.bounds, m.text)
+	logs.Debug("  PrepareEdit GetTextInfo:", m.bounds, m.text)
 	m.combobox.Font().SetColor(colors.ClWindowText)
 	m.combobox.SetParent(m.VTree)
 	m.combobox.HandleNeeded()
@@ -102,17 +102,17 @@ func (m *TComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 }
 
 func (m *TComboBoxEditLink) GetBounds() types.TRect {
-	log.Println("TComboBoxEditLink GetBounds")
+	logs.Debug("TComboBoxEditLink GetBounds")
 	return m.combobox.BoundsRect()
 }
 
 func (m *TComboBoxEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TComboBoxEditLink ProcessMessage")
+	logs.Debug("TComboBoxEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.combobox, msg)
 }
 
 func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
-	log.Println("TComboBoxEditLink SetBounds", R)
+	logs.Debug("TComboBoxEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -121,6 +121,6 @@ func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
 }
 
 func (m *TComboBoxEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TComboBoxEditLink Destroy")
+	logs.Debug("TComboBoxEditLink Destroy")
 	m.combobox.Free()
 }

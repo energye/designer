@@ -2,9 +2,9 @@ package vtedit
 
 import (
 	"bytes"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"log"
 	"strconv"
 )
 
@@ -26,7 +26,7 @@ func NewCheckBoxEditLink(bindData *TEditLinkNodeData) *TCheckBoxEditLink {
 }
 
 func (m *TCheckBoxEditLink) Create() {
-	log.Println("TCheckBoxEditLink CreateEdit")
+	logs.Debug("TCheckBoxEditLink CreateEdit")
 	m.checkbox = lcl.NewCheckBox(nil)
 	m.checkbox.SetVisible(false)
 	m.checkbox.SetCaption("(false)")
@@ -65,7 +65,7 @@ func (m *TCheckBoxEditLink) BeginEdit() bool {
 }
 
 func (m *TCheckBoxEditLink) CancelEdit() bool {
-	log.Println("TCheckBoxEditLink CancelEdit")
+	logs.Debug("TCheckBoxEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.checkbox.SetVisible(false)
@@ -76,7 +76,7 @@ func (m *TCheckBoxEditLink) CancelEdit() bool {
 
 func (m *TCheckBoxEditLink) EndEdit() bool {
 	value := m.checkbox.Checked()
-	log.Println("TCheckBoxEditLink EndEdit", "m.stopping:", m.stopping)
+	logs.Debug("TCheckBoxEditLink EndEdit", "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.BoolValue = value
@@ -87,7 +87,7 @@ func (m *TCheckBoxEditLink) EndEdit() bool {
 }
 
 func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TCheckBoxEditLink PrepareEdit")
+	logs.Debug("TCheckBoxEditLink PrepareEdit")
 	if m.checkbox == nil || m.checkbox.IsValid() {
 		m.Create()
 	}
@@ -105,19 +105,19 @@ func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 }
 
 func (m *TCheckBoxEditLink) GetBounds() (R types.TRect) {
-	log.Println("TCheckBoxEditLink GetBounds")
+	logs.Debug("TCheckBoxEditLink GetBounds")
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R = columnRect
 	return
 }
 
 func (m *TCheckBoxEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TCheckBoxEditLink ProcessMessage")
+	logs.Debug("TCheckBoxEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.checkbox, msg)
 }
 
 func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
-	log.Println("TCheckBoxEditLink SetBounds", R)
+	logs.Debug("TCheckBoxEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left + 5
 	R.Top = columnRect.Top + 3
@@ -128,6 +128,6 @@ func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
 }
 
 func (m *TCheckBoxEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TCheckBoxEditLink Destroy")
+	logs.Debug("TCheckBoxEditLink Destroy")
 	m.checkbox.Free()
 }

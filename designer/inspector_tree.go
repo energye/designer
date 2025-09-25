@@ -3,9 +3,9 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"log"
 	"strings"
 	"unsafe"
 )
@@ -151,5 +151,5 @@ func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node
 	data := m.DataToTreeNodeData(dataPtr)
 	//node.SetSelectedIndex(node.ImageIndex())
 
-	log.Println("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
+	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
 }

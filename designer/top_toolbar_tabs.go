@@ -3,9 +3,9 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"log"
 	"strings"
 )
 
@@ -34,7 +34,7 @@ func (m *TopToolbar) createComponentTabs() {
 	page.SetTabStop(true)
 	m.page = page
 	m.page.SetOnChange(func(sender lcl.IObject) {
-		log.Println("Toolbar Tabs Change")
+		logs.Debug("Toolbar Tabs Change")
 		m.ResetTabComponentDown()
 	})
 

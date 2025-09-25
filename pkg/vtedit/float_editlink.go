@@ -1,11 +1,11 @@
 package vtedit
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
-	"log"
 	"strconv"
 )
 
@@ -28,7 +28,7 @@ func NewFloatEditLink(bindData *TEditLinkNodeData) *TFloatEditLink {
 }
 
 func (m *TFloatEditLink) Create() {
-	log.Println("TFloatEditLink Create")
+	logs.Debug("TFloatEditLink Create")
 	m.edit = lcl.NewEdit(nil)
 	m.edit.SetVisible(false)
 	m.edit.SetBorderStyle(types.BsSingle)
@@ -60,7 +60,7 @@ func (m *TFloatEditLink) Create() {
 
 // 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
 func (m *TFloatEditLink) BeginEdit() bool {
-	log.Println("TFloatEditLink BeginEdit")
+	logs.Debug("TFloatEditLink BeginEdit")
 	if !m.stopping {
 		m.edit.Show()
 		m.edit.SelectAll()
@@ -70,7 +70,7 @@ func (m *TFloatEditLink) BeginEdit() bool {
 }
 
 func (m *TFloatEditLink) CancelEdit() bool {
-	log.Println("TFloatEditLink CancelEdit")
+	logs.Debug("TFloatEditLink CancelEdit")
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
@@ -81,7 +81,7 @@ func (m *TFloatEditLink) CancelEdit() bool {
 
 func (m *TFloatEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TFloatEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	logs.Debug("TFloatEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
 		if v, err := strconv.ParseFloat(value, 64); err == nil {
@@ -94,7 +94,7 @@ func (m *TFloatEditLink) EndEdit() bool {
 }
 
 func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PVirtualNode, column int32) bool {
-	log.Println("TFloatEditLink PrepareEdit")
+	logs.Debug("TFloatEditLink PrepareEdit")
 	if m.edit == nil || !m.edit.IsValid() {
 		m.Create()
 	}
@@ -127,17 +127,17 @@ func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.
 }
 
 func (m *TFloatEditLink) GetBounds() types.TRect {
-	log.Println("TFloatEditLink GetBounds")
+	logs.Debug("TFloatEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
 func (m *TFloatEditLink) ProcessMessage(msg *types.TLMessage) {
-	log.Println("TFloatEditLink ProcessMessage")
+	logs.Debug("TFloatEditLink ProcessMessage")
 	lcl.ControlHelper.WindowProc(m.edit, msg)
 }
 
 func (m *TFloatEditLink) SetBounds(R types.TRect) {
-	log.Println("TFloatEditLink SetBounds", R)
+	logs.Debug("TFloatEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
@@ -147,6 +147,6 @@ func (m *TFloatEditLink) SetBounds(R types.TRect) {
 }
 
 func (m *TFloatEditLink) Destroy(sender lcl.IObject) {
-	log.Println("TFloatEditLink Destroy")
+	logs.Debug("TFloatEditLink Destroy")
 	m.edit.Free()
 }
