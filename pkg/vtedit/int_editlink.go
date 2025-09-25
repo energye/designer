@@ -40,15 +40,20 @@ func (m *TIntEditLink) Create() {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()
 			})
-		} else if !(*key >= keys.Vk0 && *key <= keys.Vk9) {
+		} else if !((*key >= keys.Vk0 && *key <= keys.Vk9) || (*key == keys.VkBack)) {
 			*key = 0
 			return
 		}
 		oldText = m.edit.Text()
 	})
 	m.edit.SetOnChange(func(sender lcl.IObject) {
-		if _, err := strconv.Atoi(m.edit.Text()); err != nil {
+		text := m.edit.Text()
+		if text == "" {
+			return
+		}
+		if _, err := strconv.Atoi(text); err != nil {
 			m.edit.SetText(oldText)
+			m.edit.SetSelStart(int32(len(oldText)))
 		}
 	})
 }

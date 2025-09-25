@@ -40,15 +40,20 @@ func (m *TFloatEditLink) Create() {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()
 			})
-		} else if !((*key >= keys.Vk0 && *key <= keys.Vk9) || (*key == keys.VkDelete)) {
+		} else if !((*key >= keys.Vk0 && *key <= keys.Vk9) || (*key == keys.VkDelete) || (*key == keys.VkBack)) {
 			*key = 0
 			return
 		}
 		oldText = m.edit.Text()
 	})
 	m.edit.SetOnChange(func(sender lcl.IObject) {
-		if _, err := strconv.ParseFloat(m.edit.Text(), 64); err != nil {
+		text := m.edit.Text()
+		if text == "" {
+			return
+		}
+		if _, err := strconv.ParseFloat(text, 64); err != nil {
 			m.edit.SetText(oldText)
+			m.edit.SetSelStart(int32(len(oldText)))
 		}
 	})
 }
@@ -99,7 +104,7 @@ func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	val := strconv.FormatFloat(m.BindData.FloatValue, 'g', -1, 64)
+	val := strconv.FormatFloat(m.BindData.FloatValue, 'f', 2, 64)
 	m.edit.SetText(val)
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
