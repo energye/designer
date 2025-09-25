@@ -25,7 +25,7 @@ type TBaseEditLink struct {
 	lcl.TObject
 	baseEditLink lcl.ICustomVTEditLink
 	self         IBaseEditLink
-	BindData     *TNodeData
+	BindData     *TEditLinkNodeData
 	VTree        lcl.ILazVirtualStringTree
 	Node         types.PVirtualNode
 	Column       int32

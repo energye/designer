@@ -19,12 +19,12 @@ type TComboBoxEditLink struct {
 	stopping  bool
 }
 
-func NewComboBoxEditLink(bindData *TNodeData) *TComboBoxEditLink {
-	m := new(TComboBoxEditLink)
-	m.TBaseEditLink = NewEditLink(m)
-	m.BindData = bindData
-	m.CreateEdit()
-	return m
+func NewComboBoxEditLink(bindData *TEditLinkNodeData) *TComboBoxEditLink {
+	link := new(TComboBoxEditLink)
+	link.TBaseEditLink = NewEditLink(link)
+	link.BindData = bindData
+	link.CreateEdit()
+	return link
 }
 
 func (m *TComboBoxEditLink) CreateEdit() {

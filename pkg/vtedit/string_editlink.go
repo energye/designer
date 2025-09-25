@@ -19,12 +19,12 @@ type TStringEditLink struct {
 	stopping  bool
 }
 
-func NewStringEditLink(bindData *TNodeData) *TStringEditLink {
-	m := new(TStringEditLink)
-	m.TBaseEditLink = NewEditLink(m)
-	m.BindData = bindData
-	m.Create()
-	return m
+func NewStringEditLink(bindData *TEditLinkNodeData) *TStringEditLink {
+	link := new(TStringEditLink)
+	link.TBaseEditLink = NewEditLink(link)
+	link.BindData = bindData
+	link.Create()
+	return link
 }
 
 func (m *TStringEditLink) Create() {

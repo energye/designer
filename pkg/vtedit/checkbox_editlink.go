@@ -18,12 +18,12 @@ type TCheckBoxEditLink struct {
 	stopping  bool
 }
 
-func NewCheckBoxEditLink(bindData *TNodeData) *TCheckBoxEditLink {
-	m := new(TCheckBoxEditLink)
-	m.TBaseEditLink = NewEditLink(m)
-	m.BindData = bindData
-	m.Create()
-	return m
+func NewCheckBoxEditLink(bindData *TEditLinkNodeData) *TCheckBoxEditLink {
+	link := new(TCheckBoxEditLink)
+	link.TBaseEditLink = NewEditLink(link)
+	link.BindData = bindData
+	link.Create()
+	return link
 }
 
 func (m *TCheckBoxEditLink) Create() {
