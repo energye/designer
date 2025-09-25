@@ -4,7 +4,9 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"github.com/energye/lcl/types/keys"
 	"log"
+	"strconv"
 )
 
 // 文本编辑框
@@ -32,11 +34,22 @@ func (m *TFloatEditLink) Create() {
 	m.edit.SetBorderStyle(types.BsSingle)
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
+	oldText := m.edit.Text()
 	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
-
+		if *key == keys.VkReturn {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.VTree.EndEditNode()
+			})
+		} else if !((*key >= keys.Vk0 && *key <= keys.Vk9) || (*key == keys.VkDelete)) {
+			*key = 0
+			return
+		}
+		oldText = m.edit.Text()
 	})
 	m.edit.SetOnChange(func(sender lcl.IObject) {
-
+		if _, err := strconv.ParseFloat(m.edit.Text(), 64); err != nil {
+			m.edit.SetText(oldText)
+		}
 	})
 }
 
@@ -63,11 +76,11 @@ func (m *TFloatEditLink) CancelEdit() bool {
 
 func (m *TFloatEditLink) EndEdit() bool {
 	value := m.edit.Text()
-	log.Println("TFloatEditLink EndEdit Modified:", m.edit.Modified(), "value:", value, "m.stopping:", m.stopping)
+	log.Println("TFloatEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		if m.edit.Modified() {
-			m.BindData.StringValue = value
+		if v, err := strconv.ParseFloat(value, 64); err == nil {
+			m.BindData.FloatValue = v
 		}
 		m.VTree.EndEditNode()
 		m.edit.Hide()
@@ -83,11 +96,11 @@ func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.
 	m.VTree = tree
 	m.Node = node
 	m.Column = column
-	// 节点的初始大小、字体和文本。
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	m.edit.SetText(m.BindData.StringValue)
+	val := strconv.FormatFloat(m.BindData.FloatValue, 'g', -1, 64)
+	m.edit.SetText(val)
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
 		m.alignment = m.VTree.Alignment()

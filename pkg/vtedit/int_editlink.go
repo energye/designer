@@ -96,7 +96,6 @@ func (m *TIntEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PV
 	m.VTree = tree
 	m.Node = node
 	m.Column = column
-	// 节点的初始大小、字体和文本。
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
