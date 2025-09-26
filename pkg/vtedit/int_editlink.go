@@ -128,7 +128,6 @@ func (m *TIntEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.PV
 }
 
 func (m *TIntEditLink) GetBounds() types.TRect {
-	logs.Debug("TIntEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
@@ -138,13 +137,13 @@ func (m *TIntEditLink) ProcessMessage(msg *types.TLMessage) {
 }
 
 func (m *TIntEditLink) SetBounds(R types.TRect) {
-	logs.Debug("TIntEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetHeight(columnRect.Height())
 	R.SetWidth(columnRect.Width())
 	m.edit.SetBoundsRect(R)
+	logs.Debug("TIntEditLink SetBounds", R)
 }
 
 func (m *TIntEditLink) Destroy(sender lcl.IObject) {

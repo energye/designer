@@ -110,7 +110,6 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 }
 
 func (m *TStringEditLink) GetBounds() types.TRect {
-	logs.Debug("TStringEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
@@ -120,13 +119,13 @@ func (m *TStringEditLink) ProcessMessage(msg *types.TLMessage) {
 }
 
 func (m *TStringEditLink) SetBounds(R types.TRect) {
-	logs.Debug("TStringEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetHeight(columnRect.Height())
 	R.SetWidth(columnRect.Width())
 	m.edit.SetBoundsRect(R)
+	logs.Debug("TStringEditLink SetBounds", R)
 }
 
 func (m *TStringEditLink) Destroy(sender lcl.IObject) {

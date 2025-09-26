@@ -52,7 +52,6 @@ func (m *TComboBoxEditLink) CreateEdit() {
 	}
 }
 
-// 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
 func (m *TComboBoxEditLink) BeginEdit() bool {
 	logs.Debug("TComboBoxEditLink BeginEdit")
 	if !m.stopping {
@@ -104,7 +103,6 @@ func (m *TComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 }
 
 func (m *TComboBoxEditLink) GetBounds() types.TRect {
-	logs.Debug("TComboBoxEditLink GetBounds")
 	return m.combobox.BoundsRect()
 }
 
@@ -114,12 +112,12 @@ func (m *TComboBoxEditLink) ProcessMessage(msg *types.TLMessage) {
 }
 
 func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
-	logs.Debug("TComboBoxEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetWidth(columnRect.Width())
 	m.combobox.SetBoundsRect(R)
+	logs.Debug("TComboBoxEditLink SetBounds", R)
 }
 
 func (m *TComboBoxEditLink) Destroy(sender lcl.IObject) {

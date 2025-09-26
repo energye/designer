@@ -98,7 +98,6 @@ func (m *TCheckBoxListEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node
 }
 
 func (m *TCheckBoxListEditLink) GetBounds() (R types.TRect) {
-	logs.Debug("TCheckBoxListEditLink GetBounds")
 	return m.edit.BoundsRect()
 }
 
@@ -108,14 +107,13 @@ func (m *TCheckBoxListEditLink) ProcessMessage(msg *types.TLMessage) {
 }
 
 func (m *TCheckBoxListEditLink) SetBounds(R types.TRect) {
-	logs.Debug("TCheckBoxListEditLink SetBounds", R)
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
 	R.SetHeight(columnRect.Height())
 	R.SetWidth(columnRect.Width())
 	m.edit.SetBoundsRect(R)
-
+	logs.Debug("TCheckBoxListEditLink SetBounds", R)
 }
 
 func (m *TCheckBoxListEditLink) Destroy(sender lcl.IObject) {
