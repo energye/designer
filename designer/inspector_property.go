@@ -164,6 +164,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			}
 		} else if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				// 编辑列 需要动态控制时
 				switch data.Type {
 				case vtedit.PdtColorSelect:
 					font := targetCanvas.FontToFont()
