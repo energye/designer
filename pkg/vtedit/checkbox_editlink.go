@@ -34,6 +34,7 @@ func (m *TCheckBoxEditLink) Create() {
 	m.checkbox.SetOnChange(func(sender lcl.IObject) {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
 		m.BindData.Checked = m.checkbox.Checked()
+		logs.Debug("TCheckBoxEditLink OnChange checked:", m.BindData.Checked)
 		node := m.Node.ToGo()
 		parentNode := node.Parent
 		if pData := GetPropertyNodeData(parentNode); pData != nil {
@@ -52,6 +53,7 @@ func (m *TCheckBoxEditLink) Create() {
 			}
 			buf.WriteString("]")
 			pData.StringValue = buf.String()
+			logs.Debug("TCheckBoxEditLink OnChange ParentNode-text:", pData.StringValue)
 			m.VTree.InvalidateNode(parentNode)
 		}
 	})

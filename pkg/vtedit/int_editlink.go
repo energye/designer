@@ -36,6 +36,7 @@ func (m *TIntEditLink) Create() {
 	m.edit.SetDoubleBuffered(true)
 	oldText := m.edit.Text()
 	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
+		logs.Debug("TIntEditLink OnKeyPress key:", *key)
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()
@@ -48,6 +49,7 @@ func (m *TIntEditLink) Create() {
 	})
 	m.edit.SetOnChange(func(sender lcl.IObject) {
 		text := m.edit.Text()
+		logs.Debug("TIntEditLink OnChange text:", text)
 		if text == "" {
 			return
 		}

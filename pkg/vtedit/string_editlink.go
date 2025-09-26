@@ -34,6 +34,7 @@ func (m *TStringEditLink) Create() {
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
 	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+		logs.Debug("TStringEditLink OnKeyDown key:", *key)
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()

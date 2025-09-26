@@ -36,8 +36,10 @@ func (m *TComboBoxEditLink) CreateEdit() {
 	m.combobox.SetOnChange(func(sender lcl.IObject) {
 		m.BindData.Index = m.combobox.ItemIndex()
 		m.BindData.StringValue = m.combobox.Text()
+		logs.Debug("TComboBoxEditLink OnChange index:", m.BindData.Index, "text:", m.BindData.StringValue)
 	})
 	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+		logs.Debug("TComboBoxEditLink OnKeyDown key:", *key)
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()

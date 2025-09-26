@@ -36,6 +36,7 @@ func (m *TFloatEditLink) Create() {
 	m.edit.SetDoubleBuffered(true)
 	oldText := m.edit.Text()
 	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
+		logs.Debug("TFloatEditLink OnKeyPress key:", *key)
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.VTree.EndEditNode()
@@ -48,6 +49,7 @@ func (m *TFloatEditLink) Create() {
 	})
 	m.edit.SetOnChange(func(sender lcl.IObject) {
 		text := m.edit.Text()
+		logs.Debug("TFloatEditLink OnChange text:", text)
 		if text == "" {
 			return
 		}
