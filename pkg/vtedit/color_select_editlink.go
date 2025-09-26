@@ -119,6 +119,7 @@ func (m *TColorSelectEditLink) SetBounds(R types.TRect) {
 	R.Top = columnRect.Top
 	R.SetWidth(columnRect.Width() - 26)
 	m.colorText.SetBoundsRect(R)
+	logs.Debug("TColorSelectEditLink SetBounds", R)
 
 	R.Left = R.Left + R.Width()
 	R.SetWidth(24)
@@ -128,6 +129,7 @@ func (m *TColorSelectEditLink) SetBounds(R types.TRect) {
 
 func (m *TColorSelectEditLink) Destroy(sender lcl.IObject) {
 	logs.Debug("TColorSelectEditLink Destroy")
+	m.colorBtn.SetOnColorChanged(nil) // 解除注册的事件
 	m.colorText.Free()
 	m.colorBtn.Free()
 }
