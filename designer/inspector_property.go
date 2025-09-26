@@ -273,3 +273,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
+
+// 清空树
+func (m *InspectorComponentProperty) Clear() {
+	vtedit.ResetPropertyNodeData()
+	m.propertyTree.Clear()
+	m.eventTree.Clear()
+}

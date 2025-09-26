@@ -9,15 +9,7 @@ import (
 
 var (
 	componentTreeHeight int32 = 222
-	inspector           *Inspector
 )
-
-// 组件树和对象查看器
-type Inspector struct {
-	boxSplitter       lcl.ISplitter               // 分割线
-	componentTree     *InspectorComponentTree     // 组件树
-	componentProperty *InspectorComponentProperty // 组件属性
-}
 
 func (m *BottomBox) createInspectorLayout() *Inspector {
 	ins := new(Inspector)

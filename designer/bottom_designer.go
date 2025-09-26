@@ -251,10 +251,10 @@ func (m *FormTab) drawGrid() {
 //	}
 
 func SetDesignMode(component lcl.IControl) {
-	lcl.SetDesigningComponent().SetComponentDesignMode(component, true)
-	lcl.SetDesigningComponent().SetComponentDesignInstanceMode(component, true)
-	lcl.SetDesigningComponent().SetComponentInlineMode(component, true)
-	lcl.SetDesigningComponent().SetWidgetSetDesigning(component)
+	lcl.DesigningComponent().SetComponentDesignMode(component, true)
+	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	lcl.DesigningComponent().SetComponentInlineMode(component, true)
+	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
 // 测试属性
