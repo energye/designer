@@ -21,8 +21,8 @@ const (
 	PdtCheckBoxDraw
 	PdtCheckBoxList
 	PdtComboBox
-	PdtTree
 	PdtClassDialog
+	PdtColorSelect
 )
 
 type TEditLinkNodeData struct {

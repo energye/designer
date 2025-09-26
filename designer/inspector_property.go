@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
@@ -106,6 +107,9 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
+		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtColorSelect, Name: "ColorSelect", IntValue: 0xFF0000}
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", BoolValue: true, StringValue: "",
 			CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
@@ -144,7 +148,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 
 	m.propertyTree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
-		//logs.Debug("property-inspector OnPaintText column:", column)
+		//logs.Debug("object inspector-property OnPaintText column:", column)
 		if column == 0 {
 			font := targetCanvas.FontToFont()
 			font.SetStyle(font.Style().Include(types.FsBold))
@@ -158,19 +162,28 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			default:
 				font.SetColor(colors.ClGreen)
 			}
+		} else if column == 1 {
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				switch data.Type {
+				case vtedit.PdtColorSelect:
+					font := targetCanvas.FontToFont()
+					font.SetStyle(font.Style().Include(types.FsBold))
+					font.SetColor(colors.TColor(data.IntValue))
+				}
+			}
 		}
 	})
 	//m.propertyTree.SetOnBeforeCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 	//	column int32, cellPaintMode types.TVTCellPaintMode, cellRect types.TRect, contentRect *types.TRect) {
-	//	logs.Debug("[property-inspector] OnBeforeCellPaint column:", column)
+	//	logs.Debug("[object inspector-property] OnBeforeCellPaint column:", column)
 	//})
 	//m.propertyTree.SetOnAfterCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 	//	column int32, cellRect types.TRect) {
-	//	logs.Debug("[property-inspector] OnAfterCellPaint column:", column)
+	//	logs.Debug("[object inspector-property] OnAfterCellPaint column:", column)
 	//})
 	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		// edit: 1. 触发编辑
-		logs.Debug("[property-inspector] OnColumnClick column:", column)
+		logs.Debug("[object inspector-property] OnColumnClick column:", column)
 		if column == 1 {
 			node := sender.FocusedNode()
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
@@ -181,7 +194,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, allowed *bool) {
 		// edit: 2. 第二列可以编辑
-		logs.Debug("[property-inspector] OnEditing column:", column)
+		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
 				*allowed = true
@@ -189,17 +202,17 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 			}
 		}
 	})
-	m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
-		logs.Debug("[property-inspector] OnEditCancelled column:", column)
-	})
-	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
-		// edit: 4. 编辑结束
-		logs.Debug("[property-inspector] OnEdited column:", column)
-	})
+	//m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
+	//	logs.Debug("[object inspector-property] OnEditCancelled column:", column)
+	//})
+	//m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
+	//	// edit: 4. 编辑结束
+	//	logs.Debug("[object inspector-property] OnEdited column:", column)
+	//})
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
 		// edit: 3. 创建编辑或组件
-		logs.Debug("[property-inspector] OnCreateEditor column:", column)
+		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type {
@@ -221,13 +234,16 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				case vtedit.PdtComboBox:
 					link := vtedit.NewComboBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
+				case vtedit.PdtColorSelect:
+					link := vtedit.NewColorSelectEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				}
 			}
 		}
 	})
 	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
-		//logs.Debug("[property-inspector] OnGetText column:", column)
+		//logs.Debug("[object inspector-property] OnGetText column:", column)
 		if data := vtedit.GetPropertyNodeData(node); data != nil {
 			if column == 0 {
 				*cellText = data.Name
@@ -246,6 +262,8 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 					*cellText = data.StringValue
 				case vtedit.PdtComboBox:
 					*cellText = data.StringValue
+				case vtedit.PdtColorSelect:
+					*cellText = fmt.Sprintf("0x%X", data.IntValue)
 				default:
 					*cellText = ""
 				}
