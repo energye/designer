@@ -16,6 +16,7 @@ type Inspector struct {
 	componentProperty *InspectorComponentProperty // 组件属性
 }
 
+// 返回查看器实例
 func GetInspector() *Inspector {
 	return inspector
 }
