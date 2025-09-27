@@ -15,6 +15,7 @@ type PropertyDataType int32
 const (
 	PdtText PropertyDataType = iota
 	PdtInt
+	PdtInt64
 	PdtFloat
 	PdtRadiobutton
 	PdtCheckBox
@@ -26,26 +27,34 @@ const (
 )
 
 type TEditLinkNodeData struct {
-	Name          string               // 属性名
-	Index         int32                // 值索引 值是数组类型时，选中的索引
-	Checked       bool                 // 选中列表 值是数组类型时，是否选中
-	StringValue   string               // 属性值 string
-	FloatValue    float64              // 属性值 float64
-	BoolValue     bool                 // 属性值 bool
-	IntValue      int                  // 属性值 int
-	CheckBoxValue []*TEditLinkNodeData // 属性值 checkbox
-	ComboBoxValue []*TEditLinkNodeData // 属性值 combobox
-	Type          PropertyDataType     // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	metadata      lcl.ComponentProperties // 属性元数据
+	Name          string                  // 属性名
+	Index         int32                   // 值索引 值是数组类型时，选中的索引
+	Checked       bool                    // 选中列表 值是数组类型时，是否选中
+	StringValue   string                  // 属性值 string
+	FloatValue    float64                 // 属性值 float64
+	BoolValue     bool                    // 属性值 bool
+	IntValue      int                     // 属性值 int
+	CheckBoxValue []*TEditLinkNodeData    // 属性值 checkbox
+	ComboBoxValue []*TEditLinkNodeData    // 属性值 combobox
+	Type          PropertyDataType        // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
 var (
 	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData) // 组件属性数据列表
 )
 
+func NewEditLinkNodeData(prop lcl.ComponentProperties) *TEditLinkNodeData {
+	m := &TEditLinkNodeData{metadata: prop}
+	m.Build()
+	return m
+}
+
 func ResetPropertyNodeData() {
 	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData)
 }
 
+// 添加数据到指定节点
 func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditLinkNodeData) {
 	node := tree.AddChild(parent, 0)
 	propertyTreeDataList[node] = data
@@ -69,6 +78,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 	}
 }
 
+// 获取节点属性数据
 func GetPropertyNodeData(node types.PVirtualNode) *TEditLinkNodeData {
 	if data, ok := propertyTreeDataList[node]; ok {
 		return data

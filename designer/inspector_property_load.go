@@ -41,12 +41,15 @@ func (m *InspectorComponentProperty) loadPropertyList(propertyList []lcl.Compone
 			continue
 		}
 		logs.Debug("加载属性:", prop.ToJSON())
-		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: prop.Name, StringValue: prop.Value}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, vtedit.NewEditLinkNodeData(prop))
 	}
 }
 
 // 加载事件列表
 func (m *InspectorComponentProperty) loadEventList(eventList []lcl.ComponentProperties) {
+
+}
+
+func (m *InspectorComponentProperty) addNodeData() {
 
 }

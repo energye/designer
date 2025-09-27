@@ -111,7 +111,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtColorSelect, Name: "ColorSelect", IntValue: 0xFF0000}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", BoolValue: true, StringValue: "",
+		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", StringValue: "",
 			CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
@@ -221,7 +221,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				case vtedit.PdtText:
 					link := vtedit.NewStringEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtInt:
+				case vtedit.PdtInt, vtedit.PdtInt64:
 					link := vtedit.NewIntEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtFloat:
@@ -253,7 +253,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 				switch data.Type {
 				case vtedit.PdtText:
 					*cellText = data.StringValue
-				case vtedit.PdtInt:
+				case vtedit.PdtInt, vtedit.PdtInt64:
 					*cellText = strconv.Itoa(data.IntValue)
 				case vtedit.PdtFloat:
 					val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
