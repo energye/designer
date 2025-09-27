@@ -1,9 +1,31 @@
 {
   "common": {
-    "exclude": [],
-    "include": []
+    "exclude": [
+      "Action",
+      "AnchorSideBottom",
+      "AnchorSideLeft",
+      "AnchorSideRight",
+      "AnchorSideTop"
+    ],
+    "include": [
+      {
+        "name": "",
+        "value": "",
+        "kind": "",
+        "type": "",
+        "options": ""
+      }
+    ]
   },
-  "": {
-
+  "custom": {
+    "TButton": [
+      {
+        "name": "",
+        "value": "",
+        "kind": "",
+        "type": "",
+        "options": ""
+      }
+    ]
   }
 }

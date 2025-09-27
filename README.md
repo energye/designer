@@ -42,3 +42,23 @@ lazarus 设计器
 1. checkbox
 
 #### 事件设置
+
+### 文件目录
+
+- resources/component_property.json
+```json
+设计时组件属性配置, 在加载到设计列表使用
+{
+  "common": { 通用属性配置
+    "exclude": ["Action"], 排除的属性
+    "include": [ 包含的属性
+      {"name": "","value": "", "kind": "", "type": ""}
+    ]
+  },
+  "custom": { 自定义属性配置
+    "TButton": {"name": "","value": "", "kind": "", "type": ""} 组件名 : 组件属性信息
+    ... 更多其它组件的自定义属性配置
+  }
+}
+```
+- resources/config.json

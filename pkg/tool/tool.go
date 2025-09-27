@@ -3,6 +3,7 @@ package tool
 import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"strings"
 )
 
 // 加载图像到列表
@@ -30,4 +31,10 @@ func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 		pic.LoadFromStream(mem)
 		imageList.Add(pic.Bitmap(), nil)
 	}
+}
+
+func Equal(s1, s2 string) bool {
+	s1 = strings.ToLower(s1)
+	s2 = strings.ToLower(s2)
+	return s1 == s2
 }

@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"encoding/json"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"sort"
@@ -28,11 +27,6 @@ func GetInspector() *Inspector {
 // 加载组件
 // 属性, 事件
 func (m *Inspector) LoadComponent(component *DesigningComponent) {
-	toJSON := func(cp lcl.ComponentProperties) string {
-		str, _ := json.Marshal(cp)
-		return string(str)
-	}
-	_ = toJSON
 	object := component.object
 	var properties []lcl.ComponentProperties
 	if propList, ok := m.objectPropertyList[object.Instance()]; ok {
@@ -62,14 +56,5 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 	sort.Slice(eventList, func(i, j int) bool {
 		return strings.ToLower(eventList[i].Name) < strings.ToLower(eventList[j].Name)
 	})
-	// 测试输出
-	//{
-	//	for _, prop := range propertyList {
-	//		logs.Debug(toJSON(prop))
-	//	}
-	//	for _, event := range eventList {
-	//		logs.Debug(toJSON(event))
-	//	}
-	//}
 	m.componentProperty.Load(propertyList, eventList, component)
 }

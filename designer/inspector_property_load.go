@@ -1,6 +1,8 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 )
@@ -29,15 +31,22 @@ func (m *InspectorComponentProperty) Load(propertyList, eventList []lcl.Componen
 	}
 }
 
+// 加载属性列表
 func (m *InspectorComponentProperty) loadPropertyList(propertyList []lcl.ComponentProperties) {
 	//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
 	//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 	for _, prop := range propertyList {
-		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: prop.Name, StringValue: "Value"}
+		if config.ComponentProperty.IsExclude(prop.Name) {
+			logs.Debug("排除属性:", prop.ToJSON())
+			continue
+		}
+		logs.Debug("加载属性:", prop.ToJSON())
+		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: prop.Name, StringValue: prop.Value}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 	}
 }
 
+// 加载事件列表
 func (m *InspectorComponentProperty) loadEventList(eventList []lcl.ComponentProperties) {
 
 }
