@@ -52,11 +52,23 @@ lazarus 设计器
   "common": { 通用属性配置
     "exclude": ["Action"], 排除的属性
     "include": [ 包含的属性
-      {"name": "","value": "", "kind": "", "type": ""}
+        {
+        "name": "",
+        "value": "",
+        "kind": "",
+        "type": "",
+        "options": ""
+        }
     ]
   },
   "custom": { 自定义属性配置
-    "TButton": {"name": "","value": "", "kind": "", "type": ""} 组件名 : 组件属性信息
+    "TButton": {  组件名 : 组件属性信息
+        "name": "",
+        "value": "",
+        "kind": "",
+        "type": "",
+        "options": ""
+    }
     ... 更多其它组件的自定义属性配置
   }
 }
