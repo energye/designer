@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
@@ -11,7 +10,7 @@ import (
 )
 
 func main() {
-	logs.Level = logs.LevelDebug
+	//logs.Level = logs.LevelDebug
 	libname.LibName = func() string {
 		wd, _ := os.Getwd()
 		return filepath.Join(wd, "../", "gen", "gout", "liblcl.dll")

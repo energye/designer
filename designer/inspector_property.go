@@ -136,14 +136,14 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
 	propNameCol.SetText("名")
-	propNameCol.SetWidth(100)
+	propNameCol.SetWidth(125)
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("值")
-	//propValueCol.SetWidth(leftBoxWidth - 150)
-	propValueCol.SetWidth(leftBoxWidth - 100)
+	propValueCol.SetWidth(leftBoxWidth - 150)
+	//propValueCol.SetWidth(leftBoxWidth - 125)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 
@@ -152,7 +152,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
 		if column == 0 {
 			font := targetCanvas.FontToFont()
-			font.SetStyle(font.Style().Include(types.FsBold))
+			//font.SetStyle(font.Style().Include(types.FsBold))
 			level := sender.GetNodeLevel(node)
 			//logs.Info("  OnPaintText level:", level)
 			switch level {

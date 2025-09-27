@@ -33,6 +33,7 @@ func (m *TComboBoxEditLink) CreateEdit() {
 	m.combobox.SetBorderStyle(types.BsSingle)
 	m.combobox.SetAutoSize(false)
 	m.combobox.SetDoubleBuffered(true)
+	m.combobox.SetReadOnly(true)
 	m.combobox.SetOnChange(func(sender lcl.IObject) {
 		m.BindData.Index = m.combobox.ItemIndex()
 		m.BindData.StringValue = m.combobox.Text()
@@ -56,8 +57,7 @@ func (m *TComboBoxEditLink) BeginEdit() bool {
 	logs.Debug("TComboBoxEditLink BeginEdit")
 	if !m.stopping {
 		m.combobox.Show()
-		m.combobox.SelectAll()
-		m.combobox.SetFocus()
+		//m.combobox.SetFocus()
 	}
 	return true
 }
