@@ -14,9 +14,10 @@ var (
 
 // 组件树和对象查看器
 type Inspector struct {
-	boxSplitter       lcl.ISplitter               // 分割线
-	componentTree     *InspectorComponentTree     // 组件树
-	componentProperty *InspectorComponentProperty // 组件属性
+	boxSplitter        lcl.ISplitter                         // 分割线
+	componentTree      *InspectorComponentTree               // 组件树
+	componentProperty  *InspectorComponentProperty           // 组件属性
+	objectPropertyList map[uintptr][]lcl.ComponentProperties // 组件的属性列表, 删除时同步删除
 }
 
 // 返回查看器实例
@@ -31,7 +32,14 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		str, _ := json.Marshal(cp)
 		return string(str)
 	}
-	properties := lcl.DesigningComponent().GetComponentProperties(component.object)
+	object := component.object
+	var properties []lcl.ComponentProperties
+	if propList, ok := m.objectPropertyList[object.Instance()]; ok {
+		properties = propList
+	} else {
+		properties = lcl.DesigningComponent().GetComponentProperties(object)
+		m.objectPropertyList[object.Instance()] = properties
+	}
 	// 拆分 属性和事件
 	var (
 		propertyList []lcl.ComponentProperties
