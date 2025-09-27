@@ -30,7 +30,7 @@
         "TActionList"
       ]
     },
-    "additional":  {
+    "additional": {
       "cn": "  附加  ",
       "en": "Additional",
       "component": [
@@ -151,5 +151,8 @@
         "TWebview"
       ]
     }
+  },
+  "propertyUseEditLink": {
+
   }
 }

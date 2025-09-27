@@ -25,8 +25,8 @@ func GetInspector() *Inspector {
 
 // 加载组件
 // 属性, 事件
-func (m *Inspector) LoadComponent(component lcl.IObject) {
-	properties := lcl.DesigningComponent().GetComponentProperties(component)
+func (m *Inspector) LoadComponent(component *DesigningComponent) {
+	properties := lcl.DesigningComponent().GetComponentProperties(component.object)
 	// 拆分 属性和事件
 	var (
 		propertyList []lcl.ComponentProperties
@@ -55,16 +55,5 @@ func (m *Inspector) LoadComponent(component lcl.IObject) {
 			fmt.Printf("%+v\n", event)
 		}
 	}
-	m.loadPropertyList(propertyList)
-	m.loadEventList(eventList)
-}
-
-// 加载属性列表
-func (m *Inspector) loadPropertyList(propertyList []lcl.ComponentProperties) {
-
-}
-
-// 加载事件列表
-func (m *Inspector) loadEventList(propertyList []lcl.ComponentProperties) {
-
+	m.componentProperty.Load(propertyList, eventList, component)
 }

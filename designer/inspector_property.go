@@ -14,13 +14,14 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	box           lcl.IPanel                // 组件属性盒子
-	filter        lcl.ITreeFilterEdit       // 组件属性过滤框
-	page          lcl.IPageControl          // 属性和事件页
-	propertySheet lcl.ITabSheet             // 属性页
-	eventSheet    lcl.ITabSheet             // 事件页
-	propertyTree  lcl.ILazVirtualStringTree // 组件属性
-	eventTree     lcl.ILazVirtualStringTree // 组件事件
+	box              lcl.IPanel                // 组件属性盒子
+	filter           lcl.ITreeFilterEdit       // 组件属性过滤框
+	page             lcl.IPageControl          // 属性和事件页
+	propertySheet    lcl.ITabSheet             // 属性页
+	eventSheet       lcl.ITabSheet             // 事件页
+	propertyTree     lcl.ILazVirtualStringTree // 组件属性
+	eventTree        lcl.ILazVirtualStringTree // 组件事件
+	currentComponent *DesigningComponent       // 当前正在设计的组件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
@@ -272,11 +273,4 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		}
 	})
 	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
-}
-
-// 清空树
-func (m *InspectorComponentProperty) Clear() {
-	vtedit.ResetPropertyNodeData()
-	m.propertyTree.Clear()
-	m.eventTree.Clear()
 }

@@ -1,0 +1,43 @@
+package designer
+
+import (
+	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/lcl/lcl"
+)
+
+// 设计 - 组件的属性和事件数据加载
+
+// 清空树
+func (m *InspectorComponentProperty) Clear() {
+	vtedit.ResetPropertyNodeData()
+	m.propertyTree.Clear()
+	m.eventTree.Clear()
+}
+
+// 加载属性和事件列表
+func (m *InspectorComponentProperty) Load(propertyList, eventList []lcl.ComponentProperties, component *DesigningComponent) {
+	if component != m.currentComponent {
+		m.currentComponent = component
+		// 清空树数据
+		m.Clear()
+
+		// 加载属性列表
+		m.loadPropertyList(propertyList)
+
+		// 加载事件列表
+		m.loadEventList(eventList)
+	}
+}
+
+func (m *InspectorComponentProperty) loadPropertyList(propertyList []lcl.ComponentProperties) {
+	//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
+	//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+	for _, prop := range propertyList {
+		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: prop.Name, StringValue: "Value"}
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+	}
+}
+
+func (m *InspectorComponentProperty) loadEventList(eventList []lcl.ComponentProperties) {
+
+}

@@ -41,6 +41,8 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	m.dx, m.dy = point.X, point.Y
 	m.dcl = m.object.Left()
 	m.dct = m.object.Top()
+	// 更新设计查看器的属性信息
+	m.UpdateLoadPropertyInfo()
 }
 
 func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
@@ -50,9 +52,9 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	m.isDown = false
 }
 
-// 更新加载当前属性信息
+// 更新设计查看器加载当前属性信息
 func (m *DesigningComponent) UpdateLoadPropertyInfo() {
-	inspector.LoadComponent(m.object)
+	inspector.LoadComponent(m)
 }
 
 // 创建设计按钮
