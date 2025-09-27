@@ -52,7 +52,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 
 // 更新加载当前属性信息
 func (m *DesigningComponent) UpdateLoadPropertyInfo() {
-
+	inspector.LoadComponent(m.object)
 }
 
 // 创建设计按钮
