@@ -1,7 +1,8 @@
 package designer
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"sort"
 	"strings"
@@ -26,18 +27,24 @@ func GetInspector() *Inspector {
 // 加载组件
 // 属性, 事件
 func (m *Inspector) LoadComponent(component *DesigningComponent) {
+	toJSON := func(cp lcl.ComponentProperties) string {
+		str, _ := json.Marshal(cp)
+		return string(str)
+	}
 	properties := lcl.DesigningComponent().GetComponentProperties(component.object)
 	// 拆分 属性和事件
 	var (
 		propertyList []lcl.ComponentProperties
 		eventList    []lcl.ComponentProperties
 	)
+	logs.Debug("LoadComponent Count:", len(properties))
 	for _, prop := range properties {
 		if prop.Kind == "tkMethod" {
 			eventList = append(eventList, prop)
 		} else {
 			propertyList = append(propertyList, prop)
 		}
+		logs.Debug("  ", toJSON(prop))
 	}
 	// 排序
 	sort.Slice(propertyList, func(i, j int) bool {
@@ -49,10 +56,10 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 	// 测试输出
 	{
 		for _, prop := range propertyList {
-			fmt.Printf("%+v\n", prop)
+			logs.Debug(toJSON(prop))
 		}
 		for _, event := range eventList {
-			fmt.Printf("%+v\n", event)
+			logs.Debug(toJSON(event))
 		}
 	}
 	m.componentProperty.Load(propertyList, eventList, component)
