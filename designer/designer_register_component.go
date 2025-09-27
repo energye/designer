@@ -11,6 +11,7 @@ var registerComponents = make(map[string]TNewComponent)
 func init() {
 	registerComponents["TButton"] = NewButtonDesigner
 	registerComponents["TEdit"] = NewEditDesigner
+	registerComponents["TCheckBox"] = NewCheckBoxDesigner
 }
 
 // 获取注册的设计组件
