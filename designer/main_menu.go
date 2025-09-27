@@ -1,8 +1,8 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -18,7 +18,7 @@ func (m *TAppWindow) createMenu() {
 	fileCreateWindow.SetCaption("新建窗体(&N)")
 	fileCreateWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
 	fileCreateWindow.SetOnClick(func(lcl.IObject) {
-		fmt.Println("单击了新建窗体")
+		logs.Debug("单击了新建窗体")
 	})
 	file.Add(fileCreateWindow)
 

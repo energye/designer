@@ -131,7 +131,7 @@ func (m *ComponentTab) DownSelectTool() {
 
 // 选择工具按钮事件
 func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
-	fmt.Println("SelectToolBtnOnClick")
+	logs.Debug("SelectToolBtnOnClick")
 	m.UnDownComponents()
 	m.DownSelectTool()
 	toolbar.SetSelectComponentItem(nil)
@@ -139,7 +139,7 @@ func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 
 // 组件按钮事件
 func (m *ComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
-	fmt.Println("ToolBtnOnClick", m.index, m.name)
+	logs.Debug("ToolBtnOnClick", m.index, m.name)
 	m.owner.UnDownComponents()
 	m.owner.UnDownSelectTool()
 	m.btn.SetDown(true)

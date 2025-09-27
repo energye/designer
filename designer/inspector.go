@@ -32,12 +32,14 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		str, _ := json.Marshal(cp)
 		return string(str)
 	}
+	_ = toJSON
 	object := component.object
 	var properties []lcl.ComponentProperties
 	if propList, ok := m.objectPropertyList[object.Instance()]; ok {
 		properties = propList
 	} else {
 		properties = lcl.DesigningComponent().GetComponentProperties(object)
+		logs.Debug("LoadComponent Count:", len(properties))
 		m.objectPropertyList[object.Instance()] = properties
 	}
 	// 拆分 属性和事件
@@ -45,14 +47,13 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		propertyList []lcl.ComponentProperties
 		eventList    []lcl.ComponentProperties
 	)
-	logs.Debug("LoadComponent Count:", len(properties))
 	for _, prop := range properties {
 		if prop.Kind == "tkMethod" {
 			eventList = append(eventList, prop)
 		} else {
 			propertyList = append(propertyList, prop)
 		}
-		logs.Debug("  ", toJSON(prop))
+		//logs.Debug("  ", toJSON(prop))
 	}
 	// 排序
 	sort.Slice(propertyList, func(i, j int) bool {
@@ -62,13 +63,13 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		return strings.ToLower(eventList[i].Name) < strings.ToLower(eventList[j].Name)
 	})
 	// 测试输出
-	{
-		for _, prop := range propertyList {
-			logs.Debug(toJSON(prop))
-		}
-		for _, event := range eventList {
-			logs.Debug(toJSON(event))
-		}
-	}
+	//{
+	//	for _, prop := range propertyList {
+	//		logs.Debug(toJSON(prop))
+	//	}
+	//	for _, event := range eventList {
+	//		logs.Debug(toJSON(event))
+	//	}
+	//}
 	m.componentProperty.Load(propertyList, eventList, component)
 }

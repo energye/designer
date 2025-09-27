@@ -2,6 +2,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -34,6 +35,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 }
 
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	logs.Debug("设计组件", m.object.ToString())
 	m.owner.hideAllDrag()
 	m.drag.Show()
 	m.isDown = true
@@ -73,8 +75,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseDown(m.OnMouseDown)
 	comp.SetOnMouseUp(m.OnMouseUp)
 	comp.SetOnShowHint(func(sender lcl.IObject, hintInfo lcl.THintInfo) {
-		//fmt.Printf("SetOnShowHint: %+v\n", hintInfo)
-		fmt.Println("SetOnShowHint:", hintInfo.HintStr, hintInfo.HintPos)
+		logs.Debug("SetOnShowHint:", hintInfo.HintStr, hintInfo.HintPos)
 	})
 	m.drag = newDrag(designerForm.designerBox, DsAll)
 	m.drag.SetRelation(comp)
