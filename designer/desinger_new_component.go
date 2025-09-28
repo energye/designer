@@ -59,6 +59,17 @@ func (m *DesigningComponent) UpdateLoadPropertyInfo() {
 	inspector.LoadComponent(m)
 }
 
+// 创建设计窗体-隐藏
+func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
+	m := new(DesigningComponent)
+	comp := lcl.NewForm(nil)
+	comp.SetCaption(designerForm.name)
+	comp.SetName(designerForm.name)
+	comp.SetVisible(false) // 隐藏
+	m.object = lcl.AsWinControl(comp)
+	return m
+}
+
 // 创建设计按钮
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)

@@ -27,6 +27,10 @@ func GetInspector() *Inspector {
 // 加载组件
 // 属性, 事件
 func (m *Inspector) LoadComponent(component *DesigningComponent) {
+	if component == nil {
+		logs.Error("加载组件属性/事件失败, 设计组件为空")
+		return
+	}
 	object := component.object
 	var properties []lcl.ComponentProperties
 	if propList, ok := m.objectPropertyList[object.Instance()]; ok {

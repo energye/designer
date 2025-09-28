@@ -32,6 +32,7 @@ type FormTab struct {
 	isDown, isUp, isMove bool                  // 鼠标事件
 	dragForm             *drag                 // 拖拽窗体控制器
 	componentName        map[string]int        // 组件分类名
+	form                 *DesigningComponent   // 窗体
 	componentList        []*DesigningComponent // 组件列表
 }
 
@@ -116,6 +117,9 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
 
+	// 创建一个隐藏的窗体
+	form.form = NewFormDesigner(form)
+
 	// 窗体拖拽大小
 	form.dragForm = newDrag(form.scroll, DsRightBottom)
 	form.dragForm.SetRelation(form.designerBox)
@@ -166,6 +170,9 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		}
 		// 重置
 		toolbar.ResetTabComponentDown()
+	} else {
+		logs.Debug("加载窗体")
+		inspector.LoadComponent(m.form)
 	}
 }
 
