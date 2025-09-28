@@ -155,7 +155,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
 		if column == 0 {
 			font := targetCanvas.FontToFont()
-			//font.SetStyle(font.Style().Include(types.FsBold))
+			font.SetStyle(font.Style().Include(types.FsBold))
 			level := sender.GetNodeLevel(node)
 			//logs.Info("  OnPaintText level:", level)
 			switch level {
