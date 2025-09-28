@@ -24,6 +24,7 @@ const (
 	PdtComboBox
 	PdtClassDialog
 	PdtColorSelect
+	PdtClass
 )
 
 type TEditLinkNodeData struct {

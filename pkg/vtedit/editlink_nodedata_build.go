@@ -80,6 +80,10 @@ func (m *TEditLinkNodeData) Build() {
 		m.Name = m.metadata.Name
 		v, _ := strconv.Atoi(m.metadata.Value)
 		m.IntValue = v
+	case TkClass:
+		m.Type = PdtClass
+		m.Name = m.metadata.Name
+		m.StringValue = m.metadata.Value
 	default:
 		m.Type = PdtText
 		m.Name = m.metadata.Name
