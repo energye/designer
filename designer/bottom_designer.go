@@ -9,9 +9,10 @@ import (
 )
 
 var (
-	designer    *Designer
-	margin      int32 = 5
-	borderWidth int32 = 8
+	designer                    *Designer
+	margin                      int32 = 5
+	borderWidth                 int32 = 8
+	defaultWidth, defaultHeight int32 = 600, 400
 )
 
 // 窗体设计功能
@@ -109,8 +110,8 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	form.designerBox.SetColor(colors.ClBtnFace)
 	form.designerBox.SetLeft(margin)
 	form.designerBox.SetTop(margin)
-	form.designerBox.SetWidth(600)
-	form.designerBox.SetHeight(400)
+	form.designerBox.SetWidth(defaultWidth)
+	form.designerBox.SetHeight(defaultHeight)
 	form.designerBox.SetAlign(types.AlCustom)
 	form.designerBox.SetOnPaint(form.designerOnPaint)
 	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)

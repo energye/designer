@@ -63,6 +63,8 @@ func (m *DesigningComponent) UpdateLoadPropertyInfo() {
 func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)
 	comp := lcl.NewForm(nil)
+	comp.SetWidth(defaultWidth)
+	comp.SetHeight(defaultHeight)
 	comp.SetCaption(designerForm.name)
 	comp.SetName(designerForm.name)
 	comp.SetVisible(false) // 隐藏
