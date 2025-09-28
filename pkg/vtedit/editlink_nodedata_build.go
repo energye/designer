@@ -2,7 +2,6 @@ package vtedit
 
 import (
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,9 +25,6 @@ const (
 type PropertyType string
 
 func (m *TEditLinkNodeData) Build() {
-	if tool.Equal(m.metadata.Name, "ShowHint") {
-		println()
-	}
 	kind := PropertyKind(m.metadata.Kind)
 	switch kind {
 	case TkEnumeration:
@@ -75,6 +71,10 @@ func (m *TEditLinkNodeData) Build() {
 		v, _ := strconv.Atoi(m.metadata.Value)
 		m.IntValue = v
 		// TModalResult TCursor TGraphicsColor
+		switch m.metadata.Type {
+		case "TGraphicsColor":
+			m.Type = PdtColorSelect
+		}
 	case TkInt64:
 		m.Type = PdtInt64
 		m.Name = m.metadata.Name

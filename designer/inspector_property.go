@@ -147,6 +147,9 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 
+	m.propertyTree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
+		m.propertyTree.EndEditNode()
+	})
 	m.propertyTree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
