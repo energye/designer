@@ -35,12 +35,26 @@ func (m *InspectorComponentProperty) Load(propertyList, eventList []lcl.Componen
 func (m *InspectorComponentProperty) loadPropertyList(propertyList []lcl.ComponentProperties) {
 	//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
 	//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-	for _, prop := range propertyList {
-		if config.ComponentProperty.IsExclude(prop.Name) {
+	compProp := config.ComponentProperty
+	for i, prop := range propertyList {
+		if compProp.IsExclude(prop.Name) {
 			logs.Debug("排除属性:", prop.ToJSON())
 			continue
 		}
 		logs.Debug("加载属性:", prop.ToJSON())
+		// 自定义属性, 使用会覆蓋掉
+		// 返回数组
+		if customProps := compProp.GetCustomPropertyList(prop.Name); customProps != nil {
+			if len(customProps) == 1 {
+				// 数组只有一个元素，规则为直接作用在当前属性上
+				customProp := customProps[0]
+				prop = customProp
+				propertyList[i] = customProp                 // 更新到组件属性
+				compProp.DeleteCustomPropertyList(prop.Name) // 在配置文件删除, 以保证以后直接使用组件属性
+			} else {
+
+			}
+		}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, vtedit.NewEditLinkNodeData(prop))
 	}
 }

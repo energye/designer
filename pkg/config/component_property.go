@@ -53,7 +53,12 @@ func (m *componentProperty) Include() (propertyList []lcl.ComponentProperties) {
 	return m.Common.Include
 }
 
-// 自定义组件属性
+// 获取自定义组件属性
 func (m *componentProperty) GetCustomPropertyList(componentName string) []lcl.ComponentProperties {
 	return m.CustomPropertyList.Get(componentName)
+}
+
+// 删除自定义组件属性
+func (m *componentProperty) DeleteCustomPropertyList(componentName string) {
+	delete(m.CustomPropertyList, componentName)
 }
