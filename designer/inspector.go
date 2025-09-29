@@ -2,6 +2,7 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"sort"
 	"strings"
@@ -37,15 +38,16 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		logs.Debug("LoadComponent Count:", len(properties))
 		// 拆分 属性和事件
 		var (
-			eventList    []*lcl.ComponentProperties
-			propertyList []*lcl.ComponentProperties
+			eventList    []*vtedit.TEditLinkNodeData
+			propertyList []*vtedit.TEditLinkNodeData
 		)
 		for _, prop := range properties {
 			newProp := prop
+			newNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			if prop.Kind == "tkMethod" {
-				eventList = append(eventList, &newProp)
+				eventList = append(eventList, newNodeData)
 			} else {
-				propertyList = append(propertyList, &newProp)
+				propertyList = append(propertyList, newNodeData)
 			}
 			//logs.Debug("  ", toJSON(prop))
 		}

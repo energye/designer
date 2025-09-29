@@ -30,7 +30,7 @@ const (
 
 // 节点数据
 type TEditLinkNodeData struct {
-	metadata      *lcl.ComponentProperties // 组件属性元数据
+	Metadata      *lcl.ComponentProperties // 组件属性元数据
 	Name          string                   // 属性名
 	Index         int32                    // 值索引 值是数组类型时，选中的索引
 	Checked       bool                     // 选中列表 值是数组类型时，是否选中
@@ -49,7 +49,7 @@ var (
 )
 
 func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
-	m := &TEditLinkNodeData{metadata: prop}
+	m := &TEditLinkNodeData{Metadata: prop}
 	m.Build()
 	return m
 }
@@ -94,7 +94,7 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditLinkNodeData {
 
 // 通知更新组件属性
 func (m *TEditLinkNodeData) UpdateComponentProperties() {
-	if m.metadata != nil {
+	if m.Metadata != nil {
 		logs.Debug("TEditLinkNodeData UpdateComponentProperties")
 	}
 }

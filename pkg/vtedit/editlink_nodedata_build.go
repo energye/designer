@@ -28,13 +28,13 @@ const (
 
 // 构建节点数据
 func (m *TEditLinkNodeData) Build() {
-	kind := PropertyKind(m.metadata.Kind)
+	kind := PropertyKind(m.Metadata.Kind)
 	switch kind {
 	case TkEnumeration: // 枚举 单选, 使用下拉框
 		m.Type = PdtComboBox
-		m.Name = m.metadata.Name
-		m.StringValue = tool.FirstToUpper(m.metadata.Value)
-		options := strings.Split(m.metadata.Options, ",")
+		m.Name = m.Metadata.Name
+		m.StringValue = tool.FirstToUpper(m.Metadata.Value)
+		options := strings.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
 			option = tool.FirstToUpper(option)
@@ -43,9 +43,9 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case TkSet: // 集合 多选, 使用子菜单列表
 		m.Type = PdtCheckBoxList
-		m.Name = m.metadata.Name
-		values := strings.Split(m.metadata.Value, ",")
-		options := strings.Split(m.metadata.Options, ",")
+		m.Name = m.Metadata.Name
+		values := strings.Split(m.Metadata.Value, ",")
+		options := strings.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
 			option = tool.FirstToUpper(option)
@@ -60,23 +60,23 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case TkBool: // 布尔类型
 		m.Type = PdtCheckBox
-		m.Name = m.metadata.Name
-		m.Checked = m.metadata.Value == "1"
+		m.Name = m.Metadata.Name
+		m.Checked = m.Metadata.Value == "1"
 	case TkAString: // 字符串
 		m.Type = PdtText
-		m.Name = m.metadata.Name
-		m.StringValue = m.metadata.Value
+		m.Name = m.Metadata.Name
+		m.StringValue = m.Metadata.Value
 	case TkChar: // 密码
 		m.Type = PdtText
-		m.Name = m.metadata.Name
+		m.Name = m.Metadata.Name
 		m.StringValue = ""
 	case TkInteger: // 数字
 		m.Type = PdtInt
-		m.Name = m.metadata.Name
-		v, _ := strconv.Atoi(m.metadata.Value)
+		m.Name = m.Metadata.Name
+		v, _ := strconv.Atoi(m.Metadata.Value)
 		m.IntValue = v
 		// TModalResult TCursor TGraphicsColor
-		switch m.metadata.Type {
+		switch m.Metadata.Type {
 		case "TGraphicsColor": // 颜色
 			m.Type = PdtColorSelect
 		case "TCursor": // 指针样式-在配置文件转换
@@ -84,15 +84,15 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case TkInt64: // 数字 64
 		m.Type = PdtInt64
-		m.Name = m.metadata.Name
-		v, _ := strconv.Atoi(m.metadata.Value)
+		m.Name = m.Metadata.Name
+		v, _ := strconv.Atoi(m.Metadata.Value)
 		m.IntValue = v
 	case TkClass: // 类
 		m.Type = PdtClass
-		m.Name = m.metadata.Name
-		m.StringValue = m.metadata.Value
+		m.Name = m.Metadata.Name
+		m.StringValue = m.Metadata.Value
 		// 获取类实例 属性
-		classInstance, err := strconv.ParseUint(m.metadata.Value, 10, bits.UintSize)
+		classInstance, err := strconv.ParseUint(m.Metadata.Value, 10, bits.UintSize)
 		if err != nil {
 			logs.Error("获取类实例失败:", err.Error())
 			os.Exit(1)
@@ -105,8 +105,8 @@ func (m *TEditLinkNodeData) Build() {
 
 	default: // 未识别类型
 		m.Type = PdtText
-		m.Name = m.metadata.Name
-		logs.Warn("未识别的元数据类型:", m.metadata.ToJSON())
+		m.Name = m.Metadata.Name
+		logs.Warn("未识别的元数据类型:", m.Metadata.ToJSON())
 		return
 	}
 }
