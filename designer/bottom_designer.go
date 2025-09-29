@@ -165,7 +165,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		logs.Debug("当前选中控件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		// 创建
 		if create := GetRegisterComponent(componentName); create != nil {
-			create(m, x, y).UpdateLoadPropertyInfo()
+			create(m, x, y).LoadPropertyToDesigner()
 		} else {
 			logs.Warn("当前选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
