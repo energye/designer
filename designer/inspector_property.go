@@ -64,15 +64,19 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 			tree.SetLineStyle(types.LsSolid)
 			tree.SetDefaultNodeHeight(28)
 			tree.SetIndent(8)
+
 			// options
 			propTreeOptions := tree.TreeOptions()
 			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
 			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
-			propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToLevelSelectConstraint))
+			propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToLevelSelectConstraint))
 			propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
+
+			// 颜色
 			propColors := tree.Colors()
 			propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
 			propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+
 			// header
 			header := tree.Header()
 			header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
