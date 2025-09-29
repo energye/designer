@@ -2,6 +2,7 @@ package vtedit
 
 import (
 	"bytes"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -86,4 +87,11 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditLinkNodeData {
 		return data
 	}
 	return nil
+}
+
+// 通知更新组件属性
+func (m *TEditLinkNodeData) UpdateComponentProperties() {
+	if m.metadata != nil {
+		logs.Debug("TEditLinkNodeData UpdateComponentProperties")
+	}
 }

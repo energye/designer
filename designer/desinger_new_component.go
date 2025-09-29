@@ -29,7 +29,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 	m.object.SetHint(hint)
 	if m.isDown {
 		m.drag.Hide()
-		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox)
+		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
@@ -41,7 +41,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	m.owner.hideAllDrag()
 	m.drag.Show()
 	m.isDown = true
-	point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox)
+	point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox.object)
 	m.dx, m.dy = point.X, point.Y
 	m.dcl = m.object.Left()
 	m.dct = m.object.Top()
@@ -79,8 +79,8 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
-	comp := lcl.NewButton(designerForm.designerBox)
-	comp.SetParent(designerForm.designerBox)
+	comp := lcl.NewButton(designerForm.designerBox.object)
+	comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -90,8 +90,8 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
 	comp.SetOnMouseUp(m.OnMouseUp)
-	m.drag = newDrag(designerForm.designerBox, DsAll)
-	m.drag.SetRelation(comp)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
 	return m
 }
@@ -101,8 +101,8 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
-	comp := lcl.NewEdit(designerForm.designerBox)
-	comp.SetParent(designerForm.designerBox)
+	comp := lcl.NewEdit(designerForm.designerBox.object)
+	comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -113,8 +113,8 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
 	comp.SetOnMouseUp(m.OnMouseUp)
-	m.drag = newDrag(designerForm.designerBox, DsAll)
-	m.drag.SetRelation(comp)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
 	return m
 }
@@ -123,8 +123,8 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m := new(DesigningComponent)
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
-	comp := lcl.NewCheckBox(designerForm.designerBox)
-	comp.SetParent(designerForm.designerBox)
+	comp := lcl.NewCheckBox(designerForm.designerBox.object)
+	comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -138,8 +138,8 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	comp.SetOnChange(func(sender lcl.IObject) {
 		comp.SetChecked(false)
 	})
-	m.drag = newDrag(designerForm.designerBox, DsAll)
-	m.drag.SetRelation(comp)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
 	return m
 }

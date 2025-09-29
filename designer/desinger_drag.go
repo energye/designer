@@ -31,8 +31,8 @@ const (
 )
 
 type drag struct {
-	relation    lcl.IControl   // 关联的控件
-	ds          DragShowStatus // 显示方向
+	relation    *DesigningComponent // 关联设计的控件
+	ds          DragShowStatus      // 显示方向
 	isShow      bool
 	left        lcl.IPanel
 	top         lcl.IPanel
@@ -71,37 +71,37 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			case DLeft:
 				x := X - dx
 				w := dcw - x
-				m.relation.SetBounds(dcx+x, dcy, w, dch)
+				m.relation.object.SetBounds(dcx+x, dcy, w, dch)
 			case DTop:
 				y := Y - dy
 				h := dch - y
-				m.relation.SetBounds(dcx, dcy+y, dcw, h)
+				m.relation.object.SetBounds(dcx, dcy+y, dcw, h)
 			case DRight:
 				x := X - dx
-				m.relation.SetBounds(dcx, dcy, dcw+x, dch)
+				m.relation.object.SetBounds(dcx, dcy, dcw+x, dch)
 			case DBottom:
 				y := Y - dy
-				m.relation.SetBounds(dcx, dcy, dcw, dch+y)
+				m.relation.object.SetBounds(dcx, dcy, dcw, dch+y)
 			case DLeftTop:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
 				h := dch - y
-				m.relation.SetBounds(dcx+x, dcy+y, w, h)
+				m.relation.object.SetBounds(dcx+x, dcy+y, w, h)
 			case DRightTop:
 				y := Y - dy
 				h := dch - y
 				x := X - dx
-				m.relation.SetBounds(dcx, dcy+y, dcw+x, h)
+				m.relation.object.SetBounds(dcx, dcy+y, dcw+x, h)
 			case DLeftBottom:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
-				m.relation.SetBounds(dcx+x, dcy, w, dch+y)
+				m.relation.object.SetBounds(dcx+x, dcy, w, dch+y)
 			case DRightBottom:
 				x := X - dx
 				y := Y - dy
-				m.relation.SetBounds(dcx, dcy, dcw+x, dch+y)
+				m.relation.object.SetBounds(dcx, dcy, dcw+x, dch+y)
 			}
 		}
 	})
@@ -109,7 +109,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		logs.Debug("DRAG OnMouseDown direction:", d)
 		m.Hide()
 		dx, dy = X, Y
-		br := m.relation.BoundsRect()
+		br := m.relation.object.BoundsRect()
 		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
 		isDown = true
 	})
@@ -142,7 +142,7 @@ func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
 }
 
 // 设置关联控件
-func (m *drag) SetRelation(relation lcl.IControl) {
+func (m *drag) SetRelation(relation *DesigningComponent) {
 	m.relation = relation
 }
 
@@ -211,7 +211,7 @@ func (m *drag) BringToFront() {
 // 跟随关联控件
 func (m *drag) Follow() {
 	if m.relation != nil {
-		br := m.relation.BoundsRect()
+		br := m.relation.object.BoundsRect()
 		x, y := br.Left, br.Top
 		width, height := br.Width(), br.Height()
 		_ = width

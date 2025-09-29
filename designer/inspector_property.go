@@ -210,10 +210,15 @@ func (m *InspectorComponentProperty) initComponentPropertyTree() {
 	//m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
 	//	logs.Debug("[object inspector-property] OnEditCancelled column:", column)
 	//})
-	//m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
-	//	// edit: 4. 编辑结束
-	//	logs.Debug("[object inspector-property] OnEdited column:", column)
-	//})
+	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
+		// edit: 4. 编辑结束
+		logs.Debug("[object inspector-property] OnEdited column:", column)
+		if column == 1 {
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				go data.UpdateComponentProperties()
+			}
+		}
+	})
 	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
 		// edit: 3. 创建编辑或组件

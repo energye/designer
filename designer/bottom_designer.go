@@ -29,7 +29,7 @@ type FormTab struct {
 	scroll               lcl.IScrollBox        // 外 滚动条
 	isDesigner           bool                  // 是否下在设计
 	sheet                lcl.ITabSheet         // tab sheet
-	designerBox          lcl.IPanel            // 设计器
+	designerBox          *DesigningComponent   // 设计器
 	isDown, isUp, isMove bool                  // 鼠标事件
 	dragForm             *drag                 // 拖拽窗体控制器
 	componentName        map[string]int        // 组件分类名
@@ -101,24 +101,26 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	//form.bg.SetParent(form.scroll)
 	//form.bg.SetAlign(types.AlClient)
 
-	form.designerBox = lcl.NewPanel(form.scroll)
-	form.designerBox.SetParent(form.scroll)
-	form.designerBox.SetBevelOuter(types.BvNone)
-	form.designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
-	form.designerBox.SetDoubleBuffered(true)
-	form.designerBox.SetParentColor(false)
-	form.designerBox.SetColor(colors.ClBtnFace)
-	form.designerBox.SetLeft(margin)
-	form.designerBox.SetTop(margin)
-	form.designerBox.SetWidth(defaultWidth)
-	form.designerBox.SetHeight(defaultHeight)
-	form.designerBox.SetAlign(types.AlCustom)
-	form.designerBox.SetOnPaint(form.designerOnPaint)
-	form.designerBox.SetOnMouseMove(form.designerOnMouseMove)
-	form.designerBox.SetOnMouseDown(form.designerOnMouseDown)
-	form.designerBox.SetOnMouseUp(form.designerOnMouseUp)
+	form.designerBox = new(DesigningComponent)
+	designerBox := lcl.NewPanel(form.scroll)
+	designerBox.SetParent(form.scroll)
+	designerBox.SetBevelOuter(types.BvNone)
+	designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
+	designerBox.SetDoubleBuffered(true)
+	designerBox.SetParentColor(false)
+	designerBox.SetColor(colors.ClBtnFace)
+	designerBox.SetLeft(margin)
+	designerBox.SetTop(margin)
+	designerBox.SetWidth(defaultWidth)
+	designerBox.SetHeight(defaultHeight)
+	designerBox.SetAlign(types.AlCustom)
+	designerBox.SetOnPaint(form.designerOnPaint)
+	designerBox.SetOnMouseMove(form.designerOnMouseMove)
+	designerBox.SetOnMouseDown(form.designerOnMouseDown)
+	designerBox.SetOnMouseUp(form.designerOnMouseUp)
+	form.designerBox.object = designerBox
 
-	// 创建一个隐藏的窗体
+	// 创建一个隐藏的窗体用于获取属性
 	form.form = NewFormDesigner(form)
 
 	// 窗体拖拽大小
@@ -205,9 +207,10 @@ func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 
 func (m *FormTab) drawGrid() {
 	gridSize := 9 // 小刻度
-	canvas := m.designerBox.Canvas()
+	designerBox := m.designerBox.object.(lcl.IPanel)
+	canvas := designerBox.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
-	width, height := m.designerBox.Width(), m.designerBox.Height()
+	width, height := designerBox.Width(), designerBox.Height()
 	for i := 1; i < int(width)/gridSize; i++ {
 		x := int32(i * gridSize)
 		for j := 1; j < int(height)/gridSize; j++ {
