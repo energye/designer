@@ -38,3 +38,7 @@ func Equal(s1, s2 string) bool {
 	s2 = strings.ToLower(s2)
 	return s1 == s2
 }
+
+func FirstToUpper(s string) string {
+	return strings.ToUpper(string(s[0])) + s[1:]
+}

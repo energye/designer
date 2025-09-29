@@ -49,8 +49,7 @@ func (m *InspectorComponentProperty) loadPropertyList(propertyList []lcl.Compone
 				// 数组只有一个元素，规则为直接作用在当前属性上
 				customProp := customProps[0]
 				prop = customProp
-				propertyList[i] = customProp                 // 更新到组件属性
-				compProp.DeleteCustomPropertyList(prop.Name) // 在配置文件删除, 以保证以后直接使用组件属性
+				propertyList[i] = customProp // 更新到组件属性
 			} else {
 
 			}

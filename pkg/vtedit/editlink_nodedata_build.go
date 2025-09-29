@@ -2,6 +2,10 @@ package vtedit
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
+	"math/bits"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,6 +38,7 @@ func (m *TEditLinkNodeData) Build() {
 		options := strings.Split(m.metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
+			option = tool.FirstToUpper(option)
 			item := &TEditLinkNodeData{StringValue: option}
 			m.ComboBoxValue = append(m.ComboBoxValue, item)
 		}
@@ -44,9 +49,10 @@ func (m *TEditLinkNodeData) Build() {
 		options := strings.Split(m.metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
+			option = tool.FirstToUpper(option)
 			checkBox := &TEditLinkNodeData{Type: PdtCheckBox, Name: option, Checked: false}
 			for _, value := range values {
-				if option == value {
+				if tool.Equal(option, value) {
 					checkBox.Checked = true
 					break
 				}
@@ -74,10 +80,8 @@ func (m *TEditLinkNodeData) Build() {
 		switch m.metadata.Type {
 		case "TGraphicsColor": // 颜色
 			m.Type = PdtColorSelect
-		case "TCursor": // 指针样式
-
-		case "TModalResult": // 模态返回值
-
+		case "TCursor": // 指针样式-在配置文件转换
+		case "TModalResult": // 模态返回值-在配置文件转换
 		}
 	case TkInt64: // 数字 64
 		m.Type = PdtInt64
@@ -89,7 +93,15 @@ func (m *TEditLinkNodeData) Build() {
 		m.Name = m.metadata.Name
 		m.StringValue = m.metadata.Value
 		// 获取类实例 属性
-
+		classInstance, err := strconv.ParseUint(m.metadata.Value, 10, bits.UintSize)
+		if err != nil {
+			logs.Error("获取类实例失败:", err.Error())
+			os.Exit(1)
+		}
+		object := lcl.AsObject(classInstance)
+		var properties []lcl.ComponentProperties
+		properties = lcl.DesigningComponent().GetComponentProperties(object)
+		logs.Debug("TkClass LoadComponent Count:", len(properties))
 	default: // 未识别类型
 		m.Type = PdtText
 		m.Name = m.metadata.Name
