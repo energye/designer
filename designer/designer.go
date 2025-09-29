@@ -5,6 +5,7 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
+// 加载图片列表
 func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32) lcl.IImageList {
 	images := lcl.NewImageList(owner)
 	images.SetWidth(width)

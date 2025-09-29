@@ -205,6 +205,7 @@ func (m *FormTab) designerOnPaint(sender lcl.IObject) {
 	m.drawGrid()
 }
 
+// 绘制风格线
 func (m *FormTab) drawGrid() {
 	gridSize := 9 // 小刻度
 	designerBox := m.designerBox.object.(lcl.IPanel)
