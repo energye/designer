@@ -5,6 +5,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/keys"
 	"strconv"
 )
 
@@ -31,6 +32,14 @@ func (m *TCheckBoxEditLink) Create() {
 	m.checkbox.SetVisible(false)
 	m.checkbox.SetCaption("(false)")
 	m.checkbox.SetDoubleBuffered(true)
+	m.checkbox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+		logs.Debug("TCheckBoxEditLink OnKeyDown key:", *key)
+		if *key == keys.VkReturn {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.VTree.EndEditNode()
+			})
+		}
+	})
 	m.checkbox.SetOnChange(func(sender lcl.IObject) {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
 		m.BindData.Checked = m.checkbox.Checked()

@@ -57,7 +57,7 @@ func (m *TComboBoxEditLink) BeginEdit() bool {
 	logs.Debug("TComboBoxEditLink BeginEdit")
 	if !m.stopping {
 		m.combobox.Show()
-		//m.combobox.SetFocus()
+		m.combobox.SetFocus()
 	}
 	return true
 }

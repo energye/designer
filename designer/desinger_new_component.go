@@ -19,8 +19,6 @@ type DesigningComponent struct {
 	isDown       bool                        //
 	propertyList []*vtedit.TEditLinkNodeData // 组件属性
 	eventList    []*vtedit.TEditLinkNodeData // 组件事件
-	//propertyList []*lcl.ComponentProperties // 组件属性
-	//eventList    []*lcl.ComponentProperties // 组件事件
 }
 
 // 设计组件鼠标移动

@@ -6,6 +6,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"github.com/energye/lcl/types/keys"
 )
 
 // 颜色选择器
@@ -39,6 +40,14 @@ func (m *TColorSelectEditLink) CreateEdit() {
 	clrFont := m.colorText.Font()
 	clrFont.SetStyle(clrFont.Style().Include(types.FsBold))
 	clrFont.SetColor(colors.TColor(m.BindData.IntValue))
+	m.colorText.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
+		logs.Debug("TColorSelectEditLink OnKeyDown key:", *key)
+		if *key == keys.VkReturn {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.VTree.EndEditNode()
+			})
+		}
+	})
 
 	m.colorBtn = lcl.NewColorButton(nil)
 	m.colorBtn.SetVisible(false)
@@ -60,6 +69,7 @@ func (m *TColorSelectEditLink) BeginEdit() bool {
 	logs.Debug("TColorSelectEditLink BeginEdit")
 	if !m.stopping {
 		m.colorText.Show()
+		m.colorText.SetFocus()
 		m.colorBtn.Show()
 	}
 	return true
