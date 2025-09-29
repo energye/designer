@@ -90,9 +90,6 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
 	comp.SetOnMouseUp(m.OnMouseUp)
-	comp.SetOnShowHint(func(sender lcl.IObject, hintInfo lcl.THintInfo) {
-		logs.Debug("SetOnShowHint:", hintInfo.HintStr, hintInfo.HintPos)
-	})
 	m.drag = newDrag(designerForm.designerBox, DsAll)
 	m.drag.SetRelation(comp)
 	m.object = lcl.AsWinControl(comp)
