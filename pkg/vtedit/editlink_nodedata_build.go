@@ -28,6 +28,7 @@ const (
 
 type PropertyType string
 
+// 构建节点数据
 func (m *TEditLinkNodeData) Build() {
 	kind := PropertyKind(m.metadata.Kind)
 	switch kind {
@@ -98,10 +99,12 @@ func (m *TEditLinkNodeData) Build() {
 			logs.Error("获取类实例失败:", err.Error())
 			os.Exit(1)
 		}
+		// 转换 object 获取对象属性
 		object := lcl.AsObject(classInstance)
 		var properties []lcl.ComponentProperties
 		properties = lcl.DesigningComponent().GetComponentProperties(object)
 		logs.Debug("TkClass LoadComponent Count:", len(properties))
+
 	default: // 未识别类型
 		m.Type = PdtText
 		m.Name = m.metadata.Name

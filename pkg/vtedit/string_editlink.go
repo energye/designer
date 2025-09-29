@@ -43,7 +43,10 @@ func (m *TStringEditLink) Create() {
 	})
 }
 
-// 通知编辑链接现在可以开始编辑。后代可以通过返回False来取消节点编辑。
+func (m *TStringEditLink) SetReadOnly(v bool) {
+	m.edit.SetReadOnly(v)
+}
+
 func (m *TStringEditLink) BeginEdit() bool {
 	logs.Debug("TStringEditLink BeginEdit")
 	if !m.stopping {
