@@ -1,14 +1,10 @@
 package designer
 
 import (
-	"fmt"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"strconv"
-	"unsafe"
 )
 
 // 设计 - 组件属性
@@ -62,37 +58,55 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	}
 	// 组件的属性列表和事件列表"树"
 	{
+		vstConfig := func(tree lcl.ILazVirtualStringTree) {
+			tree.SetBorderStyleToBorderStyle(types.BsNone)
+			tree.SetAlign(types.AlClient)
+			tree.SetLineStyle(types.LsSolid)
+			tree.SetDefaultNodeHeight(28)
+			tree.SetIndent(8)
+			// options
+			propTreeOptions := tree.TreeOptions()
+			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
+			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
+			propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToLevelSelectConstraint))
+			propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
+			propColors := tree.Colors()
+			propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+			propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+			// header
+			header := tree.Header()
+			header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
+			header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
+			header.Font().SetColor(colors.ClGray)
+			columns := header.Columns()
+			columns.Clear()
+			propNameCol := columns.AddToVirtualTreeColumn()
+			propNameCol.SetText("名")
+			propNameCol.SetWidth(125)
+			propNameCol.SetAlignment(types.TaLeftJustify)
+			//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
+
+			propValueCol := columns.AddToVirtualTreeColumn()
+			propValueCol.SetText("值")
+			propValueCol.SetWidth(leftBoxWidth - 150)
+			//propValueCol.SetWidth(leftBoxWidth - 125)
+			propValueCol.SetAlignment(types.TaLeftJustify)
+			propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
+		}
 		// 组件属性树列表
 		m.propertyTree = lcl.NewLazVirtualStringTree(m.propertySheet)
 		m.propertyTree.SetParent(m.propertySheet)
-		m.propertyTree.SetBorderStyleToBorderStyle(types.BsNone)
-		m.propertyTree.SetAlign(types.AlClient)
-		m.propertyTree.SetLineStyle(types.LsSolid)
-		m.propertyTree.SetDefaultNodeHeight(28)
-		m.propertyTree.SetIndent(8)
-		propTreeOptions := m.propertyTree.TreeOptions()
-		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
-		propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
-		propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToLevelSelectConstraint))
-		propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
-		propColors := m.propertyTree.Colors()
-		propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
-		propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+		vstConfig(m.propertyTree)
 
 		// 组件事件树列表
 		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
 		m.eventTree.SetParent(m.eventSheet)
-		m.eventTree.SetBorderStyleToBorderStyle(types.BsNone)
-		m.eventTree.SetAlign(types.AlClient)
-		eventTreeOptions := m.propertyTree.TreeOptions()
-		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
-		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowVertGridLines))
-		eventTreeOptions.SetPaintOptions(eventTreeOptions.PaintOptions().Include(types.ToShowHorzGridLines))
-		eventTreeOptions.SetSelectionOptions(eventTreeOptions.SelectionOptions().Include(types.ToFullRowSelect))
+		vstConfig(m.eventTree)
 
 	}
-	// 初始化组件属性树
-	m.initComponentPropertyTree()
+	// 初始化组件属性事件
+	m.initComponentPropertyTreeEvent()
+	//m.initComponentPropertyTreeEvent()
 
 	// 测试
 	{
@@ -124,162 +138,4 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		//	CheckBoxValue: []vtedit.TEditLinkNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
 		//AddPropertyNodeData(node, data)
 	}
-}
-
-// 初始化组件属性树
-func (m *InspectorComponentProperty) initComponentPropertyTree() {
-	header := m.propertyTree.Header()
-	header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
-	header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
-	header.Font().SetColor(colors.ClGray)
-	columns := header.Columns()
-	columns.Clear()
-	propNameCol := columns.AddToVirtualTreeColumn()
-	propNameCol.SetText("名")
-	propNameCol.SetWidth(125)
-	propNameCol.SetAlignment(types.TaLeftJustify)
-	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
-
-	propValueCol := columns.AddToVirtualTreeColumn()
-	propValueCol.SetText("值")
-	propValueCol.SetWidth(leftBoxWidth - 150)
-	//propValueCol.SetWidth(leftBoxWidth - 125)
-	propValueCol.SetAlignment(types.TaLeftJustify)
-	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-
-	m.propertyTree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
-		m.propertyTree.EndEditNode()
-	})
-	m.propertyTree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
-		column int32, textType types.TVSTTextType) {
-		//logs.Debug("object inspector-property OnPaintText column:", column)
-		if column == 0 {
-			font := targetCanvas.FontToFont()
-			font.SetStyle(font.Style().Include(types.FsBold))
-			level := sender.GetNodeLevel(node)
-			//logs.Info("  OnPaintText level:", level)
-			switch level {
-			case 0:
-				font.SetColor(colors.ClBlack)
-			case 1:
-				font.SetColor(colors.ClBlue)
-			default:
-				font.SetColor(colors.ClGreen)
-			}
-		} else if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				// 编辑列 需要动态控制时
-				switch data.Type {
-				case vtedit.PdtColorSelect:
-					font := targetCanvas.FontToFont()
-					font.SetStyle(font.Style().Include(types.FsBold))
-					font.SetColor(colors.TColor(data.IntValue))
-				}
-			}
-		}
-	})
-	//m.propertyTree.SetOnBeforeCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
-	//	column int32, cellPaintMode types.TVTCellPaintMode, cellRect types.TRect, contentRect *types.TRect) {
-	//	logs.Debug("[object inspector-property] OnBeforeCellPaint column:", column)
-	//})
-	//m.propertyTree.SetOnAfterCellPaint(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
-	//	column int32, cellRect types.TRect) {
-	//	logs.Debug("[object inspector-property] OnAfterCellPaint column:", column)
-	//})
-	m.propertyTree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
-		// edit: 1. 触发编辑
-		logs.Debug("[object inspector-property] OnColumnClick column:", column)
-		if column == 1 {
-			node := sender.FocusedNode()
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				m.propertyTree.EditNode(node, column)
-			}
-		}
-	})
-	m.propertyTree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, allowed *bool) {
-		// edit: 2. 第二列可以编辑
-		logs.Debug("[object inspector-property] OnEditing column:", column)
-		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
-				*allowed = true
-				return
-			}
-		}
-	})
-	//m.propertyTree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
-	//	logs.Debug("[object inspector-property] OnEditCancelled column:", column)
-	//})
-	m.propertyTree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
-		// edit: 4. 编辑结束
-		logs.Debug("[object inspector-property] OnEdited column:", column)
-		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				go data.UpdateComponentProperties()
-			}
-		}
-	})
-	m.propertyTree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, outEditLink *lcl.IVTEditLink) {
-		// edit: 3. 创建编辑或组件
-		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
-		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				switch data.Type {
-				case vtedit.PdtText:
-					link := vtedit.NewStringEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtInt, vtedit.PdtInt64:
-					link := vtedit.NewIntEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtFloat:
-					link := vtedit.NewFloatEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtCheckBox:
-					link := vtedit.NewCheckBoxEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtCheckBoxList, vtedit.PdtClass:
-					link := vtedit.NewStringEditLink(data)
-					link.SetReadOnly(true)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtComboBox:
-					link := vtedit.NewComboBoxEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtColorSelect:
-					link := vtedit.NewColorSelectEditLink(data)
-					*outEditLink = link.AsIVTEditLink()
-				}
-			}
-		}
-	})
-	m.propertyTree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, textType types.TVSTTextType, cellText *string) {
-		//logs.Debug("[object inspector-property] OnGetText column:", column)
-		if data := vtedit.GetPropertyNodeData(node); data != nil {
-			if column == 0 {
-				*cellText = data.Name
-			} else if column == 1 {
-				switch data.Type {
-				case vtedit.PdtText:
-					*cellText = data.StringValue
-				case vtedit.PdtInt, vtedit.PdtInt64:
-					*cellText = strconv.Itoa(data.IntValue)
-				case vtedit.PdtFloat:
-					val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
-					*cellText = val
-				case vtedit.PdtCheckBox:
-					*cellText = strconv.FormatBool(data.Checked)
-				case vtedit.PdtCheckBoxList:
-					*cellText = data.StringValue
-				case vtedit.PdtComboBox:
-					*cellText = data.StringValue
-				case vtedit.PdtColorSelect:
-					*cellText = fmt.Sprintf("0x%X", data.IntValue)
-				default:
-					*cellText = ""
-				}
-			}
-		}
-	})
-	m.propertyTree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
