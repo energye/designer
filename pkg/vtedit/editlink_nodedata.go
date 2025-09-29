@@ -44,7 +44,8 @@ type TEditLinkNodeData struct {
 }
 
 var (
-	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData) // 组件属性数据列表
+	// 组件属性数据列表, key: 节点指针 value: 节点数据
+	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData)
 )
 
 func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
@@ -58,8 +59,9 @@ func ResetPropertyNodeData() {
 }
 
 // 添加数据到指定节点
-func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditLinkNodeData) {
+func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditLinkNodeData) types.PVirtualNode {
 	node := tree.AddChild(parent, 0)
+	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
 	if data.Type == PdtCheckBoxList {
 		dataList := data.CheckBoxValue
@@ -79,6 +81,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 		buf.WriteString("]")
 		data.StringValue = buf.String()
 	}
+	return node
 }
 
 // 获取节点属性数据

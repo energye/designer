@@ -54,6 +54,7 @@ func (m *InspectorComponentProperty) loadPropertyList(propertyList []*lcl.Compon
 
 			}
 		}
+		// 根据组件属性构建节点数据
 		newData := vtedit.NewEditLinkNodeData(property)
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, newData)
 	}
