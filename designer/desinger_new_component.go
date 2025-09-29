@@ -10,12 +10,14 @@ import (
 // 组件设计创建管理
 
 type DesigningComponent struct {
-	owner    *FormTab
-	object   lcl.IWinControl
-	drag     *drag
-	dx, dy   int32
-	dcl, dct int32
-	isDown   bool
+	owner        *FormTab
+	object       lcl.IWinControl
+	drag         *drag
+	dx, dy       int32
+	dcl, dct     int32
+	isDown       bool
+	propertyList []*lcl.ComponentProperties
+	eventList    []*lcl.ComponentProperties
 }
 
 // 设计组件鼠标移动

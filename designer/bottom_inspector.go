@@ -13,7 +13,6 @@ var (
 
 func (m *BottomBox) createInspectorLayout() *Inspector {
 	ins := new(Inspector)
-	ins.objectPropertyList = make(map[uintptr][]lcl.ComponentProperties)
 	// 面板 对象查看器分隔
 	{
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)

@@ -28,24 +28,24 @@ const (
 )
 
 type TEditLinkNodeData struct {
-	metadata      lcl.ComponentProperties // 属性元数据
-	Name          string                  // 属性名
-	Index         int32                   // 值索引 值是数组类型时，选中的索引
-	Checked       bool                    // 选中列表 值是数组类型时，是否选中
-	StringValue   string                  // 属性值 string
-	FloatValue    float64                 // 属性值 float64
-	BoolValue     bool                    // 属性值 bool
-	IntValue      int                     // 属性值 int
-	CheckBoxValue []*TEditLinkNodeData    // 属性值 checkbox
-	ComboBoxValue []*TEditLinkNodeData    // 属性值 combobox
-	Type          PropertyDataType        // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	metadata      *lcl.ComponentProperties // 属性元数据
+	Name          string                   // 属性名
+	Index         int32                    // 值索引 值是数组类型时，选中的索引
+	Checked       bool                     // 选中列表 值是数组类型时，是否选中
+	StringValue   string                   // 属性值 string
+	FloatValue    float64                  // 属性值 float64
+	BoolValue     bool                     // 属性值 bool
+	IntValue      int                      // 属性值 int
+	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
+	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
+	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
 var (
 	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData) // 组件属性数据列表
 )
 
-func NewEditLinkNodeData(prop lcl.ComponentProperties) *TEditLinkNodeData {
+func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 	m := &TEditLinkNodeData{metadata: prop}
 	m.Build()
 	return m
