@@ -35,7 +35,7 @@ func (m *TEditLinkNodeData) Build() {
 	case TkEnumeration: // 枚举 单选, 使用下拉框
 		m.Type = PdtComboBox
 		m.Name = m.metadata.Name
-		m.StringValue = m.metadata.Value
+		m.StringValue = tool.FirstToUpper(m.metadata.Value)
 		options := strings.Split(m.metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
