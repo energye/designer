@@ -54,7 +54,8 @@ func (m *InspectorComponentProperty) loadPropertyList(propertyList []*lcl.Compon
 
 			}
 		}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, vtedit.NewEditLinkNodeData(prop))
+		newData := vtedit.NewEditLinkNodeData(prop)
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, newData)
 	}
 }
 

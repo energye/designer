@@ -26,8 +26,6 @@ const (
 	TkInt64       PropertyKind = "tkInt64"
 )
 
-type PropertyType string
-
 // 构建节点数据
 func (m *TEditLinkNodeData) Build() {
 	kind := PropertyKind(m.metadata.Kind)
