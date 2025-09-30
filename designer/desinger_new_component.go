@@ -12,6 +12,7 @@ import (
 
 type DesigningComponent struct {
 	owner        *FormTab                // 所属设计面板
+	originObject any                     // 原始组件对象
 	object       lcl.IWinControl         // 组件
 	drag         *drag                   //
 	dx, dy       int32                   //
@@ -65,12 +66,6 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 	inspector.LoadComponent(m)
 }
 
-// 更新当前组件属性
-func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
-	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
-
-}
-
 // 创建设计窗体-隐藏
 func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)
@@ -103,6 +98,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
+	m.originObject = comp
 	return m
 }
 
@@ -126,6 +122,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
+	//comp.SetAlign()
 	return m
 }
 
