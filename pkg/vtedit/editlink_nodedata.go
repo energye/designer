@@ -80,12 +80,18 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 	return clone
 }
 
+// 设计组件接口
+type IDesigningComponent interface {
+	UpdateComponentProperty(nodeData *TEditNodeData)
+}
+
 // 编辑的节点数据
 type TEditNodeData struct {
-	IsFinal        bool               // 标记是否最终对象, 用于完整的数据
-	EditNodeData   *TEditLinkNodeData // 编辑数据
-	OriginNodeData *TEditLinkNodeData // 原始数据
-	AffiliatedNode types.PVirtualNode // 所属节点
+	IsFinal             bool                // 标记是否最终对象, 用于完整的数据
+	EditNodeData        *TEditLinkNodeData  // 编辑数据
+	OriginNodeData      *TEditLinkNodeData  // 原始数据
+	AffiliatedNode      types.PVirtualNode  // 所属节点
+	AffiliatedComponent IDesigningComponent // 所属组件对象
 }
 
 var (
@@ -144,6 +150,7 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
+		m.AffiliatedComponent.UpdateComponentProperty(m)
 	}
 }
 

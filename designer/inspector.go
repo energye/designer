@@ -42,7 +42,7 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		for _, prop := range properties {
 			newProp := prop
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
-			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone()}
+			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: component}
 			if newProp.Kind == "tkMethod" {
 				eventList = append(eventList, newEditNodeData)
 			} else {
