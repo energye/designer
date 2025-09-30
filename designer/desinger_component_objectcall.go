@@ -126,7 +126,7 @@ func (m *embeddingReflector) CallMethod() ([]any, error) {
 		targetType := mType.In(i)
 		if !argValue.Type().AssignableTo(targetType) {
 			if convertValue, err := m.convertArgsType(arg, targetType); err != nil {
-				return nil, fmt.Errorf("转换参数失败, index: %v arg: %v 需要: %v", i, arg, targetType.Name())
+				return nil, fmt.Errorf("转换参数失败, index: %v value: %v 需要: %v", i, arg, targetType.Name())
 			} else {
 				in[i] = convertValue
 			}
