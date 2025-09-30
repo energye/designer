@@ -7,6 +7,7 @@ import (
 	"github.com/energye/designer/pkg/mapper"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/lcl/lcl"
 	"reflect"
 )
 
@@ -21,12 +22,16 @@ func methodNameToSet(name string) string {
 func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
 	data := nodeData.EditNodeData
-	reflector := &embeddingReflector{object: m.originObject, data: data}
-	result, err := reflector.CallMethod()
-	if err != nil {
-		logs.Error("更新组件属性失败,", err.Error())
-	}
-	fmt.Println("result:", result)
+	m.drag.Hide()
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		reflector := &embeddingReflector{object: m.originObject, data: data}
+		result, err := reflector.CallMethod()
+		_ = result
+		if err != nil {
+			logs.Error("更新组件属性失败,", err.Error())
+		}
+		m.drag.Show()
+	})
 }
 
 type embeddingReflector struct {
