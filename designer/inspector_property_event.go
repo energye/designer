@@ -89,7 +89,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		logs.Debug("[object inspector-property] OnEdited column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				go data.UpdateComponentProperties()
+				data.FormInspectorPropertyToComponentProperty()
 			}
 		}
 	})

@@ -85,6 +85,7 @@ type TEditNodeData struct {
 	IsFinal        bool               // 标记是否最终对象, 用于完整的数据
 	EditNodeData   *TEditLinkNodeData // 编辑数据
 	OriginNodeData *TEditLinkNodeData // 原始数据
+	AffiliatedNode types.PVirtualNode // 所属节点
 }
 
 var (
@@ -105,6 +106,7 @@ func ResetPropertyNodeData() {
 // 添加数据到指定节点
 func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditNodeData) types.PVirtualNode {
 	node := tree.AddChild(parent, 0)
+	data.AffiliatedNode = node
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
 	if data.EditNodeData.Type == PdtCheckBoxList {
@@ -137,10 +139,17 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 	return nil
 }
 
-// 通知更新组件属性
-func (m *TEditNodeData) UpdateComponentProperties() {
-	if m.EditNodeData.Metadata != nil {
-		logs.Debug("TEditLinkNodeData UpdateComponentProperties")
+// 从设计属性更新到组件属性
+func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
+	if m.EditNodeData != nil {
+		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty")
+	}
+}
+
+// 从组件属性更新到设计属性
+func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
+	if m.EditNodeData != nil {
+		logs.Debug("TEditLinkNodeData FormComponentPropertyToInspectorProperty")
 	}
 }
 
