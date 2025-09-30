@@ -108,7 +108,6 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
 	if data.EditNodeData.Type == PdtCheckBoxList {
-
 		dataList := data.EditNodeData.CheckBoxValue
 		buf := bytes.Buffer{}
 		buf.WriteString("[")

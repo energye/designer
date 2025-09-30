@@ -35,7 +35,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			}
 		} else if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				logs.Debug("object inspector-property OnPaintText column:", column, "IsModify:", data.IsModify())
+				//logs.Debug("object inspector-property OnPaintText column:", column, "IsModify:", data.IsModify())
 				font := targetCanvas.FontToFont()
 				// 编辑列 需要动态控制时
 				switch data.EditNodeData.Type {

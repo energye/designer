@@ -2,6 +2,7 @@
   "common": {
     "exclude": [
       "Action",
+      "LCLVersion",
       "ActiveControl",
       "AnchorSideBottom",
       "AnchorSideLeft",
