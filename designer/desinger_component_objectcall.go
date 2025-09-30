@@ -24,8 +24,8 @@ func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeD
 	data := nodeData.EditNodeData
 	m.drag.Hide()
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		reflector := &embeddingReflector{object: m.originObject, data: data}
-		result, err := reflector.CallMethod()
+		ref := &reflector{object: m.originObject, data: data}
+		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
 			logs.Error("更新组件属性失败,", err.Error())
@@ -34,13 +34,14 @@ func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeD
 	})
 }
 
-type embeddingReflector struct {
+// 反射调用函数
+type reflector struct {
 	object any
 	data   *vtedit.TEditLinkNodeData
 }
 
 // 查找方法（包含匿名嵌套字段的方法）
-func (m *embeddingReflector) findMethod(val reflect.Value, methodName string) reflect.Value {
+func (m *reflector) findMethod(val reflect.Value, methodName string) reflect.Value {
 	if !val.IsValid() {
 		return reflect.Value{}
 	}
@@ -68,7 +69,7 @@ func (m *embeddingReflector) findMethod(val reflect.Value, methodName string) re
 }
 
 // 在匿名嵌套字段中递归查找方法
-func (m *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, methodName string) reflect.Value {
+func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName string) reflect.Value {
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
@@ -85,14 +86,17 @@ func (m *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, metho
 	return reflect.Value{}
 }
 
-func (m *embeddingReflector) convertArgs() (args []any) {
+func (m *reflector) convertArgs() (args []any) {
 	switch m.data.Type {
 	case vtedit.PdtText:
 		// string
 		args = append(args, m.data.StringValue)
-	case vtedit.PdtInt, vtedit.PdtInt64:
+	case vtedit.PdtInt:
 		// int
 		args = append(args, m.data.IntValue)
+	case vtedit.PdtInt64:
+		// int64
+		args = append(args, int64(m.data.IntValue))
 	case vtedit.PdtFloat:
 		// float
 		args = append(args, m.data.FloatValue)
@@ -106,6 +110,7 @@ func (m *embeddingReflector) convertArgs() (args []any) {
 		args = append(args, m.data.StringValue)
 	case vtedit.PdtColorSelect:
 		// uint32
+		args = append(args, uint32(m.data.IntValue))
 	default:
 		logs.Error("更新组件属性失败, 未实现的类型:", m.data.Type)
 		return nil
@@ -114,7 +119,7 @@ func (m *embeddingReflector) convertArgs() (args []any) {
 }
 
 // 调用方法
-func (m *embeddingReflector) CallMethod() ([]any, error) {
+func (m *reflector) callMethod() ([]any, error) {
 	methodName := m.data.Name
 	methodName = methodNameToSet(methodName)
 
@@ -137,7 +142,9 @@ func (m *embeddingReflector) CallMethod() ([]any, error) {
 	for i, arg := range args {
 		argValue := reflect.ValueOf(arg)
 		targetType := mType.In(i)
+		// 类型不同尝试转换
 		if !argValue.Type().AssignableTo(targetType) {
+			// 转换参数类型
 			if convertValue, err := m.convertArgsType(arg, targetType); err != nil {
 				return nil, fmt.Errorf("转换参数失败, index: %v 值: %v 需要类型: %v", i, arg, targetType.Name())
 			} else {
@@ -146,7 +153,7 @@ func (m *embeddingReflector) CallMethod() ([]any, error) {
 		} else {
 			in[i] = argValue
 		}
-		//fmt.Println("targetType:", targetType, targetType.String(), targetType.Name())
+		//logs.Debug("reflector callMethod targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
 	// 调用方法
@@ -161,7 +168,7 @@ func (m *embeddingReflector) CallMethod() ([]any, error) {
 	return out, nil
 }
 
-func (m *embeddingReflector) convertArgsType(value any, targetType reflect.Type) (reflect.Value, error) {
+func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect.Value, error) {
 	sourceValue := reflect.ValueOf(value)
 	sourceType := sourceValue.Type()
 	if sourceType.AssignableTo(targetType) {
