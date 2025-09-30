@@ -93,6 +93,7 @@ var (
 	propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
 )
 
+// 创建一个编辑节点数据
 func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 	m := &TEditLinkNodeData{Metadata: prop}
 	m.Build()

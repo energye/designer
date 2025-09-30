@@ -43,7 +43,7 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 			newProp := prop
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone()}
-			if prop.Kind == "tkMethod" {
+			if newProp.Kind == "tkMethod" {
 				eventList = append(eventList, newEditNodeData)
 			} else {
 				propertyList = append(propertyList, newEditNodeData)
@@ -61,5 +61,6 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		component.eventList = eventList
 		component.propertyList = propertyList
 	}
+	// 加载属性列表和事件列表
 	m.componentProperty.Load(component)
 }
