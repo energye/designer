@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -18,21 +19,22 @@ func methodNameToSet(name string) string {
 // 更新当前组件属性
 func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
-	methodName := nodeData.EditNodeData.Name
-	methodName = methodNameToSet(methodName)
-	result, err := gEmbeddingReflector.CallMethod(m.originObject, methodName)
+	data := nodeData.EditNodeData
+	reflector := &embeddingReflector{object: m.originObject, data: data}
+	result, err := reflector.CallMethod()
 	if err != nil {
 		logs.Error("更新组件属性失败,", err.Error())
 	}
 	fmt.Println("result:", result)
 }
 
-type embeddingReflector struct{}
-
-var gEmbeddingReflector = &embeddingReflector{}
+type embeddingReflector struct {
+	object any
+	data   *vtedit.TEditLinkNodeData
+}
 
 // 查找方法（包含匿名嵌套字段的方法）
-func (e *embeddingReflector) findMethod(val reflect.Value, methodName string) reflect.Value {
+func (m *embeddingReflector) findMethod(val reflect.Value, methodName string) reflect.Value {
 	if !val.IsValid() {
 		return reflect.Value{}
 	}
@@ -56,11 +58,11 @@ func (e *embeddingReflector) findMethod(val reflect.Value, methodName string) re
 	}
 
 	// 在匿名嵌套字段中查找方法
-	return e.findMethodInEmbeddedFields(val, methodName)
+	return m.findMethodInEmbeddedFields(val, methodName)
 }
 
 // 在匿名嵌套字段中递归查找方法
-func (e *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, methodName string) reflect.Value {
+func (m *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, methodName string) reflect.Value {
 	typ := val.Type()
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
@@ -68,7 +70,7 @@ func (e *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, metho
 		if field.Anonymous {
 			embeddedField := val.Field(i)
 			// 递归在嵌套字段中查找
-			method := e.findMethod(embeddedField, methodName)
+			method := m.findMethod(embeddedField, methodName)
 			if method.IsValid() {
 				return method
 			}
@@ -77,25 +79,61 @@ func (e *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, metho
 	return reflect.Value{}
 }
 
-// 调用方法
-func (e *embeddingReflector) CallMethod(obj any, methodName string, args ...any) ([]any, error) {
-	val := reflect.ValueOf(obj)
+func (m *embeddingReflector) convertArgs() (args []any) {
+	switch m.data.Type {
+	case vtedit.PdtText:
+		args = append(args, m.data.StringValue)
+	case vtedit.PdtInt, vtedit.PdtInt64:
+		args = append(args, m.data.IntValue)
+	case vtedit.PdtFloat:
+		args = append(args, m.data.FloatValue)
+	case vtedit.PdtCheckBox:
+		args = append(args, m.data.Checked)
+	case vtedit.PdtCheckBoxList:
+	case vtedit.PdtComboBox:
+		args = append(args, m.data.StringValue)
+	case vtedit.PdtColorSelect:
+	default:
+		logs.Error("更新组件属性失败, 未实现的类型:", m.data.Type)
+		return nil
+	}
+	return
+}
 
-	method := e.findMethod(val, methodName)
+// 调用方法
+func (m *embeddingReflector) CallMethod() ([]any, error) {
+	methodName := m.data.Name
+	methodName = methodNameToSet(methodName)
+
+	val := reflect.ValueOf(m.object)
+
+	method := m.findMethod(val, methodName)
 	if !method.IsValid() {
 		return nil, fmt.Errorf("方法 %v 未找到", methodName)
 	}
+
+	args := m.convertArgs()
 
 	mType := method.Type()
 	if mType.NumIn() != len(args) {
 		return nil, fmt.Errorf("参数数量不匹配 需要: %v 实际: %v", mType.NumIn(), len(args))
 	}
-	// 转换参数类型
 
 	// 准备参数
 	in := make([]reflect.Value, len(args))
 	for i, arg := range args {
-		in[i] = reflect.ValueOf(arg)
+		argValue := reflect.ValueOf(arg)
+		targetType := mType.In(i)
+		if !argValue.Type().AssignableTo(targetType) {
+			if convertValue, err := m.convertArgsType(arg, targetType); err != nil {
+				return nil, fmt.Errorf("转换参数失败, index: %v arg: %v 需要: %v", i, arg, targetType.Name())
+			} else {
+				in[i] = convertValue
+			}
+		} else {
+			in[i] = argValue
+		}
+		fmt.Println("targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
 	// 调用方法
@@ -108,4 +146,16 @@ func (e *embeddingReflector) CallMethod(obj any, methodName string, args ...any)
 	}
 
 	return out, nil
+}
+
+func (m *embeddingReflector) convertArgsType(value any, targetType reflect.Type) (reflect.Value, error) {
+	sourceValue := reflect.ValueOf(value)
+	sourceType := sourceValue.Type()
+	if sourceType.AssignableTo(targetType) {
+		return sourceValue, nil
+	}
+	if sourceType.ConvertibleTo(targetType) {
+		return sourceValue.Convert(targetType), nil
+	}
+	return reflect.Value{}, errors.New("参数类型转换失败")
 }
