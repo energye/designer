@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/mapper"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"reflect"
@@ -82,17 +83,24 @@ func (m *embeddingReflector) findMethodInEmbeddedFields(val reflect.Value, metho
 func (m *embeddingReflector) convertArgs() (args []any) {
 	switch m.data.Type {
 	case vtedit.PdtText:
+		// string
 		args = append(args, m.data.StringValue)
 	case vtedit.PdtInt, vtedit.PdtInt64:
+		// int
 		args = append(args, m.data.IntValue)
 	case vtedit.PdtFloat:
+		// float
 		args = append(args, m.data.FloatValue)
 	case vtedit.PdtCheckBox:
+		// bool
 		args = append(args, m.data.Checked)
 	case vtedit.PdtCheckBoxList:
+		// TSet
 	case vtedit.PdtComboBox:
+		// const
 		args = append(args, m.data.StringValue)
 	case vtedit.PdtColorSelect:
+		// uint32
 	default:
 		logs.Error("更新组件属性失败, 未实现的类型:", m.data.Type)
 		return nil
@@ -133,7 +141,7 @@ func (m *embeddingReflector) CallMethod() ([]any, error) {
 		} else {
 			in[i] = argValue
 		}
-		fmt.Println("targetType:", targetType, targetType.String(), targetType.Name())
+		//fmt.Println("targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
 	// 调用方法
@@ -156,6 +164,13 @@ func (m *embeddingReflector) convertArgsType(value any, targetType reflect.Type)
 	}
 	if sourceType.ConvertibleTo(targetType) {
 		return sourceValue.Convert(targetType), nil
+	}
+	switch value.(type) {
+	case string:
+		val := mapper.Get(value.(string))
+		if val != nil {
+			return reflect.ValueOf(val), nil
+		}
 	}
 	return reflect.Value{}, errors.New("参数类型转换失败")
 }
