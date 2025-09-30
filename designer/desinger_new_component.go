@@ -49,7 +49,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	m.dcl = m.object.Left()
 	m.dct = m.object.Top()
 	// 更新设计查看器的属性信息
-	m.LoadPropertyToDesigner()
+	m.LoadPropertyToInspector()
 }
 
 func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
@@ -60,13 +60,15 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 }
 
 // 加载组件属性到设计器
-func (m *DesigningComponent) LoadPropertyToDesigner() {
+func (m *DesigningComponent) LoadPropertyToInspector() {
+	m.drag.Show()
 	inspector.LoadComponent(m)
 }
 
 // 更新当前组件属性
 func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
+
 }
 
 // 创建设计窗体-隐藏

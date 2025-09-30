@@ -113,6 +113,7 @@ func ResetPropertyNodeData() {
 // 添加数据到指定节点
 func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditNodeData) types.PVirtualNode {
 	node := tree.AddChild(parent, 0)
+	// 节点设置到节点数据
 	data.AffiliatedNode = node
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
