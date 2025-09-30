@@ -83,8 +83,14 @@ func (e *embeddingReflector) CallMethod(obj any, methodName string, args ...any)
 
 	method := e.findMethod(val, methodName)
 	if !method.IsValid() {
-		return nil, fmt.Errorf("method %s not found", methodName)
+		return nil, fmt.Errorf("方法 %v 未找到", methodName)
 	}
+
+	mType := method.Type()
+	if mType.NumIn() != len(args) {
+		return nil, fmt.Errorf("参数数量不匹配 需要: %v 实际: %v", mType.NumIn(), len(args))
+	}
+	// 转换参数类型
 
 	// 准备参数
 	in := make([]reflect.Value, len(args))
