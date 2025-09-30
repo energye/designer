@@ -132,7 +132,8 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 				buf.WriteString(item.Name)
 				i++
 			}
-			newItemData := &TEditNodeData{EditNodeData: item, OriginNodeData: item.Clone()}
+			newItemData := &TEditNodeData{EditNodeData: item, OriginNodeData: item.Clone(),
+				AffiliatedComponent: data.AffiliatedComponent}
 			AddPropertyNodeData(tree, node, newItemData)
 		}
 		buf.WriteString("]")

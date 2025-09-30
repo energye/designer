@@ -8,6 +8,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 	"reflect"
 )
 
@@ -104,7 +105,20 @@ func (m *reflector) convertArgs() (args []any) {
 		// bool
 		args = append(args, m.data.Checked)
 	case vtedit.PdtCheckBoxList:
-		// TSet
+		// TSet 集合
+		dataList := m.data.CheckBoxValue
+		set := types.NewSet()
+		for _, item := range dataList {
+			if item.Checked {
+				if v := mapper.GetLCL(item.Name); v == nil {
+					logs.Error("更新组件属性失败, TSet集合取types值不存在 常量名:", item.Name)
+					return nil
+				} else {
+					set = set.Include(v.(int32))
+				}
+			}
+		}
+		args = append(args, set)
 	case vtedit.PdtComboBox:
 		// const
 		args = append(args, m.data.StringValue)
