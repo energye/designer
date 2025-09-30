@@ -1,0 +1,5 @@
+package mappergen
+
+func CEFMapper() {
+
+}

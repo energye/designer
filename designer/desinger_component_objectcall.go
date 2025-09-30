@@ -167,7 +167,7 @@ func (m *embeddingReflector) convertArgsType(value any, targetType reflect.Type)
 	}
 	switch value.(type) {
 	case string:
-		val := mapper.Get(value.(string))
+		val := mapper.GetLCL(value.(string))
 		if val != nil {
 			return reflect.ValueOf(val), nil
 		}
