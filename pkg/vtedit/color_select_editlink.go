@@ -20,7 +20,7 @@ type TColorSelectEditLink struct {
 	stopping  bool
 }
 
-func NewColorSelectEditLink(bindData *TEditLinkNodeData) *TColorSelectEditLink {
+func NewColorSelectEditLink(bindData *TEditNodeData) *TColorSelectEditLink {
 	link := new(TColorSelectEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
@@ -36,10 +36,10 @@ func (m *TColorSelectEditLink) CreateEdit() {
 	m.colorText.SetAutoSize(false)
 	m.colorText.SetDoubleBuffered(true)
 	m.colorText.SetReadOnly(true)
-	m.colorText.SetText(fmt.Sprintf("0x%X", m.BindData.IntValue))
+	m.colorText.SetText(fmt.Sprintf("0x%X", m.BindData.EditNodeData.IntValue))
 	clrFont := m.colorText.Font()
 	clrFont.SetStyle(clrFont.Style().Include(types.FsBold))
-	clrFont.SetColor(colors.TColor(m.BindData.IntValue))
+	clrFont.SetColor(colors.TColor(m.BindData.EditNodeData.IntValue))
 	m.colorText.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TColorSelectEditLink OnKeyDown key:", *key)
 		if *key == keys.VkReturn {
@@ -52,11 +52,11 @@ func (m *TColorSelectEditLink) CreateEdit() {
 	m.colorBtn = lcl.NewColorButton(nil)
 	m.colorBtn.SetVisible(false)
 	m.colorBtn.SetAutoSize(false)
-	m.colorBtn.SetButtonColor(colors.TColor(m.BindData.IntValue))
+	m.colorBtn.SetButtonColor(colors.TColor(m.BindData.EditNodeData.IntValue))
 	m.colorBtn.SetOnColorChanged(func(sender lcl.IObject) {
 		color := m.colorBtn.ButtonColor()
 		logs.Debug("TColorSelectEditLink OnColorChanged color:", color)
-		m.BindData.IntValue = int(color)
+		m.BindData.EditNodeData.IntValue = int(color)
 		m.colorText.SetText(fmt.Sprintf("0x%X", color))
 		clrFont.SetColor(color)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -91,7 +91,7 @@ func (m *TColorSelectEditLink) EndEdit() bool {
 	logs.Debug("TColorSelectEditLink EndEdit", "color:", color, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.IntValue = int(color)
+		m.BindData.EditNodeData.IntValue = int(color)
 		m.VTree.EndEditNode()
 		m.colorText.Hide()
 		m.colorBtn.Hide()

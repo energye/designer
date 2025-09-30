@@ -23,43 +23,48 @@ func (m *InspectorComponentProperty) Load(component *DesigningComponent) {
 		m.Clear()
 
 		// 加载属性列表
-		m.loadPropertyList(component.propertyList)
+		m.loadPropertyList(component)
 
 		// 加载事件列表
-		m.loadEventList(component.eventList)
+		m.loadEventList(component)
 	}
 }
 
 // 加载属性列表
-func (m *InspectorComponentProperty) loadPropertyList(propertyNodeDataList []*vtedit.TEditLinkNodeData) {
+func (m *InspectorComponentProperty) loadPropertyList(component *DesigningComponent) {
 	//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
 	//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 	compProp := config.ComponentProperty
-	for i, nodeData := range propertyNodeDataList {
-		if compProp.IsExclude(nodeData.Name) {
-			logs.Debug("排除属性:", nodeData.Metadata.ToJSON())
+	for i, nodeData := range component.propertyList {
+		if compProp.IsExclude(nodeData.EditNodeData.Name) {
+			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
-		logs.Debug("加载属性:", nodeData.Metadata.ToJSON())
-		// 自定义属性, 使用会覆蓋掉
-		// 返回数组
-		if customProps := compProp.GetCustomPropertyList(nodeData.Name); customProps != nil {
-			if len(customProps) == 1 {
-				// 数组只有一个元素，规则为直接作用在当前属性上
-				customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
-				propertyNodeDataList[i] = customProperty // 更新到组件属性
-				nodeData = propertyNodeDataList[i]
-			} else {
+		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
+		if !nodeData.IsFinal {
+			// 自定义属性, 使用会覆蓋掉
+			// 返回数组
+			if customProps := compProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
+				if len(customProps) == 1 {
+					// 数组只有一个元素，规则为直接作用在当前属性上
+					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
+					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty, OriginNodeData: customProperty.Clone()}
+					component.propertyList[i] = newEditNodeData // 更新到组件属性
+					nodeData = component.propertyList[i]
+				} else {
 
+				}
 			}
+			nodeData.IsFinal = true
 		}
 		// 属性节点数据添加到树
+		//newEditNodeData := &vtedit.TEditNodeData{EditNodeData: nodeData, OriginNodeData: nodeData.Clone()}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
 	}
 }
 
 // 加载事件列表
-func (m *InspectorComponentProperty) loadEventList(eventList []*vtedit.TEditLinkNodeData) {
+func (m *InspectorComponentProperty) loadEventList(component *DesigningComponent) {
 
 }
 

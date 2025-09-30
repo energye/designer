@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -50,6 +49,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.propertySheet.SetParent(m.page)
 		m.propertySheet.SetCaption("  属性  ")
 		m.propertySheet.SetAlign(types.AlClient)
+		m.propertySheet.SetBorderWidth(0)
 
 		m.eventSheet = lcl.NewTabSheet(m.page)
 		m.eventSheet.SetParent(m.page)
@@ -92,8 +92,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 			propValueCol := columns.AddToVirtualTreeColumn()
 			propValueCol.SetText("值")
-			propValueCol.SetWidth(leftBoxWidth - 150)
-			//propValueCol.SetWidth(leftBoxWidth - 125)
+			propValueCol.SetWidth(leftBoxWidth - 195)
 			propValueCol.SetAlignment(types.TaLeftJustify)
 			propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 		}
@@ -114,28 +113,28 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 	// 测试
 	{
-		data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtInt, Name: "IntEdit", IntValue: 1}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtFloat, Name: "FloatEdit", FloatValue: 1.99}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtColorSelect, Name: "ColorSelect", IntValue: 0xFF0000}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", StringValue: "",
-			CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
-			ComboBoxValue: []*vtedit.TEditLinkNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtInt, Name: "IntEdit", IntValue: 1}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtFloat, Name: "FloatEdit", FloatValue: 1.99}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtColorSelect, Name: "ColorSelect", IntValue: 0xFF0000}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", StringValue: "",
+		//	CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
+		//
+		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
+		//	ComboBoxValue: []*vtedit.TEditLinkNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
+		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 
 		//node = m.propertyTree.AddChild(0, 0)
 		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxDraw, Name: "CheckBoxDraw", BoolValue: true,

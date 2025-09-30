@@ -19,7 +19,7 @@ type TFloatEditLink struct {
 	stopping  bool
 }
 
-func NewFloatEditLink(bindData *TEditLinkNodeData) *TFloatEditLink {
+func NewFloatEditLink(bindData *TEditNodeData) *TFloatEditLink {
 	link := new(TFloatEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
@@ -87,7 +87,7 @@ func (m *TFloatEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		if v, err := strconv.ParseFloat(value, 64); err == nil {
-			m.BindData.FloatValue = v
+			m.BindData.EditNodeData.FloatValue = v
 		}
 		m.VTree.EndEditNode()
 		m.edit.Hide()
@@ -106,7 +106,7 @@ func (m *TFloatEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types.
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	val := strconv.FormatFloat(m.BindData.FloatValue, 'f', 2, 64)
+	val := strconv.FormatFloat(m.BindData.EditNodeData.FloatValue, 'f', 2, 64)
 	m.edit.SetText(val)
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())

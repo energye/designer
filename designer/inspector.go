@@ -32,32 +32,32 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		return
 	}
 	if component.propertyList == nil {
-		object := component.object
-		var properties []lcl.ComponentProperties
-		properties = lcl.DesigningComponent().GetComponentProperties(object)
+		properties := lcl.DesigningComponent().GetComponentProperties(component.object)
 		logs.Debug("LoadComponent Count:", len(properties))
 		// 拆分 属性和事件
 		var (
-			eventList    []*vtedit.TEditLinkNodeData
-			propertyList []*vtedit.TEditLinkNodeData
+			eventList    []*vtedit.TEditNodeData
+			propertyList []*vtedit.TEditNodeData
 		)
 		for _, prop := range properties {
 			newProp := prop
-			newNodeData := vtedit.NewEditLinkNodeData(&newProp)
+			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
+			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone()}
 			if prop.Kind == "tkMethod" {
-				eventList = append(eventList, newNodeData)
+				eventList = append(eventList, newEditNodeData)
 			} else {
-				propertyList = append(propertyList, newNodeData)
+				propertyList = append(propertyList, newEditNodeData)
 			}
 			//logs.Debug("  ", toJSON(prop))
 		}
 		// 排序
 		sort.Slice(eventList, func(i, j int) bool {
-			return strings.ToLower(eventList[i].Name) < strings.ToLower(eventList[j].Name)
+			return strings.ToLower(eventList[i].EditNodeData.Name) < strings.ToLower(eventList[j].EditNodeData.Name)
 		})
 		sort.Slice(propertyList, func(i, j int) bool {
-			return strings.ToLower(propertyList[i].Name) < strings.ToLower(propertyList[j].Name)
+			return strings.ToLower(propertyList[i].EditNodeData.Name) < strings.ToLower(propertyList[j].EditNodeData.Name)
 		})
+
 		component.eventList = eventList
 		component.propertyList = propertyList
 	}

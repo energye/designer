@@ -18,7 +18,7 @@ type TStringEditLink struct {
 	stopping  bool
 }
 
-func NewStringEditLink(bindData *TEditLinkNodeData) *TStringEditLink {
+func NewStringEditLink(bindData *TEditNodeData) *TStringEditLink {
 	link := new(TStringEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
@@ -72,7 +72,7 @@ func (m *TStringEditLink) EndEdit() bool {
 	logs.Debug("TStringEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.StringValue = value
+		m.BindData.EditNodeData.StringValue = value
 		m.VTree.EndEditNode()
 		m.edit.Hide()
 	}
@@ -91,7 +91,7 @@ func (m *TStringEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node types
 	m.edit.Font().SetColor(colors.ClWindowText)
 	m.edit.SetParent(m.VTree)
 	m.edit.HandleNeeded()
-	m.edit.SetText(m.BindData.StringValue)
+	m.edit.SetText(m.BindData.EditNodeData.StringValue)
 	if column <= -1 {
 		m.edit.SetBiDiMode(m.VTree.BiDiMode())
 		m.alignment = m.VTree.Alignment()

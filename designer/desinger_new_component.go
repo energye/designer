@@ -11,14 +11,14 @@ import (
 // 组件设计创建管理
 
 type DesigningComponent struct {
-	owner        *FormTab                    // 所属设计面板
-	object       lcl.IWinControl             // 组件
-	drag         *drag                       //
-	dx, dy       int32                       //
-	dcl, dct     int32                       //
-	isDown       bool                        //
-	propertyList []*vtedit.TEditLinkNodeData // 组件属性
-	eventList    []*vtedit.TEditLinkNodeData // 组件事件
+	owner        *FormTab                // 所属设计面板
+	object       lcl.IWinControl         // 组件
+	drag         *drag                   //
+	dx, dy       int32                   //
+	dcl, dct     int32                   //
+	isDown       bool                    //
+	propertyList []*vtedit.TEditNodeData // 组件属性
+	eventList    []*vtedit.TEditNodeData // 组件事件
 }
 
 // 设计组件鼠标移动

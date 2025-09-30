@@ -18,7 +18,7 @@ type TComboBoxEditLink struct {
 	stopping bool
 }
 
-func NewComboBoxEditLink(bindData *TEditLinkNodeData) *TComboBoxEditLink {
+func NewComboBoxEditLink(bindData *TEditNodeData) *TComboBoxEditLink {
 	link := new(TComboBoxEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
@@ -35,9 +35,9 @@ func (m *TComboBoxEditLink) CreateEdit() {
 	m.combobox.SetDoubleBuffered(true)
 	m.combobox.SetReadOnly(true)
 	m.combobox.SetOnChange(func(sender lcl.IObject) {
-		m.BindData.Index = m.combobox.ItemIndex()
-		m.BindData.StringValue = m.combobox.Text()
-		logs.Debug("TComboBoxEditLink OnChange index:", m.BindData.Index, "text:", m.BindData.StringValue)
+		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
+		m.BindData.EditNodeData.StringValue = m.combobox.Text()
+		logs.Debug("TComboBoxEditLink OnChange index:", m.BindData.EditNodeData.Index, "text:", m.BindData.EditNodeData.StringValue)
 	})
 	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TComboBoxEditLink OnKeyDown key:", *key)
@@ -48,7 +48,7 @@ func (m *TComboBoxEditLink) CreateEdit() {
 		}
 	})
 	items := m.combobox.Items()
-	for _, item := range m.BindData.ComboBoxValue {
+	for _, item := range m.BindData.EditNodeData.ComboBoxValue {
 		items.Add(item.StringValue)
 	}
 }
@@ -77,8 +77,8 @@ func (m *TComboBoxEditLink) EndEdit() bool {
 	logs.Debug("TComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.Index = m.combobox.ItemIndex()
-		m.BindData.StringValue = m.combobox.Text()
+		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
+		m.BindData.EditNodeData.StringValue = m.combobox.Text()
 		m.VTree.EndEditNode()
 		m.combobox.Hide()
 	}

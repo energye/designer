@@ -18,7 +18,7 @@ type TCheckBoxEditLink struct {
 	stopping  bool
 }
 
-func NewCheckBoxEditLink(bindData *TEditLinkNodeData) *TCheckBoxEditLink {
+func NewCheckBoxEditLink(bindData *TEditNodeData) *TCheckBoxEditLink {
 	link := new(TCheckBoxEditLink)
 	link.TBaseEditLink = NewEditLink(link)
 	link.BindData = bindData
@@ -42,12 +42,12 @@ func (m *TCheckBoxEditLink) Create() {
 	})
 	m.checkbox.SetOnChange(func(sender lcl.IObject) {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
-		m.BindData.Checked = m.checkbox.Checked()
-		logs.Debug("TCheckBoxEditLink OnChange checked:", m.BindData.Checked)
+		m.BindData.EditNodeData.Checked = m.checkbox.Checked()
+		logs.Debug("TCheckBoxEditLink OnChange checked:", m.BindData.EditNodeData.Checked)
 		node := m.Node.ToGo()
 		parentNode := node.Parent
 		if pData := GetPropertyNodeData(parentNode); pData != nil {
-			dataList := pData.CheckBoxValue
+			dataList := pData.EditNodeData.CheckBoxValue
 			buf := bytes.Buffer{}
 			buf.WriteString("[")
 			i := 0
@@ -61,8 +61,9 @@ func (m *TCheckBoxEditLink) Create() {
 				}
 			}
 			buf.WriteString("]")
-			pData.StringValue = buf.String()
-			logs.Debug("TCheckBoxEditLink OnChange ParentNode-text:", pData.StringValue)
+			pData.EditNodeData.StringValue = buf.String()
+			//pData.EditNodeData.IsModify = pData.EditNodeData.StringValue != pData.OriginNodeData.StringValue
+			logs.Debug("TCheckBoxEditLink OnChange ParentNode-text:", pData.EditNodeData.StringValue)
 			m.VTree.InvalidateNode(parentNode)
 		}
 	})
@@ -90,7 +91,7 @@ func (m *TCheckBoxEditLink) EndEdit() bool {
 	logs.Debug("TCheckBoxEditLink EndEdit", "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.BoolValue = value
+		m.BindData.EditNodeData.Checked = value
 		m.VTree.EndEditNode()
 		m.checkbox.SetVisible(false)
 	}
@@ -107,11 +108,11 @@ func (m *TCheckBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, node typ
 	m.Column = column
 	value := m.VTree.Text(m.Node, m.Column)
 	if v, err := strconv.ParseBool(value); err == nil {
-		m.BindData.Checked = v
+		m.BindData.EditNodeData.Checked = v
 	}
 	m.checkbox.SetParent(m.VTree)
 	m.checkbox.HandleNeeded()
-	m.checkbox.SetChecked(m.BindData.Checked)
+	m.checkbox.SetChecked(m.BindData.EditNodeData.Checked)
 	return true
 }
 

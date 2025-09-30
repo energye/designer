@@ -35,12 +35,19 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			}
 		} else if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				logs.Debug("object inspector-property OnPaintText column:", column, "IsModify:", data.IsModify())
+				font := targetCanvas.FontToFont()
 				// 编辑列 需要动态控制时
-				switch data.Type {
+				switch data.EditNodeData.Type {
 				case vtedit.PdtColorSelect:
-					font := targetCanvas.FontToFont()
 					font.SetStyle(font.Style().Include(types.FsBold))
-					font.SetColor(colors.TColor(data.IntValue))
+					font.SetColor(colors.TColor(data.EditNodeData.IntValue))
+				default:
+					if data.IsModify() {
+						// 值被修改样式
+						font.SetStyle(font.Style().Include(types.FsBold))
+						font.SetColor(0x007DFF)
+					}
 				}
 			}
 		}
@@ -68,7 +75,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		// edit: 2. 第二列可以编辑
 		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil && data.Type == vtedit.PdtText {
+			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == vtedit.PdtText {
 				*allowed = true
 				return
 			}
@@ -86,13 +93,17 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			}
 		}
 	})
+	tree.SetOnExit(func(sender lcl.IObject) {
+		logs.Debug("[object inspector-property] OnExit")
+		tree.EndEditNode()
+	})
 	tree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
 		// edit: 3. 创建编辑或组件
 		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				switch data.Type {
+				switch data.EditNodeData.Type {
 				case vtedit.PdtText:
 					link := vtedit.NewStringEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
@@ -124,24 +135,25 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		//logs.Debug("[object inspector-property] OnGetText column:", column)
 		if data := vtedit.GetPropertyNodeData(node); data != nil {
 			if column == 0 {
-				*cellText = data.Name
+				*cellText = data.EditNodeData.Name
 			} else if column == 1 {
-				switch data.Type {
+				dataType := data.EditNodeData.Type
+				switch dataType {
 				case vtedit.PdtText:
-					*cellText = data.StringValue
+					*cellText = data.EditNodeData.StringValue
 				case vtedit.PdtInt, vtedit.PdtInt64:
-					*cellText = strconv.Itoa(data.IntValue)
+					*cellText = strconv.Itoa(data.EditNodeData.IntValue)
 				case vtedit.PdtFloat:
-					val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
+					val := strconv.FormatFloat(data.EditNodeData.FloatValue, 'f', 2, 64)
 					*cellText = val
 				case vtedit.PdtCheckBox:
-					*cellText = strconv.FormatBool(data.Checked)
+					*cellText = strconv.FormatBool(data.EditNodeData.Checked)
 				case vtedit.PdtCheckBoxList:
-					*cellText = data.StringValue
+					*cellText = data.EditNodeData.StringValue
 				case vtedit.PdtComboBox:
-					*cellText = data.StringValue
+					*cellText = data.EditNodeData.StringValue
 				case vtedit.PdtColorSelect:
-					*cellText = fmt.Sprintf("0x%X", data.IntValue)
+					*cellText = fmt.Sprintf("0x%X", data.EditNodeData.IntValue)
 				default:
 					*cellText = ""
 				}
@@ -149,4 +161,12 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		}
 	})
 	tree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
+}
+
+func (m *InspectorComponentProperty) PropertyEndEdit() {
+	m.propertyTree.EndEditNode()
+}
+
+func (m *InspectorComponentProperty) EventEndEdit() {
+	m.eventTree.EndEditNode()
 }

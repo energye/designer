@@ -43,9 +43,53 @@ type TEditLinkNodeData struct {
 	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
+func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
+	if m == nil {
+		return nil
+	}
+	clone := &TEditLinkNodeData{
+		Name:        m.Name,
+		Index:       m.Index,
+		Checked:     m.Checked,
+		StringValue: m.StringValue,
+		FloatValue:  m.FloatValue,
+		BoolValue:   m.BoolValue,
+		IntValue:    m.IntValue,
+		Type:        m.Type,
+	}
+	if m.Metadata != nil {
+		cloneMetadata := *m.Metadata
+		clone.Metadata = &cloneMetadata
+	}
+
+	// 深拷贝CheckBoxValue切片（递归克隆每个元素）
+	if m.CheckBoxValue != nil {
+		clone.CheckBoxValue = make([]*TEditLinkNodeData, len(m.CheckBoxValue))
+		for i, item := range m.CheckBoxValue {
+			clone.CheckBoxValue[i] = item.Clone()
+		}
+	}
+
+	// 深拷贝ComboBoxValue切片（递归克隆每个元素）
+	if m.ComboBoxValue != nil {
+		clone.ComboBoxValue = make([]*TEditLinkNodeData, len(m.ComboBoxValue))
+		for i, item := range m.ComboBoxValue {
+			clone.ComboBoxValue[i] = item.Clone()
+		}
+	}
+	return clone
+}
+
+// 编辑的节点数据
+type TEditNodeData struct {
+	IsFinal        bool               // 标记是否最终对象, 用于完整的数据
+	EditNodeData   *TEditLinkNodeData // 编辑数据
+	OriginNodeData *TEditLinkNodeData // 原始数据
+}
+
 var (
 	// 组件属性数据列表, key: 节点指针 value: 节点数据
-	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData)
+	propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
 )
 
 func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
@@ -55,16 +99,17 @@ func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 }
 
 func ResetPropertyNodeData() {
-	propertyTreeDataList = make(map[types.PVirtualNode]*TEditLinkNodeData)
+	propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
 }
 
 // 添加数据到指定节点
-func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditLinkNodeData) types.PVirtualNode {
+func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditNodeData) types.PVirtualNode {
 	node := tree.AddChild(parent, 0)
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
-	if data.Type == PdtCheckBoxList {
-		dataList := data.CheckBoxValue
+	if data.EditNodeData.Type == PdtCheckBoxList {
+
+		dataList := data.EditNodeData.CheckBoxValue
 		buf := bytes.Buffer{}
 		buf.WriteString("[")
 		i := 0
@@ -76,16 +121,17 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 				buf.WriteString(item.Name)
 				i++
 			}
-			AddPropertyNodeData(tree, node, item)
+			newItemData := &TEditNodeData{EditNodeData: item, OriginNodeData: item.Clone()}
+			AddPropertyNodeData(tree, node, newItemData)
 		}
 		buf.WriteString("]")
-		data.StringValue = buf.String()
+		data.EditNodeData.StringValue = buf.String()
 	}
 	return node
 }
 
 // 获取节点属性数据
-func GetPropertyNodeData(node types.PVirtualNode) *TEditLinkNodeData {
+func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 	if data, ok := propertyTreeDataList[node]; ok {
 		return data
 	}
@@ -93,8 +139,28 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditLinkNodeData {
 }
 
 // 通知更新组件属性
-func (m *TEditLinkNodeData) UpdateComponentProperties() {
-	if m.Metadata != nil {
+func (m *TEditNodeData) UpdateComponentProperties() {
+	if m.EditNodeData.Metadata != nil {
 		logs.Debug("TEditLinkNodeData UpdateComponentProperties")
 	}
+}
+
+func (m *TEditNodeData) IsModify() bool {
+	switch m.EditNodeData.Type {
+	case PdtCheckBox:
+		return m.EditNodeData.Checked != m.OriginNodeData.Checked
+	case PdtText:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtInt, PdtInt64:
+		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
+	case PdtFloat:
+		return m.EditNodeData.FloatValue != m.OriginNodeData.FloatValue
+	case PdtCheckBoxList, PdtClass:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtComboBox:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtColorSelect:
+		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
+	}
+	return false
 }
