@@ -2,9 +2,11 @@ package vtedit
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"strconv"
 )
 
 // 查看器的数据类型
@@ -181,4 +183,29 @@ func (m *TEditNodeData) IsModify() bool {
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
 	}
 	return false
+}
+
+// 返回编辑字符串值
+func (m *TEditNodeData) EditValue() string {
+	data := m.EditNodeData
+	dataType := data.Type
+	switch dataType {
+	case PdtText:
+		return data.StringValue
+	case PdtInt, PdtInt64:
+		return strconv.Itoa(data.IntValue)
+	case PdtFloat:
+		val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
+		return val
+	case PdtCheckBox:
+		return strconv.FormatBool(data.Checked)
+	case PdtCheckBoxList:
+		return data.StringValue
+	case PdtComboBox:
+		return data.StringValue
+	case PdtColorSelect:
+		return fmt.Sprintf("0x%X", data.IntValue)
+	default:
+		return ""
+	}
 }

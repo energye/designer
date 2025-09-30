@@ -1,13 +1,11 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"strconv"
 	"unsafe"
 )
 
@@ -137,26 +135,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			if column == 0 {
 				*cellText = data.EditNodeData.Name
 			} else if column == 1 {
-				dataType := data.EditNodeData.Type
-				switch dataType {
-				case vtedit.PdtText:
-					*cellText = data.EditNodeData.StringValue
-				case vtedit.PdtInt, vtedit.PdtInt64:
-					*cellText = strconv.Itoa(data.EditNodeData.IntValue)
-				case vtedit.PdtFloat:
-					val := strconv.FormatFloat(data.EditNodeData.FloatValue, 'f', 2, 64)
-					*cellText = val
-				case vtedit.PdtCheckBox:
-					*cellText = strconv.FormatBool(data.EditNodeData.Checked)
-				case vtedit.PdtCheckBoxList:
-					*cellText = data.EditNodeData.StringValue
-				case vtedit.PdtComboBox:
-					*cellText = data.EditNodeData.StringValue
-				case vtedit.PdtColorSelect:
-					*cellText = fmt.Sprintf("0x%X", data.EditNodeData.IntValue)
-				default:
-					*cellText = ""
-				}
+				*cellText = data.EditValue()
 			}
 		}
 	})
