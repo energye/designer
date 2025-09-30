@@ -1,13 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/build"
 	"go/parser"
 	"go/token"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // TypeInfo 存储类型定义信息
@@ -36,21 +39,52 @@ func main() {
 		fmt.Printf("扫描失败: %v\n", err)
 		os.Exit(1)
 	}
-
+	saveMapper(types, consts)
 	// 打印结果
-	fmt.Println("===== 类型定义 =====")
-	for _, t := range types {
-		fmt.Printf("类型名: %-20s 底层类型: %s\n", t.Name, t.Underlying)
-	}
+	//fmt.Println("===== 类型定义 =====")
+	//for _, t := range types {
+	//	fmt.Printf("类型名: %-20s 底层类型: %s\n", t.Name, t.Underlying)
+	//}
+	//
+	//fmt.Println("\n===== 常量定义 =====")
+	//for _, c := range consts {
+	//	if c.Type != "" {
+	//		fmt.Printf("常量名: %-20s 类型: %-15s 值: %s\n", c.Name, c.Type, c.Value)
+	//	} else {
+	//		fmt.Printf("常量名: %-20s 值: %s\n", c.Name, c.Value)
+	//	}
+	//}
+}
 
-	fmt.Println("\n===== 常量定义 =====")
+func saveMapper(types []TypeInfo, consts []ConstInfo) {
+	mapperTemplate := `package mapper
+
+import . "github.com/energye/lcl/types"
+
+var typesMapper = make(map[string]any)
+
+func init() {
+{{mappers}}
+}
+
+// 获取映射的类型值
+func Get(name string) any {
+	return typesMapper[name]
+}
+`
+	constBuf := bytes.Buffer{}
 	for _, c := range consts {
-		if c.Type != "" {
-			fmt.Printf("常量名: %-20s 类型: %-15s 值: %s\n", c.Name, c.Type, c.Value)
-		} else {
-			fmt.Printf("常量名: %-20s 值: %s\n", c.Name, c.Value)
-		}
+		// typesMapper["AlClient"] = AlClient
+		constBuf.WriteString("\ttypesMapper[")
+		constBuf.WriteString(`"` + c.Name + `"`)
+		constBuf.WriteString("] = ")
+		constBuf.WriteString(c.Name)
+		constBuf.WriteString("\n")
 	}
+	mapperTemplate = strings.Replace(mapperTemplate, "{{mappers}}", constBuf.String(), 1)
+	wd, _ := os.Getwd()
+	outPath := filepath.Join(wd, "pkg", "mapper", "lcl_types.go")
+	os.WriteFile(outPath, []byte(mapperTemplate), fs.ModePerm)
 }
 
 // scanPackage 扫描指定包，返回类型和常量信息
