@@ -142,17 +142,18 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 // 从设计属性更新到组件属性
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
-		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty")
+		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
 	}
 }
 
 // 从组件属性更新到设计属性
 func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
 	if m.EditNodeData != nil {
-		logs.Debug("TEditLinkNodeData FormComponentPropertyToInspectorProperty")
+		logs.Debug("TEditLinkNodeData FormComponentPropertyToInspectorProperty property-name:", m.EditNodeData.Name)
 	}
 }
 
+// 是否被修改
 func (m *TEditNodeData) IsModify() bool {
 	switch m.EditNodeData.Type {
 	case PdtCheckBox:
