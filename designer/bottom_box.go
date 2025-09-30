@@ -28,7 +28,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.box.SetDoubleBuffered(true)
 	box.box.SetTop(toolbarHeight)
 	box.box.SetWidth(m.Width())
-	box.box.SetHeight(m.Height() - toolbarHeight)
+	box.box.SetHeight(m.Height() - box.box.Top())
 	box.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
 	//box.box.SetColor(bottomColor)
 	m.box = box

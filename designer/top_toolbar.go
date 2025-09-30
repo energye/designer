@@ -42,7 +42,7 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.leftTools.SetParent(bar.box)
 	bar.leftTools.SetBevelOuter(types.BvNone)
 	bar.leftTools.SetDoubleBuffered(true)
-	bar.leftTools.SetWidth(200)
+	bar.leftTools.SetWidth(180)
 	bar.leftTools.SetHeight(bar.box.Height())
 	bar.leftTools.SetAlign(types.AlLeft)
 
@@ -78,55 +78,70 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolBtnBar := lcl.NewToolBar(m.box)
 	toolBtnBar.SetParent(m.leftTools)
 	toolBtnBar.SetAlign(types.AlCustom)
-	toolBtnBar.SetTop(15)
+	toolBtnBar.SetTop(16)
 	toolBtnBar.SetButtonWidth(32)
 	toolBtnBar.SetButtonHeight(32)
 	toolBtnBar.SetHeight(32)
 	toolBtnBar.SetWidth(m.leftTools.Width())
 	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	toolBtnBar.SetEdgeBorders(types.NewSet())
-	toolBtnBar.SetImages(LoadImageList(m.leftTools, []string{
+	imageList := LoadImageList(m.leftTools, []string{
 		"menu/menu_new_form_150.png",
 		"menu/menu_project_open_150.png",
 		"actions/laz_save_150.png",
 		"menu/menu_save_all_150.png",
 		"menu/menu_run_150.png",
-	}, 24, 24))
-
+	}, 24, 24)
+	toolBtnBar.SetImages(imageList)
+	//toolBtnBar := lcl.NewFlowPanel(m.box)
+	//toolBtnBar.SetParent(m.leftTools)
+	//toolBtnBar.SetAlign(types.AlCustom)
+	//toolBtnBar.SetWidth(m.leftTools.Width())
+	//toolBtnBar.SetHeight(m.leftTools.Height())
+	//toolBtnBar.SetBevelOuter(types.BvNone)
+	//toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	newSepa := func() {
 		seap := lcl.NewToolButton(toolBtnBar)
 		seap.SetParent(toolBtnBar)
 		seap.SetStyle(types.TbsSeparator)
 	}
 
-	newBtn := func(imageIndex int32, hint string) lcl.IToolButton {
+	newBtn := func(imageIndex int32, hint string, margin int32) lcl.IToolButton {
 		btn := lcl.NewToolButton(toolBtnBar)
 		btn.SetParent(toolBtnBar)
 		btn.SetHint(hint)
 		btn.SetImageIndex(imageIndex)
 		btn.SetShowHint(true)
+		//btn := lcl.NewBitBtn(toolBtnBarf)
+		//btn.SetParent(toolBtnBarf)
+		//btn.SetWidth(32)
+		//btn.SetHeight(32)
+		//btn.SetTabStop(true)
+		//btn.SetImages(imageList)
+		//btn.SetImageIndex(imageIndex)
+		//btn.SetMargin(margin)
 		return btn
 	}
 
-	newFormBtn := newBtn(0, "新建窗体")
+	newFormBtn := newBtn(0, "新建窗体", 0)
 	newFormBtn.SetOnClick(func(sender lcl.IObject) {
 		designer.ActiveFormTab(designer.addFormDesignerTab())
 	})
-	openFormBtn := newBtn(1, "打开窗体")
+	openFormBtn := newBtn(1, "打开窗体", 1)
 	openFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
 	newSepa()
-	saveFormBtn := newBtn(2, "保存窗体")
+	saveFormBtn := newBtn(2, "保存窗体", 1)
 	saveFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
-	saveAllFormBtn := newBtn(3, "保存所有窗体")
+	saveAllFormBtn := newBtn(3, "保存所有窗体", 1)
 	saveAllFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
 	newSepa()
-	runFormBtn := newBtn(4, "运行预览窗体")
+	runFormBtn := newBtn(4, "运行预览窗体", 3)
 	runFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
