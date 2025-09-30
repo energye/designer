@@ -33,9 +33,9 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.box.SetParentColor(true)
 
 	// 工具栏-分隔线
-	bar.splitter = lcl.NewSplitter(m)
-	bar.splitter.SetParent(bar.box)
-	bar.splitter.SetAlign(types.AlLeft)
+	//bar.splitter = lcl.NewSplitter(m)
+	//bar.splitter.SetParent(bar.box)
+	//bar.splitter.SetAlign(types.AlLeft)
 
 	// 工具栏-左 工具按钮
 	bar.leftTools = lcl.NewPanel(m)
