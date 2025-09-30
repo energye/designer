@@ -38,6 +38,7 @@ func (m *TComboBoxEditLink) CreateEdit() {
 		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
 		m.BindData.EditNodeData.StringValue = m.combobox.Text()
 		logs.Debug("TComboBoxEditLink OnChange index:", m.BindData.EditNodeData.Index, "text:", m.BindData.EditNodeData.StringValue)
+		m.BindData.FormInspectorPropertyToComponentProperty()
 	})
 	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TComboBoxEditLink OnKeyDown key:", *key)
