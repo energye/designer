@@ -122,6 +122,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.object = lcl.AsWinControl(comp)
+	//comp.SetAlign()
 	return m
 }
 

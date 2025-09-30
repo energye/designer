@@ -48,7 +48,8 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 				if len(customProps) == 1 {
 					// 数组只有一个元素，规则为直接作用在当前属性上
 					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
-					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty, OriginNodeData: customProperty.Clone()}
+					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
+						OriginNodeData: customProperty.Clone(), AffiliatedComponent: component}
 					component.propertyList[i] = newEditNodeData // 更新到组件属性
 					nodeData = component.propertyList[i]
 				} else {
