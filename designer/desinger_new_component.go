@@ -35,6 +35,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 		y := point.Y - m.dy
 		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
 		// 修改 left top
+
 	}
 }
 
@@ -65,7 +66,7 @@ func (m *DesigningComponent) LoadPropertyToDesigner() {
 
 // 更新当前组件属性
 func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
-
+	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
 }
 
 // 创建设计窗体-隐藏
