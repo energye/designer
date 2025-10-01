@@ -28,7 +28,7 @@ func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeD
 		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
-			logs.Error("更新组件属性失败,", err.Error())
+			logs.Error("[更新组件属性失败]", err.Error())
 		}
 		m.drag.Show()
 	})
@@ -86,7 +86,7 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 	return reflect.Value{}
 }
 
-func (m *reflector) convertArgs() (args []any) {
+func (m *reflector) convertArgsValue() (args []any) {
 	switch m.data.EditNodeData.Type {
 	case vtedit.PdtText:
 		// string
@@ -102,7 +102,25 @@ func (m *reflector) convertArgs() (args []any) {
 		args = append(args, m.data.EditNodeData.FloatValue)
 	case vtedit.PdtCheckBox:
 		// bool
-		args = append(args, m.data.EditNodeData.Checked)
+		data := m.data.AffiliatedNode.ToGo()
+		if pData := vtedit.GetPropertyNodeData(data.Parent); pData != nil {
+			dataList := pData.EditNodeData.CheckBoxValue
+			set := types.NewSet()
+			for _, item := range dataList {
+				if item.Checked {
+					if v := mapper.GetLCL(item.Name); v == nil {
+						logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
+						return nil
+					} else {
+						set = set.Include(v.(int32))
+					}
+				}
+
+			}
+			args = append(args, set)
+		} else {
+			args = append(args, m.data.EditNodeData.Checked)
+		}
 	case vtedit.PdtCheckBoxList:
 		// TSet 集合
 		dataList := m.data.EditNodeData.CheckBoxValue
@@ -110,7 +128,7 @@ func (m *reflector) convertArgs() (args []any) {
 		for _, item := range dataList {
 			if item.Checked {
 				if v := mapper.GetLCL(item.Name); v == nil {
-					logs.Error("更新组件属性失败, TSet集合取types值不存在 常量名:", item.Name)
+					logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
 					return nil
 				} else {
 					set = set.Include(v.(int32))
@@ -125,7 +143,7 @@ func (m *reflector) convertArgs() (args []any) {
 		// uint32
 		args = append(args, uint32(m.data.EditNodeData.IntValue))
 	default:
-		logs.Error("更新组件属性失败, 未实现的类型:", m.data.EditNodeData.Type)
+		logs.Error("[更新组件属性失败] 未实现的类型:", m.data.EditNodeData.Type)
 		return nil
 	}
 	return
@@ -161,7 +179,7 @@ func (m *reflector) callMethod() ([]any, error) {
 		return nil, fmt.Errorf("方法 %v 未找到", methodName)
 	}
 
-	args := m.convertArgs()
+	args := m.convertArgsValue()
 
 	mType := method.Type()
 	if mType.NumIn() != len(args) {
