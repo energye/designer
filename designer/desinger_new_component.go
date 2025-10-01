@@ -60,6 +60,11 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	m.isDown = false
 }
 
+func (m *DesigningComponent) SetObject(object any) {
+	m.object = lcl.AsWinControl(object)
+	m.originObject = object
+}
+
 // 加载组件属性到设计器
 func (m *DesigningComponent) LoadPropertyToInspector() {
 	m.drag.Show()
@@ -97,8 +102,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
-	m.object = lcl.AsWinControl(comp)
-	m.originObject = comp
+	m.SetObject(comp)
 	return m
 }
 
@@ -121,8 +125,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
-	m.object = lcl.AsWinControl(comp)
-	//comp.SetAlign()
+	m.SetObject(comp)
 	return m
 }
 
@@ -147,6 +150,6 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	})
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
-	m.object = lcl.AsWinControl(comp)
+	m.SetObject(comp)
 	return m
 }

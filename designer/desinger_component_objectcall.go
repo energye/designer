@@ -187,8 +187,7 @@ func (m *reflector) callMethod() ([]any, error) {
 		//logs.Debug("reflector callMethod targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
-	logs.Debug("调用方法:", methodName, "参数:", args)
-
+	logs.Debug("调用方法开始:", methodName, "参数:", args)
 	// 调用方法
 	results := method.Call(in)
 
@@ -197,6 +196,7 @@ func (m *reflector) callMethod() ([]any, error) {
 	for i, result := range results {
 		out[i] = result.Interface()
 	}
+	logs.Debug("调用方法结束:", methodName, "返回值:", out)
 
 	return out, nil
 }
