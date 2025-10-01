@@ -187,6 +187,8 @@ func (m *reflector) callMethod() ([]any, error) {
 		//logs.Debug("reflector callMethod targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
+	logs.Debug("调用方法:", methodName, "参数:", args)
+
 	// 调用方法
 	results := method.Call(in)
 
@@ -212,7 +214,7 @@ func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect
 	case string:
 		val := mapper.GetLCL(value.(string))
 		if val != nil {
-			return reflect.ValueOf(val), nil
+			return reflect.ValueOf(val).Convert(targetType), nil
 		}
 	}
 	return reflect.Value{}, errors.New("参数类型转换失败")
