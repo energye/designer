@@ -22,10 +22,9 @@ func methodNameToSet(name string) string {
 // 更新当前组件属性
 func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
-	data := nodeData.EditNodeData
 	m.drag.Hide()
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		ref := &reflector{object: m.originObject, data: data}
+		ref := &reflector{object: m.originObject, data: nodeData}
 		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
@@ -38,7 +37,7 @@ func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeD
 // 反射调用函数
 type reflector struct {
 	object any
-	data   *vtedit.TEditLinkNodeData
+	data   *vtedit.TEditNodeData
 }
 
 // 查找方法（包含匿名嵌套字段的方法）
@@ -88,25 +87,25 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 }
 
 func (m *reflector) convertArgs() (args []any) {
-	switch m.data.Type {
+	switch m.data.EditNodeData.Type {
 	case vtedit.PdtText:
 		// string
-		args = append(args, m.data.StringValue)
+		args = append(args, m.data.EditNodeData.StringValue)
 	case vtedit.PdtInt:
 		// int
-		args = append(args, m.data.IntValue)
+		args = append(args, m.data.EditNodeData.IntValue)
 	case vtedit.PdtInt64:
 		// int64
-		args = append(args, int64(m.data.IntValue))
+		args = append(args, int64(m.data.EditNodeData.IntValue))
 	case vtedit.PdtFloat:
 		// float
-		args = append(args, m.data.FloatValue)
+		args = append(args, m.data.EditNodeData.FloatValue)
 	case vtedit.PdtCheckBox:
 		// bool
-		args = append(args, m.data.Checked)
+		args = append(args, m.data.EditNodeData.Checked)
 	case vtedit.PdtCheckBoxList:
 		// TSet 集合
-		dataList := m.data.CheckBoxValue
+		dataList := m.data.EditNodeData.CheckBoxValue
 		set := types.NewSet()
 		for _, item := range dataList {
 			if item.Checked {
@@ -121,21 +120,39 @@ func (m *reflector) convertArgs() (args []any) {
 		args = append(args, set)
 	case vtedit.PdtComboBox:
 		// const
-		args = append(args, m.data.StringValue)
+		args = append(args, m.data.EditNodeData.StringValue)
 	case vtedit.PdtColorSelect:
 		// uint32
-		args = append(args, uint32(m.data.IntValue))
+		args = append(args, uint32(m.data.EditNodeData.IntValue))
 	default:
-		logs.Error("更新组件属性失败, 未实现的类型:", m.data.Type)
+		logs.Error("更新组件属性失败, 未实现的类型:", m.data.EditNodeData.Type)
 		return nil
 	}
 	return
 }
 
+func (m *reflector) methodName() string {
+	var methodName string
+	switch m.data.EditNodeData.Type {
+	case vtedit.PdtCheckBox:
+		node := m.data.AffiliatedNode.ToGo()
+		parentNode := node.Parent
+		// 有父节点 PdtCheckBoxList
+		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
+			methodName = pData.EditNodeData.Name
+		} else {
+			methodName = m.data.EditNodeData.Name
+		}
+	default:
+		methodName = m.data.EditNodeData.Name
+	}
+	methodName = methodNameToSet(methodName)
+	return methodName
+}
+
 // 调用方法
 func (m *reflector) callMethod() ([]any, error) {
-	methodName := m.data.Name
-	methodName = methodNameToSet(methodName)
+	methodName := m.methodName()
 
 	val := reflect.ValueOf(m.object)
 
