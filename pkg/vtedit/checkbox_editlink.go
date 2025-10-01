@@ -66,7 +66,6 @@ func (m *TCheckBoxEditLink) Create() {
 			logs.Debug("TCheckBoxEditLink OnChange ParentNode-text:", pData.EditNodeData.StringValue)
 			m.VTree.InvalidateNode(parentNode)
 		}
-		m.VTree.EndEditNode()
 	})
 }
 
