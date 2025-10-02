@@ -157,7 +157,7 @@ func (m *FormTab) hideAllDrag() {
 	}
 }
 
-// 窗体设计界面 鼠标按下
+// 窗体设计界面 鼠标按下, 放置设计控件, 加载控件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	m.hideAllDrag()
 	// 创建组件

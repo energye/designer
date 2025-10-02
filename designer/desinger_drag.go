@@ -191,6 +191,7 @@ func (m *drag) Show() {
 	m.BringToFront()
 	m.Follow()
 }
+
 func (m *drag) BringToFront() {
 	if m.ds == DsAll {
 		m.left.BringToFront()
