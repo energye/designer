@@ -105,18 +105,18 @@ func (m *reflector) convertArgsValue() (args []any) {
 		data := m.data.AffiliatedNode.ToGo()
 		if pData := vtedit.GetPropertyNodeData(data.Parent); pData != nil {
 			dataList := pData.EditNodeData.CheckBoxValue
-			set := types.NewSet()
+			var vals []int32
 			for _, item := range dataList {
 				if item.Checked {
 					if v := mapper.GetLCL(item.Name); v == nil {
 						logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
 						return nil
 					} else {
-						set = set.Include(v.(int32))
+						vals = append(vals, v.(int32))
 					}
 				}
-
 			}
+			set := types.NewSet(vals...)
 			args = append(args, set)
 		} else {
 			args = append(args, m.data.EditNodeData.Checked)
