@@ -49,6 +49,9 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
 
 	})
+	des.page.SetOnClick(func(sender lcl.IObject) {
+		logs.Debug("Designer PageControl click")
+	})
 
 	// 创建tab上的右键菜单
 	des.createTabMenu()
@@ -84,6 +87,8 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet.SetParent(m.page)
 	form.sheet.SetCaption(formName)
+	form.sheet.SetOnHide(form.onHide)
+	form.sheet.SetOnShow(form.onShow)
 	//form.sheet.SetAlign(types.AlClient)
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
@@ -124,6 +129,8 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 
 	// 创建一个隐藏的窗体用于获取属性
 	form.form = NewFormDesigner(form)
+	form.form.object.SetCaption(form.name)
+	form.form.object.SetName(form.name)
 
 	// 窗体拖拽大小
 	form.designerBox.drag = newDrag(form.scroll, DsRightBottom)
@@ -183,6 +190,14 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		logs.Debug("加载窗体")
 		inspector.LoadComponent(m.form)
 	}
+}
+
+func (m *FormTab) onHide(sender lcl.IObject) {
+	logs.Debug("Designer PageControl FormTab Hide", m.name)
+}
+
+func (m *FormTab) onShow(sender lcl.IObject) {
+	logs.Debug("Designer PageControl FormTab Show", m.name)
 }
 
 // 窗体设计界面 鼠标抬起
