@@ -15,7 +15,6 @@ var (
 // 组件树和对象查看器
 type Inspector struct {
 	boxSplitter       lcl.ISplitter               // 分割线
-	activeComponent   *DesigningComponent         // 当前活动的设计组件
 	componentTree     *InspectorComponentTree     // 组件树
 	componentProperty *InspectorComponentProperty // 组件属性
 }
@@ -28,8 +27,6 @@ func GetInspector() *Inspector {
 // 加载组件
 // 属性, 事件
 func (m *Inspector) LoadComponent(component *DesigningComponent) {
-	// 设置当前设计的活动组件
-	m.activeComponent = component
 	if component == nil {
 		logs.Error("加载组件属性/事件失败, 设计组件为空")
 		return

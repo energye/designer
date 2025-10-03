@@ -151,6 +151,7 @@ func (m *drag) Hide() {
 	if !m.isShow {
 		return
 	}
+	m.relation.isDesigner = false
 	m.isShow = false
 	if m.ds == DsAll {
 		m.left.SetVisible(false)
@@ -173,6 +174,7 @@ func (m *drag) Show() {
 	if m.isShow {
 		return
 	}
+	m.relation.isDesigner = true
 	m.isShow = true
 	if m.ds == DsAll {
 		m.left.SetVisible(true)

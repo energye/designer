@@ -24,17 +24,16 @@ type Designer struct {
 }
 
 type FormTab struct {
-	id                   int                 // 索引, 关联 forms key: index
-	name                 string              // 窗体名称
-	scroll               lcl.IScrollBox      // 外 滚动条
-	isDesigner           bool                // 是否下在设计
-	sheet                lcl.ITabSheet       // tab sheet
-	designerBox          *DesigningComponent // 设计器
-	isDown, isUp, isMove bool                // 鼠标事件
-	//dragForm             *drag                 // 拖拽窗体控制器
-	componentName map[string]int        // 组件分类名
-	form          *DesigningComponent   // 窗体
-	componentList []*DesigningComponent // 组件列表
+	id                   int                   // 索引, 关联 forms key: index
+	name                 string                // 窗体名称
+	scroll               lcl.IScrollBox        // 外 滚动条
+	isDesigner           bool                  // 是否正在设计
+	sheet                lcl.ITabSheet         // tab sheet
+	designerBox          *DesigningComponent   // 设计器
+	isDown, isUp, isMove bool                  // 鼠标事件
+	componentName        map[string]int        // 组件分类名
+	form                 *DesigningComponent   // 设计器的窗体
+	componentList        []*DesigningComponent // 设计器的组件列表
 }
 
 // 创建主窗口设计器的布局
@@ -198,6 +197,18 @@ func (m *FormTab) onHide(sender lcl.IObject) {
 
 func (m *FormTab) onShow(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Show", m.name)
+	defaultComp := m.form
+	for _, comp := range m.componentList {
+		if comp == m.designerBox {
+			// 设计面板忽略
+			continue
+		}
+		if comp.isDesigner {
+			defaultComp = comp
+		}
+	}
+	logs.Debug("Current Designer Component", "Name:", m.name)
+	inspector.LoadComponent(defaultComp)
 }
 
 // 窗体设计界面 鼠标抬起

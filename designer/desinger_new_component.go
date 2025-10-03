@@ -14,12 +14,13 @@ type DesigningComponent struct {
 	owner        *FormTab                // 所属设计面板
 	originObject any                     // 原始组件对象
 	object       lcl.IWinControl         // 组件
-	drag         *drag                   //
-	dx, dy       int32                   //
-	dcl, dct     int32                   //
-	isDown       bool                    //
+	drag         *drag                   // 拖拽控制
+	dx, dy       int32                   // 拖拽控制
+	dcl, dct     int32                   // 拖拽控制
+	isDown       bool                    // 拖拽控制
 	propertyList []*vtedit.TEditNodeData // 组件属性
 	eventList    []*vtedit.TEditNodeData // 组件事件
+	isDesigner   bool                    // 组件是否正在设计
 }
 
 // 设计组件鼠标移动
