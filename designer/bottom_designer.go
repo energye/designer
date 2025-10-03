@@ -24,17 +24,17 @@ type Designer struct {
 }
 
 type FormTab struct {
-	id                   int                   // 索引, 关联 forms key: index
-	name                 string                // 窗体名称
-	scroll               lcl.IScrollBox        // 外 滚动条
-	isDesigner           bool                  // 是否下在设计
-	sheet                lcl.ITabSheet         // tab sheet
-	designerBox          *DesigningComponent   // 设计器
-	isDown, isUp, isMove bool                  // 鼠标事件
-	dragForm             *drag                 // 拖拽窗体控制器
-	componentName        map[string]int        // 组件分类名
-	form                 *DesigningComponent   // 窗体
-	componentList        []*DesigningComponent // 组件列表
+	id                   int                 // 索引, 关联 forms key: index
+	name                 string              // 窗体名称
+	scroll               lcl.IScrollBox      // 外 滚动条
+	isDesigner           bool                // 是否下在设计
+	sheet                lcl.ITabSheet       // tab sheet
+	designerBox          *DesigningComponent // 设计器
+	isDown, isUp, isMove bool                // 鼠标事件
+	//dragForm             *drag                 // 拖拽窗体控制器
+	componentName map[string]int        // 组件分类名
+	form          *DesigningComponent   // 窗体
+	componentList []*DesigningComponent // 组件列表
 }
 
 // 创建主窗口设计器的布局
@@ -120,15 +120,16 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
 	form.designerBox.object = designerBox
 	form.designerBox.owner = form
+	form.addDesignerComponent(form.designerBox)
 
 	// 创建一个隐藏的窗体用于获取属性
 	form.form = NewFormDesigner(form)
 
 	// 窗体拖拽大小
-	form.dragForm = newDrag(form.scroll, DsRightBottom)
-	form.dragForm.SetRelation(form.designerBox)
-	form.dragForm.Show()
-	form.dragForm.Follow()
+	form.designerBox.drag = newDrag(form.scroll, DsRightBottom)
+	form.designerBox.drag.SetRelation(form.designerBox)
+	form.designerBox.drag.Show()
+	form.designerBox.drag.Follow()
 
 	// 测试控件
 	//NewButtonDesigner(form, 50, 50)
@@ -164,17 +165,21 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
 	if toolbar.selectComponent != nil {
+		m.designerBox.drag.Hide()
 		componentName := toolbar.selectComponent.name
 		logs.Debug("当前选中控件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		// 创建
 		if create := GetRegisterComponent(componentName); create != nil {
-			create(m, x, y).LoadPropertyToInspector()
+			newComp := create(m, x, y)
+			newComp.LoadPropertyToInspector()
+			newComp.drag.Show()
 		} else {
 			logs.Warn("当前选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
 		// 重置
 		toolbar.ResetTabComponentDown()
 	} else {
+		m.designerBox.drag.Show()
 		logs.Debug("加载窗体")
 		inspector.LoadComponent(m.form)
 	}
