@@ -41,16 +41,20 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 }
 
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	logs.Debug("设计组件", m.object.ToString())
-	m.owner.hideAllDrag()
-	m.drag.Show()
+	logs.Debug("OnMouseDown 设计组件", m.object.ToString())
 	m.isDown = true
 	point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox.object)
 	m.dx, m.dy = point.X, point.Y
 	m.dcl = m.object.Left()
 	m.dct = m.object.Top()
 	// 更新设计查看器的属性信息
+	//go lcl.RunOnMainThreadAsync(func(id uint32) {
 	m.LoadPropertyToInspector()
+	//})
+	go lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.owner.hideAllDrag()
+		m.drag.Show()
+	})
 }
 
 func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {

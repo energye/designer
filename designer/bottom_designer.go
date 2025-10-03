@@ -119,6 +119,7 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
 	form.designerBox.object = designerBox
+	form.designerBox.owner = form
 
 	// 创建一个隐藏的窗体用于获取属性
 	form.form = NewFormDesigner(form)
