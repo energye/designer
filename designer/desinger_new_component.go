@@ -49,10 +49,8 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	m.dcl = m.object.Left()
 	m.dct = m.object.Top()
 	// 更新设计查看器的属性信息
-	//go lcl.RunOnMainThreadAsync(func(id uint32) {
-	m.LoadPropertyToInspector()
-	//})
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.LoadPropertyToInspector()
 		m.owner.hideAllDrag()
 		m.drag.Show()
 	})
