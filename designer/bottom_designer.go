@@ -185,7 +185,7 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			// 2. 添加到组件树
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
 				//m.componentTree.Load(component)
-				inspector.componentTree.AddComponentToTree(newComp)
+				owner.AddChild(newComp)
 			})
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")

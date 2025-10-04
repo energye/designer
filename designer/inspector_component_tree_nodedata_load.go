@@ -13,7 +13,6 @@ func (m *InspectorComponentTree) AddComponentToTree(component *DesigningComponen
 	switch component.componentType {
 	case CtForm:
 		// 窗体表单根节点
-		m.AddFormNode(nil, "Form1: TForm", -1)
 	case CtOther:
 		// 控件子节点
 

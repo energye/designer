@@ -33,7 +33,6 @@ type DesigningComponent struct {
 	componentType ComponentType           // 控件类型
 	node          lcl.ITreeNode           // 组件树节点对象
 	id            int                     // id 标识
-	iconIndex     int32                   // 图标
 	parent        *DesigningComponent     // 所属父节点
 	child         []*DesigningComponent   // 拥有的子节点列表
 }
@@ -98,6 +97,21 @@ func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
 	m.drag.SetParent(parent.object)
 	m.parent = parent
 	parent.child = append(parent.child, m)
+}
+
+// 返回组件类名
+func (m *DesigningComponent) Name() string {
+	return m.object.Name()
+}
+
+// 返回组件树节点名
+func (m *DesigningComponent) TreeName() string {
+	return fmt.Sprintf("%v: %v", m.object.Name(), m.object.ToString())
+}
+
+// 返回组件树节点使用的图标索引
+func (m *DesigningComponent) IconIndex() int32 {
+	return CompTreeIcon(m.object.ToString())
 }
 
 // 创建设计窗体-隐藏

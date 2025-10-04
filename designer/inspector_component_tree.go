@@ -13,8 +13,18 @@ import (
 // 设计 - 组件树
 
 var (
-	gTreeId int // 维护全局树数据id
+	gTreeId        int              // 维护全局树数据id
+	gTreeImageList map[string]int32 // 组件树树节点图标索引 key: 组件类名 value: 索引
 )
+
+func init() {
+	gTreeImageList = make(map[string]int32)
+}
+
+// 返回查看器组件树节点使用的图标
+func CompTreeIcon(name string) int32 {
+	return gTreeImageList[name]
+}
 
 // 获取下一个树数据ID
 func nextTreeDataId() (id int) {
@@ -28,7 +38,7 @@ type InspectorComponentTree struct {
 	treeBox    lcl.IPanel                  // 组件树盒子
 	treeFilter lcl.ITreeFilterEdit         // 组件树过滤框
 	tree       lcl.ITreeView               // 组件树
-	images     lcl.IImageList              // 树图标
+	images     lcl.IImageList              // 组件树树图标
 	root       *DesigningComponent         // 根节点 form 窗体
 	nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
 }
@@ -78,6 +88,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		var eachTabName = func(tab config.Tab) {
 			for _, name := range tab.Component {
 				images = append(images, fmt.Sprintf("components/%v.png", strings.ToLower(name)))
+				gTreeImageList[name] = int32(len(images) - 1)
 			}
 		}
 		eachTabName(config.Config.ComponentTabs.Standard)
@@ -88,8 +99,9 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		eachTabName(config.Config.ComponentTabs.System)
 		eachTabName(config.Config.ComponentTabs.LazControl)
 		eachTabName(config.Config.ComponentTabs.WebView)
-		// 最后一个图标是 form 窗体图标
+		// 最后一个图标是 TForm 窗体图标
 		images = append(images, "components/form.png")
+		gTreeImageList["TForm"] = int32(len(images) - 1)
 		// 加载所有图标
 		m.images = LoadImageList(m.treeBox, images, width, height)
 	}
@@ -122,12 +134,12 @@ func (m *DesigningComponent) Remove() {
 }
 
 // 向当前组件节点添加子组件节点
-func (m *DesigningComponent) AddChild(child *DesigningComponent, name string, iconIndex int32) {
-	inspector.componentTree.AddComponentNode(m, child, name, iconIndex)
+func (m *DesigningComponent) AddChild(child *DesigningComponent) {
+	inspector.componentTree.AddComponentNode(m, child)
 }
 
 // 添加窗体表单根节点
-func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent, name string, iconIndex int32) {
+func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent) {
 	if node == nil {
 		logs.Error("添加窗体表单节点失败, 窗体表单节点为空")
 		return
@@ -141,11 +153,10 @@ func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent, name stri
 		defer m.tree.EndUpdate()
 		items := m.tree.Items()
 		node.id = nextTreeDataId()
-		node.iconIndex = m.images.Count() - 1
 		m.nodeData[node.id] = node
-		newNode := items.AddChild(nil, name)
-		newNode.SetImageIndex(node.iconIndex)    // 显示图标索引
-		newNode.SetSelectedIndex(node.iconIndex) // 选中图标索引
+		newNode := items.AddChild(nil, node.TreeName())
+		newNode.SetImageIndex(node.IconIndex())    // 显示图标索引
+		newNode.SetSelectedIndex(node.IconIndex()) // 选中图标索引
 		newNode.SetSelected(true)
 		newNode.SetData(node.instance())
 		node.node = newNode
@@ -157,7 +168,7 @@ func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent, name stri
 }
 
 // 添加组件节点
-func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningComponent, name string, iconIndex int32) {
+func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningComponent) {
 	if parent == nil {
 		logs.Error("添加组件节点失败, 父节点为空")
 		return
@@ -171,13 +182,12 @@ func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningCompon
 		items := m.tree.Items()
 		// 控件 子节点
 		child.id = nextTreeDataId()
-		child.iconIndex = iconIndex
 		//child.parent = parent
 		m.nodeData[child.id] = child
-		node := items.AddChild(parent.node, name)
+		node := items.AddChild(parent.node, child.TreeName())
 		child.node = node
-		node.SetImageIndex(child.iconIndex)    // 显示图标索引
-		node.SetSelectedIndex(child.iconIndex) // 选中图标索引
+		node.SetImageIndex(child.IconIndex())    // 显示图标索引
+		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
 		node.SetSelected(true)
 		node.SetData(child.instance())
 		//parent.child = append(parent.child, child)
