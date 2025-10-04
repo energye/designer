@@ -134,6 +134,7 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 
 	// 窗体拖拽大小
 	form.designerBox.drag = newDrag(form.scroll, DsRightBottom)
+	form.designerBox.drag.SetParent(form.scroll)
 	form.designerBox.drag.SetRelation(form.designerBox)
 	form.designerBox.drag.Show()
 	form.designerBox.drag.Follow()
