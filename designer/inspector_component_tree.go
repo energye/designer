@@ -139,8 +139,8 @@ func (m *DesigningComponent) AddChild(child *DesigningComponent) {
 }
 
 // 添加窗体表单根节点
-func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent) {
-	if node == nil {
+func (m *InspectorComponentTree) AddFormNode(form *FormTab) {
+	if form == nil {
 		logs.Error("添加窗体表单节点失败, 窗体表单节点为空")
 		return
 	} else if m.root != nil {
@@ -148,23 +148,18 @@ func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent) {
 		return
 	}
 	// 窗体 根节点
-	if node.componentType == CtForm {
-		m.tree.BeginUpdate()
-		defer m.tree.EndUpdate()
-		items := m.tree.Items()
-		node.id = nextTreeDataId()
-		m.nodeData[node.id] = node
-		newNode := items.AddChild(nil, node.TreeName())
-		newNode.SetImageIndex(node.IconIndex())    // 显示图标索引
-		newNode.SetSelectedIndex(node.IconIndex()) // 选中图标索引
-		newNode.SetSelected(true)
-		newNode.SetData(node.instance())
-		node.node = newNode
-		m.root = node
-	} else {
-		logs.Error("添加窗体表单节点失败, 当前节点非窗体表单节点")
-		return
-	}
+	m.tree.BeginUpdate()
+	defer m.tree.EndUpdate()
+	items := m.tree.Items()
+	form.designerBox.id = nextTreeDataId()
+	m.nodeData[form.designerBox.id] = form.designerBox
+	newNode := items.AddChild(nil, form.form.TreeName())
+	newNode.SetImageIndex(form.form.IconIndex())    // 显示图标索引
+	newNode.SetSelectedIndex(form.form.IconIndex()) // 选中图标索引
+	newNode.SetSelected(true)
+	newNode.SetData(form.designerBox.instance())
+	form.designerBox.node = newNode
+	m.root = form.designerBox
 }
 
 // 添加组件节点
