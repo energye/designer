@@ -11,8 +11,11 @@ func (m *InspectorComponentTree) Load(component *DesigningComponent) {
 	}
 	switch component.componentType {
 	case CtForm:
-		m.AddTreeNodeItem(nil, "Form1: TForm", -1)
+		// 窗体表单根节点
+		m.AddFormNode(nil, "Form1: TForm", -1)
 	case CtOther:
+		// 控件子节点
+
 	default:
 		logs.Error("组件设计树加载节点失败, 未知类型", component.componentType, "组件:", component.object.ToString())
 	}

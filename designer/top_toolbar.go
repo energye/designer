@@ -127,7 +127,7 @@ func (m *TopToolbar) createToolBarBtns() {
 
 	newFormBtn := newBtn(0, "新建窗体", 0)
 	newFormBtn.SetOnClick(func(sender lcl.IObject) {
-		newForm := designer.addFormDesignerTab()
+		newForm := designer.addDesignerFormTab()
 		designer.ActiveFormTab(newForm)
 		inspector.LoadComponent(newForm.form)
 	})

@@ -31,6 +31,11 @@ type DesigningComponent struct {
 	eventList     []*vtedit.TEditNodeData // 组件事件
 	isDesigner    bool                    // 组件是否正在设计
 	componentType ComponentType           // 控件类型
+	node          lcl.ITreeNode           // 组件树节点对象
+	id            int                     // id 标识
+	iconIndex     int32                   // 图标
+	parent        *DesigningComponent     // 所属父节点
+	child         []*DesigningComponent   // 拥有的子节点列表
 }
 
 // 设计组件鼠标移动

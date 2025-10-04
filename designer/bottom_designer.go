@@ -76,7 +76,7 @@ func (m *Designer) createTabMenu() {
 }
 
 // 添加一个窗体设计器 tab
-func (m *Designer) addFormDesignerTab() *FormTab {
+func (m *Designer) addDesignerFormTab() *FormTab {
 	form := new(FormTab)
 	id := len(m.designerForms) + 1
 	formName := fmt.Sprintf("Form%d", id) // 默认名

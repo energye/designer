@@ -25,31 +25,31 @@ func nextTreeDataId() (id int) {
 
 // 查看器组件树
 type InspectorComponentTree struct {
-	treeBox    lcl.IPanel            // 组件树盒子
-	treeFilter lcl.ITreeFilterEdit   // 组件树过滤框
-	tree       lcl.ITreeView         // 组件树
-	images     lcl.IImageList        // 树图标
-	root       *TreeNodeData         // 根节点 form 窗体
-	nodeData   map[int]*TreeNodeData // 组件树节点数据, key: id
+	treeBox    lcl.IPanel                  // 组件树盒子
+	treeFilter lcl.ITreeFilterEdit         // 组件树过滤框
+	tree       lcl.ITreeView               // 组件树
+	images     lcl.IImageList              // 树图标
+	root       *DesigningComponent         // 根节点 form 窗体
+	nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
 }
 
 // 树节点数据
-type TreeNodeData struct {
-	owner     *InspectorComponentTree // 所属组件树
-	parent    *TreeNodeData           // 所属父节点
-	child     []*TreeNodeData         // 拥有的子节点列表
-	id        int                     // id 标识
-	iconIndex int32                   // 图标
-	node      lcl.ITreeNode           // 节点对象
-	component *DesigningComponent     // 设计的组件
-}
+//type TreeNodeData struct {
+//	owner     *InspectorComponentTree // 所属组件树
+//	parent    *TreeNodeData           // 所属父节点
+//	child     []*TreeNodeData         // 拥有的子节点列表
+//	id        int                     // id 标识
+//	iconIndex int32                   // 图标
+//	node      lcl.ITreeNode           // 节点对象
+//	component *DesigningComponent     // 设计的组件
+//}
 
-func (m *TreeNodeData) instance() uintptr {
+func (m *DesigningComponent) instance() uintptr {
 	return uintptr(unsafe.Pointer(m))
 }
 
-func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *TreeNodeData {
-	data := (*TreeNodeData)(unsafe.Pointer(dataPtr))
+func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *DesigningComponent {
+	data := (*DesigningComponent)(unsafe.Pointer(dataPtr))
 	return data
 }
 
@@ -116,49 +116,74 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 }
 
 // 删除当前节点
-func (m *TreeNodeData) Remove() {
+func (m *DesigningComponent) Remove() {
 	//owner:=m.owner
 	//m.owner=nil
 }
 
 // 向当前组件节点添加子组件节点
-func (m *TreeNodeData) AddChild(name string, iconIndex int32) *TreeNodeData {
-	return m.owner.AddTreeNodeItem(m, name, iconIndex)
+func (m *DesigningComponent) AddChild(child *DesigningComponent, name string, iconIndex int32) {
+	inspector.componentTree.AddComponentNode(m, child, name, iconIndex)
 }
 
-// 添加一个组件到节点
-func (m *InspectorComponentTree) AddTreeNodeItem(parent *TreeNodeData, name string, iconIndex int32) *TreeNodeData {
-	m.tree.BeginUpdate()
-	defer m.tree.EndUpdate()
-	items := m.tree.Items()
-	if m.root == nil && parent == nil {
-		// 窗体 根节点
-		nodeData := &TreeNodeData{owner: m, id: nextTreeDataId(), iconIndex: m.images.Count() - 1}
-		m.nodeData[nodeData.id] = nodeData
-		node := items.AddChild(nil, name)
-		nodeData.node = node
-		node.SetImageIndex(nodeData.iconIndex)    // 显示图标索引
-		node.SetSelectedIndex(nodeData.iconIndex) // 选中图标索引
-		node.SetSelected(true)
-		node.SetData(nodeData.instance())
-		m.root = nodeData
-		return nodeData
-	} else if m.root != nil && parent != nil {
-		// 控件 子节点
-		nodeData := &TreeNodeData{owner: m, id: nextTreeDataId(), iconIndex: iconIndex, parent: parent}
-		m.nodeData[nodeData.id] = nodeData
-		node := items.AddChild(parent.node, name)
-		nodeData.node = node
-		node.SetImageIndex(nodeData.iconIndex)    // 显示图标索引
-		node.SetSelectedIndex(nodeData.iconIndex) // 选中图标索引
-		node.SetSelected(true)
-		node.SetData(nodeData.instance())
-		// 添加到子节点
-		parent.child = append(parent.child, nodeData)
-		return nodeData
+// 添加窗体表单根节点
+func (m *InspectorComponentTree) AddFormNode(node *DesigningComponent, name string, iconIndex int32) {
+	if node == nil {
+		logs.Error("添加窗体表单节点失败, 窗体表单节点为空")
+		return
+	} else if m.root != nil {
+		logs.Error("添加窗体表单节点失败, 已有窗体表单节点")
+		return
+	}
+	// 窗体 根节点
+	if node.componentType == CtForm {
+		m.tree.BeginUpdate()
+		defer m.tree.EndUpdate()
+		items := m.tree.Items()
+		node.id = nextTreeDataId()
+		node.iconIndex = m.images.Count() - 1
+		m.nodeData[node.id] = node
+		newNode := items.AddChild(nil, name)
+		newNode.SetImageIndex(node.iconIndex)    // 显示图标索引
+		newNode.SetSelectedIndex(node.iconIndex) // 选中图标索引
+		newNode.SetSelected(true)
+		newNode.SetData(node.instance())
+		node.node = newNode
+		m.root = node
 	} else {
-		logs.Error("添加组件树节点失败, 根节点或父节点为空")
-		return nil
+		logs.Error("添加窗体表单节点失败, 当前节点非窗体表单节点")
+		return
+	}
+}
+
+// 添加组件节点
+func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningComponent, name string, iconIndex int32) {
+	if parent == nil {
+		logs.Error("添加组件节点失败, 父节点为空")
+		return
+	} else if child == nil {
+		logs.Error("添加组件节点失败, 子节点为空")
+		return
+	}
+	if child.componentType == CtOther {
+		m.tree.BeginUpdate()
+		defer m.tree.EndUpdate()
+		items := m.tree.Items()
+		// 控件 子节点
+		child.id = nextTreeDataId()
+		child.iconIndex = iconIndex
+		child.parent = parent
+		m.nodeData[child.id] = child
+		node := items.AddChild(parent.node, name)
+		child.node = node
+		node.SetImageIndex(child.iconIndex)    // 显示图标索引
+		node.SetSelectedIndex(child.iconIndex) // 选中图标索引
+		node.SetSelected(true)
+		node.SetData(child.instance())
+		// 添加到子节点
+		parent.child = append(parent.child, child)
+	} else {
+		logs.Error("添加组件节点失败, 子节点非组件节点")
 	}
 }
 
