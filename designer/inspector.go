@@ -15,8 +15,8 @@ var (
 // 组件树和对象查看器
 type Inspector struct {
 	boxSplitter       lcl.ISplitter               // 分割线
-	componentTree     *InspectorComponentTree     // 组件树
-	componentProperty *InspectorComponentProperty // 组件属性
+	componentTree     *InspectorComponentTree     // 组件树实例
+	componentProperty *InspectorComponentProperty // 组件属性实现
 }
 
 // 返回查看器实例
@@ -45,8 +45,10 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: component}
 			if newProp.Kind == "tkMethod" {
+				// tkMethod 事件函数
 				eventList = append(eventList, newEditNodeData)
 			} else {
+				// 其它侧为属性
 				propertyList = append(propertyList, newEditNodeData)
 			}
 			//logs.Debug("  ", toJSON(prop))
