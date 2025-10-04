@@ -31,10 +31,10 @@ type FormTab struct {
 	scroll               lcl.IScrollBox        // 外 滚动条
 	isDesigner           bool                  // 是否正在设计
 	sheet                lcl.ITabSheet         // tab sheet
-	designerBox          *DesigningComponent   // 设计器
+	designerBox          *DesigningComponent   // 设计器, 模拟 TForm, 也是组件树的根节点
 	isDown, isUp, isMove bool                  // 鼠标事件
 	componentName        map[string]int        // 组件分类名
-	form                 *DesigningComponent   // 设计器的窗体
+	form                 *DesigningComponent   // 设计器的窗体, 用于获取属性列表
 	componentList        []*DesigningComponent // 设计器的组件列表
 }
 

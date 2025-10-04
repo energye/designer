@@ -13,7 +13,7 @@ import (
 // 设计 - 组件树
 
 var (
-	gTreeId        int              // 维护全局树数据id
+	gTreeId        int              // 维护组件树全局数据id
 	gTreeImageList map[string]int32 // 组件树树节点图标索引 key: 组件类名 value: 索引
 )
 
@@ -105,6 +105,13 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	//s1 := root.AddChild("Test", 1)
 	//s1.AddChild("Tes1t", 2)
 	//s1.AddChild("Test2", 3)
+}
+
+// 清除组件树数据
+func (m *InspectorComponentTree) Clear() {
+	m.tree.Items().Clear()
+	m.root = nil
+	m.nodeData = make(map[int]*DesigningComponent)
 }
 
 // 数据指针转设计组件
