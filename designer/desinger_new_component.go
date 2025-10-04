@@ -158,3 +158,24 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m.SetObject(comp)
 	return m
 }
+
+func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.owner = designerForm
+	designerForm.addDesignerComponent(m)
+	comp := lcl.NewPanel(designerForm.designerBox.object)
+	comp.SetParent(designerForm.designerBox.object)
+	comp.SetLeft(x)
+	comp.SetTop(y)
+	comp.SetCursor(types.CrSize)
+	comp.SetCaption(designerForm.GetComponentCaptionName("Panel"))
+	comp.SetName(comp.Caption())
+	comp.SetShowHint(true)
+	comp.SetOnMouseMove(m.OnMouseMove)
+	comp.SetOnMouseDown(m.OnMouseDown)
+	comp.SetOnMouseUp(m.OnMouseUp)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}

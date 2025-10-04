@@ -12,6 +12,7 @@ func init() {
 	registerComponents["TButton"] = NewButtonDesigner
 	registerComponents["TEdit"] = NewEditDesigner
 	registerComponents["TCheckBox"] = NewCheckBoxDesigner
+	registerComponents["TPanel"] = NewPanelDesigner
 }
 
 // 获取注册的设计组件
