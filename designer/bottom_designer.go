@@ -24,6 +24,7 @@ type Designer struct {
 	designerForms map[int]*FormTab // 设计器窗体列表
 }
 
+// 设计表单的 tab
 type FormTab struct {
 	id                   int                   // 索引, 关联 forms key: index
 	name                 string                // 窗体名称
@@ -124,7 +125,7 @@ func (m *Designer) addFormDesignerTab() *FormTab {
 	designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
 	form.designerBox.object = designerBox
-	form.designerBox.owner = form
+	form.designerBox.ownerFormTab = form
 	form.addDesignerComponent(form.designerBox)
 
 	// 创建一个隐藏的窗体用于获取属性
@@ -205,16 +206,25 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 
 func (m *FormTab) onHide(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Hide", m.name)
+	// 非设计状态
+	m.isDesigner = false
 }
 
 func (m *FormTab) onShow(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Show", m.name)
+	// 设计状态
+	m.isDesigner = true
+
+	// 加载设计组件
+	// 默认窗体表单
 	defaultComp := m.form
 	for _, comp := range m.componentList {
 		if comp == m.designerBox {
 			// 设计面板忽略
 			continue
 		}
+		// 如果有当前设计面板有正在设计的组件
+		// 加载正在设计的组件
 		if comp.isDesigner {
 			defaultComp = comp
 		}
