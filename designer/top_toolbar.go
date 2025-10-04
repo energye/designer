@@ -69,6 +69,8 @@ func (m *TopToolbar) ResetTabComponentDown() {
 	}
 }
 
+// 设置当前工具按钮选中
+// 之后在设计器里使用
 func (m *TopToolbar) SetSelectComponentItem(item *ComponentTabItem) {
 	m.selectComponent = item
 }

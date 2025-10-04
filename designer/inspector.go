@@ -31,6 +31,7 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		logs.Error("加载组件属性/事件失败, 设计组件为空")
 		return
 	}
+	// 属性列表为空时获取属性列表
 	if component.propertyList == nil {
 		properties := lcl.DesigningComponent().GetComponentProperties(component.object)
 		logs.Debug("LoadComponent Count:", len(properties))

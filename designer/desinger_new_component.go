@@ -70,7 +70,9 @@ func (m *DesigningComponent) SetObject(object any) {
 
 // 加载组件属性到设计器
 func (m *DesigningComponent) LoadPropertyToInspector() {
+	// 显示设计组件拖拽
 	m.drag.Show()
+	// 加到到设计器
 	inspector.LoadComponent(m)
 }
 

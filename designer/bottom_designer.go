@@ -174,15 +174,16 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		m.designerBox.drag.Hide()
 		componentName := toolbar.selectComponent.name
 		logs.Debug("当前选中控件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
-		// 创建
+		// 获取注册的组件创建函数
 		if create := GetRegisterComponent(componentName); create != nil {
+			// 创建设计组件
 			newComp := create(m, x, y)
+			// 加载属性到设计器
 			newComp.LoadPropertyToInspector()
-			newComp.drag.Show()
 		} else {
 			logs.Warn("当前选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
-		// 重置
+		// 重置工具栏选项卡上的组件工具按钮按下
 		toolbar.ResetTabComponentDown()
 	} else {
 		m.designerBox.drag.Show()

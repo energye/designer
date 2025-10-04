@@ -112,6 +112,7 @@ func (m *ComponentTab) BindToolBtnEvent() {
 	}
 }
 
+// 工具栏上的按钮 取消按下
 func (m *ComponentTab) UnDownComponents() {
 	for _, com := range m.components {
 		com.btn.SetDown(false)
@@ -119,11 +120,13 @@ func (m *ComponentTab) UnDownComponents() {
 	toolbar.SetSelectComponentItem(nil)
 }
 
+// 取消选择工具按下
 func (m *ComponentTab) UnDownSelectTool() {
 	m.selectToolBtn.SetDown(false)
 	toolbar.SetSelectComponentItem(nil)
 }
 
+// 设置选择工具按下
 func (m *ComponentTab) DownSelectTool() {
 	m.selectToolBtn.SetDown(true)
 	toolbar.SetSelectComponentItem(nil)
@@ -142,6 +145,8 @@ func (m *ComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
 	logs.Debug("ToolBtnOnClick", m.index, m.name)
 	m.owner.UnDownComponents()
 	m.owner.UnDownSelectTool()
+	// 设置当前工具按钮按下
 	m.btn.SetDown(true)
+	// 设置当前工具按钮选中
 	toolbar.SetSelectComponentItem(m)
 }

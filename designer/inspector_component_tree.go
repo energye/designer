@@ -12,14 +12,18 @@ import (
 
 // 设计 - 组件树
 
-var gTreeId int
+var (
+	gTreeId int // 维护全局树数据id
+)
 
+// 获取下一个树数据ID
 func nextTreeDataId() (id int) {
 	id = gTreeId
 	gTreeId++
 	return
 }
 
+// 查看器组件树
 type InspectorComponentTree struct {
 	treeBox    lcl.IPanel            // 组件树盒子
 	treeFilter lcl.ITreeFilterEdit   // 组件树过滤框
@@ -46,7 +50,6 @@ func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *TreeNodeDa
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
-
 	componentTreeTitle := lcl.NewLabel(m.treeBox)
 	componentTreeTitle.SetParent(m.treeBox)
 	componentTreeTitle.SetCaption("组件")
@@ -64,7 +67,10 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 
 	// 组件树图标 20x20
 	{
-		var images []string
+		var (
+			width, height int32 = 20, 20
+			images        []string
+		)
 		var eachTabName = func(tab config.Tab) {
 			for _, name := range tab.Component {
 				images = append(images, fmt.Sprintf("components/%v.png", strings.ToLower(name)))
@@ -81,7 +87,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		// 最后一个图标是 form 窗体图标
 		images = append(images, "components/form.png")
 		// 加载所有图标
-		m.images = LoadImageList(m.treeBox, images, 20, 20)
+		m.images = LoadImageList(m.treeBox, images, width, height)
 	}
 
 	// 创建组件树
@@ -99,10 +105,10 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
 
 	// 测试
-	root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
-	s1 := root.AddChild("Test", 1)
-	s1.AddChild("Tes1t", 2)
-	s1.AddChild("Test2", 3)
+	//root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
+	//s1 := root.AddChild("Test", 1)
+	//s1.AddChild("Tes1t", 2)
+	//s1.AddChild("Test2", 3)
 }
 
 // 向当前组件节点添加子组件节点
