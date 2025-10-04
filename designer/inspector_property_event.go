@@ -59,7 +59,6 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	//	logs.Debug("[object inspector-property] OnAfterCellPaint column:", column)
 	//})
 	tree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
-		// edit: 1. 触发编辑
 		logs.Debug("[object inspector-property] OnColumnClick column:", column)
 		if column == 1 {
 			node := sender.FocusedNode()
@@ -70,7 +69,6 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	})
 	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, allowed *bool) {
-		// edit: 2. 第二列可以编辑
 		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == vtedit.PdtText {
@@ -82,22 +80,8 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	//tree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
 	//	logs.Debug("[object inspector-property] OnEditCancelled column:", column)
 	//})
-	tree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
-		// edit: 4. 编辑结束
-		logs.Debug("[object inspector-property] OnEdited column:", column)
-		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				data.FormInspectorPropertyToComponentProperty()
-			}
-		}
-	})
-	tree.SetOnExit(func(sender lcl.IObject) {
-		logs.Debug("[object inspector-property] OnExit")
-		tree.EndEditNode()
-	})
 	tree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, outEditLink *lcl.IVTEditLink) {
-		// edit: 3. 创建编辑或组件
 		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
@@ -127,6 +111,18 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 				}
 			}
 		}
+	})
+	tree.SetOnEdited(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32) {
+		logs.Debug("[object inspector-property] OnEdited column:", column)
+		if column == 1 {
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				data.FormInspectorPropertyToComponentProperty()
+			}
+		}
+	})
+	tree.SetOnExit(func(sender lcl.IObject) {
+		logs.Debug("[object inspector-property] OnExit")
+		tree.EndEditNode()
 	})
 	tree.SetOnGetText(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType, cellText *string) {
