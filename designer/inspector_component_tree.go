@@ -43,26 +43,6 @@ type InspectorComponentTree struct {
 	nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
 }
 
-// 树节点数据
-//type TreeNodeData struct {
-//	owner     *InspectorComponentTree // 所属组件树
-//	parent    *TreeNodeData           // 所属父节点
-//	child     []*TreeNodeData         // 拥有的子节点列表
-//	id        int                     // id 标识
-//	iconIndex int32                   // 图标
-//	node      lcl.ITreeNode           // 节点对象
-//	component *DesigningComponent     // 设计的组件
-//}
-
-func (m *DesigningComponent) instance() uintptr {
-	return uintptr(unsafe.Pointer(m))
-}
-
-func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *DesigningComponent {
-	data := (*DesigningComponent)(unsafe.Pointer(dataPtr))
-	return data
-}
-
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	componentTreeTitle := lcl.NewLabel(m.treeBox)
 	componentTreeTitle.SetParent(m.treeBox)
@@ -127,15 +107,10 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	//s1.AddChild("Test2", 3)
 }
 
-// 删除当前节点
-func (m *DesigningComponent) Remove() {
-	//owner:=m.owner
-	//m.owner=nil
-}
-
-// 向当前组件节点添加子组件节点
-func (m *DesigningComponent) AddChild(child *DesigningComponent) {
-	inspector.componentTree.AddComponentNode(m, child)
+// 数据指针转设计组件
+func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *DesigningComponent {
+	data := (*DesigningComponent)(unsafe.Pointer(dataPtr))
+	return data
 }
 
 // 添加窗体表单根节点
@@ -198,4 +173,11 @@ func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node
 	//node.SetSelectedIndex(node.ImageIndex())
 
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
+}
+
+// 取消选中所有节点
+func (m *InspectorComponentTree) UnSelectedAll() {
+	for _, node := range m.nodeData {
+		node.node.SetSelected(false)
+	}
 }
