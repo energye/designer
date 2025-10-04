@@ -10,6 +10,7 @@ import (
 
 // 组件设计创建管理
 
+// 设计组件
 type DesigningComponent struct {
 	owner        *FormTab                // 所属设计面板
 	originObject any                     // 原始组件对象
@@ -36,24 +37,24 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
-		// 修改 left top
-
 	}
 }
 
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", m.object.ToString())
-	m.isDown = true
-	point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox.object)
-	m.dx, m.dy = point.X, point.Y
-	m.dcl = m.object.Left()
-	m.dct = m.object.Top()
-	// 更新设计查看器的属性信息
-	go lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.LoadPropertyToInspector()
-		m.owner.hideAllDrag()
-		m.drag.Show()
-	})
+	if !m.owner.placeComponent(m.object, X, Y) {
+		m.isDown = true
+		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.owner.designerBox.object)
+		m.dx, m.dy = point.X, point.Y
+		m.dcl = m.object.Left()
+		m.dct = m.object.Top()
+		// 更新设计查看器的属性信息
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.LoadPropertyToInspector()
+			m.owner.hideAllDrag()
+			m.drag.Show()
+		})
+	}
 }
 
 func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
@@ -76,6 +77,11 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 	inspector.LoadComponent(m)
 }
 
+func (m *DesigningComponent) SetParent(value lcl.IWinControl) {
+	m.object.SetParent(value)
+	m.drag.SetParent(value)
+}
+
 // 创建设计窗体-隐藏
 func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)
@@ -95,7 +101,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewButton(designerForm.designerBox.object)
-	comp.SetParent(designerForm.designerBox.object)
+	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -117,7 +123,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewEdit(designerForm.designerBox.object)
-	comp.SetParent(designerForm.designerBox.object)
+	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -139,7 +145,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewCheckBox(designerForm.designerBox.object)
-	comp.SetParent(designerForm.designerBox.object)
+	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
@@ -164,7 +170,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.owner = designerForm
 	designerForm.addDesignerComponent(m)
 	comp := lcl.NewPanel(designerForm.designerBox.object)
-	comp.SetParent(designerForm.designerBox.object)
+	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)

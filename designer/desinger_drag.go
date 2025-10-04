@@ -46,7 +46,7 @@ type drag struct {
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
-	pnl.SetParent(owner)
+	//pnl.SetParent(owner)
 	pnl.SetWidth(dragBorder)
 	pnl.SetHeight(dragBorder)
 	pnl.SetBevelOuter(types.BvNone)
@@ -208,6 +208,23 @@ func (m *drag) BringToFront() {
 		m.right.BringToFront()
 		m.bottom.BringToFront()
 		m.rightBottom.BringToFront()
+	}
+}
+
+func (m *drag) SetParent(value lcl.IWinControl) {
+	if m.ds == DsAll {
+		m.left.SetParent(value)
+		m.top.SetParent(value)
+		m.right.SetParent(value)
+		m.bottom.SetParent(value)
+		m.leftTop.SetParent(value)
+		m.rightTop.SetParent(value)
+		m.leftBottom.SetParent(value)
+		m.rightBottom.SetParent(value)
+	} else {
+		m.right.SetParent(value)
+		m.bottom.SetParent(value)
+		m.rightBottom.SetParent(value)
 	}
 }
 
