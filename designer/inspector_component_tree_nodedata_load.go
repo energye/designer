@@ -4,7 +4,8 @@ import "github.com/energye/designer/pkg/logs"
 
 // 设计 - 组件设计树数据加载
 
-func (m *InspectorComponentTree) Load(component *DesigningComponent) {
+// 添加设计组件到组件树
+func (m *InspectorComponentTree) AddComponentToTree(component *DesigningComponent) {
 	if component == nil {
 		logs.Error("组件设计树加载节点失败, 设计组件为空")
 		return

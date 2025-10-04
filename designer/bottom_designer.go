@@ -168,10 +168,10 @@ func (m *FormTab) hideAllDrag() {
 	}
 }
 
-// 放置组件到设计面板
-func (m *FormTab) placeComponent(owner lcl.IWinControl, x, y int32) bool {
+// 放置组件到设计面板或父组件容器
+func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	// 创建组件
-	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.ToString()) {
+	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.object.ToString()) {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		m.designerBox.drag.Hide()
 		// 获取注册的组件创建函数
@@ -179,8 +179,14 @@ func (m *FormTab) placeComponent(owner lcl.IWinControl, x, y int32) bool {
 			// 创建设计组件
 			newComp := create(m, x, y)
 			newComp.SetParent(owner)
-			// 加载属性到设计器
+			// 1. 加载属性到设计器
+			// 此步骤会初始化并填充设计组件实例
 			newComp.LoadPropertyToInspector()
+			// 2. 添加到组件树
+			go lcl.RunOnMainThreadAsync(func(id uint32) {
+				//m.componentTree.Load(component)
+				inspector.componentTree.AddComponentToTree(newComp)
+			})
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
@@ -196,7 +202,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 	m.hideAllDrag()
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
-	if !m.placeComponent(m.designerBox.object, x, y) {
+	if !m.placeComponent(m.designerBox, x, y) {
 		m.designerBox.drag.Show()
 		logs.Debug("加载窗体")
 		inspector.LoadComponent(m.form)

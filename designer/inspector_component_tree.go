@@ -172,7 +172,7 @@ func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningCompon
 		// 控件 子节点
 		child.id = nextTreeDataId()
 		child.iconIndex = iconIndex
-		child.parent = parent
+		//child.parent = parent
 		m.nodeData[child.id] = child
 		node := items.AddChild(parent.node, name)
 		child.node = node
@@ -180,8 +180,7 @@ func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningCompon
 		node.SetSelectedIndex(child.iconIndex) // 选中图标索引
 		node.SetSelected(true)
 		node.SetData(child.instance())
-		// 添加到子节点
-		parent.child = append(parent.child, child)
+		//parent.child = append(parent.child, child)
 	} else {
 		logs.Error("添加组件节点失败, 子节点非组件节点")
 	}

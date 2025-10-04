@@ -54,9 +54,10 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 	}
 }
 
+// 设计组件鼠标按下事件
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", m.object.ToString())
-	if !m.ownerFormTab.placeComponent(m.object, X, Y) {
+	if !m.ownerFormTab.placeComponent(m, X, Y) {
 		m.isDown = true
 		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
 		m.dx, m.dy = point.X, point.Y
@@ -71,6 +72,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	}
 }
 
+// 设计组件鼠标抬起事件
 func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if m.isDown {
 		m.drag.Show()
@@ -91,9 +93,11 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 	inspector.LoadComponent(m)
 }
 
-func (m *DesigningComponent) SetParent(value lcl.IWinControl) {
-	m.object.SetParent(value)
-	m.drag.SetParent(value)
+func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
+	m.object.SetParent(parent.object)
+	m.drag.SetParent(parent.object)
+	m.parent = parent
+	parent.child = append(parent.child, m)
 }
 
 // 创建设计窗体-隐藏

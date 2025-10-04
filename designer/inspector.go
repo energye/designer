@@ -64,10 +64,6 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		component.eventList = eventList
 		component.propertyList = propertyList
 	}
-	// 加载组件树
-	go lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.componentTree.Load(component)
-	})
 	// 加载属性列表和事件列表
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.componentProperty.Load(component)
