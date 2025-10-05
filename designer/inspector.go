@@ -47,7 +47,9 @@ func (m *Inspector) LoadComponentTree(root, component *DesigningComponent) {
 		if node == nil {
 			return
 		}
-
+		//for _, item := range node.child {
+		//
+		//}
 	}
 	iterateTreeNode(root)
 }
