@@ -22,21 +22,28 @@ const (
 
 // 设计组件
 type DesigningComponent struct {
-	ownerFormTab  *FormTab                // 所属设计表单面板
-	originObject  any                     // 原始组件对象
-	object        lcl.IWinControl         // 组件 WinControl 对象, 转换后的父类
-	drag          *drag                   // 拖拽控制
-	dx, dy        int32                   // 拖拽控制
-	dcl, dct      int32                   // 拖拽控制
-	isDown        bool                    // 拖拽控制
-	propertyList  []*vtedit.TEditNodeData // 组件属性
-	eventList     []*vtedit.TEditNodeData // 组件事件
-	isDesigner    bool                    // 组件是否正在设计
-	componentType ComponentType           // 控件类型
-	node          lcl.ITreeNode           // 组件树节点对象
-	id            int                     // id 标识
-	parent        *DesigningComponent     // 所属父节点
-	child         []*DesigningComponent   // 拥有的子节点列表
+	ownerFormTab      *FormTab                // 所属设计表单面板
+	originObject      any                     // 原始组件对象
+	object            lcl.IWinControl         // 组件 WinControl 对象, 转换后的父类
+	drag              *drag                   // 拖拽控制
+	dx, dy            int32                   // 拖拽控制
+	dcl, dct          int32                   // 拖拽控制
+	isDown            bool                    // 拖拽控制
+	propertyList      []*vtedit.TEditNodeData // 组件属性
+	eventList         []*vtedit.TEditNodeData // 组件事件
+	isDesigner        bool                    // 组件是否正在设计
+	componentType     ComponentType           // 控件类型
+	node              lcl.ITreeNode           // 组件树节点对象
+	id                int                     // id 标识
+	parent            *DesigningComponent     // 所属父节点
+	child             []*DesigningComponent   // 拥有的子节点列表
+	compPropTreeState ComponentPropTreeState  // 组件树状态
+}
+
+// 组件属性树状态
+type ComponentPropTreeState struct {
+	selectPropName string             // 当前选中(编辑)的属性名
+	selectNode     types.PVirtualNode // 根据选中的属性名获得的节点对象
 }
 
 // 设计组件鼠标移动

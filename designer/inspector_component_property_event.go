@@ -15,6 +15,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
 	})
+
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
@@ -59,12 +60,12 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	//	logs.Debug("[object inspector-property] OnAfterCellPaint column:", column)
 	//})
 	tree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
-		logs.Debug("[object inspector-property] OnColumnClick column:", column)
-		if column == 1 {
-			node := sender.FocusedNode()
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				tree.EditNode(node, column)
-			}
+		logs.Debug("[object inspector-property] OnColumnClick column:", column, "node:", sender.FocusedNode())
+		node := sender.FocusedNode()
+		data := vtedit.GetPropertyNodeData(node)
+		if data != nil {
+			m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+			tree.EditNode(node, 1)
 		}
 	})
 	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
@@ -132,6 +133,9 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 				*cellText = data.EditNodeData.Name
 			} else if column == 1 {
 				*cellText = data.EditValue()
+			}
+			if data.EditNodeData.Name == m.currentComponent.compPropTreeState.selectPropName {
+				m.currentComponent.compPropTreeState.selectNode = node
 			}
 		}
 	})

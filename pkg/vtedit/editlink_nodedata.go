@@ -150,6 +150,15 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 	return nil
 }
 
+// 判断节点对象是否存在
+func IsExistNodeData(node types.PVirtualNode) bool {
+	if node == 0 {
+		return false
+	}
+	_, ok := propertyTreeDataList[node]
+	return ok
+}
+
 // 从设计属性更新到组件属性
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {

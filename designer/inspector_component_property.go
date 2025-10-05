@@ -142,3 +142,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		//AddPropertyNodeData(node, data)
 	}
 }
+
+func (m *InspectorComponentProperty) scrollPropertyTree(deltaX int32, deltaY int32) {
+	m.propertyTree.ScrollByWS(deltaX, deltaY)
+}
