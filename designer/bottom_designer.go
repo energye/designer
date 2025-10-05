@@ -32,9 +32,9 @@ type FormTab struct {
 	isDesigner           bool                  // 是否正在设计
 	sheet                lcl.ITabSheet         // tab sheet
 	designerBox          *DesigningComponent   // 设计器, 模拟 TForm, 也是组件树的根节点
+	form                 *DesigningComponent   // 设计器的窗体, 用于获取属性列表
 	isDown, isUp, isMove bool                  // 鼠标事件
 	componentName        map[string]int        // 组件分类名
-	form                 *DesigningComponent   // 设计器的窗体, 用于获取属性列表
 	componentList        []*DesigningComponent // 设计器的组件列表
 }
 
@@ -78,12 +78,13 @@ func (m *Designer) createTabMenu() {
 // 添加一个窗体设计器 tab
 func (m *Designer) addDesignerFormTab() *FormTab {
 	form := new(FormTab)
-	id := len(m.designerForms) + 1
-	formName := fmt.Sprintf("Form%d", id) // 默认名
-	form.name = formName
-	form.id = id
 	form.componentName = make(map[string]int)
-	m.designerForms[id] = form
+	// 默认名
+	formName := form.GetComponentCaptionName("Form")
+	form.name = formName
+	// 窗体ID
+	form.id = len(m.designerForms) + 1
+	m.designerForms[form.id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet.SetParent(m.page)
@@ -120,18 +121,26 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	designerBox.SetWidth(defaultWidth)
 	designerBox.SetHeight(defaultHeight)
 	designerBox.SetAlign(types.AlCustom)
+	//designerBox.SetCaption(form.name)
+	//designerBox.SetName(form.name)
 	designerBox.SetOnPaint(form.designerOnPaint)
 	designerBox.SetOnMouseMove(form.designerOnMouseMove)
 	designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
+	// 设计面板
 	form.designerBox.object = designerBox
 	form.designerBox.ownerFormTab = form
 	form.addDesignerComponent(form.designerBox)
 
-	// 创建一个隐藏的窗体用于获取属性
-	form.form = NewFormDesigner(form)
-	form.form.object.SetCaption(form.name)
-	form.form.object.SetName(form.name)
+	{
+		// 创建一个隐藏的窗体用于获取属性
+		newForm := NewFormDesigner(form)
+		newForm.GetProps()
+		// 将属性填充到设计面板
+		form.designerBox.propertyList = newForm.propertyList
+		form.designerBox.eventList = newForm.eventList
+		form.form = newForm
+	}
 
 	// 窗体拖拽大小
 	form.designerBox.drag = newDrag(form.scroll, DsRightBottom)
@@ -170,7 +179,7 @@ func (m *FormTab) hideAllDrag() {
 
 // 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
-	// 创建组件
+	// 放置设计组件
 	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.object.ToString()) {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		m.designerBox.drag.Hide()
@@ -203,13 +212,16 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 
 // 窗体设计界面 鼠标按下, 放置设计控件, 加载控件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-	m.hideAllDrag()
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
 	if !m.placeComponent(m.designerBox, x, y) {
+		m.hideAllDrag()
 		m.designerBox.drag.Show()
-		logs.Debug("加载窗体")
-		inspector.LoadComponent(m.form)
+		logs.Debug("加载窗体属性")
+		// 加载属性列表到设计器组件属性
+		inspector.LoadComponent(m.designerBox)
+		// 设置选中状态到设计器组件树
+		m.designerBox.SetSelected()
 	}
 
 }
@@ -227,7 +239,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 
 	// 加载设计组件
 	// 默认窗体表单
-	defaultComp := m.form
+	defaultComp := m.designerBox
 	for _, comp := range m.componentList {
 		if comp == m.designerBox {
 			// 设计面板忽略

@@ -2,10 +2,7 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
-	"sort"
-	"strings"
 )
 
 var (
@@ -32,38 +29,7 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 		return
 	}
 	// 属性列表为空时获取属性列表
-	if component.propertyList == nil {
-		properties := lcl.DesigningComponent().GetComponentProperties(component.object)
-		logs.Debug("LoadComponent Count:", len(properties))
-		// 拆分 属性和事件
-		var (
-			eventList    []*vtedit.TEditNodeData
-			propertyList []*vtedit.TEditNodeData
-		)
-		for _, prop := range properties {
-			newProp := prop
-			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
-			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: component}
-			if newProp.Kind == "tkMethod" {
-				// tkMethod 事件函数
-				eventList = append(eventList, newEditNodeData)
-			} else {
-				// 其它侧为属性
-				propertyList = append(propertyList, newEditNodeData)
-			}
-			//logs.Debug("  ", toJSON(prop))
-		}
-		// 排序
-		sort.Slice(eventList, func(i, j int) bool {
-			return strings.ToLower(eventList[i].EditNodeData.Name) < strings.ToLower(eventList[j].EditNodeData.Name)
-		})
-		sort.Slice(propertyList, func(i, j int) bool {
-			return strings.ToLower(propertyList[i].EditNodeData.Name) < strings.ToLower(propertyList[j].EditNodeData.Name)
-		})
-
-		component.eventList = eventList
-		component.propertyList = propertyList
-	}
+	component.GetProps()
 	// 加载属性列表和事件列表
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.componentProperty.Load(component)

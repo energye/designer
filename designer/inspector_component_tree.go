@@ -175,8 +175,8 @@ func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningCompon
 
 // 组件树选择事件
 func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
-	dataPtr := node.Data()
-	component := m.DataToDesigningComponent(dataPtr)
+	data := node.Data()
+	component := m.DataToDesigningComponent(data)
 	if component != nil {
 		component.ownerFormTab.hideAllDrag() // 隐藏所有 drag
 		component.drag.Show()                // 显示当前设计组件 drag

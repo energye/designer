@@ -68,7 +68,3 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 func (m *InspectorComponentProperty) loadEventList(component *DesigningComponent) {
 
 }
-
-func (m *InspectorComponentProperty) addNodeData() {
-
-}

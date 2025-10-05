@@ -6,6 +6,8 @@ import (
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"sort"
+	"strings"
 )
 
 // 组件设计创建管理
@@ -68,8 +70,9 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.LoadPropertyToInspector()
 		})
-		// 更瓣设计查看器的组件树信息
+		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 设置选中状态
 			m.SetSelected()
 		})
 	}
@@ -114,6 +117,42 @@ func (m *DesigningComponent) TreeName() string {
 // 返回组件树节点使用的图标索引
 func (m *DesigningComponent) IconIndex() int32 {
 	return CompTreeIcon(m.object.ToString())
+}
+
+// 获取当前组件对象属性
+func (m *DesigningComponent) GetProps() {
+	// 属性列表为空时获取属性列表
+	if m.propertyList == nil {
+		properties := lcl.DesigningComponent().GetComponentProperties(m.object)
+		logs.Debug("LoadComponent Count:", len(properties))
+		// 拆分 属性和事件
+		var (
+			eventList    []*vtedit.TEditNodeData
+			propertyList []*vtedit.TEditNodeData
+		)
+		for _, prop := range properties {
+			newProp := prop
+			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
+			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m}
+			if newProp.Kind == "tkMethod" {
+				// tkMethod 事件函数
+				eventList = append(eventList, newEditNodeData)
+			} else {
+				// 其它侧为属性
+				propertyList = append(propertyList, newEditNodeData)
+			}
+			//logs.Debug("  ", toJSON(prop))
+		}
+		// 排序
+		sort.Slice(eventList, func(i, j int) bool {
+			return strings.ToLower(eventList[i].EditNodeData.Name) < strings.ToLower(eventList[j].EditNodeData.Name)
+		})
+		sort.Slice(propertyList, func(i, j int) bool {
+			return strings.ToLower(propertyList[i].EditNodeData.Name) < strings.ToLower(propertyList[j].EditNodeData.Name)
+		})
+		m.eventList = eventList
+		m.propertyList = propertyList
+	}
 }
 
 // 创建设计窗体-隐藏
