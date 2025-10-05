@@ -178,8 +178,11 @@ func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node
 	dataPtr := node.Data()
 	component := m.DataToDesigningComponent(dataPtr)
 	if component != nil {
-		component.ownerFormTab.hideAllDrag()
-		component.drag.Show()
+		component.ownerFormTab.hideAllDrag() // 隐藏所有 drag
+		component.drag.Show()                // 显示当前设计组件 drag
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			component.LoadPropertyToInspector()
+		})
 	}
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }
