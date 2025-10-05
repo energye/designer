@@ -47,6 +47,7 @@ func (m *Inspector) LoadComponentProps(component *DesigningComponent) {
 
 // 加载组件
 // 组件树
+// 参数: root 当前正在设计的根节点
 // 参数: component 当前正在设计的组件
 func (m *Inspector) LoadComponentTree(root, component *DesigningComponent) {
 	m.componentTree.Clear()

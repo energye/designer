@@ -32,8 +32,6 @@ func (m *InspectorComponentProperty) Load(component *DesigningComponent) {
 
 // 加载属性列表
 func (m *InspectorComponentProperty) loadPropertyList(component *DesigningComponent) {
-	//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
-	//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
 	compProp := config.ComponentProperty
 	for i, nodeData := range component.propertyList {
 		if compProp.IsExclude(nodeData.EditNodeData.Name) {
@@ -59,7 +57,6 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 			nodeData.IsFinal = true
 		}
 		// 属性节点数据添加到树
-		//newEditNodeData := &vtedit.TEditNodeData{EditNodeData: nodeData, OriginNodeData: nodeData.Clone()}
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
 	}
 }

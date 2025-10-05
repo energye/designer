@@ -117,6 +117,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		logs.Debug("[object inspector-property] OnEdited column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				// 从设计属性更新到组件属性
 				data.FormInspectorPropertyToComponentProperty()
 			}
 		}
