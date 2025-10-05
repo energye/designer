@@ -94,7 +94,7 @@ func (m *DesigningComponent) SetObject(object any) {
 // 加载组件属性到设计器
 func (m *DesigningComponent) LoadPropertyToInspector() {
 	// 加载到设计器
-	inspector.LoadComponent(m)
+	inspector.LoadComponentProps(m)
 }
 
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {

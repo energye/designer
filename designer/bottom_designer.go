@@ -229,7 +229,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		m.designerBox.drag.Show()
 		logs.Debug("加载窗体属性")
 		// 加载属性列表到设计器组件属性
-		inspector.LoadComponent(m.designerBox)
+		inspector.LoadComponentProps(m.designerBox)
 		// 设置选中状态到设计器组件树
 		m.designerBox.SetSelected()
 	}
@@ -262,7 +262,10 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 		}
 	}
 	logs.Debug("Current Designer Component", "Name:", m.name)
-	inspector.LoadComponent(defaultComp)
+	// 加载组件属性
+	inspector.LoadComponentProps(defaultComp)
+	// 加载组件树
+	inspector.LoadComponentTree(defaultComp)
 }
 
 // 窗体设计界面 鼠标抬起

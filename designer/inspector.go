@@ -23,7 +23,8 @@ func GetInspector() *Inspector {
 
 // 加载组件
 // 属性, 事件
-func (m *Inspector) LoadComponent(component *DesigningComponent) {
+// 参数: component 当前正在设计的组件
+func (m *Inspector) LoadComponentProps(component *DesigningComponent) {
 	if component == nil {
 		logs.Error("加载组件属性/事件失败, 设计组件为空")
 		return
@@ -34,4 +35,11 @@ func (m *Inspector) LoadComponent(component *DesigningComponent) {
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.componentProperty.Load(component)
 	})
+}
+
+// 加载组件
+// 组件树
+// 参数: component 当前正在设计的组件
+func (m *Inspector) LoadComponentTree(component *DesigningComponent) {
+	m.componentTree.Clear()
 }

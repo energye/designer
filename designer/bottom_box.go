@@ -71,7 +71,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
-			inspector.LoadComponent(defaultForm.designerBox)
+			inspector.LoadComponentProps(defaultForm.designerBox)
 			// 2. 添加到组件树, 注意: 此处使用 designerBox 对象
 			inspector.componentTree.AddFormNode(defaultForm)
 		})
