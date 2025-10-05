@@ -30,6 +30,7 @@ const (
 	DRightBottom
 )
 
+// 拖拽控制
 type drag struct {
 	relation    *DesigningComponent // 关联设计的控件
 	ds          DragShowStatus      // 显示方向
