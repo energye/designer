@@ -133,8 +133,8 @@ func (m *TopToolbar) createToolBarBtns() {
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
 			inspector.LoadComponentProps(newForm.designerBox)
-			// 2. 添加到组件树, 注意: 此处使用 designerBox 对象
-			//inspector.componentTree.AddFormNode(newForm.designerBox)
+			// 2. 添加到组件树
+			newForm.AddFormNode()
 		})
 	})
 	openFormBtn := newBtn(1, "打开窗体", 1)

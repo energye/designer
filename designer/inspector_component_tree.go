@@ -35,12 +35,12 @@ func nextTreeDataId() (id int) {
 
 // 查看器组件树
 type InspectorComponentTree struct {
-	treeBox    lcl.IPanel                  // 组件树盒子
-	treeFilter lcl.ITreeFilterEdit         // 组件树过滤框
-	tree       lcl.ITreeView               // 组件树
-	images     lcl.IImageList              // 组件树树图标
-	root       *DesigningComponent         // 根节点 form 窗体
-	nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
+	treeBox    lcl.IPanel          // 组件树盒子
+	treeFilter lcl.ITreeFilterEdit // 组件树过滤框
+	//tree       lcl.ITreeView               // 组件树
+	images lcl.IImageList // 组件树树图标
+	//root       *DesigningComponent         // 根节点 form 窗体
+	//nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
@@ -87,18 +87,18 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	}
 
 	// 创建组件树
-	m.tree = lcl.NewTreeView(m.treeBox)
-	m.tree.SetParent(m.treeBox)
-	m.tree.SetAutoExpand(true)
-	m.tree.SetTop(35)
-	m.tree.SetWidth(leftBoxWidth)
-	m.tree.SetHeight(componentTreeHeight - m.tree.Top())
-	m.tree.SetReadOnly(true)
-	//m.tree.SetMultiSelect(true) // 多选控制
-	m.tree.SetAlign(types.AlCustom)
-	m.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
-	m.tree.SetImages(m.images)
-	m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
+	//m.tree = lcl.NewTreeView(m.treeBox)
+	//m.tree.SetParent(m.treeBox)
+	//m.tree.SetAutoExpand(true)
+	//m.tree.SetTop(35)
+	//m.tree.SetWidth(leftBoxWidth)
+	//m.tree.SetHeight(componentTreeHeight - m.tree.Top())
+	//m.tree.SetReadOnly(true)
+	////m.tree.SetMultiSelect(true) // 多选控制
+	//m.tree.SetAlign(types.AlCustom)
+	//m.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+	//m.tree.SetImages(m.images)
+	//m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
 
 	// 测试
 	//root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
@@ -108,69 +108,16 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 }
 
 // 清除组件树数据
-func (m *InspectorComponentTree) Clear() {
-	m.tree.Items().Clear()
-	m.root = nil
-	m.nodeData = make(map[int]*DesigningComponent)
-}
+//func (m *InspectorComponentTree) Clear() {
+//m.tree.Items().Clear()
+//m.root = nil
+//m.nodeData = make(map[int]*DesigningComponent)
+//}
 
 // 数据指针转设计组件
 func (m *InspectorComponentTree) DataToDesigningComponent(data uintptr) *DesigningComponent {
 	dc := (*DesigningComponent)(unsafe.Pointer(data))
 	return dc
-}
-
-// 添加窗体表单根节点
-func (m *InspectorComponentTree) AddFormNode(form *FormTab) {
-	if form == nil {
-		logs.Error("添加窗体表单节点失败, 窗体表单节点为空")
-		return
-	} else if m.root != nil {
-		logs.Error("添加窗体表单节点失败, 已有窗体表单节点")
-		return
-	}
-	// 窗体 根节点
-	m.tree.BeginUpdate()
-	defer m.tree.EndUpdate()
-	items := m.tree.Items()
-	form.designerBox.id = nextTreeDataId()
-	m.nodeData[form.designerBox.id] = form.designerBox
-	newNode := items.AddChild(nil, form.form.TreeName())
-	newNode.SetImageIndex(form.form.IconIndex())    // 显示图标索引
-	newNode.SetSelectedIndex(form.form.IconIndex()) // 选中图标索引
-	newNode.SetSelected(true)
-	newNode.SetData(form.designerBox.instance())
-	form.designerBox.node = newNode
-	m.root = form.designerBox
-}
-
-// 添加组件节点
-func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningComponent) {
-	if parent == nil {
-		logs.Error("添加组件节点失败, 父节点为空")
-		return
-	} else if child == nil {
-		logs.Error("添加组件节点失败, 子节点为空")
-		return
-	}
-	if child.componentType == CtOther {
-		m.tree.BeginUpdate()
-		defer m.tree.EndUpdate()
-		items := m.tree.Items()
-		// 控件 子节点
-		child.id = nextTreeDataId()
-		//child.parent = parent
-		m.nodeData[child.id] = child
-		node := items.AddChild(parent.node, child.TreeName())
-		child.node = node
-		node.SetImageIndex(child.IconIndex())    // 显示图标索引
-		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
-		node.SetSelected(true)
-		node.SetData(child.instance())
-		//parent.child = append(parent.child, child)
-	} else {
-		logs.Error("添加组件节点失败, 子节点非组件节点")
-	}
 }
 
 // 组件树选择事件
@@ -188,8 +135,8 @@ func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node
 }
 
 // 取消选中所有节点
-func (m *InspectorComponentTree) UnSelectedAll() {
-	for _, node := range m.nodeData {
-		node.node.SetSelected(false)
-	}
-}
+//func (m *InspectorComponentTree) UnSelectedAll() {
+//	for _, node := range m.nodeData {
+//		node.node.SetSelected(false)
+//	}
+//}

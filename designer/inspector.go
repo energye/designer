@@ -44,21 +44,3 @@ func (m *Inspector) LoadComponentProps(component *DesigningComponent) {
 		}
 	})
 }
-
-// 加载组件
-// 组件树
-// 参数: root 当前正在设计的根节点
-// 参数: component 当前正在设计的组件
-func (m *Inspector) LoadComponentTree(root, component *DesigningComponent) {
-	m.componentTree.Clear()
-	var iterateTreeNode func(node *DesigningComponent)
-	iterateTreeNode = func(node *DesigningComponent) {
-		if node == nil {
-			return
-		}
-		//for _, item := range node.child {
-		//
-		//}
-	}
-	iterateTreeNode(root)
-}
