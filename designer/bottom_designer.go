@@ -265,7 +265,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	// 加载组件属性
 	inspector.LoadComponentProps(defaultComp)
 	// 加载组件树
-	inspector.LoadComponentTree(defaultComp)
+	inspector.LoadComponentTree(m.designerBox, defaultComp)
 }
 
 // 窗体设计界面 鼠标抬起
