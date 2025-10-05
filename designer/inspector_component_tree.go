@@ -35,12 +35,10 @@ func nextTreeDataId() (id int) {
 
 // 查看器组件树
 type InspectorComponentTree struct {
-	treeBox    lcl.IPanel          // 组件树盒子
-	treeFilter lcl.ITreeFilterEdit // 组件树过滤框
-	//tree       lcl.ITreeView               // 组件树
-	images lcl.IImageList // 组件树树图标
-	//root       *DesigningComponent         // 根节点 form 窗体
-	//nodeData   map[int]*DesigningComponent // 组件树节点数据, key: id
+	treeBox      lcl.IPanel          // 组件树盒子
+	treeFilter   lcl.ITreeFilterEdit // 组件树过滤框
+	componentBox lcl.IPanel          // 组件盒子
+	images       lcl.IImageList      // 组件树树图标
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
@@ -58,6 +56,15 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilter.SetWidth(leftBoxWidth - m.treeFilter.Left())
 	m.treeFilter.SetAlign(types.AlCustom)
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+
+	m.componentBox = lcl.NewPanel(m.treeBox)
+	m.componentBox.SetParent(m.treeBox)
+	m.componentBox.SetTop(35)
+	m.componentBox.SetWidth(leftBoxWidth)
+	m.componentBox.SetHeight(componentTreeHeight - m.componentBox.Top())
+	m.componentBox.SetBevelOuter(types.BvNone)
+	m.componentBox.SetDoubleBuffered(true)
+	m.componentBox.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 
 	// 组件树图标 20x20
 	{

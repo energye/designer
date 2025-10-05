@@ -127,9 +127,9 @@ func (m *TopToolbar) createToolBarBtns() {
 
 	newFormBtn := newBtn(0, "新建窗体", 0)
 	newFormBtn.SetOnClick(func(sender lcl.IObject) {
-		newForm := designer.addDesignerFormTab()
-		designer.ActiveFormTab(newForm)
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			newForm := designer.addDesignerFormTab()
+			designer.ActiveFormTab(newForm)
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
 			inspector.LoadComponentProps(newForm.designerBox)

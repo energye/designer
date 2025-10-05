@@ -71,17 +71,14 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
-	form.tree = lcl.NewTreeView(inspector.componentTree.treeBox)
-	form.tree.SetParent(inspector.componentTree.treeBox)
+	form.tree = lcl.NewTreeView(inspector.componentTree.componentBox)
+	form.tree.SetParent(inspector.componentTree.componentBox)
 	form.tree.SetAutoExpand(true)
-	form.tree.SetTop(35)
-	form.tree.SetWidth(leftBoxWidth)
-	form.tree.SetHeight(componentTreeHeight - form.tree.Top())
 	form.tree.SetReadOnly(true)
+	form.tree.SetDoubleBuffered(true)
 	//m.tree.SetMultiSelect(true) // 多选控制
-	form.tree.SetAlign(types.AlCustom)
+	form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(true)
-	form.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	form.tree.SetImages(inspector.componentTree.images)
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	// 默认名

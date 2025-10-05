@@ -65,10 +65,10 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	designer = box.createFromDesignerLayout()
 
 	AddOnShow(func() {
-		// 1. 显示之后创建一个默认的设计面板
-		defaultForm := designer.addDesignerFormTab()
 		// 2. 添加到组件树
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 1. 显示之后创建一个默认的设计面板
+			defaultForm := designer.addDesignerFormTab()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
 			inspector.LoadComponentProps(defaultForm.designerBox)
