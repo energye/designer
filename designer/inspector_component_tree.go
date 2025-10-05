@@ -115,9 +115,9 @@ func (m *InspectorComponentTree) Clear() {
 }
 
 // 数据指针转设计组件
-func (m *InspectorComponentTree) DataToTreeNodeData(dataPtr uintptr) *DesigningComponent {
-	data := (*DesigningComponent)(unsafe.Pointer(dataPtr))
-	return data
+func (m *InspectorComponentTree) DataToDesigningComponent(data uintptr) *DesigningComponent {
+	dc := (*DesigningComponent)(unsafe.Pointer(data))
+	return dc
 }
 
 // 添加窗体表单根节点
@@ -176,10 +176,12 @@ func (m *InspectorComponentTree) AddComponentNode(parent, child *DesigningCompon
 // 组件树选择事件
 func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
 	dataPtr := node.Data()
-	data := m.DataToTreeNodeData(dataPtr)
-	//node.SetSelectedIndex(node.ImageIndex())
-
-	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", data.id)
+	component := m.DataToDesigningComponent(dataPtr)
+	if component != nil {
+		component.ownerFormTab.hideAllDrag()
+		component.drag.Show()
+	}
+	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }
 
 // 取消选中所有节点

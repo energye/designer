@@ -168,7 +168,7 @@ func (m *FormTab) hideAllDrag() {
 	}
 }
 
-// 放置组件到设计面板或父组件容器
+// 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	// 创建组件
 	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.object.ToString()) {
@@ -179,6 +179,10 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			// 创建设计组件
 			newComp := create(m, x, y)
 			newComp.SetParent(owner)
+			// 隐藏所有 drag
+			newComp.ownerFormTab.hideAllDrag()
+			// 显示当前设计组件 drag
+			newComp.drag.Show()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
 			newComp.LoadPropertyToInspector()

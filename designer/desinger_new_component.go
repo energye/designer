@@ -64,9 +64,15 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 		m.dct = m.object.Top()
 		// 更新设计查看器的属性信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.LoadPropertyToInspector()
+			// 隐藏所有 drag
 			m.ownerFormTab.hideAllDrag()
+			// 显示当前设计组件 drag
 			m.drag.Show()
+			m.LoadPropertyToInspector()
+		})
+		// 更瓣设计查看器的组件树信息
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.SetSelected()
 		})
 	}
 }
@@ -86,9 +92,7 @@ func (m *DesigningComponent) SetObject(object any) {
 
 // 加载组件属性到设计器
 func (m *DesigningComponent) LoadPropertyToInspector() {
-	// 显示设计组件拖拽
-	m.drag.Show()
-	// 加到到设计器
+	// 加载到设计器
 	inspector.LoadComponent(m)
 }
 
