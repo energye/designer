@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -129,6 +130,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
 	// 设计面板
 	form.designerBox.object = designerBox
+	form.designerBox.originObject = designerBox
 	form.designerBox.ownerFormTab = form
 	form.addDesignerComponent(form.designerBox)
 
@@ -139,6 +141,14 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 		// 将属性填充到设计面板
 		form.designerBox.propertyList = newForm.propertyList
 		form.designerBox.eventList = newForm.eventList
+		// 重置 所属组件对象 为设计面板
+		resetAffiliatedComponent := func(list []*vtedit.TEditNodeData) {
+			for _, item := range list {
+				item.AffiliatedComponent = form.designerBox
+			}
+		}
+		resetAffiliatedComponent(form.designerBox.propertyList)
+		resetAffiliatedComponent(form.designerBox.eventList)
 		form.form = newForm
 	}
 
