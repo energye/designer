@@ -87,9 +87,9 @@ func Follow(content string) {
 	}
 	mustMessage()
 	message.content.SetCaption(content)
+	message.form.SetBounds(x, y, width, height)
 	if !isFollowShow {
 		isFollowShow = true
-		message.form.SetBounds(x, y, width, height)
 		message.form.SetAlphaBlendValue(255)
 		message.form.Show()
 	}
