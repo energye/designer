@@ -138,7 +138,15 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.designerBox.object = designerBox
 	form.designerBox.originObject = designerBox
 	form.designerBox.ownerFormTab = form
-	//form.addDesignerComponent(form.designerBox)
+
+	{
+		// TODO 测试在非windows 是否正常？
+		//testForm := lcl.NewForm(form.scroll)
+		//testForm.SetBorderStyleToFormBorderStyle(types.BsNone)
+		//testForm.SetColor(colors.ClBlue)
+		//testForm.SetVisible(true)
+		//testForm.SetParent(form.scroll)
+	}
 
 	{
 		// 创建一个隐藏的窗体用于获取属性

@@ -36,6 +36,8 @@ func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEdi
 		} else {
 			m.UpdateTreeNode(updateNodeData)
 		}
+	} else if rs == err.RsIgnoreProp {
+		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "忽略更新")
 	} else {
 		// 更新失败
 		logs.Error("检查允许更新属性失败, RS:", rs)
@@ -61,6 +63,9 @@ func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData
 	switch propName {
 	case "name":
 		m.node.SetText(m.TreeName())
+		if m.componentType == CtForm {
+			m.ownerFormTab.sheet.SetCaption(m.Name())
+		}
 	}
 }
 

@@ -50,9 +50,9 @@ type ComponentPropTreeState struct {
 // 设计组件鼠标移动
 func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 	br := m.object.BoundsRect()
-	hint := fmt.Sprintf(`%v: %v
+	hint := fmt.Sprintf(`%v
 	Left: %v Top: %v
-	Width: %v Height: %v`, m.object.Caption(), m.object.ToString(), br.Left, br.Top, br.Width(), br.Height())
+	Width: %v Height: %v`, m.TreeName(), br.Left, br.Top, br.Width(), br.Height())
 	m.object.SetHint(hint)
 	if m.isDown {
 		m.drag.Hide()
@@ -129,7 +129,11 @@ func (m *DesigningComponent) Name() string {
 
 // 返回组件树节点名
 func (m *DesigningComponent) TreeName() string {
-	return fmt.Sprintf("%v: %v", m.object.Name(), m.object.ToString())
+	if m.componentType == CtForm {
+		return fmt.Sprintf("%v: %v", m.object.Name(), "TForm")
+	} else {
+		return fmt.Sprintf("%v: %v", m.object.Name(), m.object.ToString())
+	}
 }
 
 // 返回组件树节点使用的图标索引
