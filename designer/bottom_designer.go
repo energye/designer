@@ -91,20 +91,20 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	m.designerForms[form.id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
-	form.sheet.SetParent(m.page)
 	form.sheet.SetCaption(formName)
 	form.sheet.SetOnHide(form.onHide)
 	form.sheet.SetOnShow(form.onShow)
 	//form.sheet.SetAlign(types.AlClient)
+	form.sheet.SetParent(m.page)
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
-	form.scroll.SetParent(form.sheet)
 	form.scroll.SetAlign(types.AlClient)
 	form.scroll.SetAutoScroll(true)
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetDoubleBuffered(true)
 	//form.scroll.HorzScrollBar().SetIncrement(1)
 	//form.scroll.VertScrollBar().SetIncrement(1)
+	form.scroll.SetParent(form.sheet)
 
 	//newStatusBar(form.scroll)
 
@@ -114,7 +114,6 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	form.designerBox = new(DesigningComponent)
 	designerBox := lcl.NewPanel(form.scroll)
-	designerBox.SetParent(form.scroll)
 	designerBox.SetBevelOuter(types.BvNone)
 	designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
 	designerBox.SetDoubleBuffered(true)
@@ -131,11 +130,12 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	designerBox.SetOnMouseMove(form.designerOnMouseMove)
 	designerBox.SetOnMouseDown(form.designerOnMouseDown)
 	designerBox.SetOnMouseUp(form.designerOnMouseUp)
+	designerBox.SetParent(form.scroll)
 	// 设计面板
 	form.designerBox.object = designerBox
 	form.designerBox.originObject = designerBox
 	form.designerBox.ownerFormTab = form
-	form.addDesignerComponent(form.designerBox)
+	//form.addDesignerComponent(form.designerBox)
 
 	{
 		// 创建一个隐藏的窗体用于获取属性

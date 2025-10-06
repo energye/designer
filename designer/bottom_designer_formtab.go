@@ -14,17 +14,31 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id                   int                   // 索引, 关联 forms key: index
-	name                 string                // 窗体名称
-	scroll               lcl.IScrollBox        // 外 滚动条
-	isDesigner           bool                  // 是否正在设计
-	sheet                lcl.ITabSheet         // tab sheet
-	designerBox          *DesigningComponent   // 设计器, 模拟 TForm, 也是组件树的根节点
-	form                 *DesigningComponent   // 设计器的窗体, 用于获取属性列表
-	isDown, isUp, isMove bool                  // 鼠标事件
-	componentName        map[string]int        // 组件分类名, 同类组件ID序号
-	componentList        []*DesigningComponent // 设计器的组件列表
-	tree                 lcl.ITreeView         // 组件树
+	id                   int                 // 索引, 关联 forms key: index
+	name                 string              // 窗体名称
+	scroll               lcl.IScrollBox      // 外 滚动条
+	isDesigner           bool                // 是否正在设计
+	sheet                lcl.ITabSheet       // tab sheet
+	designerBox          *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
+	form                 *DesigningComponent // 设计器的窗体, 用于获取属性列表
+	isDown, isUp, isMove bool                // 鼠标事件
+	componentName        map[string]int      // 组件分类名, 同类组件ID序号
+	//componentList        []*DesigningComponent // 设计器的组件列表
+	tree lcl.ITreeView // 组件树
+}
+
+func (m *FormTab) IsDuplicateName(name string) bool {
+	if m.designerBox.Name() == name {
+		return true
+	}
+	var iterable func(comp *DesigningComponent)
+	iterable = func(comp *DesigningComponent) {
+
+	}
+	for _, comp := range m.designerBox.child {
+		iterable(comp)
+	}
+	return false
 }
 
 // 数据指针转设计组件
@@ -46,15 +60,20 @@ func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode)
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }
 
-func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
-	m.componentList = append(m.componentList, component)
-}
+//func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
+//	m.componentList = append(m.componentList, component)
+//}
 
 // 隐藏所有控件的 drag
 func (m *FormTab) hideAllDrag() {
-	for _, component := range m.componentList {
-		component.drag.Hide()
+	var iterable func(comp *DesigningComponent)
+	iterable = func(comp *DesigningComponent) {
+		comp.drag.Hide()
+		for _, comp := range comp.child {
+			iterable(comp)
+		}
 	}
+	iterable(m.designerBox)
 }
 
 // 放置设计组件到设计面板或父组件容器
@@ -122,17 +141,23 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	// 加载设计组件
 	// 默认窗体表单
 	defaultComp := m.designerBox
-	for _, comp := range m.componentList {
-		if comp == m.designerBox {
-			// 设计面板忽略
-			continue
-		}
+	var iterable func(comp *DesigningComponent) bool
+	iterable = func(comp *DesigningComponent) bool {
 		// 如果有当前设计面板有正在设计的组件
 		// 加载正在设计的组件
 		if comp.isDesigner {
 			defaultComp = comp
+			return true
 		}
+		for _, comp := range comp.child {
+			if iterable(comp) {
+				return true
+			}
+		}
+		return false
 	}
+	iterable(m.designerBox)
+
 	logs.Debug("Current Designer Component", "Name:", m.name)
 	// 加载组件属性
 	inspector.LoadComponentProps(defaultComp)

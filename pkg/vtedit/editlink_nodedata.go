@@ -92,7 +92,7 @@ type TEditNodeData struct {
 	IsFinal             bool                // 标记是否最终对象, 用于完整的数据
 	EditNodeData        *TEditLinkNodeData  // 编辑数据
 	OriginNodeData      *TEditLinkNodeData  // 原始数据
-	AffiliatedNode      types.PVirtualNode  // 所属节点
+	AffiliatedNode      types.PVirtualNode  // 所属属性树节点
 	AffiliatedComponent IDesigningComponent // 所属组件对象
 }
 
@@ -163,7 +163,9 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
-		m.AffiliatedComponent.UpdateComponentProperty(m)
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.AffiliatedComponent.UpdateComponentProperty(m)
+		})
 	}
 }
 

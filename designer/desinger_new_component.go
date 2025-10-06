@@ -181,7 +181,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	designerForm.addDesignerComponent(m)
+	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewButton(designerForm.designerBox.object)
 	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
@@ -204,7 +204,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	designerForm.addDesignerComponent(m)
+	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewEdit(designerForm.designerBox.object)
 	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
@@ -227,7 +227,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	designerForm.addDesignerComponent(m)
+	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewCheckBox(designerForm.designerBox.object)
 	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
@@ -253,7 +253,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	designerForm.addDesignerComponent(m)
+	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewPanel(designerForm.designerBox.object)
 	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)

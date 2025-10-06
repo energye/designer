@@ -7,9 +7,9 @@ import (
 	"github.com/energye/designer/pkg/mapper"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
-	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"reflect"
+	"strings"
 )
 
 // 组件对象函数调用
@@ -20,18 +20,52 @@ func methodNameToSet(name string) string {
 }
 
 // 更新当前组件属性
-func (m *DesigningComponent) UpdateComponentProperty(nodeData *vtedit.TEditNodeData) {
-	logs.Debug("更新组件:", m.object.ToString(), "属性:", nodeData.EditNodeData.Name)
+func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		ref := &reflector{object: m.originObject, data: nodeData}
-		result, err := ref.callMethod()
-		_ = result
-		if err != nil {
-			logs.Error("[更新组件属性失败]", err.Error())
-		}
-		m.drag.Show()
-	})
+	defer m.drag.Show()
+	logs.Debug("更新组件:", m.object.ToString(), "属性:", updateNodeData.EditNodeData.Name)
+	// 检查当前组件属性是否允许更新
+	m.CheckCanUpdateProp(updateNodeData)
+
+	ref := &reflector{object: m.originObject, data: updateNodeData}
+	result, err := ref.callMethod()
+	_ = result
+	if err != nil {
+		logs.Error("[更新组件属性失败]", err.Error())
+	} else {
+		m.UpdateTreeNode(updateNodeData)
+	}
+}
+
+// 更新组件树节点信息
+// 在设计组件属性修改后同步修改组件树节点可见值
+func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) {
+	if !m.node.IsValid() {
+		logs.Error("更新组件树失败, 当前设计组件节点无效")
+		return
+	}
+	data := updateNodeData.EditNodeData
+	propName := strings.ToLower(data.Name)
+	logs.Error("更新组件树, 尝试更新属性:", data.Name)
+	switch propName {
+	case "name":
+		m.node.SetText(m.TreeName())
+	}
+}
+
+// 检查是否允许更新属性
+func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) {
+	if !m.node.IsValid() {
+		// 无效节点对象
+		return
+	}
+	data := updateNodeData.EditNodeData
+	propName := strings.ToLower(data.Name)
+	switch propName {
+	case "name":
+		// 在当前设计面板只有唯一一个组件的名
+		m.ownerFormTab.IsDuplicateName(data.Name)
+	}
 }
 
 // 反射调用函数
