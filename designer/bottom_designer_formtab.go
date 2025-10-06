@@ -26,13 +26,13 @@ type FormTab struct {
 	tree                 lcl.ITreeView       // 组件树
 }
 
-func (m *FormTab) IsDuplicateName(name string) bool {
-	if m.designerBox.Name() == name {
+func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {
+	if m.designerBox != currComp && m.designerBox.Name() == name {
 		return true
 	}
 	var iterable func(comp *DesigningComponent) bool
 	iterable = func(comp *DesigningComponent) bool {
-		if comp.Name() == name {
+		if comp != currComp && comp.Name() == name {
 			return true
 		}
 		for _, comp := range comp.child {
