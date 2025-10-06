@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
@@ -72,7 +73,6 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.componentName = make(map[string]int)
 	// 组件树
 	form.tree = lcl.NewTreeView(inspector.componentTree.componentBox)
-	form.tree.SetParent(inspector.componentTree.componentBox)
 	form.tree.SetAutoExpand(true)
 	form.tree.SetReadOnly(true)
 	form.tree.SetDoubleBuffered(true)
@@ -81,11 +81,13 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetVisible(true)
 	form.tree.SetImages(inspector.componentTree.images)
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
+	form.tree.SetParent(inspector.componentTree.componentBox)
+
 	// 默认名
-	formName := form.GetComponentCaptionName("Form")
+	form.id = len(m.designerForms) + 1
+	formName := fmt.Sprintf("Form%v", form.id)
 	form.name = formName
 	// 窗体ID
-	form.id = len(m.designerForms) + 1
 	m.designerForms[form.id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
