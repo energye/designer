@@ -113,6 +113,15 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	return false
 }
 
+// 窗体设计界面 鼠标移动
+func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
+	br := m.designerBox.object.BoundsRect()
+	hint := fmt.Sprintf(`%v: TForm
+	Left: %v Top: %v
+	Width: %v Height: %v`, m.designerBox.Name(), br.Left, br.Top, br.Width(), br.Height())
+	m.designerBox.object.SetHint(hint)
+}
+
 // 窗体设计界面 鼠标按下, 放置设计控件, 加载控件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	// 创建组件
@@ -126,6 +135,10 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		// 设置选中状态到设计器组件树
 		m.designerBox.SetSelected()
 	}
+}
+
+// 窗体设计界面 鼠标抬起
+func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 
 }
 
@@ -165,16 +178,6 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	logs.Debug("Current Designer Component", "Name:", m.name)
 	// 加载组件属性
 	inspector.LoadComponentProps(defaultComp)
-}
-
-// 窗体设计界面 鼠标抬起
-func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-
-}
-
-// 窗体设计界面 鼠标移动
-func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	//width, height := m.designerBox.Width(), m.designerBox.Height()
 }
 
 // 获取组件名 Caption

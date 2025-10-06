@@ -11,7 +11,7 @@ import (
 
 var (
 	designer                    *Designer
-	margin                      int32 = 5
+	margin                      int32 = 0
 	borderWidth                 int32 = 8
 	defaultWidth, defaultHeight int32 = 600, 400
 )
@@ -123,7 +123,10 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	designerBox.SetTop(margin)
 	designerBox.SetWidth(defaultWidth)
 	designerBox.SetHeight(defaultHeight)
+	designerBox.SetName(form.name)
+	designerBox.SetCaption("")
 	designerBox.SetAlign(types.AlCustom)
+	designerBox.SetShowHint(true)
 	//designerBox.SetCaption(form.name)
 	//designerBox.SetName(form.name)
 	designerBox.SetOnPaint(form.designerOnPaint)

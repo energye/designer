@@ -61,8 +61,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 		y := point.Y - m.dy
 		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
 
-		br := m.object.BoundsRect()
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
 		message.Follow(msgContent)
 	}
 }
@@ -91,6 +90,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 		br := m.object.BoundsRect()
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 		message.Follow(msgContent)
+		lcl.Mouse.SetCapture(m.object.Handle())
 	}
 }
 
@@ -101,6 +101,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	}
 	m.isDown = false
 	message.FollowHide()
+	lcl.Mouse.SetCapture(0)
 }
 
 func (m *DesigningComponent) SetObject(object any) {

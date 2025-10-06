@@ -78,7 +78,7 @@ var (
 func Follow(content string) {
 	cursorPos := lcl.Mouse.CursorPos()
 	displayRect := lcl.Screen.WorkAreaRect()
-	x, y := cursorPos.X+15, cursorPos.Y+15
+	x, y := cursorPos.X+20, cursorPos.Y+20
 	if x+width > displayRect.Width() {
 		x = x - (x + width - displayRect.Width())
 	}
@@ -87,9 +87,9 @@ func Follow(content string) {
 	}
 	mustMessage()
 	message.content.SetCaption(content)
-	message.form.SetBounds(x, y, width, height)
 	if !isFollowShow {
 		isFollowShow = true
+		message.form.SetBounds(x, y, width, height)
 		message.form.SetAlphaBlendValue(255)
 		message.form.Show()
 	}
@@ -99,6 +99,7 @@ func Follow(content string) {
 func FollowHide() {
 	isFollowShow = false
 	if message != nil {
+		message.content.SetCaption("")
 		message.form.SetAlphaBlendValue(0)
 		message.form.Hide()
 	}

@@ -7,7 +7,6 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"strconv"
 )
 
 // 拖拽控制
@@ -58,8 +57,19 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	pnl.SetVisible(false)
 	//pnl.SetTag(uintptr(tag))
 	pnl.SetShowHint(true)
-	pnl.SetHint(strconv.Itoa(int(cursor)))
 	pnl.SetCursor(cursor)
+	hint := ""
+	switch cursor {
+	case types.CrSizeWE:
+		hint = "WE"
+	case types.CrSizeNS:
+		hint = "NS"
+	case types.CrSizeNWSE:
+		hint = "NWSE"
+	case types.CrSizeNESW:
+		hint = "NESW"
+	}
+	pnl.SetHint(hint)
 
 	var (
 		isDown             bool
