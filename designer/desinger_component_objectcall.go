@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/mapper"
+	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/types"
@@ -66,6 +67,7 @@ func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNode
 		// 在当前设计面板只有唯一一个组件的名
 		if m.ownerFormTab.IsDuplicateName(data.EditValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", data.EditValue())
+			message.Info("修改组件名失败", "组件名 ["+data.EditValue()+"] 已存在", 200, 100)
 		}
 	}
 }
