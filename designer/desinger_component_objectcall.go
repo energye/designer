@@ -3,6 +3,7 @@ package designer
 import (
 	"errors"
 	"fmt"
+	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/mapper"
 	"github.com/energye/designer/pkg/message"
@@ -26,15 +27,24 @@ func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEdi
 	defer m.drag.Show()
 	logs.Debug("更新组件:", m.object.ToString(), "属性:", updateNodeData.EditNodeData.Name)
 	// 检查当前组件属性是否允许更新
-	m.CheckCanUpdateProp(updateNodeData)
-
-	ref := &reflector{object: m.originObject, data: updateNodeData}
-	result, err := ref.callMethod()
-	_ = result
-	if err != nil {
-		logs.Error("[更新组件属性失败]", err.Error())
+	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
+		ref := &reflector{object: m.originObject, data: updateNodeData}
+		result, err := ref.callMethod()
+		_ = result
+		if err != nil {
+			logs.Error("[更新组件属性失败]", err.Error())
+		} else {
+			m.UpdateTreeNode(updateNodeData)
+		}
 	} else {
-		m.UpdateTreeNode(updateNodeData)
+		// 更新失败
+		logs.Error("检查允许更新属性失败, RS:", rs)
+		switch rs {
+		case err.RsDuplicateName: // 重复的组件名
+			// 恢复节点内的组件名
+			updateNodeData.SetEditValue(m.Name())
+			inspector.componentProperty.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
+		}
 	}
 }
 
@@ -55,10 +65,10 @@ func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData
 }
 
 // 检查是否允许更新属性
-func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) {
+func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) err.ResultStatus {
 	if !m.node.IsValid() {
 		// 无效节点对象
-		return
+		return err.RsNotValid
 	}
 	data := updateNodeData.EditNodeData
 	propName := strings.ToLower(data.Name)
@@ -68,8 +78,10 @@ func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNode
 		if m.ownerFormTab.IsDuplicateName(data.EditValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", data.EditValue())
 			message.Info("修改组件名失败", "组件名 ["+data.EditValue()+"] 已存在", 200, 100)
+			return err.RsDuplicateName
 		}
 	}
+	return err.RsSuccess
 }
 
 // 反射调用函数
