@@ -3,6 +3,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -59,6 +60,10 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
+
+		br := m.object.BoundsRect()
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+		message.Follow(msgContent)
 	}
 }
 
@@ -82,6 +87,10 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 			// 设置选中状态
 			m.SetSelected()
 		})
+
+		br := m.object.BoundsRect()
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+		message.Follow(msgContent)
 	}
 }
 
@@ -91,6 +100,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 		m.drag.Show()
 	}
 	m.isDown = false
+	message.FollowHide()
 }
 
 func (m *DesigningComponent) SetObject(object any) {

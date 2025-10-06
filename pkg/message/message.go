@@ -3,6 +3,7 @@ package message
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 	"time"
 )
 
@@ -28,9 +29,10 @@ func mustMessage() {
 		form.SetBorderStyleToFormBorderStyle(types.BsNone)
 		form.Canvas().SetAntialiasingMode(types.AmOn)
 		form.SetControlStyle(form.ControlStyle().Include(types.CsParentBackground))
-		form.SetFormStyle(types.FsStayOnTop)
+		form.SetFormStyle(types.FsSystemStayOnTop)
 		form.SetAlphaBlend(true)
 		form.SetAlphaBlendValue(0)
+		form.SetColor(colors.ClNone)
 
 		form.SetOnPaint(message.OnPaint)
 		form.SetOnClick(message.OnClick)
@@ -43,6 +45,7 @@ func mustMessage() {
 
 		content := lcl.NewLabel(form)
 		content.SetParent(form)
+		content.SetColor(colors.ClNone)
 		message.content = content
 	}
 }
@@ -64,6 +67,41 @@ func Info(title, content string, width, height int32) {
 	message.content.SetCaption(title + "\n  " + content)
 	message.showTimer.SetEnabled(true)
 	message.form.Show()
+}
+
+var (
+	isFollowShow  bool
+	width, height = int32(100), int32(35)
+)
+
+// 跟随使用 内容
+func Follow(content string) {
+	cursorPos := lcl.Mouse.CursorPos()
+	displayRect := lcl.Screen.WorkAreaRect()
+	x, y := cursorPos.X+15, cursorPos.Y+15
+	if x+width > displayRect.Width() {
+		x = x - (x + width - displayRect.Width())
+	}
+	if y+height > displayRect.Height() {
+		y = y - (y + height - displayRect.Height())
+	}
+	mustMessage()
+	message.content.SetCaption(content)
+	message.form.SetBounds(x, y, width, height)
+	if !isFollowShow {
+		isFollowShow = true
+		message.form.SetAlphaBlendValue(255)
+		message.form.Show()
+	}
+}
+
+// 跟随使用 隐藏
+func FollowHide() {
+	isFollowShow = false
+	if message != nil {
+		message.form.SetAlphaBlendValue(0)
+		message.form.Hide()
+	}
 }
 
 func (m *TMessage) OnShowTimer(sender lcl.IObject) {
