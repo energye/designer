@@ -45,6 +45,30 @@ type TEditLinkNodeData struct {
 	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
+func (m *TEditLinkNodeData) EditValue() string {
+	data := m
+	dataType := data.Type
+	switch dataType {
+	case PdtText:
+		return data.StringValue
+	case PdtInt, PdtInt64:
+		return strconv.Itoa(data.IntValue)
+	case PdtFloat:
+		val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
+		return val
+	case PdtCheckBox:
+		return strconv.FormatBool(data.Checked)
+	case PdtCheckBoxList:
+		return data.StringValue
+	case PdtComboBox:
+		return data.StringValue
+	case PdtColorSelect:
+		return fmt.Sprintf("0x%X", data.IntValue)
+	default:
+		return ""
+	}
+}
+
 func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 	if m == nil {
 		return nil
@@ -199,25 +223,5 @@ func (m *TEditNodeData) IsModify() bool {
 
 // 返回编辑字符串值
 func (m *TEditNodeData) EditValue() string {
-	data := m.EditNodeData
-	dataType := data.Type
-	switch dataType {
-	case PdtText:
-		return data.StringValue
-	case PdtInt, PdtInt64:
-		return strconv.Itoa(data.IntValue)
-	case PdtFloat:
-		val := strconv.FormatFloat(data.FloatValue, 'f', 2, 64)
-		return val
-	case PdtCheckBox:
-		return strconv.FormatBool(data.Checked)
-	case PdtCheckBoxList:
-		return data.StringValue
-	case PdtComboBox:
-		return data.StringValue
-	case PdtColorSelect:
-		return fmt.Sprintf("0x%X", data.IntValue)
-	default:
-		return ""
-	}
+	return m.EditNodeData.EditValue()
 }

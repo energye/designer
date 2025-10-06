@@ -23,22 +23,26 @@ type FormTab struct {
 	form                 *DesigningComponent // 设计器的窗体, 用于获取属性列表
 	isDown, isUp, isMove bool                // 鼠标事件
 	componentName        map[string]int      // 组件分类名, 同类组件ID序号
-	//componentList        []*DesigningComponent // 设计器的组件列表
-	tree lcl.ITreeView // 组件树
+	tree                 lcl.ITreeView       // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(name string) bool {
 	if m.designerBox.Name() == name {
 		return true
 	}
-	var iterable func(comp *DesigningComponent)
-	iterable = func(comp *DesigningComponent) {
-
+	var iterable func(comp *DesigningComponent) bool
+	iterable = func(comp *DesigningComponent) bool {
+		if comp.Name() == name {
+			return true
+		}
+		for _, comp := range comp.child {
+			if iterable(comp) {
+				return true
+			}
+		}
+		return false
 	}
-	for _, comp := range m.designerBox.child {
-		iterable(comp)
-	}
-	return false
+	return iterable(m.designerBox)
 }
 
 // 数据指针转设计组件

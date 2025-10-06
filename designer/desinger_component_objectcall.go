@@ -64,7 +64,9 @@ func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNode
 	switch propName {
 	case "name":
 		// 在当前设计面板只有唯一一个组件的名
-		m.ownerFormTab.IsDuplicateName(data.Name)
+		if m.ownerFormTab.IsDuplicateName(data.EditValue()) {
+			logs.Error("修改组件名失败, 该组件名已存在", data.EditValue())
+		}
 	}
 }
 
