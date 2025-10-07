@@ -17,8 +17,9 @@ import (
 type ComponentType int32
 
 const (
-	CtForm  ComponentType = iota // 窗体
-	CtOther                      // 其它 除窗体的所有控件
+	CtForm    ComponentType = iota // 窗体
+	CtWrapper                      // 包装的控件
+	CtOther                        // 其它 除窗体的所有控件
 )
 
 // 设计组件
@@ -26,6 +27,7 @@ type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
 	originObject      any                     // 原始组件对象
 	object            lcl.IWinControl         // 组件 WinControl 对象, 转换后的父类
+	objectWrapper     lcl.IImage              // 组件 包裹 对象
 	drag              *drag                   // 拖拽控制
 	dx, dy            int32                   // 拖拽控制
 	dcl, dct          int32                   // 拖拽控制
@@ -196,14 +198,12 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewButton(designerForm.designerBox.object)
-	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetCaption(designerForm.GetComponentCaptionName("Button"))
-	comp.SetName(comp.Caption())
+	comp.SetName(designerForm.GetComponentCaptionName("Button"))
+	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
@@ -219,15 +219,13 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewEdit(designerForm.designerBox.object)
-	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetCaption(designerForm.GetComponentCaptionName("Edit"))
-	comp.SetName(comp.Caption())
-	comp.SetText(comp.Caption())
+	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
+	comp.SetText(comp.Name())
+	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
@@ -242,14 +240,12 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewCheckBox(designerForm.designerBox.object)
-	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetCaption(designerForm.GetComponentCaptionName("CheckBox"))
-	comp.SetName(comp.Caption())
+	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
+	comp.SetCaption(comp.Caption())
 	comp.SetChecked(false)
 	comp.SetShowHint(true)
 	comp.SetOnMouseMove(m.OnMouseMove)
@@ -268,14 +264,12 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtOther
 	m.ownerFormTab = designerForm
-	//designerForm.addDesignerComponent(m)
 	comp := lcl.NewPanel(designerForm.designerBox.object)
-	//comp.SetParent(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetCaption(designerForm.GetComponentCaptionName("Panel"))
-	comp.SetName(comp.Caption())
+	comp.SetCaption(comp.Caption())
+	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	comp.SetShowHint(true)
 	comp.SetOnMouseMove(m.OnMouseMove)
 	comp.SetOnMouseDown(m.OnMouseDown)
@@ -283,5 +277,29 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
+	return m
+}
+
+func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.componentType = CtWrapper
+	m.ownerFormTab = designerForm
+	comp := lcl.NewMainMenu(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("TMainMenu"))
+
+	compWrapper := lcl.NewImage(designerForm.designerBox.object)
+	compWrapper.SetLeft(x)
+	compWrapper.SetTop(y)
+	compWrapper.SetCursor(types.CrSize)
+	compWrapper.SetShowHint(true)
+	compWrapper.SetName(designerForm.GetComponentCaptionName("TMainMenuWrapper"))
+	compWrapper.SetCaption(compWrapper.Name())
+	compWrapper.SetOnMouseMove(m.OnMouseMove)
+	compWrapper.SetOnMouseDown(m.OnMouseDown)
+	compWrapper.SetOnMouseUp(m.OnMouseUp)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+
 	return m
 }
