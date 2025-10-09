@@ -4,6 +4,8 @@ import (
 	"log"
 )
 
+// 简单的日志输出
+
 // 定义日志级别
 const (
 	LevelDebug = iota // 0：调试信息

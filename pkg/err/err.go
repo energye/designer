@@ -1,6 +1,6 @@
 package err
 
-// 错误管理
+// 简单的错误管理
 
 // 返回状态类型
 type ResultStatus int32
