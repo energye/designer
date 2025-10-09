@@ -2,28 +2,18 @@ package designer
 
 import (
 	"fmt"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/messages"
 	"unsafe"
 )
 
-// 加载图片列表
-func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32) lcl.IImageList {
-	images := lcl.NewImageList(owner)
-	images.SetWidth(width)
-	images.SetHeight(height)
-	for _, image := range imageList {
-		tool.ImageListAddPng(images, image)
-	}
-	return images
-}
-
+// TEngFormDesigner energy 窗体设计器
 type TEngFormDesigner struct {
 	designer lcl.IDesigner
 }
 
+// 创建一个窗体设计器
 func NewEngFormDesigner() *TEngFormDesigner {
 	m := new(TEngFormDesigner)
 	newDesigner := lcl.NewDesigner()
@@ -41,6 +31,7 @@ func NewEngFormDesigner() *TEngFormDesigner {
 	return m
 }
 
+// 返回设计器实例接口
 func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 	return m.designer
 }

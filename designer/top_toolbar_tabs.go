@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"strings"
@@ -57,7 +58,7 @@ func (m *TopToolbar) createComponentTabs() {
 		// 显示组件工具按钮
 		componentToolbar := lcl.NewToolBar(sheet)
 		componentToolbar.SetParent(sheet)
-		componentToolbar.SetImages(LoadImageList(m.rightTabs, imageList, 36, 36))
+		componentToolbar.SetImages(tool.LoadImageList(m.rightTabs, imageList, 36, 36))
 		componentToolbar.SetButtonWidth(36)
 		componentToolbar.SetButtonHeight(36)
 		componentToolbar.SetHeight(36)

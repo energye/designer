@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -87,7 +88,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolBtnBar.SetWidth(m.leftTools.Width())
 	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	toolBtnBar.SetEdgeBorders(types.NewSet())
-	imageList := LoadImageList(m.leftTools, []string{
+	imageList := tool.LoadImageList(m.leftTools, []string{
 		"menu/menu_new_form_150.png",
 		"menu/menu_project_open_150.png",
 		"actions/laz_save_150.png",

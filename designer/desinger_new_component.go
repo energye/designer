@@ -179,6 +179,14 @@ func (m *DesigningComponent) GetProps() {
 	}
 }
 
+// 设置组件模式为设计模式
+func SetDesignMode(component lcl.IComponent) {
+	lcl.DesigningComponent().SetComponentDesignMode(component, true)
+	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	//lcl.DesigningComponent().SetComponentInlineMode(component, true)
+	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
+}
+
 // 创建设计窗体-隐藏
 func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)

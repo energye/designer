@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"strings"
@@ -90,7 +91,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		images = append(images, "components/form.png")
 		gTreeImageList["TForm"] = int32(len(images) - 1)
 		// 加载所有图标
-		m.images = LoadImageList(m.treeBox, images, width, height)
+		m.images = tool.LoadImageList(m.treeBox, images, width, height)
 	}
 
 	// 创建组件树

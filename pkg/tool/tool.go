@@ -34,16 +34,30 @@ func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 	}
 }
 
+// 加载图片列表
+func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32) lcl.IImageList {
+	images := lcl.NewImageList(owner)
+	images.SetWidth(width)
+	images.SetHeight(height)
+	for _, image := range imageList {
+		ImageListAddPng(images, image)
+	}
+	return images
+}
+
+// 判断两个字符串, 忽略大小写
 func Equal(s1, s2 string) bool {
 	s1 = strings.ToLower(s1)
 	s2 = strings.ToLower(s2)
 	return s1 == s2
 }
 
+// 第一个字母转为大写
 func FirstToUpper(s string) string {
 	return strings.ToUpper(string(s[0])) + s[1:]
 }
 
+// 判断文件是否存在
 func IsExist(path string) bool {
 	_, err := os.Stat(path)
 	if err != nil {

@@ -3,6 +3,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -51,7 +52,7 @@ func (m *Designer) createTabMenu() {
 		return
 	}
 	m.tabMenu = lcl.NewPopupMenu(m.page)
-	m.tabMenu.SetImages(LoadImageList(m.page, []string{"actions/laz_cancel.png"}, 16, 16))
+	m.tabMenu.SetImages(tool.LoadImageList(m.page, []string{"actions/laz_cancel.png"}, 16, 16))
 	items := m.tabMenu.Items()
 	closeMenuItem := lcl.NewMenuItem(m.page)
 	closeMenuItem.SetCaption("关闭窗体")
@@ -244,13 +245,6 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 //			}
 //		}
 //	}
-
-func SetDesignMode(component lcl.IControl) {
-	lcl.DesigningComponent().SetComponentDesignMode(component, true)
-	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
-	//lcl.DesigningComponent().SetComponentInlineMode(component, true)
-	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
-}
 
 // 测试属性
 //btn := lcl.NewButton(m)
