@@ -45,6 +45,38 @@ func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 	return m.designer
 }
 
+// message
+
+func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
+	//fmt.Println("OnIsDesignMsg setCursor", message.Msg, sender.ToString())
+}
+
+func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMKey) {
+	fmt.Println("OnIsDesignMsg mouseDown", message.Msg, sender.ToString())
+}
+
+func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMKey) {
+	fmt.Println("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
+}
+
+func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
+	fmt.Println("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString(), "X:", *message.XPos(), "Y:", *message.YPos())
+}
+
+func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
+	fmt.Println("OnIsDesignMsg move", message.Msg, message, sender.ToString())
+}
+
+func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
+	fmt.Println("OnIsDesignMsg size", message.Msg, message, sender.ToString())
+}
+
+func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
+	fmt.Println("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
+}
+
+// on event
+
 func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
 	isDesign := sender.ComponentState().In(types.CsDesigning)
 	result := true
@@ -75,7 +107,7 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	case messages.LM_CLOSEQUERY:
 		fmt.Println("OnIsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 	case messages.LM_SETCURSOR:
-		fmt.Println("OnIsDesignMsg SETCURSOR", message.Msg, isDesign, sender.ToString())
+		m.setCursor(sender, message)
 	case messages.LM_CONTEXTMENU:
 		fmt.Println("OnIsDesignMsg CONTEXTMENU", message.Msg, isDesign, sender.ToString())
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
@@ -87,34 +119,6 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	}
 	return result
 }
-
-// message
-
-func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMKey) {
-	fmt.Println("OnIsDesignMsg mouseDown", message.Msg, sender.ToString())
-}
-
-func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMKey) {
-	fmt.Println("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
-}
-
-func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
-	fmt.Println("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString(), "X:", *message.XPos(), "Y:", *message.YPos())
-}
-
-func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
-	fmt.Println("OnIsDesignMsg move", message.Msg, message, sender.ToString())
-}
-
-func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
-	fmt.Println("OnIsDesignMsg size", message.Msg, message, sender.ToString())
-}
-
-func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
-	fmt.Println("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
-}
-
-// on event
 
 func (m *TEngFormDesigner) onUTF8KeyPress(uTF8Key *string) {
 	println("onUTF8KeyPress")
