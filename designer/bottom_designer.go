@@ -147,13 +147,18 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 		testForm.SetColor(colors.ClBlue)
 		testForm.SetVisible(true)
 		testForm.SetParent(form.scroll)
-		testForm.SetDesigner(NewCustomFormDesigner())
+		testForm.SetDesigner(NewEngFormDesigner().Designer())
 		testBtn := lcl.NewButton(testForm)
 		SetDesignMode(testBtn)
+		testBtn.SetCaption("设计按钮")
 		testBtn.SetParent(testForm)
 		testBtn1 := lcl.NewButton(testForm)
 		testBtn1.SetTop(50)
 		testBtn1.SetParent(testForm)
+
+		spl := lcl.NewSplitter(testForm)
+		SetDesignMode(spl)
+		spl.SetParent(testForm)
 
 	}
 
