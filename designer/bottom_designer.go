@@ -141,11 +141,20 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	{
 		// TODO 测试在非windows 是否正常？
-		//testForm := lcl.NewForm(form.scroll)
-		//testForm.SetBorderStyleToFormBorderStyle(types.BsNone)
-		//testForm.SetColor(colors.ClBlue)
-		//testForm.SetVisible(true)
-		//testForm.SetParent(form.scroll)
+		testForm := lcl.NewForm(form.scroll)
+		//SetDesignMode(testForm)
+		testForm.SetBorderStyleToFormBorderStyle(types.BsNone)
+		testForm.SetColor(colors.ClBlue)
+		testForm.SetVisible(true)
+		testForm.SetParent(form.scroll)
+		testForm.SetDesigner(NewCustomFormDesigner())
+		testBtn := lcl.NewButton(testForm)
+		SetDesignMode(testBtn)
+		testBtn.SetParent(testForm)
+		testBtn1 := lcl.NewButton(testForm)
+		testBtn1.SetTop(50)
+		testBtn1.SetParent(testForm)
+
 	}
 
 	{
@@ -233,9 +242,9 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 
 func SetDesignMode(component lcl.IControl) {
 	lcl.DesigningComponent().SetComponentDesignMode(component, true)
-	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
-	lcl.DesigningComponent().SetComponentInlineMode(component, true)
-	lcl.DesigningComponent().SetWidgetSetDesigning(component)
+	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	//lcl.DesigningComponent().SetComponentInlineMode(component, true)
+	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
 // 测试属性
