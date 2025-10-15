@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -116,23 +117,14 @@ func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
 	//comp := m.GetComponentFormList(sender.Instance())
 	if message.DC != 0 && isAcceptsControl {
 		m.canvas.SetHandle(message.DC)
-		defer m.canvas.SetHandle(0)
-		//ADDC.Canvas.Pen.Color := GridColor;
-		//ADDC.Canvas.Pen.Width := 1;
-		//ADDC.Canvas.Pen.Style := psSolid;
-		//P := TWinControlAccess(AWinControl).GetClientScrollOffset;
-		//R := AWinControl.ClientRect;
-		//R.BottomRight := R.BottomRight + Point(GridSizeX, GridSizeY);
-		//Types.OffsetRect(R, RoundToMultiple(P.X, GridSizeX), RoundToMultiple(P.Y, GridSizeY));
-		//DrawGrid(ADDC.Canvas.Handle, R, GridSizeX, GridSizeY);
 		pen := m.canvas.PenToPen()
 		pen.SetColor(colors.ClGray)
 		pen.SetWidth(1)
 		pen.SetStyle(types.PsSolid)
 		r := sender.ClientRect()
 		misc.DrawGrid(m.canvas.Handle(), r, 8, 8)
+		m.canvas.SetHandle(0)
 	}
-
 }
 
 const (
@@ -205,7 +197,7 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	result := true
 	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
 	//_ = dispatchMsg
-	sender.Dispatch(dispatchMsg)
+	//sender.Dispatch(dispatchMsg)
 	switch message.Msg {
 	case messages.LM_PAINT:
 		//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
@@ -234,9 +226,9 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	case messages.LM_CONTEXTMENU:
 		//logs.Debug("OnIsDesignMsg CONTEXTMENU", message.Msg, isDesign, sender.ToString())
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-		//logs.Debug("OnIsDesignMsg KEYDOWN", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg KEYDOWN", message.Msg, sender.ToString())
 	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-		//logs.Debug("OnIsDesignMsg KEYUP", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg KEYUP", message.Msg, sender.ToString())
 	default:
 		result = false
 	}
