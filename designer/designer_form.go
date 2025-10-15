@@ -19,9 +19,10 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerForm.SetWidth(defaultWidth)
 	designerForm.SetHeight(defaultHeight)
 	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
-	designerForm.SetVisible(true)
 	designerForm.SetName(m.name)
 	designerForm.SetCaption(m.name)
+	designerForm.SetAlign(types.AlCustom)
+	designerForm.SetVisible(true)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
