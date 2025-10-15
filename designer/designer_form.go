@@ -39,12 +39,12 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerBox.SetCaption("")
 	designerBox.SetAlign(types.AlClient)
 	designerBox.SetShowHint(true)
-	m.designerOnPaint(designerBox)
+	//m.designerOnPaint(designerBox)
 	designerBox.SetOnMouseMove(m.designerOnMouseMove)
 	designerBox.SetOnMouseDown(m.designerOnMouseDown)
 	designerBox.SetOnMouseUp(m.designerOnMouseUp)
 	designerBox.SetParent(designerForm)
-	SetDesignMode(designerBox)
+	//SetDesignMode(designerBox)
 	dc.designerBox = designerBox
 
 	// 设计面板

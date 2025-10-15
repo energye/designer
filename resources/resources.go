@@ -19,9 +19,6 @@ var (
 	// 组件属性配置
 	//go:embed component-property.json
 	componentProperty embed.FS
-	// 容器拒绝列表, 组件不能做为容器
-	//go:embed container-deny-list.json
-	containerDenyList embed.FS
 	// 图标资源
 	//go:embed images
 	images embed.FS
@@ -53,14 +50,6 @@ func Images(filePath string) []byte {
 // 定制属性 组件特有的属性
 func ComponentProperty() []byte {
 	if d, err := componentProperty.ReadFile("component-property.json"); err == nil {
-		return d
-	}
-	return nil
-}
-
-// 容器拒绝列表, 用于组件不能做为容器的配置
-func ContainerDenyList() []byte {
-	if d, err := containerDenyList.ReadFile("container-deny-list.json"); err == nil {
 		return d
 	}
 	return nil

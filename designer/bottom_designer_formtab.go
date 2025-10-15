@@ -2,7 +2,6 @@ package designer
 
 import (
 	"fmt"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -94,7 +93,11 @@ func (m *FormTab) hideAllDrag() {
 // 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	// 放置设计组件
-	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.ClassName()) {
+	isAcceptsControl := false
+	if owner.object != nil {
+		isAcceptsControl = owner.object.ControlStyle().In(types.CsAcceptsControls)
+	}
+	if toolbar.selectComponent != nil && isAcceptsControl {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		m.designerBox.drag.Hide()
 		// 获取注册的组件创建函数
