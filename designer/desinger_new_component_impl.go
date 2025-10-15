@@ -26,7 +26,7 @@ const (
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
 	originObject      any                     // 原始组件对象
-	designerBox       lcl.IPanel              // 设计窗体组件 对象 可视
+	designerBox       lcl.IWinControl         // 设计窗体组件 对象 可视
 	object            lcl.IWinControl         // 组件 对象 可视
 	objectNon         lcl.IComponent          // 组件 对象 非可视
 	objectNonWrap     *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制

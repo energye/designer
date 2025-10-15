@@ -208,8 +208,8 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	sender.Dispatch(dispatchMsg)
 	switch message.Msg {
 	case messages.LM_PAINT:
-		paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
-		m.paint(sender, paint)
+		//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
+		//m.paint(sender, paint)
 	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
 		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 		m.mouseDown(sender, key)
