@@ -51,6 +51,42 @@ type ComponentPropTreeState struct {
 	selectNode     types.PVirtualNode // 根据选中的属性名获得的节点对象
 }
 
+// 设置组件模式为设计模式
+func SetDesignMode(component lcl.IComponent) {
+	lcl.DesigningComponent().SetComponentDesignMode(component, true)
+	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	lcl.DesigningComponent().SetComponentInlineMode(component, true)
+	lcl.DesigningComponent().SetWidgetSetDesigning(component)
+}
+
+// 创建可视组件
+func newVisualComponent(designerForm *FormTab) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.componentType = CtVisual
+	m.ownerFormTab = designerForm
+	return m
+}
+
+// 创建非可视组件
+func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.componentType = CtNonVisual
+	m.ownerFormTab = designerForm
+	objectWrap := NewNonVisualComponentWrap(designerForm.designerBox.object, m)
+	objectWrap.SetLeftTop(x, y)
+	m.objectNonWrap = objectWrap
+	return m
+}
+
+// 设置基础通用属性
+func setBaseProp(comp lcl.IControl, x, y int32) {
+	comp.SetLeft(x)
+	comp.SetTop(y)
+	comp.SetCursor(types.CrSize)
+	comp.SetCaption(comp.Name())
+	comp.SetShowHint(true)
+}
+
 // 返回当前组件实例指针
 func (m *DesigningComponent) Instance() uintptr {
 	if m.componentType == CtNonVisual {
