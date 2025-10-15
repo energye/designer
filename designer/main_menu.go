@@ -10,6 +10,7 @@ import (
 
 // 顶部菜单
 func (m *TAppWindow) createMenu() {
+	_, _, _, _, _, v := api.LCLVersion()
 	m.mainMenu = lcl.NewMainMenu(m)
 	file := lcl.NewMenuItem(m)
 	file.SetCaption("文件(&F)")
@@ -36,7 +37,7 @@ func (m *TAppWindow) createMenu() {
 	helperAbout := lcl.NewMenuItem(m)
 	helperAbout.SetCaption("关于")
 	helperAbout.SetOnClick(func(sender lcl.IObject) {
-		versionInfo := api.PasStr("ENERGY Designer " + config.Config.Version)
+		versionInfo := api.PasStr("ENERGY Designer " + config.Config.Version + "\nLCL " + v)
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
 	})
 	helper.Add(helperAbout)

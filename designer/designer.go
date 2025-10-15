@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/messages"
@@ -89,7 +88,7 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 }
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
-	logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString())
+	//logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString())
 	instance := sender.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -97,7 +96,6 @@ func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMous
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		comp.OnMouseMove(sender, shift, x, y)
 	}
-	println("isNil:", comp == nil)
 }
 
 func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
@@ -177,7 +175,7 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 // on event
 
 func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
-	logs.Debug("IsDesignMsg", message.Msg)
+	//logs.Debug("IsDesignMsg", message.Msg)
 	//isDesign := sender.ComponentState().In(types.CsDesigning)
 	result := true
 	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
