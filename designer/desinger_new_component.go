@@ -17,9 +17,9 @@ import (
 type ComponentType int32
 
 const (
-	CtForm    ComponentType = iota // 窗体
-	CtWrapper                      // 包装的控件
-	CtOther                        // 其它 除窗体的所有控件
+	CtForm      ComponentType = iota // 窗体
+	CtNonVisual                      // 非可视控件
+	CtVisual                         // 可视控件
 )
 
 // 设计组件
@@ -196,11 +196,25 @@ func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
+// 创建可视组件
+func newVisualComponent(designerForm *FormTab) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.componentType = CtVisual
+	m.ownerFormTab = designerForm
+	return m
+}
+
+// 创建非可视组件
+func newNonVisualComponent(designerForm *FormTab) *DesigningComponent {
+	m := new(DesigningComponent)
+	m.componentType = CtNonVisual
+	m.ownerFormTab = designerForm
+	return m
+}
+
 // 创建设计按钮
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtOther
-	m.ownerFormTab = designerForm
+	m := newVisualComponent(designerForm)
 	comp := lcl.NewButton(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
@@ -216,9 +230,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 
 // 创建设计编辑框
 func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtOther
-	m.ownerFormTab = designerForm
+	m := newVisualComponent(designerForm)
 	comp := lcl.NewEdit(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
@@ -234,9 +246,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtOther
-	m.ownerFormTab = designerForm
+	m := newVisualComponent(designerForm)
 	comp := lcl.NewCheckBox(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
@@ -255,9 +265,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 }
 
 func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtOther
-	m.ownerFormTab = designerForm
+	m := newVisualComponent(designerForm)
 	comp := lcl.NewPanel(designerForm.designerBox.object)
 	comp.SetLeft(x)
 	comp.SetTop(y)
@@ -272,9 +280,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtWrapper
-	m.ownerFormTab = designerForm
+	m := newNonVisualComponent(designerForm)
 	comp := lcl.NewMainMenu(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("TMainMenu"))
 
