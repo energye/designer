@@ -1,7 +1,7 @@
 package designer
 
 import (
-	"fmt"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/messages"
@@ -11,11 +11,13 @@ import (
 // TEngFormDesigner energy 窗体设计器
 type TEngFormDesigner struct {
 	designer lcl.IDesigner
+	form     *FormTab
 }
 
 // 创建一个窗体设计器
-func NewEngFormDesigner() *TEngFormDesigner {
+func NewEngFormDesigner(form *FormTab) *TEngFormDesigner {
 	m := new(TEngFormDesigner)
+	m.form = form
 	newDesigner := lcl.NewDesigner()
 	newDesigner.SetOnIsDesignMsg(m.onIsDesignMsg)
 	newDesigner.SetOnUTF8KeyPress(m.onUTF8KeyPress)
@@ -39,31 +41,36 @@ func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 // message
 
 func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
-	//fmt.Println("OnIsDesignMsg setCursor", message.Msg, sender.ToString())
+	logs.Debug("OnIsDesignMsg setCursor", message.Msg, sender.ToString())
+	//lcl.Screen.SetCursor(types.CrDefault)
+	//message.Result = 1
 }
 
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMKey) {
-	fmt.Println("OnIsDesignMsg mouseDown", message.Msg, sender.ToString())
+	instance := sender.Instance()
+	comp := m.form.GetComponentFormList(instance)
+	logs.Debug("OnIsDesignMsg mouseDown", message.Msg, sender.ToString(), "选中控件:", comp)
+
 }
 
 func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMKey) {
-	fmt.Println("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
+	logs.Debug("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
 }
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
-	fmt.Println("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString(), "X:", *message.XPos(), "Y:", *message.YPos())
+	logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString(), "X:", *message.XPos(), "Y:", *message.YPos())
 }
 
 func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
-	fmt.Println("OnIsDesignMsg move", message.Msg, message, sender.ToString())
+	logs.Debug("OnIsDesignMsg move", message.Msg, message, sender.ToString(), message.MoveType, *message.XPos(), *message.YPos())
 }
 
 func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
-	fmt.Println("OnIsDesignMsg size", message.Msg, message, sender.ToString())
+	logs.Debug("OnIsDesignMsg size", message.Msg, message, sender.ToString())
 }
 
 func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
-	fmt.Println("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
+	logs.Debug("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
 }
 
 // on event
@@ -76,8 +83,8 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	//sender.Dispatch(dispatchMsg)
 	switch message.Msg {
 	case messages.LM_PAINT:
-		//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
-		//m.paint(sender, paint)
+		paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
+		m.paint(sender, paint)
 	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
 		key := (*types.TLMKey)(unsafe.Pointer(dispatchMsg))
 		m.mouseDown(sender, key)
@@ -94,17 +101,17 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
 		m.move(sender, move)
 	case messages.LM_ACTIVATE:
-		fmt.Println("OnIsDesignMsg ACTIVATE", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg ACTIVATE", message.Msg, isDesign, sender.ToString())
 	case messages.LM_CLOSEQUERY:
-		fmt.Println("OnIsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 	case messages.LM_SETCURSOR:
 		m.setCursor(sender, message)
 	case messages.LM_CONTEXTMENU:
-		fmt.Println("OnIsDesignMsg CONTEXTMENU", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg CONTEXTMENU", message.Msg, isDesign, sender.ToString())
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-		fmt.Println("OnIsDesignMsg KEYDOWN", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg KEYDOWN", message.Msg, isDesign, sender.ToString())
 	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-		fmt.Println("OnIsDesignMsg KEYUP", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg KEYUP", message.Msg, isDesign, sender.ToString())
 	default:
 		result = false
 	}

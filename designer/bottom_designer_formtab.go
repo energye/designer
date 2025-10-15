@@ -14,16 +14,16 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id                   int                 // 索引, 关联 forms key: index
-	name                 string              // 窗体名称
-	scroll               lcl.IScrollBox      // 外 滚动条
-	isDesigner           bool                // 是否正在设计
-	sheet                lcl.ITabSheet       // tab sheet
-	designerBox          *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
-	form                 *DesigningComponent // 设计器的窗体, 用于获取属性列表
-	isDown, isUp, isMove bool                // 鼠标事件
-	componentName        map[string]int      // 组件分类名, 同类组件ID序号
-	tree                 lcl.ITreeView       // 组件树
+	id                   int                             // 索引, 关联 forms key: index
+	name                 string                          // 窗体名称
+	scroll               lcl.IScrollBox                  // 外 滚动条
+	isDesigner           bool                            // 是否正在设计
+	sheet                lcl.ITabSheet                   // tab sheet
+	designerBox          *DesigningComponent             // 设计器, 模拟 TForm, 也是组件树的根节点
+	isDown, isUp, isMove bool                            // 鼠标事件
+	componentName        map[string]int                  // 组件分类名, 同类组件ID序号
+	componentList        map[uintptr]*DesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
+	tree                 lcl.ITreeView                   // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {
@@ -51,6 +51,21 @@ func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
 	return dc
 }
 
+// 添加设计组件到组件列表
+func (m *FormTab) AddComponentToList(component *DesigningComponent) {
+	if m.componentList == nil {
+		m.componentList = make(map[uintptr]*DesigningComponent)
+	}
+	m.componentList[component.object.Instance()] = component
+}
+
+func (m *FormTab) GetComponentFormList(instance uintptr) *DesigningComponent {
+	if instance == 0 || m.componentList == nil {
+		return nil
+	}
+	return m.componentList[instance]
+}
+
 func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
 	data := node.Data()
 	component := m.DataToDesigningComponent(data)
@@ -63,10 +78,6 @@ func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode)
 	}
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }
-
-//func (m *FormTab) addDesignerComponent(component *DesigningComponent) {
-//	m.componentList = append(m.componentList, component)
-//}
 
 // 隐藏所有控件的 drag
 func (m *FormTab) hideAllDrag() {
@@ -134,12 +145,13 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		inspector.LoadComponentProps(m.designerBox)
 		// 设置选中状态到设计器组件树
 		m.designerBox.SetSelected()
+		//lcl.Mouse.SetCapture(m.designerBox.object.Handle())
 	}
 }
 
 // 窗体设计界面 鼠标抬起
 func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-
+	//lcl.Mouse.SetCapture(0)
 }
 
 func (m *FormTab) onHide(sender lcl.IObject) {
@@ -191,15 +203,18 @@ func (m *FormTab) GetComponentCaptionName(component string) string {
 	return component
 }
 
-func (m *FormTab) designerOnPaint(sender lcl.IObject) {
-	// 绘制网格
-	m.drawGrid()
+func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
+	control.SetOnPaint(func(sender lcl.IObject) {
+		// 绘制网格
+		m.drawGrid(control)
+	})
 }
 
 // 绘制风格线
-func (m *FormTab) drawGrid() {
+func (m *FormTab) drawGrid(control lcl.ICustomControl) {
+	logs.Debug("drawGrid")
 	gridSize := 9 // 小刻度
-	designerBox := m.designerBox.object.(lcl.IPanel)
+	designerBox := control
 	canvas := designerBox.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
 	width, height := designerBox.Width(), designerBox.Height()
@@ -219,12 +234,14 @@ func (m *FormTab) AddFormNode() {
 	defer m.tree.EndUpdate()
 	items := m.tree.Items()
 	m.designerBox.id = nextTreeDataId()
-	newNode := items.AddChild(nil, m.form.TreeName())
-	newNode.SetImageIndex(m.form.IconIndex())    // 显示图标索引
-	newNode.SetSelectedIndex(m.form.IconIndex()) // 选中图标索引
+	newNode := items.AddChild(nil, m.designerBox.TreeName())
+	newNode.SetImageIndex(m.designerBox.IconIndex())    // 显示图标索引
+	newNode.SetSelectedIndex(m.designerBox.IconIndex()) // 选中图标索引
 	newNode.SetSelected(true)
 	newNode.SetData(m.designerBox.instance())
 	m.designerBox.node = newNode
+	// 添加到设计组件列表
+	m.AddComponentToList(m.designerBox)
 }
 
 // 添加组件节点
@@ -242,14 +259,14 @@ func (m *FormTab) AddComponentNode(parent, child *DesigningComponent) {
 		items := m.tree.Items()
 		// 控件 子节点
 		child.id = nextTreeDataId()
-		//child.parent = parent
 		node := items.AddChild(parent.node, child.TreeName())
 		child.node = node
 		node.SetImageIndex(child.IconIndex())    // 显示图标索引
 		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
 		node.SetSelected(true)
 		node.SetData(child.instance())
-		//parent.child = append(parent.child, child)
+		// 添加到设计组件列表
+		m.AddComponentToList(child)
 	} else {
 		logs.Error("添加组件节点失败, 子节点非组件节点")
 	}

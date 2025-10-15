@@ -49,6 +49,11 @@ type ComponentPropTreeState struct {
 	selectNode     types.PVirtualNode // 根据选中的属性名获得的节点对象
 }
 
+// 返回当前控件实例指针
+func (m *DesigningComponent) Instance() uintptr {
+	return m.object.Instance()
+}
+
 // 设计组件鼠标移动
 func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 	br := m.object.BoundsRect()
@@ -117,10 +122,13 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 	inspector.LoadComponentProps(m)
 }
 
+// 设置组件父子关系
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
+	// 设置父组件
 	m.object.SetParent(parent.object)
 	m.drag.SetParent(parent.object)
 	m.parent = parent
+	// 添加子组件
 	parent.child = append(parent.child, m)
 }
 
@@ -187,20 +195,6 @@ func SetDesignMode(component lcl.IComponent) {
 	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
-// 创建设计窗体-隐藏
-func NewFormDesigner(designerForm *FormTab) *DesigningComponent {
-	m := new(DesigningComponent)
-	m.componentType = CtForm
-	comp := lcl.NewForm(nil)
-	comp.SetWidth(defaultWidth)
-	comp.SetHeight(defaultHeight)
-	comp.SetCaption(designerForm.name)
-	comp.SetName(designerForm.name)
-	comp.SetVisible(false) // 隐藏
-	m.object = lcl.AsWinControl(comp)
-	return m
-}
-
 // 创建设计按钮
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
@@ -235,9 +229,9 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetText(comp.Name())
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
-	comp.SetOnMouseMove(m.OnMouseMove)
-	comp.SetOnMouseDown(m.OnMouseDown)
-	comp.SetOnMouseUp(m.OnMouseUp)
+	//comp.SetOnMouseMove(m.OnMouseMove)
+	//comp.SetOnMouseDown(m.OnMouseDown)
+	//comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
@@ -256,9 +250,9 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	comp.SetCaption(comp.Caption())
 	comp.SetChecked(false)
 	comp.SetShowHint(true)
-	comp.SetOnMouseMove(m.OnMouseMove)
-	comp.SetOnMouseDown(m.OnMouseDown)
-	comp.SetOnMouseUp(m.OnMouseUp)
+	//comp.SetOnMouseMove(m.OnMouseMove)
+	//comp.SetOnMouseDown(m.OnMouseDown)
+	//comp.SetOnMouseUp(m.OnMouseUp)
 	comp.SetOnChange(func(sender lcl.IObject) {
 		comp.SetChecked(false)
 	})
@@ -279,9 +273,9 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetCaption(comp.Caption())
 	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	comp.SetShowHint(true)
-	comp.SetOnMouseMove(m.OnMouseMove)
-	comp.SetOnMouseDown(m.OnMouseDown)
-	comp.SetOnMouseUp(m.OnMouseUp)
+	//comp.SetOnMouseMove(m.OnMouseMove)
+	//comp.SetOnMouseDown(m.OnMouseDown)
+	//comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
@@ -302,9 +296,9 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	compWrapper.SetShowHint(true)
 	compWrapper.SetName(designerForm.GetComponentCaptionName("TMainMenuWrapper"))
 	compWrapper.SetCaption(compWrapper.Name())
-	compWrapper.SetOnMouseMove(m.OnMouseMove)
-	compWrapper.SetOnMouseDown(m.OnMouseDown)
-	compWrapper.SetOnMouseUp(m.OnMouseUp)
+	//compWrapper.SetOnMouseMove(m.OnMouseMove)
+	//compWrapper.SetOnMouseDown(m.OnMouseDown)
+	//compWrapper.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)

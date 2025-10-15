@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 var (
@@ -103,90 +101,28 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.scroll.SetAutoScroll(true)
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetDoubleBuffered(true)
-	//form.scroll.HorzScrollBar().SetIncrement(1)
-	//form.scroll.VertScrollBar().SetIncrement(1)
 	form.scroll.SetParent(form.sheet)
 
 	//newStatusBar(form.scroll)
 
-	//form.bg = lcl.NewPanel(form.scroll)
-	//form.bg.SetParent(form.scroll)
-	//form.bg.SetAlign(types.AlClient)
-
-	form.designerBox = new(DesigningComponent)
-	designerBox := lcl.NewPanel(form.scroll)
-	designerBox.SetBevelOuter(types.BvNone)
-	designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
-	designerBox.SetDoubleBuffered(true)
-	designerBox.SetParentColor(false)
-	designerBox.SetColor(colors.ClBtnFace)
-	designerBox.SetLeft(margin)
-	designerBox.SetTop(margin)
-	designerBox.SetWidth(defaultWidth)
-	designerBox.SetHeight(defaultHeight)
-	designerBox.SetName(form.name)
-	designerBox.SetCaption("")
-	designerBox.SetAlign(types.AlCustom)
-	designerBox.SetShowHint(true)
-	//designerBox.SetCaption(form.name)
-	//designerBox.SetName(form.name)
-	designerBox.SetOnPaint(form.designerOnPaint)
-	designerBox.SetOnMouseMove(form.designerOnMouseMove)
-	designerBox.SetOnMouseDown(form.designerOnMouseDown)
-	designerBox.SetOnMouseUp(form.designerOnMouseUp)
-	designerBox.SetParent(form.scroll)
-	// 设计面板
-	form.designerBox.object = designerBox
-	form.designerBox.originObject = designerBox
-	form.designerBox.ownerFormTab = form
+	form.NewFormDesigner()
 
 	{
-		// TODO 测试在非windows 是否正常？
-		testForm := lcl.NewForm(form.scroll)
-		//SetDesignMode(testForm)
-		testForm.SetBorderStyleToFormBorderStyle(types.BsNone)
-		testForm.SetColor(colors.ClBlue)
-		testForm.SetVisible(true)
-		testForm.SetParent(form.scroll)
-		testForm.SetDesigner(NewEngFormDesigner().Designer())
-		testBtn := lcl.NewButton(testForm)
+
+		testBtn := lcl.NewButton(form.designerBox.object)
 		SetDesignMode(testBtn)
 		testBtn.SetCaption("设计按钮")
-		testBtn.SetParent(testForm)
-		testBtn1 := lcl.NewButton(testForm)
+		testBtn.SetParent(form.designerBox.object)
+
+		testBtn1 := lcl.NewButton(form.designerBox.object)
 		testBtn1.SetTop(50)
-		testBtn1.SetParent(testForm)
+		testBtn1.SetParent(form.designerBox.object)
 
-		spl := lcl.NewSplitter(testForm)
+		spl := lcl.NewSplitter(form.designerBox.object)
 		SetDesignMode(spl)
-		spl.SetParent(testForm)
+		spl.SetParent(form.designerBox.object)
 
 	}
-
-	{
-		// 创建一个隐藏的窗体用于获取属性
-		newForm := NewFormDesigner(form)
-		newForm.GetProps()
-		// 将属性填充到设计面板
-		form.designerBox.propertyList = newForm.propertyList
-		form.designerBox.eventList = newForm.eventList
-		// 重置 所属组件对象 为设计面板
-		resetAffiliatedComponent := func(list []*vtedit.TEditNodeData) {
-			for _, item := range list {
-				item.AffiliatedComponent = form.designerBox
-			}
-		}
-		resetAffiliatedComponent(form.designerBox.propertyList)
-		resetAffiliatedComponent(form.designerBox.eventList)
-		form.form = newForm
-	}
-
-	// 窗体拖拽大小
-	form.designerBox.drag = newDrag(form.scroll, DsRightBottom)
-	form.designerBox.drag.SetParent(form.scroll)
-	form.designerBox.drag.SetRelation(form.designerBox)
-	form.designerBox.drag.Show()
-	form.designerBox.drag.Follow()
 
 	// 测试控件
 	//NewButtonDesigner(form, 50, 50)
