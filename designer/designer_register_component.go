@@ -17,6 +17,7 @@ func init() {
 	registerComponents["TPopupMenu"] = NewPopupMenuDesigner
 	registerComponents["TLabel"] = NewLabelDesigner
 	registerComponents["TMemo"] = NewMemoDesigner
+	registerComponents["TToggleBox"] = NewToggleBoxDesigner
 }
 
 // 获取注册的设计组件

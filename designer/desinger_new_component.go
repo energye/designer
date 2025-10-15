@@ -104,3 +104,15 @@ func NewMemoDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m.SetObject(comp)
 	return m
 }
+
+// 状态标记 ToggleBox
+func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := newVisualComponent(designerForm)
+	comp := lcl.NewToggleBox(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
+	setBaseProp(comp, x, y)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}
