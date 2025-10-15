@@ -40,6 +40,7 @@ type InspectorComponentTree struct {
 	treeFilter   lcl.ITreeFilterEdit // 组件树过滤框
 	componentBox lcl.IPanel          // 组件盒子
 	images       lcl.IImageList      // 组件树树图标
+	images150    lcl.IImageList      // 组件树树图标
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
@@ -70,12 +71,13 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	// 组件树图标 20x20
 	{
 		var (
-			width, height int32 = 20, 20
-			images        []string
+			width, height     int32 = 20, 20
+			images, images150 []string
 		)
 		var eachTabName = func(tab config.Tab) {
 			for _, name := range tab.Component {
 				images = append(images, fmt.Sprintf("components/%v.png", strings.ToLower(name)))
+				images150 = append(images150, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
 				gTreeImageList[name] = int32(len(images) - 1)
 			}
 		}
@@ -92,6 +94,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		gTreeImageList["TForm"] = int32(len(images) - 1)
 		// 加载所有图标
 		m.images = tool.LoadImageList(m.treeBox, images, width, height)
+		m.images150 = tool.LoadImageList(m.treeBox, images150, 36, 36)
 	}
 
 	// 创建组件树

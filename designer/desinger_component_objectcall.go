@@ -25,7 +25,7 @@ func methodNameToSet(name string) string {
 func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()
 	defer m.drag.Show()
-	logs.Debug("更新组件:", m.object.ToString(), "属性:", updateNodeData.EditNodeData.Name)
+	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.EditNodeData.Name)
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
 		ref := &reflector{object: m.originObject, data: updateNodeData}

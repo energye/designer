@@ -94,7 +94,7 @@ func (m *FormTab) hideAllDrag() {
 // 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	// 放置设计组件
-	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.object.ToString()) {
+	if toolbar.selectComponent != nil && !config.ContainerDenyList.IsDeny(owner.ClassName()) {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		m.designerBox.drag.Hide()
 		// 获取注册的组件创建函数
@@ -106,6 +106,7 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			newComp.ownerFormTab.hideAllDrag()
 			// 显示当前设计组件 drag
 			newComp.drag.Show()
+			newComp.DragEnd()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
 			newComp.LoadPropertyToInspector()
@@ -125,11 +126,11 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 
 // 窗体设计界面 鼠标移动
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	br := m.designerBox.object.BoundsRect()
+	br := m.designerBox.BoundsRect()
 	hint := fmt.Sprintf(`%v: TForm
 	Left: %v Top: %v
 	Width: %v Height: %v`, m.designerBox.Name(), br.Left, br.Top, br.Width(), br.Height())
-	m.designerBox.object.SetHint(hint)
+	m.designerBox.SetHint(hint)
 }
 
 // 窗体设计界面 鼠标按下, 放置设计组件, 加载组件属性

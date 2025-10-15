@@ -26,9 +26,10 @@ const (
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
 	originObject      any                     // 原始组件对象
+	designerBox       lcl.IPanel              // 设计窗体组件 对象 可视
 	object            lcl.IWinControl         // 组件 对象 可视
 	objectNon         lcl.IComponent          // 组件 对象 非可视
-	objectNonWrap     lcl.IImage              // 组件 对象 非可视, 呈现控制
+	objectNonWrap     *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
 	drag              *drag                   // 拖拽控制
 	dx, dy            int32                   // 拖拽控制
 	dcl, dct          int32                   // 拖拽控制
@@ -52,22 +53,64 @@ type ComponentPropTreeState struct {
 
 // 返回当前组件实例指针
 func (m *DesigningComponent) Instance() uintptr {
-	return m.object.Instance()
+	if m.componentType == CtNonVisual {
+		return m.objectNonWrap.Instance()
+	} else {
+		return m.object.Instance()
+	}
+}
+func (m *DesigningComponent) SetHint(hint string) {
+	if m.componentType == CtNonVisual {
+		m.objectNonWrap.SetHint(hint)
+	} else {
+		m.object.SetHint(hint)
+	}
+}
+
+func (m *DesigningComponent) ClassName() string {
+	if m.componentType == CtNonVisual {
+		return m.objectNon.ToString()
+	} else {
+		return m.object.ToString()
+	}
+}
+
+func (m *DesigningComponent) BoundsRect() types.TRect {
+	if m.componentType == CtNonVisual {
+		return m.objectNonWrap.BoundsRect()
+	} else {
+		return m.object.BoundsRect()
+	}
+}
+
+func (m *DesigningComponent) SetBounds(x, y, w, h int32) {
+	if m.componentType == CtNonVisual {
+		m.objectNonWrap.SetLeftTop(x, y)
+	} else {
+		m.object.SetBounds(x, y, w, h)
+	}
+}
+
+func (m *DesigningComponent) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
+	if m.componentType == CtNonVisual {
+		return m.objectNonWrap.ClientToParent(point, parent)
+	}
+	return m.object.ClientToParent(point, parent)
 }
 
 // 设计组件鼠标移动
 func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-	br := m.object.BoundsRect()
+	br := m.BoundsRect()
 	hint := fmt.Sprintf(`%v
 	Left: %v Top: %v
 	Width: %v Height: %v`, m.TreeName(), br.Left, br.Top, br.Width(), br.Height())
-	m.object.SetHint(hint)
+	m.SetHint(hint)
 	if m.isDown {
 		m.drag.Hide()
-		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
-		m.object.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
+		m.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
 
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
 		message.Follow(msgContent)
@@ -76,13 +119,14 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 
 // 设计组件鼠标按下事件
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	logs.Debug("OnMouseDown 设计组件", m.object.ToString())
+	logs.Debug("OnMouseDown 设计组件", m.ClassName())
 	if !m.ownerFormTab.placeComponent(m, X, Y) {
 		m.isDown = true
-		point := m.object.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
 		m.dx, m.dy = point.X, point.Y
-		m.dcl = m.object.Left()
-		m.dct = m.object.Top()
+		br := m.BoundsRect()
+		m.dcl = br.Left
+		m.dct = br.Top
 		// 更新设计查看器的属性信息
 		m.ownerFormTab.hideAllDrag() // 隐藏所有 drag
 		m.drag.Show()                // 显示当前设计组件 drag
@@ -94,11 +138,12 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 			// 设置选中状态
 			m.SetSelected()
 		})
-
-		br := m.object.BoundsRect()
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 		message.Follow(msgContent)
-		lcl.Mouse.SetCapture(m.object.Handle())
+		if m.object != nil {
+			lcl.Mouse.SetCapture(m.object.Handle())
+		}
+		m.DragBegin()
 	}
 }
 
@@ -110,16 +155,19 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	m.isDown = false
 	message.FollowHide()
 	lcl.Mouse.SetCapture(0)
+	m.DragEnd()
 }
 
 func (m *DesigningComponent) SetObject(object any) {
 	if m.componentType == CtNonVisual {
 		m.objectNon = lcl.AsComponent(object)
+		//SetDesignMode(m.objectNonWrap.wrap)
+		SetDesignMode(m.objectNonWrap.icon)
 	} else {
 		m.object = lcl.AsWinControl(object)
+		SetDesignMode(m.object)
 	}
 	m.originObject = object
-	SetDesignMode(m.object)
 }
 
 // 加载组件属性到设计器
@@ -130,9 +178,19 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 
 // 设置组件父子关系
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
+	var parentObject lcl.IWinControl
+	if parent.componentType == CtForm {
+		parentObject = parent.designerBox
+	} else {
+		parentObject = parent.object
+	}
 	// 设置父组件
-	m.object.SetParent(parent.object)
-	m.drag.SetParent(parent.object)
+	if m.componentType == CtNonVisual {
+		m.objectNonWrap.SetParent(parentObject)
+	} else {
+		m.object.SetParent(parentObject)
+	}
+	m.drag.SetParent(parentObject)
 	m.parent = parent
 	// 添加子组件
 	parent.child = append(parent.child, m)
@@ -140,28 +198,40 @@ func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
 
 // 返回组件类名
 func (m *DesigningComponent) Name() string {
-	return m.object.Name()
+	if m.componentType == CtNonVisual {
+		return m.objectNon.Name()
+	} else {
+		return m.object.Name()
+	}
 }
 
 // 返回组件树节点名
 func (m *DesigningComponent) TreeName() string {
 	if m.componentType == CtForm {
-		return fmt.Sprintf("%v: %v", m.object.Name(), "TForm")
+		return fmt.Sprintf("%v: %v", m.Name(), "TForm")
 	} else {
-		return fmt.Sprintf("%v: %v", m.object.Name(), m.object.ToString())
+		return fmt.Sprintf("%v: %v", m.Name(), m.ClassName())
 	}
 }
 
 // 返回组件树节点使用的图标索引
 func (m *DesigningComponent) IconIndex() int32 {
-	return CompTreeIcon(m.object.ToString())
+	return CompTreeIcon(m.ClassName())
+}
+
+func (m *DesigningComponent) Object() lcl.IObject {
+	if m.componentType == CtNonVisual {
+		return m.objectNon
+	}
+	return m.object
 }
 
 // 获取当前组件对象属性
 func (m *DesigningComponent) GetProps() {
 	// 属性列表为空时获取属性列表
 	if m.propertyList == nil {
-		properties := lcl.DesigningComponent().GetComponentProperties(m.object)
+
+		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
 		logs.Debug("LoadComponent Count:", len(properties))
 		// 拆分 属性和事件
 		var (
@@ -193,6 +263,18 @@ func (m *DesigningComponent) GetProps() {
 	}
 }
 
+func (m *DesigningComponent) DragBegin() {
+	if m.componentType == CtNonVisual {
+		m.objectNonWrap.TextFollowHide()
+	}
+}
+
+func (m *DesigningComponent) DragEnd() {
+	if m.componentType == CtNonVisual {
+		m.objectNonWrap.TextFollowShow()
+	}
+}
+
 // 设置组件模式为设计模式
 func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetComponentDesignMode(component, true)
@@ -210,10 +292,13 @@ func newVisualComponent(designerForm *FormTab) *DesigningComponent {
 }
 
 // 创建非可视组件
-func newNonVisualComponent(designerForm *FormTab) *DesigningComponent {
+func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtNonVisual
 	m.ownerFormTab = designerForm
+	objectWrap := NewNonVisualComponentWrap(designerForm.designerBox.object, m)
+	objectWrap.SetLeftTop(x, y)
+	m.objectNonWrap = objectWrap
 	return m
 }
 
@@ -288,18 +373,9 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 
 // 主菜单 MainMenu
 func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
-	m := newNonVisualComponent(designerForm)
+	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewMainMenu(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
-
-	objectWrap := lcl.NewImage(designerForm.designerBox.object)
-	objectWrap.SetLeft(x)
-	objectWrap.SetTop(y)
-	objectWrap.SetCursor(types.CrSize)
-	objectWrap.SetShowHint(true)
-	objectWrap.SetName(designerForm.GetComponentCaptionName("MainMenuNon"))
-	objectWrap.SetCaption(objectWrap.Name())
-	m.objectNonWrap = objectWrap
 
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
