@@ -204,10 +204,10 @@ func (m *FormTab) GetComponentCaptionName(component string) string {
 }
 
 func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
-	control.SetOnPaint(func(sender lcl.IObject) {
-		// 绘制网格
-		m.drawGrid(control)
-	})
+	//control.SetOnPaint(func(sender lcl.IObject) {
+	//	// 绘制网格
+	//	m.drawGrid(control)
+	//})
 }
 
 // 绘制风格线

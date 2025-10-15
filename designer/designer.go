@@ -1,8 +1,10 @@
 package designer
 
 import (
+	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/messages"
 	"unsafe"
 )
@@ -11,6 +13,7 @@ import (
 type TEngFormDesigner struct {
 	designer      lcl.IDesigner
 	componentList map[uintptr]*DesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
+	canvas        lcl.ICanvas
 }
 
 // 创建一个窗体设计器
@@ -28,6 +31,7 @@ func NewEngFormDesigner(form *FormTab) *TEngFormDesigner {
 	newDesigner.SetOnUniqueName(m.onUniqueName)
 	newDesigner.SetOnPrepareFreeDesigner(m.onPrepareFreeDesigner)
 	m.designer = newDesigner
+	m.canvas = lcl.NewCanvas()
 	return m
 }
 
@@ -107,7 +111,28 @@ func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
 }
 
 func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
-	//`logs.Debug("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
+	isAcceptsControl := sender.ControlStyle().In(types.CsAcceptsControls)
+	//logs.Debug("OnIsDesignMsg paint", message.Msg, "DC:", message.DC, sender.ToString(), "isAcceptsControl:", isAcceptsControl)
+	//comp := m.GetComponentFormList(sender.Instance())
+	if message.DC != 0 && isAcceptsControl {
+		m.canvas.SetHandle(message.DC)
+		defer m.canvas.SetHandle(0)
+		//ADDC.Canvas.Pen.Color := GridColor;
+		//ADDC.Canvas.Pen.Width := 1;
+		//ADDC.Canvas.Pen.Style := psSolid;
+		//P := TWinControlAccess(AWinControl).GetClientScrollOffset;
+		//R := AWinControl.ClientRect;
+		//R.BottomRight := R.BottomRight + Point(GridSizeX, GridSizeY);
+		//Types.OffsetRect(R, RoundToMultiple(P.X, GridSizeX), RoundToMultiple(P.Y, GridSizeY));
+		//DrawGrid(ADDC.Canvas.Handle, R, GridSizeX, GridSizeY);
+		pen := m.canvas.PenToPen()
+		pen.SetColor(colors.ClGray)
+		pen.SetWidth(1)
+		pen.SetStyle(types.PsSolid)
+		r := sender.ClientRect()
+		misc.DrawGrid(m.canvas.Handle(), r, 8, 8)
+	}
+
 }
 
 const (
@@ -180,7 +205,7 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	result := true
 	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
 	//_ = dispatchMsg
-	//sender.Dispatch(dispatchMsg)
+	sender.Dispatch(dispatchMsg)
 	switch message.Msg {
 	case messages.LM_PAINT:
 		paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
