@@ -212,7 +212,7 @@ func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
 
 // 绘制风格线
 func (m *FormTab) drawGrid(control lcl.ICustomControl) {
-	logs.Debug("drawGrid")
+	//logs.Debug("drawGrid")
 	gridSize := 9 // 小刻度
 	designerBox := control
 	canvas := designerBox.Canvas()

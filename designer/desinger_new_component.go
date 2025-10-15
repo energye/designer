@@ -191,9 +191,9 @@ func (m *DesigningComponent) GetProps() {
 // 设置组件模式为设计模式
 func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetComponentDesignMode(component, true)
-	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
-	//lcl.DesigningComponent().SetComponentInlineMode(component, true)
-	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
+	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	lcl.DesigningComponent().SetComponentInlineMode(component, true)
+	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
 // 创建设计按钮
@@ -208,9 +208,6 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetName(designerForm.GetComponentCaptionName("Button"))
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
-	//comp.SetOnMouseMove(m.OnMouseMove)
-	//comp.SetOnMouseDown(m.OnMouseDown)
-	//comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
@@ -230,9 +227,6 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetText(comp.Name())
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
-	//comp.SetOnMouseMove(m.OnMouseMove)
-	//comp.SetOnMouseDown(m.OnMouseDown)
-	//comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
@@ -251,9 +245,6 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	comp.SetCaption(comp.Caption())
 	comp.SetChecked(false)
 	comp.SetShowHint(true)
-	//comp.SetOnMouseMove(m.OnMouseMove)
-	//comp.SetOnMouseDown(m.OnMouseDown)
-	//comp.SetOnMouseUp(m.OnMouseUp)
 	comp.SetOnChange(func(sender lcl.IObject) {
 		comp.SetChecked(false)
 	})
@@ -274,9 +265,6 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetCaption(comp.Caption())
 	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	comp.SetShowHint(true)
-	//comp.SetOnMouseMove(m.OnMouseMove)
-	//comp.SetOnMouseDown(m.OnMouseDown)
-	//comp.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
@@ -297,9 +285,6 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	compWrapper.SetShowHint(true)
 	compWrapper.SetName(designerForm.GetComponentCaptionName("TMainMenuWrapper"))
 	compWrapper.SetCaption(compWrapper.Name())
-	//compWrapper.SetOnMouseMove(m.OnMouseMove)
-	//compWrapper.SetOnMouseDown(m.OnMouseDown)
-	//compWrapper.SetOnMouseUp(m.OnMouseUp)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
