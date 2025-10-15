@@ -107,23 +107,6 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	form.NewFormDesigner()
 
-	{
-
-		testBtn := lcl.NewButton(form.designerBox.object)
-		SetDesignMode(testBtn)
-		testBtn.SetCaption("设计按钮")
-		testBtn.SetParent(form.designerBox.object)
-
-		testBtn1 := lcl.NewButton(form.designerBox.object)
-		testBtn1.SetTop(50)
-		testBtn1.SetParent(form.designerBox.object)
-
-		spl := lcl.NewSplitter(form.designerBox.object)
-		SetDesignMode(spl)
-		spl.SetParent(form.designerBox.object)
-
-	}
-
 	// 测试控件
 	//NewButtonDesigner(form, 50, 50)
 	//NewEditDesigner(form, 150, 150)

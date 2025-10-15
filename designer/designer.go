@@ -10,14 +10,13 @@ import (
 
 // TEngFormDesigner energy 窗体设计器
 type TEngFormDesigner struct {
-	designer lcl.IDesigner
-	form     *FormTab
+	designer      lcl.IDesigner
+	componentList map[uintptr]*DesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
 }
 
 // 创建一个窗体设计器
 func NewEngFormDesigner(form *FormTab) *TEngFormDesigner {
 	m := new(TEngFormDesigner)
-	m.form = form
 	newDesigner := lcl.NewDesigner()
 	newDesigner.SetOnIsDesignMsg(m.onIsDesignMsg)
 	newDesigner.SetOnUTF8KeyPress(m.onUTF8KeyPress)
@@ -38,6 +37,27 @@ func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 	return m.designer
 }
 
+// 添加设计组件到组件列表
+func (m *TEngFormDesigner) AddComponentToList(component *DesigningComponent) {
+	if m.componentList == nil {
+		m.componentList = make(map[uintptr]*DesigningComponent)
+	}
+	m.componentList[component.object.Instance()] = component
+}
+
+// 返回设计组件
+func (m *TEngFormDesigner) GetComponentFormList(instance uintptr) *DesigningComponent {
+	if instance == 0 || m.componentList == nil {
+		return nil
+	}
+	return m.componentList[instance]
+}
+
+// 删除一个设计组件
+func (m *TEngFormDesigner) RemoveComponentFormList(instance uintptr) {
+	delete(m.componentList, instance)
+}
+
 // message
 
 func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
@@ -46,19 +66,37 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 	//message.Result = 1
 }
 
-func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMKey) {
+func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
+	logs.Debug("OnIsDesignMsg mouseDown", message.Msg, sender.ToString(), message)
 	instance := sender.Instance()
-	comp := m.form.GetComponentFormList(instance)
-	logs.Debug("OnIsDesignMsg mouseDown", message.Msg, sender.ToString(), "选中控件:", comp)
-
+	comp := m.GetComponentFormList(instance)
+	if comp != nil {
+		shift, button := m.GetMouseMsgShift(message)
+		x, y := int32(*message.XPos()), int32(*message.YPos())
+		comp.OnMouseDown(sender, button, shift, x, y)
+	}
 }
 
-func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMKey) {
+func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse) {
 	logs.Debug("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
+	instance := sender.Instance()
+	comp := m.GetComponentFormList(instance)
+	if comp != nil {
+		shift, button := m.GetMouseMsgShift(message)
+		x, y := int32(*message.XPos()), int32(*message.YPos())
+		comp.OnMouseUp(sender, button, shift, x, y)
+	}
 }
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
-	logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString(), "X:", *message.XPos(), "Y:", *message.YPos())
+	logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString())
+	instance := sender.Instance()
+	comp := m.GetComponentFormList(instance)
+	if comp != nil {
+		shift, _ := m.GetMouseMsgShift(message)
+		x, y := int32(*message.XPos()), int32(*message.YPos())
+		comp.OnMouseMove(sender, shift, x, y)
+	}
 }
 
 func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
@@ -70,7 +108,69 @@ func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
 }
 
 func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
-	logs.Debug("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
+	//`logs.Debug("OnIsDesignMsg paint", message.Msg, message, sender.ToString())
+}
+
+const (
+	// Mouse message key states
+	MK_LBUTTON  = 1
+	MK_RBUTTON  = 2
+	MK_SHIFT    = 4
+	MK_CONTROL  = 8
+	MK_MBUTTON  = 0x10
+	MK_XBUTTON1 = 0x20
+	MK_XBUTTON2 = 0x40
+	// following are "virtual" key states
+	MK_DOUBLECLICK = 0x80
+	MK_TRIPLECLICK = 0x100
+	MK_QUADCLICK   = 0x200
+	MK_ALT         = 0x20000000
+)
+
+func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift types.TShiftState, button types.TMouseButton) {
+	if message.Keys&MK_SHIFT == MK_SHIFT {
+		shift = shift.Include(types.SsShift)
+	}
+	if message.Keys&MK_CONTROL == MK_CONTROL {
+		shift = shift.Include(types.SsCtrl)
+	}
+	switch message.Msg {
+	case messages.LM_LBUTTONUP, messages.LM_LBUTTONDBLCLK, messages.LM_LBUTTONTRIPLECLK, messages.LM_LBUTTONQUADCLK:
+		shift = shift.Include(types.SsShift)
+		button = types.MbLeft
+	case messages.LM_MBUTTONUP, messages.LM_MBUTTONDBLCLK, messages.LM_MBUTTONTRIPLECLK, messages.LM_MBUTTONQUADCLK:
+		shift = shift.Include(types.SsMiddle)
+		button = types.MbMiddle
+	case messages.LM_RBUTTONUP, messages.LM_RBUTTONDBLCLK, messages.LM_RBUTTONTRIPLECLK, messages.LM_RBUTTONQUADCLK:
+		shift = shift.Include(types.SsRight)
+		button = types.MbRight
+	default:
+		if message.Keys&MK_MBUTTON != 0 {
+			shift = shift.Include(types.SsMiddle)
+			button = types.MbMiddle
+		} else if message.Keys&MK_RBUTTON != 0 {
+			shift = shift.Include(types.SsRight)
+			button = types.MbRight
+		} else if message.Keys&MK_LBUTTON != 0 {
+			shift = shift.Include(types.SsShift)
+			button = types.MbLeft
+		} else if message.Keys&MK_XBUTTON1 != 0 {
+			shift = shift.Include(types.SsExtra1)
+			button = types.MbExtra1
+		} else if message.Keys&MK_XBUTTON2 != 0 {
+			shift = shift.Include(types.SsExtra2)
+			button = types.MbExtra2
+		}
+	}
+	switch message.Msg {
+	case messages.LM_LBUTTONDBLCLK, messages.LM_MBUTTONDBLCLK, messages.LM_RBUTTONDBLCLK, messages.LM_XBUTTONDBLCLK:
+		shift = shift.Include(types.SsDouble)
+	case messages.LM_LBUTTONTRIPLECLK, messages.LM_MBUTTONTRIPLECLK, messages.LM_RBUTTONTRIPLECLK, messages.LM_XBUTTONTRIPLECLK:
+		shift = shift.Include(types.SsTriple)
+	case messages.LM_LBUTTONQUADCLK, messages.LM_MBUTTONQUADCLK, messages.LM_RBUTTONQUADCLK, messages.LM_XBUTTONQUADCLK:
+		shift = shift.Include(types.SsQuad)
+	}
+	return
 }
 
 // on event
@@ -86,10 +186,10 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
 		m.paint(sender, paint)
 	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
-		key := (*types.TLMKey)(unsafe.Pointer(dispatchMsg))
+		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 		m.mouseDown(sender, key)
 	case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
-		key := (*types.TLMKey)(unsafe.Pointer(dispatchMsg))
+		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 		m.mouseUp(sender, key)
 	case messages.LM_MOUSEMOVE:
 		mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))

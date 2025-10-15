@@ -114,6 +114,7 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 func (m *DesigningComponent) SetObject(object any) {
 	m.object = lcl.AsWinControl(object)
 	m.originObject = object
+	SetDesignMode(m.object)
 }
 
 // 加载组件属性到设计器

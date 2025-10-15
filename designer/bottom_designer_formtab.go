@@ -14,16 +14,16 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id                   int                             // 索引, 关联 forms key: index
-	name                 string                          // 窗体名称
-	scroll               lcl.IScrollBox                  // 外 滚动条
-	isDesigner           bool                            // 是否正在设计
-	sheet                lcl.ITabSheet                   // tab sheet
-	designerBox          *DesigningComponent             // 设计器, 模拟 TForm, 也是组件树的根节点
-	isDown, isUp, isMove bool                            // 鼠标事件
-	componentName        map[string]int                  // 组件分类名, 同类组件ID序号
-	componentList        map[uintptr]*DesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
-	tree                 lcl.ITreeView                   // 组件树
+	id                   int                 // 索引, 关联 forms key: index
+	name                 string              // 窗体名称
+	scroll               lcl.IScrollBox      // 外 滚动条
+	isDesigner           bool                // 是否正在设计
+	sheet                lcl.ITabSheet       // tab sheet
+	designerBox          *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
+	isDown, isUp, isMove bool                // 鼠标事件
+	componentName        map[string]int      // 组件分类名, 同类组件ID序号
+	formDesigner         *TEngFormDesigner   // 设计器处理器
+	tree                 lcl.ITreeView       // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {
@@ -53,17 +53,17 @@ func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
 
 // 添加设计组件到组件列表
 func (m *FormTab) AddComponentToList(component *DesigningComponent) {
-	if m.componentList == nil {
-		m.componentList = make(map[uintptr]*DesigningComponent)
-	}
-	m.componentList[component.object.Instance()] = component
+	m.formDesigner.AddComponentToList(component)
 }
 
+// 返回设计组件
 func (m *FormTab) GetComponentFormList(instance uintptr) *DesigningComponent {
-	if instance == 0 || m.componentList == nil {
-		return nil
-	}
-	return m.componentList[instance]
+	return m.formDesigner.GetComponentFormList(instance)
+}
+
+// 删除一个设计组件
+func (m *FormTab) RemoveComponentFormList(instance uintptr) {
+	m.formDesigner.RemoveComponentFormList(instance)
 }
 
 func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {

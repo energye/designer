@@ -22,7 +22,9 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerForm.SetVisible(true)
 	designerForm.SetName(m.name)
 	designerForm.SetCaption(m.name)
+	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
+	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
 
