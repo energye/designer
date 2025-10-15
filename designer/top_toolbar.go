@@ -17,7 +17,7 @@ type TopToolbar struct {
 	splitter        lcl.ISplitter            // 分割线
 	rightTabs       lcl.IPanel               // 组件面板选项卡
 	componentTabs   map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
-	selectComponent *ComponentTabItem        // 选中的控件
+	selectComponent *ComponentTabItem        // 选中的组件
 }
 
 func (m *TAppWindow) createTopToolbar() {

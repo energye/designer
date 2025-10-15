@@ -13,6 +13,7 @@ func init() {
 	registerComponents["TEdit"] = NewEditDesigner
 	registerComponents["TCheckBox"] = NewCheckBoxDesigner
 	registerComponents["TPanel"] = NewPanelDesigner
+	registerComponents["TMainMenu"] = NewMainMenuDesigner
 }
 
 // 获取注册的设计组件

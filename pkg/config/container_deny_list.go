@@ -8,7 +8,7 @@ import (
 
 type containerDenyList map[string]struct{}
 
-// 容器拒绝列表, 维护哪些控件不能做为容器
+// 容器拒绝列表, 维护哪些组件不能做为容器
 var ContainerDenyList = make(containerDenyList)
 
 func init() {
@@ -20,7 +20,7 @@ func init() {
 	}
 }
 
-// 判断控件是否被配置为非容器
+// 判断组件是否被配置为非容器
 func (m containerDenyList) IsDeny(name string) bool {
 	_, ok := m[name]
 	return ok

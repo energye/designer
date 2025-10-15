@@ -130,7 +130,7 @@
       ]
     },
     "lazcontrol": {
-      "cn": "  Laz控件  ",
+      "cn": "  Laz组件  ",
       "en": "LazControl",
       "component": [
         "TLazVirtualDrawTree",

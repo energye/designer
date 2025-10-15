@@ -33,7 +33,7 @@ const (
 
 // 拖拽控制
 type drag struct {
-	relation    *DesigningComponent // 关联设计的控件
+	relation    *DesigningComponent // 关联设计的组件
 	ds          DragShowStatus      // 显示方向
 	isShow      bool
 	left        lcl.IPanel
@@ -46,6 +46,16 @@ type drag struct {
 	rightBottom lcl.IPanel
 }
 
+// 返回组件对象
+func (m *drag) getControlObject() lcl.IControl {
+	var control lcl.IControl
+	if m.relation.componentType == CtNonVisual {
+		control = m.relation.objectNonWrap
+	} else {
+		control = m.relation.object
+	}
+	return control
+}
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
 	//pnl.SetParent(owner)
@@ -80,43 +90,44 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	_, _, _, _ = dcx, dcy, dcw, dch
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 		if isDown {
+			object := m.getControlObject()
 			switch d {
 			case DLeft:
 				x := X - dx
 				w := dcw - x
-				m.relation.object.SetBounds(dcx+x, dcy, w, dch)
+				object.SetBounds(dcx+x, dcy, w, dch)
 			case DTop:
 				y := Y - dy
 				h := dch - y
-				m.relation.object.SetBounds(dcx, dcy+y, dcw, h)
+				object.SetBounds(dcx, dcy+y, dcw, h)
 			case DRight:
 				x := X - dx
-				m.relation.object.SetBounds(dcx, dcy, dcw+x, dch)
+				object.SetBounds(dcx, dcy, dcw+x, dch)
 			case DBottom:
 				y := Y - dy
-				m.relation.object.SetBounds(dcx, dcy, dcw, dch+y)
+				object.SetBounds(dcx, dcy, dcw, dch+y)
 			case DLeftTop:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
 				h := dch - y
-				m.relation.object.SetBounds(dcx+x, dcy+y, w, h)
+				object.SetBounds(dcx+x, dcy+y, w, h)
 			case DRightTop:
 				y := Y - dy
 				h := dch - y
 				x := X - dx
-				m.relation.object.SetBounds(dcx, dcy+y, dcw+x, h)
+				object.SetBounds(dcx, dcy+y, dcw+x, h)
 			case DLeftBottom:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
-				m.relation.object.SetBounds(dcx+x, dcy, w, dch+y)
+				object.SetBounds(dcx+x, dcy, w, dch+y)
 			case DRightBottom:
 				x := X - dx
 				y := Y - dy
-				m.relation.object.SetBounds(dcx, dcy, dcw+x, dch+y)
+				object.SetBounds(dcx, dcy, dcw+x, dch+y)
 			}
-			br := m.relation.object.BoundsRect()
+			br := object.BoundsRect()
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
 		}
@@ -125,7 +136,8 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		logs.Debug("DRAG OnMouseDown direction:", d)
 		m.Hide()
 		dx, dy = X, Y
-		br := m.relation.object.BoundsRect()
+		object := m.getControlObject()
+		br := object.BoundsRect()
 		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
 		isDown = true
 
@@ -161,7 +173,7 @@ func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
 	return m
 }
 
-// 设置关联控件
+// 设置关联组件
 func (m *drag) SetRelation(relation *DesigningComponent) {
 	m.relation = relation
 }
@@ -248,10 +260,11 @@ func (m *drag) SetParent(value lcl.IWinControl) {
 	}
 }
 
-// 跟随关联控件
+// 跟随关联组件
 func (m *drag) Follow() {
 	if m.relation != nil {
-		br := m.relation.object.BoundsRect()
+		object := m.getControlObject()
+		br := object.BoundsRect()
 		x, y := br.Left, br.Top
 		width, height := br.Width(), br.Height()
 		_ = width

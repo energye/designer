@@ -107,7 +107,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	form.NewFormDesigner()
 
-	// 测试控件
+	// 测试组件
 	//NewButtonDesigner(form, 50, 50)
 	//NewEditDesigner(form, 150, 150)
 	//NewCheckBoxDesigner(form, 150, 200)

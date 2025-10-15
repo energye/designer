@@ -79,7 +79,7 @@ func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode)
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }
 
-// 隐藏所有控件的 drag
+// 隐藏所有组件的 drag
 func (m *FormTab) hideAllDrag() {
 	var iterable func(comp *DesigningComponent)
 	iterable = func(comp *DesigningComponent) {
@@ -111,7 +111,6 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			newComp.LoadPropertyToInspector()
 			// 2. 添加到组件树
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
-				//m.componentTree.Load(component)
 				owner.AddChild(newComp)
 			})
 		} else {
@@ -133,7 +132,7 @@ func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftStat
 	m.designerBox.object.SetHint(hint)
 }
 
-// 窗体设计界面 鼠标按下, 放置设计控件, 加载控件属性
+// 窗体设计界面 鼠标按下, 放置设计组件, 加载组件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
@@ -257,7 +256,7 @@ func (m *FormTab) AddComponentNode(parent, child *DesigningComponent) {
 		m.tree.BeginUpdate()
 		defer m.tree.EndUpdate()
 		items := m.tree.Items()
-		// 控件 子节点
+		// 组件 子节点
 		child.id = nextTreeDataId()
 		node := items.AddChild(parent.node, child.TreeName())
 		child.node = node

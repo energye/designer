@@ -18,16 +18,17 @@ type ComponentType int32
 
 const (
 	CtForm      ComponentType = iota // 窗体
-	CtNonVisual                      // 非可视控件
-	CtVisual                         // 可视控件
+	CtNonVisual                      // 非可视组件
+	CtVisual                         // 可视组件
 )
 
 // 设计组件
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
 	originObject      any                     // 原始组件对象
-	object            lcl.IWinControl         // 组件 WinControl 对象, 转换后的父类
-	objectWrapper     lcl.IImage              // 组件 包裹 对象
+	object            lcl.IWinControl         // 组件 对象 可视
+	objectNon         lcl.IComponent          // 组件 对象 非可视
+	objectNonWrap     lcl.IImage              // 组件 对象 非可视, 呈现控制
 	drag              *drag                   // 拖拽控制
 	dx, dy            int32                   // 拖拽控制
 	dcl, dct          int32                   // 拖拽控制
@@ -35,7 +36,7 @@ type DesigningComponent struct {
 	propertyList      []*vtedit.TEditNodeData // 组件属性
 	eventList         []*vtedit.TEditNodeData // 组件事件
 	isDesigner        bool                    // 组件是否正在设计
-	componentType     ComponentType           // 控件类型
+	componentType     ComponentType           // 组件类型
 	node              lcl.ITreeNode           // 组件树节点对象
 	id                int                     // id 标识
 	parent            *DesigningComponent     // 所属父节点
@@ -49,7 +50,7 @@ type ComponentPropTreeState struct {
 	selectNode     types.PVirtualNode // 根据选中的属性名获得的节点对象
 }
 
-// 返回当前控件实例指针
+// 返回当前组件实例指针
 func (m *DesigningComponent) Instance() uintptr {
 	return m.object.Instance()
 }
@@ -112,7 +113,11 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 }
 
 func (m *DesigningComponent) SetObject(object any) {
-	m.object = lcl.AsWinControl(object)
+	if m.componentType == CtNonVisual {
+		m.objectNon = lcl.AsComponent(object)
+	} else {
+		m.object = lcl.AsWinControl(object)
+	}
 	m.originObject = object
 	SetDesignMode(m.object)
 }
@@ -212,14 +217,14 @@ func newNonVisualComponent(designerForm *FormTab) *DesigningComponent {
 	return m
 }
 
-// 创建设计按钮
+// 按钮 Button
 func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewButton(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("Button"))
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetName(designerForm.GetComponentCaptionName("Button"))
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
@@ -228,14 +233,14 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	return m
 }
 
-// 创建设计编辑框
+// 编辑框 Edit
 func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewEdit(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
 	comp.SetText(comp.Name())
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
@@ -245,13 +250,14 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	return m
 }
 
+// 多选框 CheckBox
 func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewCheckBox(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
-	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
 	comp.SetCaption(comp.Caption())
 	comp.SetChecked(false)
 	comp.SetShowHint(true)
@@ -264,14 +270,15 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	return m
 }
 
+// 面板 Panel
 func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewPanel(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	comp.SetLeft(x)
 	comp.SetTop(y)
 	comp.SetCursor(types.CrSize)
 	comp.SetCaption(comp.Caption())
-	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	comp.SetShowHint(true)
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
@@ -279,21 +286,23 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	return m
 }
 
+// 主菜单 MainMenu
 func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	m := newNonVisualComponent(designerForm)
 	comp := lcl.NewMainMenu(designerForm.designerBox.object)
-	comp.SetName(designerForm.GetComponentCaptionName("TMainMenu"))
+	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
 
-	compWrapper := lcl.NewImage(designerForm.designerBox.object)
-	compWrapper.SetLeft(x)
-	compWrapper.SetTop(y)
-	compWrapper.SetCursor(types.CrSize)
-	compWrapper.SetShowHint(true)
-	compWrapper.SetName(designerForm.GetComponentCaptionName("TMainMenuWrapper"))
-	compWrapper.SetCaption(compWrapper.Name())
+	objectWrap := lcl.NewImage(designerForm.designerBox.object)
+	objectWrap.SetLeft(x)
+	objectWrap.SetTop(y)
+	objectWrap.SetCursor(types.CrSize)
+	objectWrap.SetShowHint(true)
+	objectWrap.SetName(designerForm.GetComponentCaptionName("MainMenuNon"))
+	objectWrap.SetCaption(objectWrap.Name())
+	m.objectNonWrap = objectWrap
+
 	m.drag = newDrag(designerForm.designerBox.object, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
-
 	return m
 }
