@@ -114,3 +114,46 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m.SetObject(comp)
 	return m
 }
+
+// 弹出菜单 PopupMenu
+func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := newNonVisualComponent(designerForm, x, y)
+	comp := lcl.NewPopupMenu(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}
+
+// 标签 Label
+func NewLabelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := newVisualComponent(designerForm)
+	comp := lcl.NewLabel(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("Label"))
+	comp.SetLeft(x)
+	comp.SetTop(y)
+	comp.SetCursor(types.CrSize)
+	comp.SetCaption(comp.Caption())
+	comp.SetShowHint(true)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}
+
+// 多行文本框 Memo
+func NewMemoDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := newVisualComponent(designerForm)
+	comp := lcl.NewMemo(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
+	comp.SetLeft(x)
+	comp.SetTop(y)
+	comp.SetCursor(types.CrSize)
+	comp.SetCaption(comp.Caption())
+	comp.SetShowHint(true)
+	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}
