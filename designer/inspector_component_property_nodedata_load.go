@@ -2,6 +2,7 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 )
 
@@ -34,10 +35,10 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 	compProp := config.ComponentProperty
 	for i, nodeData := range component.propertyList {
 		if compProp.IsExclude(nodeData.EditNodeData.Name) {
-			//logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
+			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
-		//logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
+		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
 		if !nodeData.IsFinal {
 			// 自定义属性, 使用会覆蓋掉
 			// 返回数组
