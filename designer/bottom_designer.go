@@ -79,7 +79,8 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(true)
 	form.tree.SetImages(inspector.componentTree.images)
-	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
+	//form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
+	form.tree.SetOnGetSelectedIndex(inspector.componentTree.TreeOnGetSelectedIndex)
 	form.tree.SetParent(inspector.componentTree.componentBox)
 
 	// 默认名

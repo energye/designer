@@ -6,7 +6,6 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"unsafe"
 )
 
 // 设计器面板
@@ -44,12 +43,6 @@ func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) boo
 	return iterable(m.designerBox)
 }
 
-// 数据指针转设计组件
-func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
-	dc := (*DesigningComponent)(unsafe.Pointer(data))
-	return dc
-}
-
 // 添加设计组件到组件列表
 func (m *FormTab) AddComponentToList(component *DesigningComponent) {
 	m.formDesigner.AddComponentToList(component)
@@ -65,18 +58,24 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
-	data := node.Data()
-	component := m.DataToDesigningComponent(data)
-	if component != nil {
-		component.ownerFormTab.hideAllDrag() // 隐藏所有 drag
-		component.drag.Show()                // 显示当前设计组件 drag
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			component.LoadPropertyToInspector()
-		})
-	}
-	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
-}
+//func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
+//	data := node.Data()
+//	component := m.DataToDesigningComponent(data)
+//	if component != nil {
+//		component.ownerFormTab.hideAllDrag() // 隐藏所有 drag
+//		component.drag.Show()                // 显示当前设计组件 drag
+//		go lcl.RunOnMainThreadAsync(func(id uint32) {
+//			component.LoadPropertyToInspector()
+//		})
+//	}
+//	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
+//}
+//
+//// 数据指针转设计组件
+//func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
+//	dc := (*DesigningComponent)(unsafe.Pointer(data))
+//	return dc
+//}
 
 // 隐藏所有组件的 drag
 func (m *FormTab) hideAllDrag() {

@@ -97,25 +97,6 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		m.images150 = tool.LoadImageList(m.treeBox, images150, 36, 36)
 	}
 
-	// 创建组件树
-	//m.tree = lcl.NewTreeView(m.treeBox)
-	//m.tree.SetParent(m.treeBox)
-	//m.tree.SetAutoExpand(true)
-	//m.tree.SetTop(35)
-	//m.tree.SetWidth(leftBoxWidth)
-	//m.tree.SetHeight(componentTreeHeight - m.tree.Top())
-	//m.tree.SetReadOnly(true)
-	////m.tree.SetMultiSelect(true) // 多选控制
-	//m.tree.SetAlign(types.AlCustom)
-	//m.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
-	//m.tree.SetImages(m.images)
-	//m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
-
-	// 测试
-	//root := m.AddTreeNodeItem(nil, "Form1: TForm", -1)
-	//s1 := root.AddChild("Test", 1)
-	//s1.AddChild("Tes1t", 2)
-	//s1.AddChild("Test2", 3)
 }
 
 // 清除组件树数据

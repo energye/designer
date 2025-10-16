@@ -12,7 +12,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp := lcl.NewButton(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Button"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -25,7 +25,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
 	comp.SetText(comp.Name())
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -41,7 +41,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	comp.SetOnChange(func(sender lcl.IObject) {
 		comp.SetChecked(false)
 	})
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -53,7 +53,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp := lcl.NewPanel(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -64,7 +64,7 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewMainMenu(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -75,7 +75,7 @@ func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewPopupMenu(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -87,7 +87,7 @@ func NewLabelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp := lcl.NewLabel(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Label"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -99,7 +99,7 @@ func NewMemoDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 	comp := lcl.NewMemo(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -111,7 +111,7 @@ func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent
 	comp := lcl.NewToggleBox(designerForm.designerBox.object)
 	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.designerBox.object, DsAll)
+	m.drag = newDrag(designerForm.scroll, DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m

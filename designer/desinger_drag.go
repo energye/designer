@@ -48,7 +48,6 @@ type drag struct {
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
-	//pnl.SetParent(owner)
 	pnl.SetWidth(dragBorder)
 	pnl.SetHeight(dragBorder)
 	pnl.SetBevelOuter(types.BvNone)
@@ -70,7 +69,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		hint = "NESW"
 	}
 	pnl.SetHint(hint)
-
+	pnl.SetParent(owner)
 	var (
 		isDown             bool
 		dx, dy             int32
@@ -254,9 +253,10 @@ func (m *drag) SetParent(value lcl.IWinControl) {
 func (m *drag) Follow() {
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
-		x, y := br.Left, br.Top
+		// 转换为 form tab 的坐标
+		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.ownerFormTab.scroll)
+		x, y := point.X, point.Y
 		width, height := br.Width(), br.Height()
-		_ = width
 		db := dragBorder / 2
 		if m.ds == DsAll {
 			m.left.SetBounds(x-db, y+(height/2)-db, dragBorder, dragBorder)

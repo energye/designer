@@ -21,6 +21,5 @@ func (m *DesigningComponent) AddChild(child *DesigningComponent) {
 
 // 设置当前设计组件为选中状态
 func (m *DesigningComponent) SetSelected() {
-
 	m.node.SetSelected(true)
 }

@@ -28,6 +28,7 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
+	SetDesignMode(designerForm)
 
 	designerBox := lcl.NewPanel(designerForm)
 	designerBox.SetBevelOuter(types.BvNone)
@@ -44,7 +45,7 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerBox.SetOnMouseDown(m.designerOnMouseDown)
 	designerBox.SetOnMouseUp(m.designerOnMouseUp)
 	designerBox.SetParent(designerForm)
-	//SetDesignMode(designerBox)
+	SetDesignMode(designerBox)
 	dc.designerBox = designerBox
 
 	// 设计面板
@@ -55,7 +56,7 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 
 	// 窗体拖拽大小
 	m.designerBox.drag = newDrag(m.scroll, DsRightBottom)
-	m.designerBox.drag.SetParent(m.scroll)
+	//m.designerBox.drag.SetParent(m.scroll)
 	m.designerBox.drag.SetRelation(m.designerBox)
 	m.designerBox.drag.Show()
 	m.designerBox.drag.Follow()

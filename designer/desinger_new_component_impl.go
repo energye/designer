@@ -227,7 +227,6 @@ func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
 	} else {
 		m.object.SetParent(parentObject)
 	}
-	m.drag.SetParent(parentObject)
 	m.parent = parent
 	// 添加子组件
 	parent.child = append(parent.child, m)
