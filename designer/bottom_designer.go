@@ -3,7 +3,6 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -50,11 +49,11 @@ func (m *Designer) createTabMenu() {
 		return
 	}
 	m.tabMenu = lcl.NewPopupMenu(m.page)
-	m.tabMenu.SetImages(tool.LoadImageList(m.page, []string{"actions/laz_cancel.png"}, 16, 16))
+	m.tabMenu.SetImages(imageActions.ImageList100())
 	items := m.tabMenu.Items()
 	closeMenuItem := lcl.NewMenuItem(m.page)
 	closeMenuItem.SetCaption("关闭窗体")
-	closeMenuItem.SetImageIndex(0)
+	closeMenuItem.SetImageIndex(imageActions.ImageIndex("laz_cancel.png"))
 	items.Add(closeMenuItem)
 
 	//m.page.SetPopupMenu(m.tabMenu)
@@ -78,7 +77,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	//m.tree.SetMultiSelect(true) // 多选控制
 	form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(true)
-	form.tree.SetImages(inspector.componentTree.images)
+	form.tree.SetImages(imageComponents.ImageList100())
 	//form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)

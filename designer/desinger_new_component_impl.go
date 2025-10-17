@@ -248,7 +248,8 @@ func (m *DesigningComponent) TreeName() string {
 
 // 返回组件树节点使用的图标索引
 func (m *DesigningComponent) IconIndex() int32 {
-	return CompTreeIcon(m.ClassName())
+	name := m.ClassName() + ".png"
+	return imageComponents.ImageIndex(name)
 }
 
 // 返回真实对象实例

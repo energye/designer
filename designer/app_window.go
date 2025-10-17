@@ -54,10 +54,10 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 }
 
 func (m *TAppWindow) initAllImageList() {
-	imageActions = tool.NewImageList(m, "actions")
-	imageComponents = tool.NewImageList(m, "components")
-	imageItem = tool.NewImageList(m, "item")
-	imageMenu = tool.NewImageList(m, "menu")
+	imageActions = tool.NewImageList(m, "actions", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
+	imageComponents = tool.NewImageList(m, "components", tool.ImageRect{Image100: types.TSize{Cx: 24, Cy: 24}, Image150: types.TSize{Cx: 36, Cy: 36}, Image200: types.TSize{Cx: 48, Cy: 48}})
+	imageItem = tool.NewImageList(m, "item", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
+	imageMenu = tool.NewImageList(m, "menu", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {

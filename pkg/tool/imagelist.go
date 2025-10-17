@@ -3,64 +3,75 @@ package tool
 import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 	"strings"
 )
 
 // 图片资源
 
 type ImageList struct {
-	imageIndex  map[string]int32
-	imageList24 lcl.IImageList
-	imageList36 lcl.IImageList
-	imageList48 lcl.IImageList
+	imageIndex   map[string]int32
+	imageList100 lcl.IImageList
+	imageList150 lcl.IImageList
+	imageList200 lcl.IImageList
 }
 
-func NewImageList(owner lcl.IComponent, dirName string) *ImageList {
+type ImageRect struct {
+	Image100 types.TSize
+	Image150 types.TSize
+	Image200 types.TSize
+}
+
+func NewImageList(owner lcl.IComponent, dirName string, rect ImageRect) *ImageList {
 	m := new(ImageList)
+	m.imageIndex = make(map[string]int32)
 	imageList := resources.GetImageFileList(dirName)
 	var (
-		images24 []string
-		images36 []string
-		images48 []string
+		images100 []string
+		images150 []string
+		images200 []string
 	)
 	for _, name := range imageList {
 		is48 := strings.LastIndex(name, "_200.png") != -1
 		is36 := strings.LastIndex(name, "_150.png") != -1
 		if is48 {
-			images48 = append(images48, name)
+			images200 = append(images200, name)
 		} else if is36 {
-			images36 = append(images36, name)
+			images150 = append(images150, name)
 		} else {
-			images24 = append(images24, name)
+			images100 = append(images100, name)
 		}
 	}
 	loadImage := func(images []string, w, h int32) lcl.IImageList {
-		resultImageList := LoadImageList(owner, imageList, w, h)
-		m.imageIndex = map[string]int32{}
+		resultImageList := LoadImageList(owner, images, w, h)
 		for index, name := range images {
-			name = strings.Replace(name, dirName+"/", "", 1)
+			name = strings.ToLower(strings.Replace(name, dirName+"/", "", 1))
 			m.imageIndex[name] = int32(index)
 		}
 		return resultImageList
 	}
-	m.imageList24 = loadImage(images24, 24, 24)
-	m.imageList36 = loadImage(images36, 36, 36)
-	m.imageList48 = loadImage(images48, 48, 48)
+	m.imageList100 = loadImage(images100, rect.Image100.Cx, rect.Image100.Cy)
+	m.imageList150 = loadImage(images150, rect.Image150.Cx, rect.Image150.Cy)
+	m.imageList200 = loadImage(images200, rect.Image200.Cx, rect.Image200.Cy)
 	return m
 }
 
 func (m *ImageList) ImageIndex(name string) int32 {
-	return m.imageIndex[name]
+	index, ok := m.imageIndex[strings.ToLower(name)]
+	if ok {
+		return index
+	}
+	return 0
 }
 
-func (m *ImageList) ImageList24() lcl.IImageList {
-	return m.imageList24
+func (m *ImageList) ImageList100() lcl.IImageList {
+	return m.imageList100
 }
 
-func (m *ImageList) ImageList36() lcl.IImageList {
-	return m.imageList36
+func (m *ImageList) ImageList150() lcl.IImageList {
+	return m.imageList150
 }
 
-func (m *ImageList) ImageList48() lcl.IImageList {
-	return m.imageList48
+func (m *ImageList) ImageList200() lcl.IImageList {
+	return m.imageList200
 }

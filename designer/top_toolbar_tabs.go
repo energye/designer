@@ -1,13 +1,10 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"strings"
 )
 
 // 组件选项卡
@@ -49,16 +46,11 @@ func (m *TopToolbar) createComponentTabs() {
 		sheet.SetCaption(tab.Cn)
 		sheet.SetAlign(types.AlClient)
 		compTab.sheet = sheet
-		// 组件图标
-		var imageList []string
-		imageList = append(imageList, "components/cursortool_150.png")
-		for _, name := range tab.Component {
-			imageList = append(imageList, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
-		}
+
 		// 显示组件工具按钮
 		componentToolbar := lcl.NewToolBar(sheet)
 		componentToolbar.SetParent(sheet)
-		componentToolbar.SetImages(tool.LoadImageList(m.rightTabs, imageList, 36, 36))
+		componentToolbar.SetImages(imageComponents.ImageList150())
 		componentToolbar.SetButtonWidth(36)
 		componentToolbar.SetButtonHeight(36)
 		componentToolbar.SetHeight(36)
@@ -69,7 +61,7 @@ func (m *TopToolbar) createComponentTabs() {
 		selectToolBtn := lcl.NewToolButton(componentToolbar)
 		selectToolBtn.SetParent(componentToolbar)
 		selectToolBtn.SetHint("选择工具")
-		selectToolBtn.SetImageIndex(int32(0))
+		selectToolBtn.SetImageIndex(imageComponents.ImageIndex("cursortool_150.png"))
 		selectToolBtn.SetShowHint(true)
 		selectToolBtn.SetDown(true)
 		comp := &ComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
@@ -82,11 +74,10 @@ func (m *TopToolbar) createComponentTabs() {
 
 		// 创建组件按钮
 		for i, name := range tab.Component {
-			imageIndex := i + 1
 			btn := lcl.NewToolButton(componentToolbar)
 			btn.SetParent(componentToolbar)
 			btn.SetHint(name)
-			btn.SetImageIndex(int32(imageIndex))
+			btn.SetImageIndex(imageComponents.ImageIndex(name + "_150.png")) // 36px
 			btn.SetShowHint(true)
 			comp = &ComponentTabItem{owner: compTab, index: i, inspectorTreeImageIndex: inspectorTreeImageIndex, name: name, btn: btn}
 			compTab.components[name] = comp

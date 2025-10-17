@@ -37,8 +37,12 @@ func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 // 加载图片列表
 func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32) lcl.IImageList {
 	images := lcl.NewImageList(owner)
-	images.SetWidth(width)
-	images.SetHeight(height)
+	if width > 0 {
+		images.SetWidth(width)
+	}
+	if height > 0 {
+		images.SetHeight(height)
+	}
 	for _, image := range imageList {
 		ImageListAddPng(images, image)
 	}

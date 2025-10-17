@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -88,21 +87,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolBtnBar.SetWidth(m.leftTools.Width())
 	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	toolBtnBar.SetEdgeBorders(types.NewSet())
-	imageList := tool.LoadImageList(m.leftTools, []string{
-		"menu/menu_new_form_150.png",
-		"menu/menu_project_open_150.png",
-		"menu/menu_save_150.png",
-		"menu/menu_save_all_150.png",
-		"menu/menu_run_150.png",
-	}, 24, 24)
-	toolBtnBar.SetImages(imageList)
-	//toolBtnBar := lcl.NewFlowPanel(m.box)
-	//toolBtnBar.SetParent(m.leftTools)
-	//toolBtnBar.SetAlign(types.AlCustom)
-	//toolBtnBar.SetWidth(m.leftTools.Width())
-	//toolBtnBar.SetHeight(m.leftTools.Height())
-	//toolBtnBar.SetBevelOuter(types.BvNone)
-	//toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
+	toolBtnBar.SetImages(imageMenu.ImageList150())
 	newSepa := func() {
 		seap := lcl.NewToolButton(toolBtnBar)
 		seap.SetParent(toolBtnBar)
@@ -126,7 +111,7 @@ func (m *TopToolbar) createToolBarBtns() {
 		return btn
 	}
 
-	newFormBtn := newBtn(0, "新建窗体", 0)
+	newFormBtn := newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体", 0)
 	newFormBtn.SetOnClick(func(sender lcl.IObject) {
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			newForm := designer.addDesignerFormTab()
@@ -138,21 +123,21 @@ func (m *TopToolbar) createToolBarBtns() {
 			newForm.AddFormNode()
 		})
 	})
-	openFormBtn := newBtn(1, "打开窗体", 1)
+	openFormBtn := newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开窗体", 1)
 	openFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
 	newSepa()
-	saveFormBtn := newBtn(2, "保存窗体", 1)
+	saveFormBtn := newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存窗体", 1)
 	saveFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
-	saveAllFormBtn := newBtn(3, "保存所有窗体", 1)
+	saveAllFormBtn := newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
 	saveAllFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})
 	newSepa()
-	runFormBtn := newBtn(4, "运行预览窗体", 3)
+	runFormBtn := newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行预览窗体", 3)
 	runFormBtn.SetOnClick(func(sender lcl.IObject) {
 
 	})

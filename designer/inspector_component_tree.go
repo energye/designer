@@ -1,30 +1,19 @@
 package designer
 
 import (
-	"fmt"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"strings"
 	"unsafe"
 )
 
 // 设计 - 组件树
 
 var (
-	gTreeId        int              // 维护组件树全局数据id
-	gTreeImageList map[string]int32 // 组件树树节点图标索引 key: 组件类名 value: 索引
+	gTreeId int // 维护组件树全局数据id
 )
 
 func init() {
-	gTreeImageList = make(map[string]int32)
-}
-
-// 返回查看器组件树节点使用的图标
-func CompTreeIcon(name string) int32 {
-	return gTreeImageList[name]
 }
 
 // 获取下一个树数据ID
@@ -39,8 +28,6 @@ type InspectorComponentTree struct {
 	treeBox      lcl.IPanel          // 组件树盒子
 	treeFilter   lcl.ITreeFilterEdit // 组件树过滤框
 	componentBox lcl.IPanel          // 组件盒子
-	images       lcl.IImageList      // 组件树树图标
-	images150    lcl.IImageList      // 组件树树图标
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
@@ -67,37 +54,6 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.componentBox.SetBevelOuter(types.BvNone)
 	m.componentBox.SetDoubleBuffered(true)
 	m.componentBox.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
-
-	// 组件树图标 20x20
-	{
-		var (
-			width, height     int32 = 20, 20
-			images, images150 []string
-		)
-		var eachTabName = func(tab config.Tab) {
-			for _, name := range tab.Component {
-				images = append(images, fmt.Sprintf("components/%v.png", strings.ToLower(name)))
-				images150 = append(images150, fmt.Sprintf("components/%v_150.png", strings.ToLower(name)))
-				gTreeImageList[name] = int32(len(images) - 1)
-			}
-		}
-		eachTabName(config.Config.ComponentTabs.Standard)
-		eachTabName(config.Config.ComponentTabs.Additional)
-		eachTabName(config.Config.ComponentTabs.Common)
-		eachTabName(config.Config.ComponentTabs.Dialogs)
-		eachTabName(config.Config.ComponentTabs.Misc)
-		eachTabName(config.Config.ComponentTabs.System)
-		eachTabName(config.Config.ComponentTabs.LazControl)
-		eachTabName(config.Config.ComponentTabs.WebView)
-		// 最后一个图标是 TForm 窗体图标
-		images = append(images, "components/form.png")
-		gTreeImageList["TForm"] = int32(len(images) - 1)
-		gTreeImageList["TEngForm"] = int32(len(images) - 1)
-		// 加载所有图标
-		m.images = tool.LoadImageList(m.treeBox, images, width, height)
-		m.images150 = tool.LoadImageList(m.treeBox, images150, 36, 36)
-	}
-
 }
 
 // 清除组件树数据
