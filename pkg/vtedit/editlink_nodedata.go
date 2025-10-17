@@ -232,21 +232,25 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 // 构建节点数据
 func (m *TEditNodeData) Build() {
 	// 构建类字段属性, 做为子节点
-	if m.EditNodeData.ClassInstance != 0 {
-		object := lcl.AsObject(m.EditNodeData.ClassInstance)
-		var properties []lcl.ComponentProperties
-		properties = lcl.DesigningComponent().GetComponentProperties(object)
-		logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
-		for _, prop := range properties {
-			if prop.Kind == "tkMethod" {
-				// tkMethod 事件函数
-				continue
+	if m.EditNodeData.Type == PdtClass {
+		if m.EditNodeData.ClassInstance != 0 {
+			object := lcl.AsObject(m.EditNodeData.ClassInstance)
+			var properties []lcl.ComponentProperties
+			properties = lcl.DesigningComponent().GetComponentProperties(object)
+			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
+			for _, prop := range properties {
+				newProp := prop
+				if newProp.Kind == "tkMethod" {
+					continue // tkMethod 事件函数
+				}
+				newEditLinkNodeData := NewEditLinkNodeData(&newProp)
+				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(),
+					AffiliatedComponent: m.AffiliatedComponent}
+				m.Child = append(m.Child, newEditNodeData)
+				newEditNodeData.Build()
 			}
-			newProp := prop
-			newEditLinkNodeData := NewEditLinkNodeData(&newProp)
-			newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m.AffiliatedComponent}
-			m.Child = append(m.Child, newEditNodeData)
-			newEditNodeData.Build()
+		} else {
+			logs.Debug("TEditNodeData Build Class 实例是'0', 属性名:", m.EditNodeData.Name)
 		}
 	} else {
 		// 其它？？
