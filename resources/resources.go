@@ -44,6 +44,18 @@ func Images(filePath string) []byte {
 	return nil
 }
 
+// 获取指定目录的图标资源列表
+func GetImageFileList(dirName string) (result []string) {
+	des, err := images.ReadDir("images/" + dirName)
+	if err != nil {
+		return nil
+	}
+	for _, de := range des {
+		result = append(result, dirName+"/"+de.Name())
+	}
+	return
+}
+
 // 组件属性配置
 // 用于通用属性和定制属性
 // 通用属性 1. 排除 2. 包含

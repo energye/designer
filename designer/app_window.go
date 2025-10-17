@@ -3,6 +3,7 @@ package designer
 import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -14,6 +15,10 @@ var (
 	bgDrakColor            = colors.RGBToColor(56, 57, 60)
 	bgLightColor           = colors.ClWhite
 	windowShowEvents []func()
+	imageActions     *tool.ImageList
+	imageComponents  *tool.ImageList
+	imageItem        *tool.ImageList
+	imageMenu        *tool.ImageList
 )
 
 // 设计器应用窗口
@@ -37,6 +42,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
+	m.initAllImageList()
 	// 设置窗口图标
 	m.setWindowIcon()
 	// 窗口显示事件
@@ -45,6 +51,13 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.createDesignerLayout()
 	// status bar
 	//newStatusBar(m)
+}
+
+func (m *TAppWindow) initAllImageList() {
+	imageActions = tool.NewImageList(m, "actions")
+	imageComponents = tool.NewImageList(m, "components")
+	imageItem = tool.NewImageList(m, "item")
+	imageMenu = tool.NewImageList(m, "menu")
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
