@@ -13,20 +13,23 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 
 	m.designerBox = dc
 
-	designerForm := lcl.NewForm(lcl.Application)
+	//designerForm := lcl.NewEngForm(nil)
+	designerForm := lcl.NewForm(nil)
 	designerForm.SetLeft(margin)
 	designerForm.SetTop(margin)
 	designerForm.SetWidth(defaultWidth)
 	designerForm.SetHeight(defaultHeight)
-	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
 	designerForm.SetName(m.name)
-	designerForm.SetCaption(m.name)
+	designerForm.SetCaption("")
 	designerForm.SetAlign(types.AlCustom)
-	designerForm.SetVisible(true)
+	designerForm.SetShowInTaskBar(types.StNever)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
+	designerForm.SetFormStyle(types.FsNormal)
+	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
+	designerForm.SetVisible(true)
 	designerForm.SetParent(m.scroll)
 	SetDesignMode(designerForm)
 
@@ -45,7 +48,7 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerBox.SetOnMouseDown(m.designerOnMouseDown)
 	designerBox.SetOnMouseUp(m.designerOnMouseUp)
 	designerBox.SetParent(designerForm)
-	SetDesignMode(designerBox)
+	//SetDesignMode(designerBox)
 	dc.designerBox = designerBox
 
 	// 设计面板
