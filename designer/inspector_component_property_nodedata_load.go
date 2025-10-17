@@ -32,9 +32,9 @@ func (m *InspectorComponentProperty) Load(component *DesigningComponent) {
 
 // 加载属性列表
 func (m *InspectorComponentProperty) loadPropertyList(component *DesigningComponent) {
-	compProp := config.ComponentProperty
+	configCompProp := config.ComponentProperty
 	for i, nodeData := range component.propertyList {
-		if compProp.IsExclude(nodeData.EditNodeData.Name) {
+		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
@@ -42,7 +42,7 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 		if !nodeData.IsFinal {
 			// 自定义属性, 使用会覆蓋掉
 			// 返回数组
-			if customProps := compProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
+			if customProps := configCompProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
 				if len(customProps) == 1 {
 					// 数组只有一个元素，规则为直接作用在当前属性上
 					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
@@ -50,8 +50,9 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 						OriginNodeData: customProperty.Clone(), AffiliatedComponent: component}
 					component.propertyList[i] = newEditNodeData // 更新到组件属性
 					nodeData = component.propertyList[i]
+					newEditNodeData.Build()
 				} else {
-
+					// 自定义属性添加？？
 				}
 			}
 			nodeData.IsFinal = true

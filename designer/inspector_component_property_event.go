@@ -106,9 +106,9 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 					link := vtedit.NewCheckBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtCheckBoxList:
-					link := vtedit.NewStringEditLink(data)
-					link.SetReadOnly(true)
-					*outEditLink = link.AsIVTEditLink()
+					//link := vtedit.NewStringEditLink(data)
+					//link.SetReadOnly(true)
+					//*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtComboBox:
 					link := vtedit.NewComboBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()

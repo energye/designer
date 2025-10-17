@@ -159,6 +159,7 @@ type TEditNodeData struct {
 	OriginNodeData      *TEditLinkNodeData  // 原始数据
 	AffiliatedNode      types.PVirtualNode  // 所属属性树节点
 	AffiliatedComponent IDesigningComponent // 所属组件对象
+	Child               []*TEditNodeData    // 子节点
 }
 
 var (
@@ -185,6 +186,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
 	if data.EditNodeData.Type == PdtCheckBoxList {
+		// 复选框列表
 		dataList := data.EditNodeData.CheckBoxValue
 		buf := bytes.Buffer{}
 		buf.WriteString("[")
@@ -197,12 +199,15 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 				buf.WriteString(item.Name)
 				i++
 			}
-			newItemData := &TEditNodeData{EditNodeData: item, OriginNodeData: item.Clone(),
-				AffiliatedComponent: data.AffiliatedComponent}
+			newItemData := &TEditNodeData{EditNodeData: item, OriginNodeData: item.Clone(), AffiliatedComponent: data.AffiliatedComponent}
 			AddPropertyNodeData(tree, node, newItemData)
 		}
 		buf.WriteString("]")
 		data.EditNodeData.StringValue = buf.String()
+	} else if data.EditNodeData.Type == PdtClass {
+		for _, nodeData := range data.Child {
+			AddPropertyNodeData(tree, node, nodeData)
+		}
 	}
 	return node
 }
@@ -222,6 +227,30 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 	}
 	_, ok := propertyTreeDataList[node]
 	return ok
+}
+
+// 构建节点数据
+func (m *TEditNodeData) Build() {
+	// 构建类字段属性, 做为子节点
+	if m.EditNodeData.ClassInstance != 0 {
+		object := lcl.AsObject(m.EditNodeData.ClassInstance)
+		var properties []lcl.ComponentProperties
+		properties = lcl.DesigningComponent().GetComponentProperties(object)
+		logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
+		for _, prop := range properties {
+			if prop.Kind == "tkMethod" {
+				// tkMethod 事件函数
+				continue
+			}
+			newProp := prop
+			newEditLinkNodeData := NewEditLinkNodeData(&newProp)
+			newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m.AffiliatedComponent}
+			m.Child = append(m.Child, newEditNodeData)
+			newEditNodeData.Build()
+		}
+	} else {
+		// 其它？？
+	}
 }
 
 // 从设计属性更新到组件属性

@@ -101,9 +101,6 @@ func (m *TEditLinkNodeData) Build() {
 		object := lcl.AsObject(classInstance)
 		if object != nil {
 			m.StringValue = "(" + object.ToString() + ")"
-			var properties []lcl.ComponentProperties
-			properties = lcl.DesigningComponent().GetComponentProperties(object)
-			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
 		}
 	default: // 未识别类型
 		m.Type = PdtText // todo 使用文本
