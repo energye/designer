@@ -80,7 +80,11 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetVisible(true)
 	form.tree.SetImages(inspector.componentTree.images)
 	//form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
-	form.tree.SetOnGetSelectedIndex(inspector.componentTree.TreeOnGetSelectedIndex)
+	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
+	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
+	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
+	// 树菜单
+	form.tree.SetPopupMenu(form.TreePopupMenu())
 	form.tree.SetParent(inspector.componentTree.componentBox)
 
 	// 默认名

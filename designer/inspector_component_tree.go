@@ -106,14 +106,43 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 //m.nodeData = make(map[int]*DesigningComponent)
 //}
 
+// FormTab
+
+// 创建树右键菜单
+func (m *FormTab) TreePopupMenu() lcl.IPopupMenu {
+	m.treePopupMenu = lcl.NewPopupMenu(m.tree)
+	cutItem := lcl.NewMenuItem(m.tree)
+	cutItem.SetCaption("剪切")
+	cutItem.SetOnClick(func(lcl.IObject) {
+	})
+	m.treePopupMenu.Items().Add(cutItem)
+
+	m.treePopupMenu.SetParent(m.tree)
+	return m.treePopupMenu
+}
+
+func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
+	logs.Debug("TreeOnContextPopup pos:", mousePos)
+}
+
+func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	logs.Debug("TreeOnMouseDown x,y:", X, Y)
+	if button == types.MbRight {
+		selectNode := m.tree.GetNodeAt(X, Y)
+		if selectNode.IsValid() {
+			m.tree.SetSelected(selectNode)
+		}
+	}
+}
+
 // 数据指针转设计组件
-func (m *InspectorComponentTree) DataToDesigningComponent(data uintptr) *DesigningComponent {
+func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
 	dc := (*DesigningComponent)(unsafe.Pointer(data))
 	return dc
 }
 
 // 组件树选择事件
-func (m *InspectorComponentTree) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
+func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
 	data := node.Data()
 	component := m.DataToDesigningComponent(data)
 	if component != nil {

@@ -22,6 +22,7 @@ type FormTab struct {
 	componentName        map[string]int      // 组件分类名, 同类组件ID序号
 	formDesigner         *TEngFormDesigner   // 设计器处理器
 	tree                 lcl.ITreeView       // 组件树
+	treePopupMenu        lcl.IPopupMenu      // 组件树右键菜单
 }
 
 func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {

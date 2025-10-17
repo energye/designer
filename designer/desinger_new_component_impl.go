@@ -82,7 +82,7 @@ func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponen
 func setBaseProp(comp lcl.IControl, x, y int32) {
 	comp.SetLeft(x)
 	comp.SetTop(y)
-	comp.SetCursor(types.CrSize)
+	//comp.SetCursor(types.CrSize)
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
 }
@@ -243,11 +243,7 @@ func (m *DesigningComponent) Name() string {
 
 // 返回组件树节点名
 func (m *DesigningComponent) TreeName() string {
-	if m.componentType == CtForm {
-		return fmt.Sprintf("%v: %v", m.Name(), "TForm")
-	} else {
-		return fmt.Sprintf("%v: %v", m.Name(), m.ClassName())
-	}
+	return fmt.Sprintf("%v: %v", m.Name(), m.ClassName())
 }
 
 // 返回组件树节点使用的图标索引
