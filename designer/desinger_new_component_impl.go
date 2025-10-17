@@ -82,7 +82,7 @@ func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponen
 func setBaseProp(comp lcl.IControl, x, y int32) {
 	comp.SetLeft(x)
 	comp.SetTop(y)
-	//comp.SetCursor(types.CrSize)
+	comp.SetCursor(types.CrSize)
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
 }

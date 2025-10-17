@@ -1,20 +1,34 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
 
+type TDesignerForm struct {
+	lcl.TEngForm
+}
+
+func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
+	logs.Info("TDesignerForm FormCreate")
+}
+
+func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
+	logs.Info("TDesignerForm CreateParams ", *params)
+}
+
 // 创建设计窗体-隐藏
 func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	dc := new(DesigningComponent)
 	dc.componentType = CtForm
-
 	m.designerBox = dc
 
 	//designerForm := lcl.NewEngForm(nil)
-	designerForm := lcl.NewForm(nil)
+	//designerForm := lcl.NewForm(nil)
+	designerForm := &TDesignerForm{}
+	lcl.Application.NewForm(designerForm)
 	designerForm.SetLeft(margin)
 	designerForm.SetTop(margin)
 	designerForm.SetWidth(defaultWidth)
@@ -28,10 +42,11 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetFormStyle(types.FsNormal)
-	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
 	designerForm.SetVisible(true)
+	designerForm.SetControlStyle(designerForm.ControlStyle().Include(types.CsNoDesignVisible))
+	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
+	//SetDesignMode(designerForm)
 	designerForm.SetParent(m.scroll)
-	SetDesignMode(designerForm)
 
 	designerBox := lcl.NewPanel(designerForm)
 	designerBox.SetBevelOuter(types.BvNone)
