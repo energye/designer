@@ -68,26 +68,31 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 // 创建树右键菜单
 func (m *FormTab) TreePopupMenu() lcl.IPopupMenu {
 	m.treePopupMenu = lcl.NewPopupMenu(m.tree)
+	m.treePopupMenu.SetImages(imageItem.ImageList100())
 	cut := lcl.NewMenuItem(m.tree)
 	cut.SetCaption("剪切")
+	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
 	cut.SetOnClick(func(lcl.IObject) {
 	})
 	m.treePopupMenu.Items().Add(cut)
 
 	copy := lcl.NewMenuItem(m.tree)
 	copy.SetCaption("复制")
+	copy.SetImageIndex(imageItem.ImageIndex("item_copy.png"))
 	copy.SetOnClick(func(lcl.IObject) {
 	})
 	m.treePopupMenu.Items().Add(copy)
 
 	paste := lcl.NewMenuItem(m.tree)
 	paste.SetCaption("粘贴")
+	paste.SetImageIndex(imageItem.ImageIndex("item_paste.png"))
 	paste.SetOnClick(func(lcl.IObject) {
 	})
 	m.treePopupMenu.Items().Add(paste)
 
 	delete := lcl.NewMenuItem(m.tree)
 	delete.SetCaption("删除")
+	delete.SetImageIndex(imageItem.ImageIndex("item_delete_selection.png"))
 	delete.SetOnClick(func(lcl.IObject) {
 	})
 	m.treePopupMenu.Items().Add(delete)
