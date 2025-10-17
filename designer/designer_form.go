@@ -42,11 +42,11 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetFormStyle(types.FsNormal)
-	designerForm.SetVisible(true)
 	designerForm.SetControlStyle(designerForm.ControlStyle().Include(types.CsNoDesignVisible))
 	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
 	//SetDesignMode(designerForm)
 	designerForm.SetParent(m.scroll)
+	designerForm.SetVisible(true)
 
 	designerBox := lcl.NewPanel(designerForm)
 	designerBox.SetBevelOuter(types.BvNone)

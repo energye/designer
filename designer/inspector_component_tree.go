@@ -92,6 +92,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 		// 最后一个图标是 TForm 窗体图标
 		images = append(images, "components/form.png")
 		gTreeImageList["TForm"] = int32(len(images) - 1)
+		gTreeImageList["TEngForm"] = int32(len(images) - 1)
 		// 加载所有图标
 		m.images = tool.LoadImageList(m.treeBox, images, width, height)
 		m.images150 = tool.LoadImageList(m.treeBox, images150, 36, 36)
@@ -111,11 +112,29 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 // 创建树右键菜单
 func (m *FormTab) TreePopupMenu() lcl.IPopupMenu {
 	m.treePopupMenu = lcl.NewPopupMenu(m.tree)
-	cutItem := lcl.NewMenuItem(m.tree)
-	cutItem.SetCaption("剪切")
-	cutItem.SetOnClick(func(lcl.IObject) {
+	cut := lcl.NewMenuItem(m.tree)
+	cut.SetCaption("剪切")
+	cut.SetOnClick(func(lcl.IObject) {
 	})
-	m.treePopupMenu.Items().Add(cutItem)
+	m.treePopupMenu.Items().Add(cut)
+
+	copy := lcl.NewMenuItem(m.tree)
+	copy.SetCaption("复制")
+	copy.SetOnClick(func(lcl.IObject) {
+	})
+	m.treePopupMenu.Items().Add(copy)
+
+	paste := lcl.NewMenuItem(m.tree)
+	paste.SetCaption("粘贴")
+	paste.SetOnClick(func(lcl.IObject) {
+	})
+	m.treePopupMenu.Items().Add(paste)
+
+	delete := lcl.NewMenuItem(m.tree)
+	delete.SetCaption("删除")
+	delete.SetOnClick(func(lcl.IObject) {
+	})
+	m.treePopupMenu.Items().Add(delete)
 
 	m.treePopupMenu.SetParent(m.tree)
 	return m.treePopupMenu
