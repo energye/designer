@@ -99,12 +99,13 @@ func (m *TEditLinkNodeData) Build() {
 		}
 		// 转换 object 获取对象属性
 		object := lcl.AsObject(classInstance)
-		var properties []lcl.ComponentProperties
-		properties = lcl.DesigningComponent().GetComponentProperties(object)
-		logs.Debug("TkClass LoadComponent Count:", len(properties))
-
+		if object != nil {
+			var properties []lcl.ComponentProperties
+			properties = lcl.DesigningComponent().GetComponentProperties(object)
+			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
+		}
 	default: // 未识别类型
-		m.Type = PdtText
+		m.Type = PdtText // todo 使用文本
 		m.Name = m.Metadata.Name
 		logs.Warn("未识别的元数据类型:", m.Metadata.ToJSON())
 		return

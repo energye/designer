@@ -252,7 +252,7 @@ func (m *DesigningComponent) IconIndex() int32 {
 	return imageComponents.ImageIndex(name)
 }
 
-// 返回真实对象实例
+// 返回真实对象
 func (m *DesigningComponent) Object() lcl.IObject {
 	if m.componentType == CtNonVisual {
 		return m.objectNon
