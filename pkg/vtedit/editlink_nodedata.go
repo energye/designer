@@ -32,18 +32,19 @@ const (
 
 // 节点数据
 type TEditLinkNodeData struct {
-	Metadata      *lcl.ComponentProperties // 组件属性元数据
-	Name          string                   // 属性名
-	Index         int32                    // 值索引 值是数组类型时，选中的索引
-	Checked       bool                     // 选中列表 值是数组类型时，是否选中
-	StringValue   string                   // 属性值 string
-	FloatValue    float64                  // 属性值 float64
-	BoolValue     bool                     // 属性值 bool
-	IntValue      int                      // 属性值 int
-	ClassInstance uintptr                  // 属性值 class 实例
-	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
-	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
-	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	Metadata       *lcl.ComponentProperties // 组件属性元数据
+	Name           string                   // 属性名
+	Index          int32                    // 值索引 值是数组类型时，选中的索引
+	Checked        bool                     // 选中列表 值是数组类型时，是否选中
+	StringValue    string                   // 属性值 string
+	FloatValue     float64                  // 属性值 float64
+	BoolValue      bool                     // 属性值 bool
+	IntValue       int                      // 属性值 int
+	ClassInstance  uintptr                  // 属性值 class 实例
+	ClassPropCount int32                    // 属性值 class 属性数量
+	CheckBoxValue  []*TEditLinkNodeData     // 属性值 checkbox
+	ComboBoxValue  []*TEditLinkNodeData     // 属性值 combobox
+	Type           PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
 func (m *TEditLinkNodeData) IsModify(originNodeData *TEditLinkNodeData) bool {
@@ -114,15 +115,16 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 		return nil
 	}
 	clone := &TEditLinkNodeData{
-		Name:          m.Name,
-		Index:         m.Index,
-		Checked:       m.Checked,
-		StringValue:   m.StringValue,
-		FloatValue:    m.FloatValue,
-		BoolValue:     m.BoolValue,
-		IntValue:      m.IntValue,
-		Type:          m.Type,
-		ClassInstance: m.ClassInstance,
+		Name:           m.Name,
+		Index:          m.Index,
+		Checked:        m.Checked,
+		StringValue:    m.StringValue,
+		FloatValue:     m.FloatValue,
+		BoolValue:      m.BoolValue,
+		IntValue:       m.IntValue,
+		Type:           m.Type,
+		ClassInstance:  m.ClassInstance,
+		ClassPropCount: m.ClassPropCount,
 	}
 	if m.Metadata != nil {
 		cloneMetadata := *m.Metadata

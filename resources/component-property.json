@@ -3,6 +3,7 @@
     "exclude": [
       "Action",
       "LCLVersion",
+      "SessionProperties",
       "ActiveControl",
       "AnchorSideBottom",
       "AnchorSideLeft",
