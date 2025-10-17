@@ -41,6 +41,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 				case vtedit.PdtColorSelect:
 					font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(colors.TColor(data.EditNodeData.IntValue))
+				case vtedit.PdtClass:
+					// class 样式
+					font.SetStyle(font.Style().Include(types.FsBold))
+					font.SetColor(0x2D5BC4)
 				default:
 					if data.IsModify() {
 						// 值被修改样式
@@ -64,12 +68,15 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
-			tree.EditNode(node, 1)
+			if data.EditNodeData.Type == vtedit.PdtClass || data.EditNodeData.Type == vtedit.PdtCheckBoxList {
+
+			} else {
+				m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+				tree.EditNode(node, 1)
+			}
 		}
 	})
-	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, allowed *bool) {
+	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, allowed *bool) {
 		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == vtedit.PdtText {
@@ -81,8 +88,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	//tree.SetOnEditCancelled(func(sender lcl.IBaseVirtualTree, column int32) {
 	//	logs.Debug("[object inspector-property] OnEditCancelled column:", column)
 	//})
-	tree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode,
-		column int32, outEditLink *lcl.IVTEditLink) {
+	tree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, outEditLink *lcl.IVTEditLink) {
 		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
@@ -99,7 +105,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 				case vtedit.PdtCheckBox:
 					link := vtedit.NewCheckBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtCheckBoxList, vtedit.PdtClass:
+				case vtedit.PdtCheckBoxList:
 					link := vtedit.NewStringEditLink(data)
 					link.SetReadOnly(true)
 					*outEditLink = link.AsIVTEditLink()
@@ -109,6 +115,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 				case vtedit.PdtColorSelect:
 					link := vtedit.NewColorSelectEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
+				case vtedit.PdtClass:
+					//link := vtedit.NewStringEditLink(data)
+					//link.SetReadOnly(true)
+					//*outEditLink = link.AsIVTEditLink()
 				}
 			}
 		}

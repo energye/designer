@@ -90,16 +90,17 @@ func (m *TEditLinkNodeData) Build() {
 	case TkClass: // 类
 		m.Type = PdtClass
 		m.Name = m.Metadata.Name
-		m.StringValue = m.Metadata.Value
 		// 获取类实例 属性
 		classInstance, err := strconv.ParseUint(m.Metadata.Value, 10, bits.UintSize)
 		if err != nil {
 			logs.Error("获取类实例失败:", err.Error())
 			os.Exit(1)
 		}
+		m.ClassInstance = uintptr(classInstance)
 		// 转换 object 获取对象属性
 		object := lcl.AsObject(classInstance)
 		if object != nil {
+			m.StringValue = "(" + object.ToString() + ")"
 			var properties []lcl.ComponentProperties
 			properties = lcl.DesigningComponent().GetComponentProperties(object)
 			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))

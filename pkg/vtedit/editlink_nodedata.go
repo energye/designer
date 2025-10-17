@@ -40,6 +40,7 @@ type TEditLinkNodeData struct {
 	FloatValue    float64                  // 属性值 float64
 	BoolValue     bool                     // 属性值 bool
 	IntValue      int                      // 属性值 int
+	ClassInstance uintptr                  // 属性值 class 实例
 	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
 	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
 	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
@@ -82,6 +83,8 @@ func (m *TEditLinkNodeData) EditValue() string {
 		return m.StringValue
 	case PdtColorSelect:
 		return fmt.Sprintf("0x%X", m.IntValue)
+	case PdtClass:
+		return m.StringValue
 	default:
 		return ""
 	}
@@ -111,14 +114,15 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 		return nil
 	}
 	clone := &TEditLinkNodeData{
-		Name:        m.Name,
-		Index:       m.Index,
-		Checked:     m.Checked,
-		StringValue: m.StringValue,
-		FloatValue:  m.FloatValue,
-		BoolValue:   m.BoolValue,
-		IntValue:    m.IntValue,
-		Type:        m.Type,
+		Name:          m.Name,
+		Index:         m.Index,
+		Checked:       m.Checked,
+		StringValue:   m.StringValue,
+		FloatValue:    m.FloatValue,
+		BoolValue:     m.BoolValue,
+		IntValue:      m.IntValue,
+		Type:          m.Type,
+		ClassInstance: m.ClassInstance,
 	}
 	if m.Metadata != nil {
 		cloneMetadata := *m.Metadata

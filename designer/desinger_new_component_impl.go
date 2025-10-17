@@ -283,7 +283,6 @@ func (m *DesigningComponent) GetProps() {
 				// 其它侧为属性
 				propertyList = append(propertyList, newEditNodeData)
 			}
-			//logs.Debug("  ", toJSON(prop))
 		}
 		// 排序
 		sort.Slice(eventList, func(i, j int) bool {
