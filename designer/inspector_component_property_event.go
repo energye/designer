@@ -68,8 +68,15 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			if data.EditNodeData.Type == vtedit.PdtClass || data.EditNodeData.Type == vtedit.PdtCheckBoxList {
+			if data.EditNodeData.Type == vtedit.PdtClass {
+				switch data.EditNodeData.Name {
+				case "Icon":
+					m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+					tree.EditNode(node, 1)
+				default:
 
+				}
+			} else if data.EditNodeData.Type == vtedit.PdtCheckBoxList {
 			} else {
 				m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
 				tree.EditNode(node, 1)
@@ -116,6 +123,14 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 					link := vtedit.NewColorSelectEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtClass:
+					propName := data.EditNodeData.Name
+					switch propName {
+					case "Icon":
+						link := vtedit.NewIconEditLink(data)
+						*outEditLink = link.AsIVTEditLink()
+					default:
+
+					}
 					//link := vtedit.NewStringEditLink(data)
 					//link.SetReadOnly(true)
 					//*outEditLink = link.AsIVTEditLink()
