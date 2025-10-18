@@ -11,6 +11,7 @@ const (
 	RsIgnoreProp                        // 忽略的属性
 	RsNotValid                          // 对象无效
 	RsDuplicateName                     // 组件名重复
+	RsNoModify                          // 不做变更
 )
 
 // 检测 err

@@ -10,7 +10,7 @@ import (
 
 var (
 	bottomColor        = colors.RGBToColor(100, 120, 140)
-	leftBoxWidth int32 = 250
+	leftBoxWidth int32 = 290
 )
 
 type BottomBox struct {

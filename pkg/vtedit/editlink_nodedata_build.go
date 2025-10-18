@@ -3,7 +3,6 @@ package vtedit
 import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/lcl/lcl"
 	"math/bits"
 	"os"
 	"sort"
@@ -96,12 +95,8 @@ func (m *TEditLinkNodeData) Build() {
 			logs.Error("获取类实例失败:", err.Error())
 			os.Exit(1)
 		}
-		m.ClassInstance = uintptr(classInstance)
-		// 转换 object 获取对象属性
-		object := lcl.AsObject(classInstance)
-		if object != nil {
-			m.StringValue = "(" + object.ToString() + ")"
-		}
+		m.Class = TPropClass{Instance: uintptr(classInstance)}
+		m.StringValue = "(" + m.Metadata.Type + ")"
 	default: // 未识别类型
 		m.Type = PdtText // todo 使用文本
 		m.Name = m.Metadata.Name

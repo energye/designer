@@ -212,7 +212,7 @@ func (m *reflector) convertArgsValue() (args []any) {
 	return
 }
 
-func (m *reflector) methodName() string {
+func (m *reflector) findMethodName() string {
 	var methodName string
 	switch m.data.EditNodeData.Type {
 	case vtedit.PdtCheckBox:
@@ -231,13 +231,23 @@ func (m *reflector) methodName() string {
 	return methodName
 }
 
+func (m *reflector) findObject() (object reflect.Value) {
+	object = reflect.ValueOf(m.object)
+	if m.data.Parent != nil {
+		pData := m.data.Parent
+		if pData.EditNodeData.Type == vtedit.PdtClass {
+
+		}
+	}
+	return
+}
+
 // 调用方法
 func (m *reflector) callMethod() ([]any, error) {
-	methodName := m.methodName()
+	object := m.findObject()
+	methodName := m.findMethodName()
 
-	val := reflect.ValueOf(m.object)
-
-	method := m.findMethod(val, methodName)
+	method := m.findMethod(object, methodName)
 	if !method.IsValid() {
 		return nil, fmt.Errorf("方法 %v 未找到", methodName)
 	}

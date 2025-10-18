@@ -92,7 +92,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 
 			propValueCol := columns.AddToVirtualTreeColumn()
 			propValueCol.SetText("值")
-			propValueCol.SetWidth(leftBoxWidth - 195)
+			//propValueCol.SetWidth(leftBoxWidth - 125)
 			propValueCol.SetAlignment(types.TaLeftJustify)
 			propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 		}

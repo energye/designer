@@ -32,19 +32,23 @@ const (
 
 // 节点数据
 type TEditLinkNodeData struct {
-	Metadata       *lcl.ComponentProperties // 组件属性元数据
-	Name           string                   // 属性名
-	Index          int32                    // 值索引 值是数组类型时，选中的索引
-	Checked        bool                     // 选中列表 值是数组类型时，是否选中
-	StringValue    string                   // 属性值 string
-	FloatValue     float64                  // 属性值 float64
-	BoolValue      bool                     // 属性值 bool
-	IntValue       int                      // 属性值 int
-	ClassInstance  uintptr                  // 属性值 class 实例
-	ClassPropCount int32                    // 属性值 class 属性数量
-	CheckBoxValue  []*TEditLinkNodeData     // 属性值 checkbox
-	ComboBoxValue  []*TEditLinkNodeData     // 属性值 combobox
-	Type           PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	Metadata      *lcl.ComponentProperties // 组件属性元数据
+	Name          string                   // 属性名
+	Index         int32                    // 值索引 值是数组类型时，选中的索引
+	Checked       bool                     // 选中列表 值是数组类型时，是否选中
+	StringValue   string                   // 属性值 string
+	FloatValue    float64                  // 属性值 float64
+	BoolValue     bool                     // 属性值 bool
+	IntValue      int                      // 属性值 int
+	Class         TPropClass               // 属性值 class 实例
+	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
+	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
+	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+}
+
+type TPropClass struct {
+	Instance uintptr // 属性值 class 实例
+	Count    int32   // 属性值 class 属性数量
 }
 
 func (m *TEditLinkNodeData) IsModify(originNodeData *TEditLinkNodeData) bool {
@@ -115,16 +119,15 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 		return nil
 	}
 	clone := &TEditLinkNodeData{
-		Name:           m.Name,
-		Index:          m.Index,
-		Checked:        m.Checked,
-		StringValue:    m.StringValue,
-		FloatValue:     m.FloatValue,
-		BoolValue:      m.BoolValue,
-		IntValue:       m.IntValue,
-		Type:           m.Type,
-		ClassInstance:  m.ClassInstance,
-		ClassPropCount: m.ClassPropCount,
+		Name:        m.Name,
+		Index:       m.Index,
+		Checked:     m.Checked,
+		StringValue: m.StringValue,
+		FloatValue:  m.FloatValue,
+		BoolValue:   m.BoolValue,
+		IntValue:    m.IntValue,
+		Type:        m.Type,
+		Class:       TPropClass{Instance: m.Class.Instance, Count: m.Class.Count},
 	}
 	if m.Metadata != nil {
 		cloneMetadata := *m.Metadata
@@ -156,12 +159,13 @@ type IDesigningComponent interface {
 
 // 编辑的节点数据
 type TEditNodeData struct {
+	Parent              *TEditNodeData      // 父节点
+	Child               []*TEditNodeData    // 子节点
 	IsFinal             bool                // 标记是否最终对象, 用于完整的数据
 	EditNodeData        *TEditLinkNodeData  // 编辑数据
 	OriginNodeData      *TEditLinkNodeData  // 原始数据
 	AffiliatedNode      types.PVirtualNode  // 所属属性树节点
 	AffiliatedComponent IDesigningComponent // 所属组件对象
-	Child               []*TEditNodeData    // 子节点
 }
 
 var (
@@ -235,10 +239,11 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 func (m *TEditNodeData) Build() {
 	// 构建类字段属性, 做为子节点
 	if m.EditNodeData.Type == PdtClass {
-		if m.EditNodeData.ClassInstance != 0 {
-			object := lcl.AsObject(m.EditNodeData.ClassInstance)
+		if m.EditNodeData.Class.Instance != 0 {
+			object := lcl.AsObject(m.EditNodeData.Class.Instance)
 			var properties []lcl.ComponentProperties
 			properties = lcl.DesigningComponent().GetComponentProperties(object)
+			m.EditNodeData.Class.Count = int32(len(properties))
 			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
 			for _, prop := range properties {
 				newProp := prop
@@ -247,7 +252,7 @@ func (m *TEditNodeData) Build() {
 				}
 				newEditLinkNodeData := NewEditLinkNodeData(&newProp)
 				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(),
-					AffiliatedComponent: m.AffiliatedComponent}
+					AffiliatedComponent: m.AffiliatedComponent, Parent: m}
 				m.Child = append(m.Child, newEditNodeData)
 				newEditNodeData.Build()
 			}
