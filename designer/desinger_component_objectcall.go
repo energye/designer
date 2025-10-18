@@ -28,24 +28,29 @@ func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEdi
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.EditNodeData.Name)
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
+		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "调用 API 更新, 同时更新节点数据")
 		ref := &reflector{object: m.originObject, data: updateNodeData}
 		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
-			logs.Error("[更新组件属性失败]", err.Error())
+			logs.Error("调用 API 更新组件属性失败", err.Error())
 		} else {
+			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
 			m.UpdateTreeNode(updateNodeData)
 		}
 	} else if rs == err.RsIgnoreProp {
-		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "忽略更新")
+		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "忽略 API 更新, 只更新节点数据")
+		m.UpdateTreeNode(updateNodeData)
 	} else {
 		// 更新失败
-		logs.Error("检查允许更新属性失败, RS:", rs)
 		switch rs {
 		case err.RsDuplicateName: // 重复的组件名
+			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs, "恢复节点内的组件名")
 			// 恢复节点内的组件名
 			updateNodeData.SetEditValue(m.Name())
 			inspector.componentProperty.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
+		default:
+			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs)
 		}
 	}
 }
@@ -85,6 +90,9 @@ func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNode
 			message.Info("修改组件名失败", "组件名 ["+data.EditValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}
+	case "enabled", "visible":
+		return err.RsIgnoreProp
+
 	}
 	return err.RsSuccess
 }
