@@ -264,6 +264,16 @@ func (m *TEditNodeData) Build() {
 	}
 }
 
+func (m *TEditNodeData) Type() PropertyDataType {
+	return m.EditNodeData.Type
+}
+func (m *TEditNodeData) Class() TPropClass {
+	return m.EditNodeData.Class
+}
+func (m *TEditNodeData) Name() string {
+	return m.EditNodeData.Name
+}
+
 // 从设计属性更新到组件属性
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {

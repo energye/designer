@@ -9,6 +9,7 @@ import (
 	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"reflect"
 	"strings"
@@ -214,18 +215,18 @@ func (m *reflector) convertArgsValue() (args []any) {
 
 func (m *reflector) findMethodName() string {
 	var methodName string
-	switch m.data.EditNodeData.Type {
+	switch m.data.Type() {
 	case vtedit.PdtCheckBox:
 		node := m.data.AffiliatedNode.ToGo()
 		parentNode := node.Parent
 		// 有父节点 PdtCheckBoxList
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
-			methodName = pData.EditNodeData.Name
+			methodName = pData.Name()
 		} else {
-			methodName = m.data.EditNodeData.Name
+			methodName = m.data.Name()
 		}
 	default:
-		methodName = m.data.EditNodeData.Name
+		methodName = m.data.Name()
 	}
 	methodName = methodNameToSet(methodName)
 	return methodName
@@ -233,10 +234,24 @@ func (m *reflector) findMethodName() string {
 
 func (m *reflector) findObject() (object reflect.Value) {
 	object = reflect.ValueOf(m.object)
-	if m.data.Parent != nil {
-		pData := m.data.Parent
-		if pData.EditNodeData.Type == vtedit.PdtClass {
+	data := m.data
 
+	switch data.Type() {
+	case vtedit.PdtCheckBox:
+		// checkbox 需要从父节点获得到所属实际节点
+		node := m.data.AffiliatedNode.ToGo()
+		parentNode := node.Parent
+		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
+			data = pData // 使用父节点
+		}
+	}
+	if data.Parent != nil {
+		pData := data.Parent
+		if pData.Type() == vtedit.PdtClass {
+			// class 属性节点
+			// 返回 class 对象
+			instance := pData.Class().Instance
+			lcl.AsObject(instance)
 		}
 	}
 	return
