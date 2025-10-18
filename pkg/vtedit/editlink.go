@@ -5,6 +5,8 @@ import (
 	"github.com/energye/lcl/types"
 )
 
+var MainForm lcl.IForm
+
 // Laz 虚拟树动态创建组件
 
 // IBaseEditLink 基础接口，需被实现

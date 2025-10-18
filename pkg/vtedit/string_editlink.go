@@ -62,7 +62,9 @@ func (m *TStringEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -73,8 +75,10 @@ func (m *TStringEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.EditNodeData.StringValue = value
-		m.VTree.EndEditNode()
 		m.edit.Hide()
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }

@@ -38,7 +38,7 @@ func (m *TIconEditLink) Create() {
 	m.btn.SetOnClick(func(sender lcl.IObject) {
 		editorform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
 			logs.Debug("TIconEditLink callback 图片目录:", filePath, ok)
-		})
+		}, MainForm)
 	})
 	m.btn.SetLayout(types.BlGlyphRight)
 	textFont := m.btn.Font()
@@ -60,7 +60,9 @@ func (m *TIconEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.btn.Hide()
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -69,8 +71,10 @@ func (m *TIconEditLink) EndEdit() bool {
 	logs.Debug("TIconEditLink EndEdit", "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.VTree.EndEditNode()
 		m.btn.Hide()
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }

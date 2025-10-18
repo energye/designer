@@ -85,7 +85,9 @@ func (m *TCheckBoxEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.checkbox.SetVisible(false)
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -96,8 +98,10 @@ func (m *TCheckBoxEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.EditNodeData.Checked = value
-		m.VTree.EndEditNode()
 		m.checkbox.SetVisible(false)
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }

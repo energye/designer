@@ -81,7 +81,9 @@ func (m *TColorSelectEditLink) CancelEdit() bool {
 		m.stopping = true
 		m.colorText.Hide()
 		m.colorBtn.Hide()
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -92,9 +94,11 @@ func (m *TColorSelectEditLink) EndEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.BindData.EditNodeData.IntValue = int(color)
-		m.VTree.EndEditNode()
 		m.colorText.Hide()
 		m.colorBtn.Hide()
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }

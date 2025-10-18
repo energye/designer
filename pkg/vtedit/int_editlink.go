@@ -76,7 +76,9 @@ func (m *TIntEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.edit.Hide()
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -89,8 +91,10 @@ func (m *TIntEditLink) EndEdit() bool {
 		if v, err := strconv.Atoi(value); err == nil {
 			m.BindData.EditNodeData.IntValue = v
 		}
-		m.VTree.EndEditNode()
 		m.edit.Hide()
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }

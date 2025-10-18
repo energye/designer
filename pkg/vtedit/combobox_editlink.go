@@ -68,7 +68,9 @@ func (m *TComboBoxEditLink) CancelEdit() bool {
 	if !m.stopping {
 		m.stopping = true
 		m.combobox.Hide()
-		m.VTree.CancelEditNode()
+		if m.VTree != nil {
+			m.VTree.CancelEditNode()
+		}
 	}
 	return true
 }
@@ -80,8 +82,10 @@ func (m *TComboBoxEditLink) EndEdit() bool {
 		m.stopping = true
 		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
 		m.BindData.EditNodeData.StringValue = m.combobox.Text()
-		m.VTree.EndEditNode()
 		m.combobox.Hide()
+		if m.VTree != nil {
+			m.VTree.EndEditNode()
+		}
 	}
 	return true
 }
