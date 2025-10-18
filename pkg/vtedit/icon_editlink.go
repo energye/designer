@@ -38,7 +38,7 @@ func (m *TIconEditLink) Create() {
 	m.btn.SetOnClick(func(sender lcl.IObject) {
 		editorform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
 			logs.Debug("TIconEditLink callback 图片目录:", filePath, ok)
-		}, MainForm)
+		}).ShowModal()
 	})
 	m.btn.SetLayout(types.BlGlyphRight)
 	textFont := m.btn.Font()

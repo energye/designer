@@ -30,9 +30,14 @@ type TGraphicPropertyEditorForm struct {
 	imageFilePath       string
 }
 
-func NewGraphicPropertyEditor(dialogCallback DialogCallback) {
+func NewGraphicPropertyEditor(dialogCallback DialogCallback) *TGraphicPropertyEditorForm {
 	designerForm := &TGraphicPropertyEditorForm{dialogCallback: dialogCallback}
 	lcl.Application.NewForm(designerForm)
+	//designerForm.IEngForm = lcl.NewEngForm(nil)
+	//designerForm.FormCreate(nil)
+	//designerForm.SetOnCloseQuery(designerForm.OnCloseQuery)
+	//designerForm.SetOnClose(designerForm.OnClose)
+	return designerForm
 }
 
 func (m *TGraphicPropertyEditorForm) FormCreate(sender lcl.IObject) {
@@ -41,10 +46,10 @@ func (m *TGraphicPropertyEditorForm) FormCreate(sender lcl.IObject) {
 	//m.SetShowInTaskBar(types.StNever)
 	m.SetWidth(950)
 	m.SetHeight(450)
-	m.SetVisible(true)
 	m.WorkAreaCenter()
+	//m.SetPopupParent(m.form)
+	//m.SetPopupMode(types.PmExplicit)
 	m.initComponentLayout()
-	m.ShowModal()
 }
 
 func (m *TGraphicPropertyEditorForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {

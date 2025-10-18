@@ -4,6 +4,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -31,6 +32,7 @@ type TAppWindow struct {
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
+	vtedit.MainForm = m
 	logs.Info("FormCreate")
 	cfg := config.Config
 	// 属性
