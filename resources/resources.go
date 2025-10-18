@@ -22,6 +22,9 @@ var (
 	// 图标资源
 	//go:embed images
 	images embed.FS
+	// 弹窗过滤
+	//go:embed dialog-filter.json
+	dialogFilter embed.FS
 )
 
 var (
@@ -31,6 +34,14 @@ var (
 // 配置文件
 func Config() []byte {
 	if d, err := config.ReadFile("config.json"); err == nil {
+		return d
+	}
+	return nil
+}
+
+// 弹窗过滤
+func DialogFilter() []byte {
+	if d, err := dialogFilter.ReadFile("dialog-filter.json"); err == nil {
 		return d
 	}
 	return nil
