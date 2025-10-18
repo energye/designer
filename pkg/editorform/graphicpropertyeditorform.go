@@ -10,6 +10,8 @@ import (
 
 // 图片加载
 
+type DialogCallback func(filePath string)
+
 type TGraphicPropertyEditorForm struct {
 	lcl.TEngForm
 	loadButton          lcl.IButton
@@ -24,10 +26,11 @@ type TGraphicPropertyEditorForm struct {
 	saveDialog          lcl.ISavePictureDialog
 	groupBox            lcl.IGroupBox
 	scrollBox           lcl.IScrollBox
+	dialogCallback      DialogCallback
 }
 
-func NewGraphicPropertyEditor() {
-	designerForm := &TGraphicPropertyEditorForm{}
+func NewGraphicPropertyEditor(dialogCallback DialogCallback) {
+	designerForm := &TGraphicPropertyEditorForm{dialogCallback: dialogCallback}
 	lcl.Application.NewForm(designerForm)
 }
 
@@ -196,13 +199,20 @@ func (m *TGraphicPropertyEditorForm) loadImageBtnOnClick(sender lcl.IObject) {
 	if m.openDialog.Execute() {
 		fileName := m.openDialog.FileName()
 		m.imagePreview.Picture().LoadFromFile(fileName)
+		if m.dialogCallback != nil {
+			m.dialogCallback(fileName)
+		}
 	}
 }
 
 func (m *TGraphicPropertyEditorForm) saveImageBtnOnClick(sender lcl.IObject) {
 	logs.Debug("TGraphicPropertyEditorForm saveImageBtnOnClick")
 	if m.saveDialog.Execute() {
-		m.imagePreview.Picture().SaveToFile(m.saveDialog.FileName(), m.saveDialog.GetFilterExt())
+		fileName := m.saveDialog.FileName()
+		m.imagePreview.Picture().SaveToFile(fileName, m.saveDialog.GetFilterExt())
+		if m.dialogCallback != nil {
+			m.dialogCallback(fileName)
+		}
 	}
 }
 

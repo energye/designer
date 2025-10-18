@@ -17,11 +17,6 @@ type Inspector struct {
 	componentProperty *InspectorComponentProperty // 组件属性实现
 }
 
-// 返回查看器实例
-func GetInspector() *Inspector {
-	return inspector
-}
-
 // 加载组件
 // 属性, 事件
 // 参数: component 当前正在设计的组件
