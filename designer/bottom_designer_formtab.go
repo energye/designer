@@ -175,6 +175,9 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	defaultComp := m.designerBox
 	var iterable func(comp *DesigningComponent) bool
 	iterable = func(comp *DesigningComponent) bool {
+		if comp == nil {
+			return false
+		}
 		// 如果有当前设计面板有正在设计的组件
 		// 加载正在设计的组件
 		if comp.isDesigner {

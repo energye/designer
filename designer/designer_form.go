@@ -13,6 +13,15 @@ type TDesignerForm struct {
 
 func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
 	logs.Info("TDesignerForm FormCreate")
+	m.SetLeft(margin)
+	m.SetTop(margin)
+	m.SetWidth(defaultWidth)
+	m.SetHeight(defaultHeight)
+	m.SetAlign(types.AlCustom)
+	m.SetShowInTaskBar(types.StNever)
+	m.SetControlStyle(m.ControlStyle().Include(types.CsNoDesignVisible))
+	m.SetBorderStyleToFormBorderStyle(types.BsNone)
+	m.SetFormStyle(types.FsNormal)
 }
 
 func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
@@ -29,21 +38,12 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	//designerForm := lcl.NewForm(nil)
 	designerForm := &TDesignerForm{}
 	lcl.Application.NewForm(designerForm)
-	designerForm.SetLeft(margin)
-	designerForm.SetTop(margin)
-	designerForm.SetWidth(defaultWidth)
-	designerForm.SetHeight(defaultHeight)
 	designerForm.SetName(m.name)
 	designerForm.SetCaption("")
-	designerForm.SetAlign(types.AlCustom)
-	designerForm.SetShowInTaskBar(types.StNever)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
 	designerForm.SetDesigner(formDesigner.Designer())
-	designerForm.SetFormStyle(types.FsNormal)
-	designerForm.SetControlStyle(designerForm.ControlStyle().Include(types.CsNoDesignVisible))
-	designerForm.SetBorderStyleToFormBorderStyle(types.BsNone)
 	//SetDesignMode(designerForm)
 	designerForm.SetParent(m.scroll)
 	designerForm.SetVisible(true)

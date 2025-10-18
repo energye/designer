@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/editorform"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -125,7 +126,8 @@ func (m *TopToolbar) createToolBarBtns() {
 	})
 	openFormBtn := newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开窗体", 1)
 	openFormBtn.SetOnClick(func(sender lcl.IObject) {
-
+		// todo test
+		editorform.NewGraphicPropertyEditor()
 	})
 	newSepa()
 	saveFormBtn := newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存窗体", 1)
