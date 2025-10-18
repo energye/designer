@@ -47,6 +47,10 @@ func (m *TCheckBoxEditLink) Create() {
 		node := m.Node.ToGo()
 		parentNode := node.Parent
 		if pData := GetPropertyNodeData(parentNode); pData != nil {
+			// 只当前节点的父节点是 PdtCheckBoxList 类型时才修改父节点的显示单元格
+			if pData.EditNodeData.Type != PdtCheckBoxList {
+				return
+			}
 			dataList := pData.EditNodeData.CheckBoxValue
 			buf := bytes.Buffer{}
 			buf.WriteString("[")
