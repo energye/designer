@@ -10,7 +10,7 @@ import (
 
 // 图片加载
 
-type DialogCallback func(filePath string)
+type DialogCallback func(filePath string, ok bool)
 
 type TGraphicPropertyEditorForm struct {
 	lcl.TEngForm
@@ -27,6 +27,7 @@ type TGraphicPropertyEditorForm struct {
 	groupBox            lcl.IGroupBox
 	scrollBox           lcl.IScrollBox
 	dialogCallback      DialogCallback
+	imageFilePath       string
 }
 
 func NewGraphicPropertyEditor(dialogCallback DialogCallback) {
@@ -93,11 +94,19 @@ func (m *TGraphicPropertyEditorForm) initComponentLayout() {
 	m.okCancelButtonPanel.CancelButton().SetCaption("取消")
 	m.okCancelButtonPanel.OKButton().SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("OKButton().SetOnClick")
-		//m.SetModalResult(types.MrOk)
+		m.SetModalResult(types.MrOk)
+		if m.dialogCallback != nil {
+			m.dialogCallback(m.imageFilePath, true)
+		}
+		m.Close()
 	})
 	m.okCancelButtonPanel.CancelButton().SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("CancelButton().SetOnClick")
-		//m.SetModalResult(types.MrCancel)
+		m.SetModalResult(types.MrCancel)
+		if m.dialogCallback != nil {
+			m.dialogCallback(m.imageFilePath, false)
+		}
+		m.Close()
 	})
 	m.okCancelButtonPanel.SetParent(m)
 
@@ -199,9 +208,7 @@ func (m *TGraphicPropertyEditorForm) loadImageBtnOnClick(sender lcl.IObject) {
 	if m.openDialog.Execute() {
 		fileName := m.openDialog.FileName()
 		m.imagePreview.Picture().LoadFromFile(fileName)
-		if m.dialogCallback != nil {
-			m.dialogCallback(fileName)
-		}
+		m.imageFilePath = fileName
 	}
 }
 
@@ -210,14 +217,13 @@ func (m *TGraphicPropertyEditorForm) saveImageBtnOnClick(sender lcl.IObject) {
 	if m.saveDialog.Execute() {
 		fileName := m.saveDialog.FileName()
 		m.imagePreview.Picture().SaveToFile(fileName, m.saveDialog.GetFilterExt())
-		if m.dialogCallback != nil {
-			m.dialogCallback(fileName)
-		}
+		m.imageFilePath = fileName
 	}
 }
 
 func (m *TGraphicPropertyEditorForm) clearImageBtnOnClick(sender lcl.IObject) {
 	m.imagePreview.Picture().Clear()
+	m.imageFilePath = ""
 }
 
 func (m *TGraphicPropertyEditorForm) copyImageBtnOnClick(sender lcl.IObject) {
