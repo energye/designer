@@ -195,13 +195,15 @@ func (m *TGraphicPropertyEditorForm) loadImageBtnOnClick(sender lcl.IObject) {
 	logs.Debug("TGraphicPropertyEditorForm loadImageBtnOnClick")
 	if m.openDialog.Execute() {
 		fileName := m.openDialog.FileName()
-		logs.Debug("图片路径", fileName)
 		m.imagePreview.Picture().LoadFromFile(fileName)
 	}
 }
 
 func (m *TGraphicPropertyEditorForm) saveImageBtnOnClick(sender lcl.IObject) {
-
+	logs.Debug("TGraphicPropertyEditorForm saveImageBtnOnClick")
+	if m.saveDialog.Execute() {
+		m.imagePreview.Picture().SaveToFile(m.saveDialog.FileName(), m.saveDialog.GetFilterExt())
+	}
 }
 
 func (m *TGraphicPropertyEditorForm) clearImageBtnOnClick(sender lcl.IObject) {
