@@ -64,7 +64,7 @@ func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData
 	}
 	data := updateNodeData.EditNodeData
 	propName := strings.ToLower(data.Name)
-	logs.Error("更新组件树, 尝试更新属性:", data.Name)
+	logs.Debug("更新组件树, 尝试更新属性:", data.Name)
 	switch propName {
 	case "name":
 		m.node.SetText(m.TreeName())

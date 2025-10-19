@@ -15,7 +15,12 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
 	})
-
+	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
+		tree.EndEditNode()
+		tree.SetFocusedNode(node)
+		sender.SetSelected(node, true)
+		sender.ScrollIntoViewWithPVirtualNodeBoolX2(node, true, true)
+	})
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
@@ -26,11 +31,13 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			//logs.Info("  OnPaintText level:", level)
 			switch level {
 			case 0:
-				font.SetColor(colors.ClBlack)
+				font.SetColor(colors.RGBToColor(0, 32, 96))
 			case 1:
-				font.SetColor(colors.ClBlue)
+				font.SetColor(colors.RGBToColor(0, 80, 239))
+			case 2:
+				font.SetColor(colors.RGBToColor(61, 133, 224))
 			default:
-				font.SetColor(colors.ClGreen)
+				font.SetColor(colors.RGBToColor(100, 195, 255))
 			}
 		} else if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
@@ -65,6 +72,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	//})
 	tree.SetOnColumnClick(func(sender lcl.IBaseVirtualTree, column int32, shift types.TShiftState) {
 		logs.Debug("[object inspector-property] OnColumnClick column:", column, "node:", sender.FocusedNode())
+		tree.EndEditNode()
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
