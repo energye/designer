@@ -116,3 +116,15 @@ func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent
 	m.SetObject(comp)
 	return m
 }
+
+// 虚拟树 LazVirtualStringTree
+func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+	m := newVisualComponent(designerForm)
+	comp := lcl.NewLazVirtualStringTree(designerForm.designerBox.object)
+	comp.SetName(designerForm.GetComponentCaptionName("LazVirtualStringTree"))
+	setBaseProp(comp, x, y)
+	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag.SetRelation(m)
+	m.SetObject(comp)
+	return m
+}

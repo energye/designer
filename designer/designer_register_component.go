@@ -18,6 +18,7 @@ func init() {
 	registerComponents["TLabel"] = NewLabelDesigner
 	registerComponents["TMemo"] = NewMemoDesigner
 	registerComponents["TToggleBox"] = NewToggleBoxDesigner
+	registerComponents["TLazVirtualStringTree"] = NewLazVirtualStringTreeDesigner
 }
 
 // 获取注册的设计组件
