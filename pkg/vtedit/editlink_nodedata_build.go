@@ -3,6 +3,7 @@ package vtedit
 import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
 	"math/bits"
 	"os"
 	"sort"
@@ -102,5 +103,34 @@ func (m *TEditLinkNodeData) Build() {
 		m.Name = m.Metadata.Name
 		logs.Warn("未识别的元数据类型:", m.Metadata.ToJSON())
 		return
+	}
+}
+
+// 构建节点数据
+func (m *TEditNodeData) Build() {
+	// 构建类字段属性, 做为子节点
+	if m.EditNodeData.Type == PdtClass {
+		if m.EditNodeData.Class.Instance != 0 {
+			object := lcl.AsObject(m.EditNodeData.Class.Instance)
+			var properties []lcl.ComponentProperties
+			properties = lcl.DesigningComponent().GetComponentProperties(object)
+			m.EditNodeData.Class.Count = int32(len(properties))
+			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
+			for _, prop := range properties {
+				newProp := prop
+				if newProp.Kind == "tkMethod" {
+					continue // tkMethod 事件函数
+				}
+				newEditLinkNodeData := NewEditLinkNodeData(&newProp)
+				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(),
+					AffiliatedComponent: m.AffiliatedComponent, Parent: m}
+				m.Child = append(m.Child, newEditNodeData)
+				newEditNodeData.Build()
+			}
+		} else {
+			logs.Debug("TEditNodeData Build Class 实例是'0', 属性名:", m.EditNodeData.Name)
+		}
+	} else {
+		// 其它？？
 	}
 }

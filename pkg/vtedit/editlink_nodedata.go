@@ -159,8 +159,8 @@ type IDesigningComponent interface {
 
 // 编辑的节点数据
 type TEditNodeData struct {
-	Parent              *TEditNodeData      // 父节点
-	Child               []*TEditNodeData    // 子节点
+	Parent              *TEditNodeData      // 父属性节点
+	Child               []*TEditNodeData    // 子属性节点
 	IsFinal             bool                // 标记是否最终对象, 用于完整的数据
 	EditNodeData        *TEditLinkNodeData  // 编辑数据
 	OriginNodeData      *TEditLinkNodeData  // 原始数据
@@ -233,35 +233,6 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 	}
 	_, ok := propertyTreeDataList[node]
 	return ok
-}
-
-// 构建节点数据
-func (m *TEditNodeData) Build() {
-	// 构建类字段属性, 做为子节点
-	if m.EditNodeData.Type == PdtClass {
-		if m.EditNodeData.Class.Instance != 0 {
-			object := lcl.AsObject(m.EditNodeData.Class.Instance)
-			var properties []lcl.ComponentProperties
-			properties = lcl.DesigningComponent().GetComponentProperties(object)
-			m.EditNodeData.Class.Count = int32(len(properties))
-			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
-			for _, prop := range properties {
-				newProp := prop
-				if newProp.Kind == "tkMethod" {
-					continue // tkMethod 事件函数
-				}
-				newEditLinkNodeData := NewEditLinkNodeData(&newProp)
-				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(),
-					AffiliatedComponent: m.AffiliatedComponent, Parent: m}
-				m.Child = append(m.Child, newEditNodeData)
-				newEditNodeData.Build()
-			}
-		} else {
-			logs.Debug("TEditNodeData Build Class 实例是'0', 属性名:", m.EditNodeData.Name)
-		}
-	} else {
-		// 其它？？
-	}
 }
 
 func (m *TEditNodeData) Type() PropertyDataType {

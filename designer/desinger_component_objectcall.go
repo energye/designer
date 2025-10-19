@@ -238,15 +238,21 @@ func (m *reflector) findObject() (object reflect.Value) {
 
 	switch data.Type() {
 	case vtedit.PdtCheckBox:
-		// checkbox 需要从父节点获得到所属实际节点
+		// checkbox 需要从父节点获得所属实际节点
 		node := m.data.AffiliatedNode.ToGo()
 		parentNode := node.Parent
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
 			data = pData // 使用父节点
 		}
 	}
-	if data.Parent != nil {
-		pData := data.Parent
+	if pData := data.Parent; pData != nil {
+		comp, ok := pData.AffiliatedComponent.(*DesigningComponent)
+		if comp != nil && ok {
+
+		}
+		methodName := pData.Name()
+		_ = methodName
+
 		if pData.Type() == vtedit.PdtClass {
 			// class 属性节点
 			// 返回 class 对象
