@@ -9,7 +9,6 @@ import (
 	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
-	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"reflect"
 	"strings"
@@ -228,6 +227,7 @@ func (m *reflector) findMethodName() string {
 	default:
 		methodName = m.data.Name()
 	}
+	// Setter
 	methodName = methodNameToSet(methodName)
 	return methodName
 }
@@ -245,21 +245,34 @@ func (m *reflector) findObject() (object reflect.Value) {
 			data = pData // 使用父节点
 		}
 	}
-	if pData := data.Parent; pData != nil {
-		comp, ok := pData.AffiliatedComponent.(*DesigningComponent)
-		if comp != nil && ok {
-
+	// 方法是用于遍历对象路径, 当当前节点具有父节点时且父节点为 class 时查找出所有对象目录
+	// 找到所有对象目录后从顶层对象开始调用, 直到返回当前属性所在的对象
+	// todo 1: 可能存在的问题, 某父对象不是class一定是错误的
+	// todo 2: 当属性（对象方法）不正确时需要做特殊处理转换, 例如: Pen() >= PenToPen() 等等
+	iterObjectName := func(data *vtedit.TEditNodeData) {
+		var paths []string
+		pData := data.Parent
+		for pData != nil {
+			if pData.Type() == vtedit.PdtClass { //todo 1
+				paths = append(paths, pData.Name())
+			} else {
+				// 不正确, 直接退出
+				panic("递归遍历属性节点对象路径错误, 对象非class类型, 节点必须为class类型: " + pData.Name())
+			}
+			pData = pData.Parent
 		}
-		methodName := pData.Name()
-		_ = methodName
-
-		if pData.Type() == vtedit.PdtClass {
-			// class 属性节点
-			// 返回 class 对象
-			instance := pData.Class().Instance
-			lcl.AsObject(instance)
+		if len(paths) > 0 {
+			for i := len(paths) - 1; i >= 0; i-- {
+				name := paths[i] // todo 2
+				in := make([]reflect.Value, 0)
+				method := m.findMethod(object, name)
+				results := method.Call(in)
+				// 当前属性的所属对象
+				object = results[0]
+			}
 		}
 	}
+	iterObjectName(data)
 	return
 }
 
@@ -299,7 +312,7 @@ func (m *reflector) callMethod() ([]any, error) {
 		//logs.Debug("reflector callMethod targetType:", targetType, targetType.String(), targetType.Name())
 	}
 
-	logs.Debug("调用方法开始:", methodName, "参数:", args)
+	logs.Debug("调用方法开始:", methodName, "参数值:", args)
 	// 调用方法
 	results := method.Call(in)
 
