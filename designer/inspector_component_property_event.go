@@ -17,6 +17,10 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	})
 	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
 		tree.EndEditNode()
+		data := vtedit.GetPropertyNodeData(node)
+		if data != nil {
+			m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+		}
 		tree.SetFocusedNode(node)
 		sender.SetSelected(node, true)
 		sender.ScrollIntoViewWithPVirtualNodeBoolX2(node, true, true)
