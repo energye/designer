@@ -21,6 +21,10 @@ func methodNameToSet(name string) string {
 	return "Set" + name
 }
 
+func (m *DesigningComponent) UpdateDesignerComponentProper() {
+
+}
+
 // 更新当前组件属性
 func (m *DesigningComponent) UpdateComponentProperty(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()

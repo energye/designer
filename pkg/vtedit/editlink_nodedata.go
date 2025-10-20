@@ -260,6 +260,8 @@ func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormComponentPropertyToInspectorProperty property-name:", m.EditNodeData.Name)
 	}
+
+	//m.AffiliatedNode
 }
 
 // 是否被修改
