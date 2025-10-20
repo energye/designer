@@ -189,10 +189,39 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 	if m.isDown {
 		m.drag.Show()
 	}
+	br := m.BoundsRect()
+	go m.UpdateNodeDataPoint(br.Left, br.Top)
 	m.isDown = false
 	message.FollowHide()
 	lcl.Mouse.SetCapture(0)
 	m.DragEnd()
+}
+
+// 更新节点数据, Left Top
+func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
+	var (
+		top  *vtedit.TEditNodeData
+		left *vtedit.TEditNodeData
+	)
+	for _, prop := range m.propertyList {
+		switch prop.Name() {
+		case "Left":
+			top = prop
+		case "Top":
+			left = prop
+		}
+		if top != nil && left != nil {
+			break
+		}
+	}
+	if top != nil && left != nil {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			top.SetEditValue(x)
+			inspector.componentProperty.propertyTree.InvalidateNode(top.AffiliatedNode)
+			left.SetEditValue(y)
+			inspector.componentProperty.propertyTree.InvalidateNode(left.AffiliatedNode)
+		})
+	}
 }
 
 // 设置对象实例

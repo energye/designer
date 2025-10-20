@@ -12,7 +12,6 @@ import (
 // 查看器的数据类型
 
 // PropertyDataType 属性数据组件类型
-// 有哪些？TODO 0:按钮 1:复选框 2:下拉框 3:进度条 4:微调框 5:日期选择器
 type PropertyDataType int32
 
 const (
@@ -154,7 +153,7 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 
 // 设计组件接口
 type IDesigningComponent interface {
-	UpdateComponentProperty(nodeData *TEditNodeData)
+	UpdateComponentPropertyToObject(nodeData *TEditNodeData)
 }
 
 // 编辑的节点数据
@@ -250,7 +249,7 @@ func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.AffiliatedComponent.UpdateComponentProperty(m)
+			m.AffiliatedComponent.UpdateComponentPropertyToObject(m)
 		})
 	}
 }
