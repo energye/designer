@@ -22,6 +22,11 @@ const (
 	CtVisual                         // 可视组件
 )
 
+type SyncLock struct {
+	Point bool
+	Size  bool
+}
+
 // 设计组件
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
@@ -43,6 +48,7 @@ type DesigningComponent struct {
 	parent            *DesigningComponent     // 所属父节点
 	child             []*DesigningComponent   // 拥有的子节点列表
 	compPropTreeState ComponentPropTreeState  // 组件树状态
+	ss                SyncLock                // 同步锁
 }
 
 // 组件属性树状态
@@ -150,7 +156,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
 		message.Follow(msgContent)
-
+		go m.UpdateNodeDataPoint(br.Left, br.Top)
 	}
 }
 
@@ -199,6 +205,10 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 
 // 更新节点数据, Left Top
 func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
+	if m.ss.Point {
+		return
+	}
+	m.ss.Point = true
 	var (
 		top  *vtedit.TEditNodeData
 		left *vtedit.TEditNodeData
@@ -220,6 +230,39 @@ func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
 			inspector.componentProperty.propertyTree.InvalidateNode(top.AffiliatedNode)
 			left.SetEditValue(y)
 			inspector.componentProperty.propertyTree.InvalidateNode(left.AffiliatedNode)
+			m.ss.Point = false
+		})
+	}
+}
+
+// 更新节点数据, Width Height
+func (m *DesigningComponent) UpdateNodeDataSize(w, h int32) {
+	if m.ss.Size {
+		return
+	}
+	m.ss.Size = true
+	var (
+		width  *vtedit.TEditNodeData
+		height *vtedit.TEditNodeData
+	)
+	for _, prop := range m.propertyList {
+		switch prop.Name() {
+		case "Width":
+			width = prop
+		case "Height":
+			height = prop
+		}
+		if width != nil && height != nil {
+			break
+		}
+	}
+	if width != nil && height != nil {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			width.SetEditValue(w)
+			inspector.componentProperty.propertyTree.InvalidateNode(width.AffiliatedNode)
+			height.SetEditValue(h)
+			inspector.componentProperty.propertyTree.InvalidateNode(height.AffiliatedNode)
+			m.ss.Size = false
 		})
 	}
 }

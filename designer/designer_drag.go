@@ -116,6 +116,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				m.relation.SetBounds(dcx, dcy, dcw+x, dch+y)
 			}
 			br := m.relation.BoundsRect()
+			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
 		}
@@ -137,6 +138,8 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		m.Show()
 		isDown = false
 		message.FollowHide()
+		br := m.relation.BoundsRect()
+		go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
 		m.relation.DragEnd()
 	})
 	return pnl
