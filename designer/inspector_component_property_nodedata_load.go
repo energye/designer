@@ -9,18 +9,18 @@ import (
 // 设计 - 组件的设计属性和设计事件数据加载
 
 // 清空树
-func (m *InspectorComponentProperty) Clear() {
-	vtedit.ResetPropertyNodeData()
-	m.propertyTree.Clear()
-	m.eventTree.Clear()
-}
+//func (m *InspectorComponentProperty) Clear() {
+//vtedit.ResetPropertyNodeData()
+//m.propertyTree.Clear()
+//m.eventTree.Clear()
+//}
 
 // 加载属性和事件列表
 func (m *InspectorComponentProperty) Load(component *DesigningComponent) {
 	if component != m.currentComponent {
 		m.currentComponent = component
 		// 清空树数据
-		m.Clear()
+		//m.Clear()
 
 		// 加载属性列表
 		m.loadPropertyList(component)
@@ -58,7 +58,7 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 			nodeData.IsFinal = true
 		}
 		// 属性节点数据添加到树
-		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
+		vtedit.AddPropertyNodeData(component.propertyTree, 0, nodeData)
 	}
 }
 

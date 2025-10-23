@@ -179,9 +179,9 @@ func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 	return m
 }
 
-func ResetPropertyNodeData() {
-	propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
-}
+//func ResetPropertyNodeData() {
+//	//propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
+//}
 
 // 添加数据到指定节点
 func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditNodeData) types.PVirtualNode {
@@ -190,7 +190,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 	data.AffiliatedNode = node
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
-	if data.EditNodeData.Type == PdtCheckBoxList {
+	if data.Type() == PdtCheckBoxList {
 		// 复选框列表
 		dataList := data.EditNodeData.CheckBoxValue
 		buf := bytes.Buffer{}
@@ -209,7 +209,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 		}
 		buf.WriteString("]")
 		data.EditNodeData.StringValue = buf.String()
-	} else if data.EditNodeData.Type == PdtClass {
+	} else if data.Type() == PdtClass {
 		for _, nodeData := range data.Child {
 			AddPropertyNodeData(tree, node, nodeData)
 		}
@@ -232,6 +232,11 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 	}
 	_, ok := propertyTreeDataList[node]
 	return ok
+}
+
+// 删除节点属性数据
+func DelPropertyNodeData(node types.PVirtualNode) {
+	delete(propertyTreeDataList, node)
 }
 
 func (m *TEditNodeData) Type() PropertyDataType {

@@ -28,14 +28,12 @@ func (m *Inspector) LoadComponentProps(component *DesigningComponent) {
 	// 属性列表为空时获取属性列表
 	component.GetProps()
 	// 加载属性列表和事件列表
-	go lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.componentProperty.Load(component)
-		logs.Debug("加载组件属性完成", component.ClassName())
-		selectNode := component.compPropTreeState.selectNode
-		if vtedit.IsExistNodeData(selectNode) {
-			// 恢复上次选择的编辑节点
-			m.componentProperty.propertyTree.SetSelected(selectNode, true)
-			m.componentProperty.propertyTree.ScrollIntoViewWithPVirtualNodeBoolX2(selectNode, true, true)
-		}
-	})
+	m.componentProperty.Load(component)
+	logs.Debug("加载组件属性完成", component.ClassName())
+	selectNode := component.compPropTreeState.selectNode
+	if vtedit.IsExistNodeData(selectNode) {
+		// 恢复上次选择的编辑节点
+		component.propertyTree.SetSelected(selectNode, true)
+		component.propertyTree.ScrollIntoViewWithPVirtualNodeBoolX2(selectNode, true, true)
+	}
 }

@@ -28,10 +28,11 @@ func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
 	logs.Info("TDesignerForm CreateParams ", *params)
 }
 
-// 创建设计窗体-隐藏
+// 创建设计窗体
 func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	dc := new(DesigningComponent)
 	dc.componentType = CtForm
+	dc.createComponentPropertyPage()
 	m.formRoot = dc
 
 	//designerForm := lcl.NewEngForm(nil)

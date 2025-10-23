@@ -12,7 +12,7 @@ import (
 // 设计 - 组件属性 - 事件
 
 // 初始化组件属性树
-func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
+func (m *DesigningComponent) initComponentPropertyTreeEvent() {
 	tree := m.propertyTree
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
@@ -21,7 +21,7 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 		tree.EndEditNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+			m.compPropTreeState.selectPropName = data.EditNodeData.Name
 		}
 		tree.SetFocusedNode(node)
 		sender.SetSelected(node, true)
@@ -85,14 +85,14 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			if data.EditNodeData.Type == vtedit.PdtClass {
 				switch data.EditNodeData.Name {
 				case "Icon":
-					m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+					m.compPropTreeState.selectPropName = data.EditNodeData.Name
 					tree.EditNode(node, 1)
 				default:
 
 				}
 			} else if data.EditNodeData.Type == vtedit.PdtCheckBoxList {
 			} else {
-				m.currentComponent.compPropTreeState.selectPropName = data.EditNodeData.Name
+				m.compPropTreeState.selectPropName = data.EditNodeData.Name
 				tree.EditNode(node, 1)
 			}
 		}
@@ -174,18 +174,18 @@ func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 			} else if column == 1 {
 				*cellText = data.EditValue()
 			}
-			if data.EditNodeData.Name == m.currentComponent.compPropTreeState.selectPropName {
-				m.currentComponent.compPropTreeState.selectNode = node
+			if data.EditNodeData.Name == m.compPropTreeState.selectPropName {
+				m.compPropTreeState.selectNode = node
 			}
 		}
 	})
 	tree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
 
-func (m *InspectorComponentProperty) PropertyEndEdit() {
+func (m *DesigningComponent) PropertyEndEdit() {
 	m.propertyTree.EndEditNode()
 }
 
-func (m *InspectorComponentProperty) EventEndEdit() {
+func (m *DesigningComponent) EventEndEdit() {
 	m.eventTree.EndEditNode()
 }

@@ -29,24 +29,29 @@ type SyncLock struct {
 
 // 设计组件
 type DesigningComponent struct {
-	ownerFormTab      *FormTab                // 所属设计表单面板
-	id                int                     // id 标识
-	originObject      any                     // 原始组件对象
-	object            lcl.IWinControl         // 组件 对象 可视
-	objectNon         lcl.IComponent          // 组件 对象 非可视
-	objectNonWrap     *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
-	parent            *DesigningComponent     // 所属父节点
-	child             []*DesigningComponent   // 拥有的子节点列表
-	drag              *drag                   // 拖拽控制
-	dx, dy            int32                   // 拖拽控制
-	dcl, dct          int32                   // 拖拽控制
-	isDown            bool                    // 拖拽控制
-	propertyList      []*vtedit.TEditNodeData // 组件属性
-	eventList         []*vtedit.TEditNodeData // 组件事件
-	isDesigner        bool                    // 组件是否正在设计
-	componentType     ComponentType           // 组件类型
-	node              lcl.ITreeNode           // 组件树节点对象
-	compPropTreeState ComponentPropTreeState  // 组件树状态
+	ownerFormTab      *FormTab                  // 所属设计表单面板
+	id                int                       // id 标识
+	originObject      any                       // 原始组件对象
+	object            lcl.IWinControl           // 组件 对象 可视
+	objectNon         lcl.IComponent            // 组件 对象 非可视
+	objectNonWrap     *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
+	parent            *DesigningComponent       // 所属父节点
+	child             []*DesigningComponent     // 拥有的子节点列表
+	drag              *drag                     // 拖拽控制
+	dx, dy            int32                     // 拖拽控制
+	dcl, dct          int32                     // 拖拽控制
+	isDown            bool                      // 拖拽控制
+	propertyList      []*vtedit.TEditNodeData   // 组件属性
+	eventList         []*vtedit.TEditNodeData   // 组件事件
+	isDesigner        bool                      // 组件是否正在设计
+	componentType     ComponentType             // 组件类型
+	node              lcl.ITreeNode             // 组件树节点对象
+	compPropTreeState ComponentPropTreeState    // 组件属性树状态
+	page              lcl.IPageControl          // 属性页和事件页
+	pageProperty      lcl.ITabSheet             // 属性页
+	pageEvent         lcl.ITabSheet             // 事件页
+	propertyTree      lcl.ILazVirtualStringTree // 组件属性树
+	eventTree         lcl.ILazVirtualStringTree // 组件事件树
 }
 
 // 组件属性树状态
@@ -63,11 +68,46 @@ func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
+// 创建组件属性页
+func (m *DesigningComponent) createComponentPropertyPage() {
+	m.page = lcl.NewPageControl(inspector.componentProperty.box)
+	m.page.SetParent(inspector.componentProperty.box)
+	m.page.SetTabStop(true)
+	m.page.SetTop(32)
+	m.page.SetWidth(leftBoxWidth)
+	m.page.SetHeight(inspector.componentProperty.box.Height() - m.page.Top())
+	m.page.SetAlign(types.AlCustom)
+	m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+
+	m.pageProperty = lcl.NewTabSheet(m.page)
+	m.pageProperty.SetParent(m.page)
+	m.pageProperty.SetCaption("  属性  ")
+	m.pageProperty.SetAlign(types.AlClient)
+	m.pageProperty.SetBorderWidth(0)
+
+	m.pageEvent = lcl.NewTabSheet(m.page)
+	m.pageEvent.SetParent(m.page)
+	m.pageEvent.SetCaption("  事件  ")
+	m.pageEvent.SetAlign(types.AlClient)
+
+	m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
+	vstConfig(m.propertyTree)
+	m.propertyTree.SetParent(m.pageProperty)
+
+	m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
+	vstConfig(m.eventTree)
+	m.eventTree.SetParent(m.pageEvent)
+
+	m.initComponentPropertyTreeEvent()
+}
+
 // 创建可视组件
 func newVisualComponent(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtVisual
 	m.ownerFormTab = designerForm
+
+	m.createComponentPropertyPage()
 	return m
 }
 
@@ -79,6 +119,8 @@ func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponen
 	objectWrap := NewNonVisualComponentWrap(designerForm.formRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
+
+	m.createComponentPropertyPage()
 	return m
 }
 
@@ -221,9 +263,9 @@ func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
 	if top != nil && left != nil {
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			top.SetEditValue(x)
-			inspector.componentProperty.propertyTree.InvalidateNode(top.AffiliatedNode)
+			m.propertyTree.InvalidateNode(top.AffiliatedNode)
 			left.SetEditValue(y)
-			inspector.componentProperty.propertyTree.InvalidateNode(left.AffiliatedNode)
+			m.propertyTree.InvalidateNode(left.AffiliatedNode)
 		})
 	}
 }
@@ -248,9 +290,9 @@ func (m *DesigningComponent) UpdateNodeDataSize(w, h int32) {
 	if width != nil && height != nil {
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			width.SetEditValue(w)
-			inspector.componentProperty.propertyTree.InvalidateNode(width.AffiliatedNode)
+			m.propertyTree.InvalidateNode(width.AffiliatedNode)
 			height.SetEditValue(h)
-			inspector.componentProperty.propertyTree.InvalidateNode(height.AffiliatedNode)
+			m.propertyTree.InvalidateNode(height.AffiliatedNode)
 		})
 	}
 }

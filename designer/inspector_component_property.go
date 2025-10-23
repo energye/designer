@@ -9,14 +9,14 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	box              lcl.IPanel                // 组件属性盒子
-	filter           lcl.ITreeFilterEdit       // 组件属性过滤框
-	page             lcl.IPageControl          // 属性和事件页
-	pageProperty     lcl.ITabSheet             // 属性页
-	pageEvent        lcl.ITabSheet             // 事件页
-	propertyTree     lcl.ILazVirtualStringTree // 组件属性
-	eventTree        lcl.ILazVirtualStringTree // 组件事件
-	currentComponent *DesigningComponent       // 当前正在设计的组件
+	box    lcl.IPanel          // 组件属性盒子
+	filter lcl.ITreeFilterEdit // 组件属性过滤框
+	//page         lcl.IPageControl    // 属性和事件页
+	//pageProperty lcl.ITabSheet       // 属性页
+	//pageEvent    lcl.ITabSheet       // 事件页
+	//propertyTree     lcl.ILazVirtualStringTree // 组件属性
+	//eventTree        lcl.ILazVirtualStringTree // 组件事件
+	currentComponent *DesigningComponent // 当前正在设计的组件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
@@ -37,113 +37,79 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 	// 选项卡
 	{
-		m.page = lcl.NewPageControl(m.box)
-		m.page.SetParent(m.box)
-		m.page.SetTabStop(true)
-		m.page.SetTop(32)
-		m.page.SetWidth(leftBoxWidth)
-		m.page.SetHeight(m.box.Height() - m.page.Top())
-		m.page.SetAlign(types.AlCustom)
-		m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
-
-		m.pageProperty = lcl.NewTabSheet(m.page)
-		m.pageProperty.SetParent(m.page)
-		m.pageProperty.SetCaption("  属性  ")
-		m.pageProperty.SetAlign(types.AlClient)
-		m.pageProperty.SetBorderWidth(0)
-
-		m.pageEvent = lcl.NewTabSheet(m.page)
-		m.pageEvent.SetParent(m.page)
-		m.pageEvent.SetCaption("  事件  ")
-		m.pageEvent.SetAlign(types.AlClient)
+		//m.page = lcl.NewPageControl(m.box)
+		//m.page.SetParent(m.box)
+		//m.page.SetTabStop(true)
+		//m.page.SetTop(32)
+		//m.page.SetWidth(leftBoxWidth)
+		//m.page.SetHeight(m.box.Height() - m.page.Top())
+		//m.page.SetAlign(types.AlCustom)
+		//m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+		//
+		//m.pageProperty = lcl.NewTabSheet(m.page)
+		//m.pageProperty.SetParent(m.page)
+		//m.pageProperty.SetCaption("  属性  ")
+		//m.pageProperty.SetAlign(types.AlClient)
+		//m.pageProperty.SetBorderWidth(0)
+		//
+		//m.pageEvent = lcl.NewTabSheet(m.page)
+		//m.pageEvent.SetParent(m.page)
+		//m.pageEvent.SetCaption("  事件  ")
+		//m.pageEvent.SetAlign(types.AlClient)
 	}
 	// 组件的属性列表和事件列表"树"
 	{
-		vstConfig := func(tree lcl.ILazVirtualStringTree) {
-			tree.SetBorderStyleToBorderStyle(types.BsNone)
-			tree.SetAlign(types.AlClient)
-			tree.SetLineStyle(types.LsSolid)
-			tree.SetDefaultNodeHeight(28)
-			tree.SetIndent(8)
-
-			// options
-			propTreeOptions := tree.TreeOptions()
-			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
-			propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
-			propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToLevelSelectConstraint))
-			propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
-
-			// 颜色
-			propColors := tree.Colors()
-			propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
-			propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
-
-			// header
-			header := tree.Header()
-			header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
-			header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
-			header.Font().SetColor(colors.ClGray)
-			columns := header.Columns()
-			columns.Clear()
-			propNameCol := columns.AddToVirtualTreeColumn()
-			propNameCol.SetText("名")
-			propNameCol.SetWidth(125)
-			propNameCol.SetAlignment(types.TaLeftJustify)
-			//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
-
-			propValueCol := columns.AddToVirtualTreeColumn()
-			propValueCol.SetText("值")
-			//propValueCol.SetWidth(leftBoxWidth - 125)
-			propValueCol.SetAlignment(types.TaLeftJustify)
-			propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-		}
 		// 组件属性树列表
-		m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
-		m.propertyTree.SetParent(m.pageProperty)
-		vstConfig(m.propertyTree)
+		//m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
+		//m.propertyTree.SetParent(m.pageProperty)
+		//vstConfig(m.propertyTree)
 
 		// 组件事件树列表
-		m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
-		m.eventTree.SetParent(m.pageEvent)
-		vstConfig(m.eventTree)
+		//m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
+		//m.eventTree.SetParent(m.pageEvent)
+		//vstConfig(m.eventTree)
 
 	}
 	// 初始化组件属性事件
-	m.initComponentPropertyTreeEvent()
 	//m.initComponentPropertyTreeEvent()
 
-	// 测试
-	{
-		//data := &vtedit.TEditLinkNodeData{Type: vtedit.PdtText, Name: "TextEdit", StringValue: "Value"}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtInt, Name: "IntEdit", IntValue: 1}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtFloat, Name: "FloatEdit", FloatValue: 1.99}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBox, Name: "CheckBox", Checked: true}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtColorSelect, Name: "ColorSelect", IntValue: 0xFF0000}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxList, Name: "Anchors", StringValue: "",
-		//	CheckBoxValue: []*vtedit.TEditLinkNodeData{{Type: vtedit.PdtCheckBox, Name: "Value1", Checked: true}, {Type: vtedit.PdtCheckBox, Name: "Value2", Checked: false}}}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-		//
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtComboBox, Name: "CombBox", StringValue: "Value1",
-		//	ComboBoxValue: []*vtedit.TEditLinkNodeData{{StringValue: "Value1"}, {StringValue: "Value2"}}}
-		//vtedit.AddPropertyNodeData(m.propertyTree, 0, data)
-
-		//node = m.propertyTree.AddChild(0, 0)
-		//data = &vtedit.TEditLinkNodeData{Type: vtedit.PdtCheckBoxDraw, Name: "CheckBoxDraw", BoolValue: true,
-		//	CheckBoxValue: []vtedit.TEditLinkNodeData{{Name: "Value1", BoolValue: true}, {Name: "Value2", BoolValue: false}}}
-		//AddPropertyNodeData(node, data)
-	}
 }
 
-func (m *InspectorComponentProperty) scrollPropertyTree(deltaX int32, deltaY int32) {
-	m.propertyTree.ScrollByWS(deltaX, deltaY)
+func vstConfig(tree lcl.ILazVirtualStringTree) {
+	tree.SetBorderStyleToBorderStyle(types.BsNone)
+	tree.SetAlign(types.AlClient)
+	tree.SetLineStyle(types.LsSolid)
+	tree.SetDefaultNodeHeight(28)
+	tree.SetIndent(8)
+
+	// options
+	propTreeOptions := tree.TreeOptions()
+	propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Exclude(types.ToShowTreeLines))
+	propTreeOptions.SetPaintOptions(propTreeOptions.PaintOptions().Include(types.ToShowVertGridLines, types.ToShowHorzGridLines))
+	propTreeOptions.SetSelectionOptions(propTreeOptions.SelectionOptions().Include(types.ToFullRowSelect, types.ToLevelSelectConstraint))
+	propTreeOptions.SetMiscOptions(propTreeOptions.MiscOptions().Include(types.ToEditable, types.ToEditOnClick, types.ToEditOnDblClick))
+
+	// 颜色
+	propColors := tree.Colors()
+	propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+	propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+
+	// header
+	header := tree.Header()
+	header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
+	header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
+	header.Font().SetColor(colors.ClGray)
+	columns := header.Columns()
+	columns.Clear()
+	propNameCol := columns.AddToVirtualTreeColumn()
+	propNameCol.SetText("名")
+	propNameCol.SetWidth(125)
+	propNameCol.SetAlignment(types.TaLeftJustify)
+	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
+
+	propValueCol := columns.AddToVirtualTreeColumn()
+	propValueCol.SetText("值")
+	//propValueCol.SetWidth(leftBoxWidth - 125)
+	propValueCol.SetAlignment(types.TaLeftJustify)
+	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 }

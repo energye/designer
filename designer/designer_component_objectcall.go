@@ -48,7 +48,7 @@ func (m *DesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vte
 			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs, "恢复节点内的组件名")
 			// 恢复节点内的组件名
 			updateNodeData.SetEditValue(m.Name())
-			inspector.componentProperty.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
+			m.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
 		default:
 			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs)
 		}
