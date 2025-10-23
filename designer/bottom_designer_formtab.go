@@ -139,14 +139,14 @@ func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButto
 }
 
 func (m *FormTab) onHide(sender lcl.IObject) {
-	logs.Debug("Designer PageControl FormTab Hide", m.name)
+	logs.Debug("Designer PageControl FormTab Hide")
 	// 非设计状态
 	m.isDesigner = false
 	m.tree.SetVisible(false)
 }
 
 func (m *FormTab) onShow(sender lcl.IObject) {
-	logs.Debug("Designer PageControl FormTab Show", m.name)
+	logs.Debug("Designer PageControl FormTab Show")
 	// 设计状态
 	m.isDesigner = true
 	m.tree.SetVisible(true)
@@ -174,7 +174,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	}
 	iterable(m.formRoot)
 
-	logs.Debug("Current Designer Component", "Name:", m.name)
+	logs.Debug("Current Designer Component")
 	// 加载组件属性
 	inspector.LoadComponentProps(defaultComp)
 }

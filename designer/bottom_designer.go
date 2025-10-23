@@ -89,13 +89,12 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	// 默认名
 	form.id = len(m.designerForms) + 1
-	formName := fmt.Sprintf("Form%v", form.id)
-	form.name = formName
+	form.name = fmt.Sprintf("Form%v", form.id)
 	// 窗体ID
 	m.designerForms[form.id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
-	form.sheet.SetCaption(formName)
+	form.sheet.SetCaption(form.name)
 	form.sheet.SetOnHide(form.onHide)
 	form.sheet.SetOnShow(form.onShow)
 	//form.sheet.SetAlign(types.AlClient)

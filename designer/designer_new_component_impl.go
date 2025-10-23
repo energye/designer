@@ -48,7 +48,6 @@ type DesigningComponent struct {
 	parent            *DesigningComponent     // 所属父节点
 	child             []*DesigningComponent   // 拥有的子节点列表
 	compPropTreeState ComponentPropTreeState  // 组件树状态
-	ss                SyncLock                // 同步锁
 }
 
 // 组件属性树状态
@@ -205,10 +204,6 @@ func (m *DesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseBu
 
 // 更新节点数据, Left Top
 func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
-	if m.ss.Point {
-		return
-	}
-	m.ss.Point = true
 	var (
 		top  *vtedit.TEditNodeData
 		left *vtedit.TEditNodeData
@@ -230,17 +225,12 @@ func (m *DesigningComponent) UpdateNodeDataPoint(x, y int32) {
 			inspector.componentProperty.propertyTree.InvalidateNode(top.AffiliatedNode)
 			left.SetEditValue(y)
 			inspector.componentProperty.propertyTree.InvalidateNode(left.AffiliatedNode)
-			m.ss.Point = false
 		})
 	}
 }
 
 // 更新节点数据, Width Height
 func (m *DesigningComponent) UpdateNodeDataSize(w, h int32) {
-	if m.ss.Size {
-		return
-	}
-	m.ss.Size = true
 	var (
 		width  *vtedit.TEditNodeData
 		height *vtedit.TEditNodeData
@@ -262,7 +252,6 @@ func (m *DesigningComponent) UpdateNodeDataSize(w, h int32) {
 			inspector.componentProperty.propertyTree.InvalidateNode(width.AffiliatedNode)
 			height.SetEditValue(h)
 			inspector.componentProperty.propertyTree.InvalidateNode(height.AffiliatedNode)
-			m.ss.Size = false
 		})
 	}
 }
