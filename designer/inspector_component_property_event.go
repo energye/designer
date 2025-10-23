@@ -9,6 +9,8 @@ import (
 	"unsafe"
 )
 
+// 设计 - 组件属性 - 事件
+
 // 初始化组件属性树
 func (m *InspectorComponentProperty) initComponentPropertyTreeEvent() {
 	tree := m.propertyTree

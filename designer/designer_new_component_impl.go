@@ -30,11 +30,13 @@ type SyncLock struct {
 // 设计组件
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
+	id                int                     // id 标识
 	originObject      any                     // 原始组件对象
-	formRoot          lcl.IWinControl         // 设计窗体组件 对象 可视
 	object            lcl.IWinControl         // 组件 对象 可视
 	objectNon         lcl.IComponent          // 组件 对象 非可视
 	objectNonWrap     *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
+	parent            *DesigningComponent     // 所属父节点
+	child             []*DesigningComponent   // 拥有的子节点列表
 	drag              *drag                   // 拖拽控制
 	dx, dy            int32                   // 拖拽控制
 	dcl, dct          int32                   // 拖拽控制
@@ -44,9 +46,6 @@ type DesigningComponent struct {
 	isDesigner        bool                    // 组件是否正在设计
 	componentType     ComponentType           // 组件类型
 	node              lcl.ITreeNode           // 组件树节点对象
-	id                int                     // id 标识
-	parent            *DesigningComponent     // 所属父节点
-	child             []*DesigningComponent   // 拥有的子节点列表
 	compPropTreeState ComponentPropTreeState  // 组件树状态
 }
 
@@ -277,17 +276,11 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 
 // 设置组件父子关系
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
-	var parentObject lcl.IWinControl
-	if parent.componentType == CtForm {
-		parentObject = parent.formRoot
-	} else {
-		parentObject = parent.object
-	}
 	// 设置父组件
 	if m.componentType == CtNonVisual {
-		m.objectNonWrap.SetParent(parentObject)
+		m.objectNonWrap.SetParent(parent.object)
 	} else {
-		m.object.SetParent(parentObject)
+		m.object.SetParent(parent.object)
 	}
 	m.parent = parent
 	// 添加子组件

@@ -12,8 +12,8 @@ type InspectorComponentProperty struct {
 	box              lcl.IPanel                // 组件属性盒子
 	filter           lcl.ITreeFilterEdit       // 组件属性过滤框
 	page             lcl.IPageControl          // 属性和事件页
-	propertySheet    lcl.ITabSheet             // 属性页
-	eventSheet       lcl.ITabSheet             // 事件页
+	pageProperty     lcl.ITabSheet             // 属性页
+	pageEvent        lcl.ITabSheet             // 事件页
 	propertyTree     lcl.ILazVirtualStringTree // 组件属性
 	eventTree        lcl.ILazVirtualStringTree // 组件事件
 	currentComponent *DesigningComponent       // 当前正在设计的组件
@@ -24,6 +24,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	componentPropertyTitle.SetParent(m.box)
 	componentPropertyTitle.SetCaption("属性")
 	componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
+
 	componentPropertyTitle.SetTop(5)
 	componentPropertyTitle.SetLeft(5)
 
@@ -45,16 +46,16 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 		m.page.SetAlign(types.AlCustom)
 		m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 
-		m.propertySheet = lcl.NewTabSheet(m.page)
-		m.propertySheet.SetParent(m.page)
-		m.propertySheet.SetCaption("  属性  ")
-		m.propertySheet.SetAlign(types.AlClient)
-		m.propertySheet.SetBorderWidth(0)
+		m.pageProperty = lcl.NewTabSheet(m.page)
+		m.pageProperty.SetParent(m.page)
+		m.pageProperty.SetCaption("  属性  ")
+		m.pageProperty.SetAlign(types.AlClient)
+		m.pageProperty.SetBorderWidth(0)
 
-		m.eventSheet = lcl.NewTabSheet(m.page)
-		m.eventSheet.SetParent(m.page)
-		m.eventSheet.SetCaption("  事件  ")
-		m.eventSheet.SetAlign(types.AlClient)
+		m.pageEvent = lcl.NewTabSheet(m.page)
+		m.pageEvent.SetParent(m.page)
+		m.pageEvent.SetCaption("  事件  ")
+		m.pageEvent.SetAlign(types.AlClient)
 	}
 	// 组件的属性列表和事件列表"树"
 	{
@@ -97,13 +98,13 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 			propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
 		}
 		// 组件属性树列表
-		m.propertyTree = lcl.NewLazVirtualStringTree(m.propertySheet)
-		m.propertyTree.SetParent(m.propertySheet)
+		m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
+		m.propertyTree.SetParent(m.pageProperty)
 		vstConfig(m.propertyTree)
 
 		// 组件事件树列表
-		m.eventTree = lcl.NewLazVirtualStringTree(m.eventSheet)
-		m.eventTree.SetParent(m.eventSheet)
+		m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
+		m.eventTree.SetParent(m.pageEvent)
 		vstConfig(m.eventTree)
 
 	}

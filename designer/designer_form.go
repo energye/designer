@@ -64,7 +64,6 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	formRoot.SetOnMouseUp(m.designerOnMouseUp)
 	formRoot.SetParent(designerForm)
 	//SetDesignMode(formRoot)
-	dc.formRoot = formRoot
 
 	// 设计面板
 	m.formRoot.originObject = designerForm

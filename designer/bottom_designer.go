@@ -71,12 +71,17 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
-	form.tree = lcl.NewTreeView(inspector.componentTree.componentBox)
+	form.tree = lcl.NewTreeView(inspector.componentTree.treeBox)
 	form.tree.SetAutoExpand(true)
 	form.tree.SetReadOnly(true)
 	form.tree.SetDoubleBuffered(true)
 	//m.tree.SetMultiSelect(true) // 多选控制
-	form.tree.SetAlign(types.AlClient)
+	form.tree.SetTop(35)
+	form.tree.SetWidth(leftBoxWidth)
+	form.tree.SetHeight(componentTreeHeight - form.tree.Top())
+	form.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+	form.tree.SetAlign(types.AlCustom)
+	//form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(true)
 	form.tree.SetImages(imageComponents.ImageList100())
 	//form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
@@ -85,7 +90,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
 	// 树菜单
 	form.tree.SetPopupMenu(form.TreePopupMenu())
-	form.tree.SetParent(inspector.componentTree.componentBox)
+	form.tree.SetParent(inspector.componentTree.treeBox)
 
 	// 默认名
 	form.id = len(m.designerForms) + 1
