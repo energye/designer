@@ -59,25 +59,6 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-//func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
-//	data := node.Data()
-//	component := m.DataToDesigningComponent(data)
-//	if component != nil {
-//		component.ownerFormTab.hideAllDrag() // 隐藏所有 drag
-//		component.drag.Show()                // 显示当前设计组件 drag
-//		go lcl.RunOnMainThreadAsync(func(id uint32) {
-//			component.LoadPropertyToInspector()
-//		})
-//	}
-//	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
-//}
-//
-//// 数据指针转设计组件
-//func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
-//	dc := (*DesigningComponent)(unsafe.Pointer(data))
-//	return dc
-//}
-
 // 隐藏所有组件的 drag
 func (m *FormTab) hideAllDrag() {
 	var iterable func(comp *DesigningComponent)
