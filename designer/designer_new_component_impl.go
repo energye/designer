@@ -31,7 +31,7 @@ type SyncLock struct {
 type DesigningComponent struct {
 	ownerFormTab      *FormTab                // 所属设计表单面板
 	originObject      any                     // 原始组件对象
-	designerBox       lcl.IWinControl         // 设计窗体组件 对象 可视
+	formRoot          lcl.IWinControl         // 设计窗体组件 对象 可视
 	object            lcl.IWinControl         // 组件 对象 可视
 	objectNon         lcl.IComponent          // 组件 对象 非可视
 	objectNonWrap     *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
@@ -78,7 +78,7 @@ func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponen
 	m := new(DesigningComponent)
 	m.componentType = CtNonVisual
 	m.ownerFormTab = designerForm
-	objectWrap := NewNonVisualComponentWrap(designerForm.designerBox.object, m)
+	objectWrap := NewNonVisualComponentWrap(designerForm.formRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
 	return m
@@ -149,7 +149,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 	m.SetHint(hint)
 	if m.isDown {
 		m.drag.Hide()
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.formRoot.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		m.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
@@ -165,7 +165,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 	logs.Debug("OnMouseDown 设计组件", m.ClassName())
 	if !m.ownerFormTab.placeComponent(m, X, Y) {
 		m.isDown = true
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.designerBox.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.formRoot.object)
 		m.dx, m.dy = point.X, point.Y
 		br := m.BoundsRect()
 		m.dcl = br.Left
@@ -290,7 +290,7 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
 	var parentObject lcl.IWinControl
 	if parent.componentType == CtForm {
-		parentObject = parent.designerBox
+		parentObject = parent.formRoot
 	} else {
 		parentObject = parent.object
 	}

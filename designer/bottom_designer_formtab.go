@@ -17,16 +17,16 @@ type FormTab struct {
 	scroll               lcl.IScrollBox      // 外 滚动条
 	isDesigner           bool                // 是否正在设计
 	sheet                lcl.ITabSheet       // tab sheet
-	designerBox          *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
 	isDown, isUp, isMove bool                // 鼠标事件
 	componentName        map[string]int      // 组件分类名, 同类组件ID序号
-	formDesigner         *TEngFormDesigner   // 设计器处理器
-	tree                 lcl.ITreeView       // 组件树
 	treePopupMenu        lcl.IPopupMenu      // 组件树右键菜单
+	formDesigner         *TEngFormDesigner   // 设计器处理器
+	formRoot             *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
+	tree                 lcl.ITreeView       // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {
-	if m.designerBox != currComp && m.designerBox.Name() == name {
+	if m.formRoot != currComp && m.formRoot.Name() == name {
 		return true
 	}
 	var iterable func(comp *DesigningComponent) bool
@@ -41,7 +41,7 @@ func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) boo
 		}
 		return false
 	}
-	return iterable(m.designerBox)
+	return iterable(m.formRoot)
 }
 
 // 添加设计组件到组件列表
@@ -68,7 +68,7 @@ func (m *FormTab) hideAllDrag() {
 			iterable(comp)
 		}
 	}
-	iterable(m.designerBox)
+	iterable(m.formRoot)
 }
 
 // 放置设计组件到设计面板或父组件容器
@@ -80,7 +80,7 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	}
 	if toolbar.selectComponent != nil && isAcceptsControl {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
-		m.designerBox.drag.Hide()
+		m.formRoot.drag.Hide()
 		// 获取注册的组件创建函数
 		if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
 			// 创建设计组件
@@ -110,26 +110,26 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 
 // 窗体设计界面 鼠标移动
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	br := m.designerBox.BoundsRect()
+	br := m.formRoot.BoundsRect()
 	hint := fmt.Sprintf(`%v: TForm
 	Left: %v Top: %v
-	Width: %v Height: %v`, m.designerBox.Name(), br.Left, br.Top, br.Width(), br.Height())
-	m.designerBox.SetHint(hint)
+	Width: %v Height: %v`, m.formRoot.Name(), br.Left, br.Top, br.Width(), br.Height())
+	m.formRoot.SetHint(hint)
 }
 
 // 窗体设计界面 鼠标按下, 放置设计组件, 加载组件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
-	if !m.placeComponent(m.designerBox, x, y) {
+	if !m.placeComponent(m.formRoot, x, y) {
 		m.hideAllDrag()
-		m.designerBox.drag.Show()
+		m.formRoot.drag.Show()
 		logs.Debug("加载窗体属性")
 		// 加载属性列表到设计器组件属性
-		inspector.LoadComponentProps(m.designerBox)
+		inspector.LoadComponentProps(m.formRoot)
 		// 设置选中状态到设计器组件树
-		m.designerBox.SetSelected()
-		//lcl.Mouse.SetCapture(m.designerBox.object.Handle())
+		m.formRoot.SetSelected()
+		//lcl.Mouse.SetCapture(m.formRoot.object.Handle())
 	}
 }
 
@@ -153,7 +153,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 
 	// 加载设计组件
 	// 默认窗体表单
-	defaultComp := m.designerBox
+	defaultComp := m.formRoot
 	var iterable func(comp *DesigningComponent) bool
 	iterable = func(comp *DesigningComponent) bool {
 		if comp == nil {
@@ -172,7 +172,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 		}
 		return false
 	}
-	iterable(m.designerBox)
+	iterable(m.formRoot)
 
 	logs.Debug("Current Designer Component", "Name:", m.name)
 	// 加载组件属性
@@ -201,10 +201,10 @@ func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
 func (m *FormTab) drawGrid(control lcl.ICustomControl) {
 	//logs.Debug("drawGrid")
 	gridSize := 9 // 小刻度
-	designerBox := control
-	canvas := designerBox.Canvas()
+	formRoot := control
+	canvas := formRoot.Canvas()
 	canvas.PenToPen().SetColor(colors.ClBlack)
-	width, height := designerBox.Width(), designerBox.Height()
+	width, height := formRoot.Width(), formRoot.Height()
 	for i := 1; i < int(width)/gridSize; i++ {
 		x := int32(i * gridSize)
 		for j := 1; j < int(height)/gridSize; j++ {
@@ -220,15 +220,15 @@ func (m *FormTab) AddFormNode() {
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
 	items := m.tree.Items()
-	m.designerBox.id = nextTreeDataId()
-	newNode := items.AddChild(nil, m.designerBox.TreeName())
-	newNode.SetImageIndex(m.designerBox.IconIndex())    // 显示图标索引
-	newNode.SetSelectedIndex(m.designerBox.IconIndex()) // 选中图标索引
+	m.formRoot.id = nextTreeDataId()
+	newNode := items.AddChild(nil, m.formRoot.TreeName())
+	newNode.SetImageIndex(m.formRoot.IconIndex())    // 显示图标索引
+	newNode.SetSelectedIndex(m.formRoot.IconIndex()) // 选中图标索引
 	newNode.SetSelected(true)
-	newNode.SetData(m.designerBox.instance())
-	m.designerBox.node = newNode
+	newNode.SetData(m.formRoot.instance())
+	m.formRoot.node = newNode
 	// 添加到设计组件列表
-	m.AddComponentToList(m.designerBox)
+	m.AddComponentToList(m.formRoot)
 }
 
 // 添加组件节点

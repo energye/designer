@@ -32,7 +32,7 @@ func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
 func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	dc := new(DesigningComponent)
 	dc.componentType = CtForm
-	m.designerBox = dc
+	m.formRoot = dc
 
 	//designerForm := lcl.NewEngForm(nil)
 	//designerForm := lcl.NewForm(nil)
@@ -48,35 +48,35 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	designerForm.SetParent(m.scroll)
 	designerForm.SetVisible(true)
 
-	designerBox := lcl.NewPanel(designerForm)
-	designerBox.SetBevelOuter(types.BvNone)
-	designerBox.SetBorderStyleToBorderStyle(types.BsSingle)
-	designerBox.SetDoubleBuffered(true)
-	designerBox.SetParentColor(false)
-	designerBox.SetColor(colors.ClBtnFace)
-	designerBox.SetName(m.name)
-	designerBox.SetCaption("")
-	designerBox.SetAlign(types.AlClient)
-	designerBox.SetShowHint(true)
-	//m.designerOnPaint(designerBox)
-	designerBox.SetOnMouseMove(m.designerOnMouseMove)
-	designerBox.SetOnMouseDown(m.designerOnMouseDown)
-	designerBox.SetOnMouseUp(m.designerOnMouseUp)
-	designerBox.SetParent(designerForm)
-	//SetDesignMode(designerBox)
-	dc.designerBox = designerBox
+	formRoot := lcl.NewPanel(designerForm)
+	formRoot.SetBevelOuter(types.BvNone)
+	formRoot.SetBorderStyleToBorderStyle(types.BsSingle)
+	formRoot.SetDoubleBuffered(true)
+	formRoot.SetParentColor(false)
+	formRoot.SetColor(colors.ClBtnFace)
+	formRoot.SetName(m.name)
+	formRoot.SetCaption("")
+	formRoot.SetAlign(types.AlClient)
+	formRoot.SetShowHint(true)
+	//m.designerOnPaint(formRoot)
+	formRoot.SetOnMouseMove(m.designerOnMouseMove)
+	formRoot.SetOnMouseDown(m.designerOnMouseDown)
+	formRoot.SetOnMouseUp(m.designerOnMouseUp)
+	formRoot.SetParent(designerForm)
+	//SetDesignMode(formRoot)
+	dc.formRoot = formRoot
 
 	// 设计面板
-	m.designerBox.originObject = designerForm
-	m.designerBox.object = designerForm
-	m.designerBox.ownerFormTab = m
-	m.designerBox.GetProps()
+	m.formRoot.originObject = designerForm
+	m.formRoot.object = designerForm
+	m.formRoot.ownerFormTab = m
+	m.formRoot.GetProps()
 
 	// 窗体拖拽大小
-	m.designerBox.drag = newDrag(m.scroll, DsRightBottom)
-	//m.designerBox.drag.SetParent(m.scroll)
-	m.designerBox.drag.SetRelation(m.designerBox)
-	m.designerBox.drag.Show()
-	m.designerBox.drag.Follow()
+	m.formRoot.drag = newDrag(m.scroll, DsRightBottom)
+	//m.formRoot.drag.SetParent(m.scroll)
+	m.formRoot.drag.SetRelation(m.formRoot)
+	m.formRoot.drag.Show()
+	m.formRoot.drag.Follow()
 	return dc
 }

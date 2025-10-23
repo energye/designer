@@ -58,6 +58,7 @@ func (m *Designer) createTabMenu() {
 
 	//m.page.SetPopupMenu(m.tabMenu)
 }
+
 func (m *Designer) hideFormTabs() {
 	for _, formTab := range m.designerForms {
 		formTab.tree.SetVisible(false)
@@ -135,7 +136,7 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 //		//canvas := m.bg.Canvas()
 //		canvas := m.scroll.Canvas()
 //		canvas.PenToPen().SetColor(colors.ClBlack)
-//		width, height := m.designerBox.Width(), m.designerBox.Height()
+//		width, height := m.formRoot.Width(), m.formRoot.Height()
 //		println("width, height:", width, height)
 //		// X
 //		for i := 0; i <= int(width)/gridSize; i++ {
