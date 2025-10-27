@@ -7,7 +7,7 @@ import (
 // 组件设计创建管理
 
 // 按钮 Button
-func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewButtonDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewButton(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Button"))
@@ -19,7 +19,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 // 编辑框 Edit
-func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewEditDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewEdit(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
@@ -32,7 +32,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 // 多选框 CheckBox
-func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewCheckBox(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
@@ -48,7 +48,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 }
 
 // 面板 Panel
-func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewPanelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewPanel(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
@@ -60,7 +60,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 // 主菜单 MainMenu
-func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewMainMenu(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
@@ -71,7 +71,7 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent 
 }
 
 // 弹出菜单 PopupMenu
-func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewPopupMenu(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
@@ -82,7 +82,7 @@ func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *DesigningComponent
 }
 
 // 标签 Label
-func NewLabelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewLabelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewLabel(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Label"))
@@ -94,7 +94,7 @@ func NewLabelDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 // 多行文本框 Memo
-func NewMemoDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewMemoDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewMemo(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
@@ -106,7 +106,7 @@ func NewMemoDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
 }
 
 // 状态标记 ToggleBox
-func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewToggleBox(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
@@ -118,7 +118,7 @@ func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *DesigningComponent
 }
 
 // 虚拟树 LazVirtualStringTree
-func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *DesigningComponent {
+func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewLazVirtualStringTree(designerForm.formRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("LazVirtualStringTree"))

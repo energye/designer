@@ -15,10 +15,10 @@ type NonVisualComponentWrap struct {
 	wrap lcl.IPanel
 	icon lcl.IImage
 	text lcl.ILabel
-	comp *DesigningComponent
+	comp *TDesigningComponent
 }
 
-func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *DesigningComponent) *NonVisualComponentWrap {
+func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent) *NonVisualComponentWrap {
 	m := new(NonVisualComponentWrap)
 	wrap := lcl.NewPanel(owner)
 	wrap.SetWidth(nonWrapW)

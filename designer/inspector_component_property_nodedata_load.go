@@ -9,7 +9,7 @@ import (
 // 设计 - 组件的设计属性和设计事件数据加载
 
 // 加载属性列表
-func (m *DesigningComponent) loadPropertyList() {
+func (m *TDesigningComponent) loadPropertyList() {
 	configCompProp := config.ComponentProperty
 	for i, nodeData := range m.propertyList {
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
@@ -41,6 +41,6 @@ func (m *DesigningComponent) loadPropertyList() {
 }
 
 // 加载事件列表
-func (m *DesigningComponent) loadEventList() {
+func (m *TDesigningComponent) loadEventList() {
 
 }

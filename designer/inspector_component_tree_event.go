@@ -24,8 +24,8 @@ func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton,
 }
 
 // 数据指针转设计组件
-func (m *FormTab) DataToDesigningComponent(data uintptr) *DesigningComponent {
-	dc := (*DesigningComponent)(unsafe.Pointer(data))
+func (m *FormTab) DataToDesigningComponent(data uintptr) *TDesigningComponent {
+	dc := (*TDesigningComponent)(unsafe.Pointer(data))
 	return dc
 }
 

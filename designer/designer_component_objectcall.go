@@ -22,7 +22,7 @@ func methodNameToSet(name string) string {
 }
 
 // 更新组件属性到对象
-func (m *DesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
+func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()
 	defer m.drag.Show()
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.EditNodeData.Name)
@@ -57,7 +57,7 @@ func (m *DesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vte
 
 // 更新组件树节点信息
 // 在设计组件属性修改后同步修改组件树节点可见值
-func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) {
+func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) {
 	if !m.node.IsValid() {
 		logs.Error("更新组件树失败, 当前设计组件节点无效")
 		return
@@ -75,7 +75,7 @@ func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData
 }
 
 // 检查是否允许更新属性
-func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) err.ResultStatus {
+func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) err.ResultStatus {
 	if !m.node.IsValid() {
 		// 无效节点对象
 		return err.RsNotValid

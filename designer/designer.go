@@ -13,7 +13,7 @@ import (
 // TEngFormDesigner energy 窗体设计器
 type TEngFormDesigner struct {
 	designer      lcl.IDesigner
-	componentList map[uintptr]*DesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
+	componentList map[uintptr]*TDesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
 	canvas        lcl.ICanvas
 }
 
@@ -42,15 +42,15 @@ func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 }
 
 // 添加设计组件到组件列表
-func (m *TEngFormDesigner) AddComponentToList(component *DesigningComponent) {
+func (m *TEngFormDesigner) AddComponentToList(component *TDesigningComponent) {
 	if m.componentList == nil {
-		m.componentList = make(map[uintptr]*DesigningComponent)
+		m.componentList = make(map[uintptr]*TDesigningComponent)
 	}
 	m.componentList[component.Instance()] = component
 }
 
 // 返回设计组件
-func (m *TEngFormDesigner) GetComponentFormList(instance uintptr) *DesigningComponent {
+func (m *TEngFormDesigner) GetComponentFormList(instance uintptr) *TDesigningComponent {
 	if instance == 0 || m.componentList == nil {
 		return nil
 	}

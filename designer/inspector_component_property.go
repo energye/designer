@@ -16,7 +16,7 @@ type InspectorComponentProperty struct {
 	//pageEvent    lcl.ITabSheet       // 事件页
 	//propertyTree     lcl.ILazVirtualStringTree // 组件属性
 	//eventTree        lcl.ILazVirtualStringTree // 组件事件
-	currentComponent *DesigningComponent // 当前正在设计的组件
+	currentComponent *TDesigningComponent // 当前正在设计的组件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {

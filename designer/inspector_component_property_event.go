@@ -12,7 +12,7 @@ import (
 // 设计 - 组件属性 - 事件
 
 // 初始化组件属性树
-func (m *DesigningComponent) initComponentPropertyTreeEvent() {
+func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree := m.propertyTree
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
@@ -182,10 +182,10 @@ func (m *DesigningComponent) initComponentPropertyTreeEvent() {
 	tree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
 }
 
-func (m *DesigningComponent) PropertyEndEdit() {
+func (m *TDesigningComponent) PropertyEndEdit() {
 	m.propertyTree.EndEditNode()
 }
 
-func (m *DesigningComponent) EventEndEdit() {
+func (m *TDesigningComponent) EventEndEdit() {
 	m.eventTree.EndEditNode()
 }

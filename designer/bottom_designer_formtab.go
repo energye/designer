@@ -12,25 +12,25 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id                   int                 // 索引, 关联 forms key: index
-	name                 string              // 窗体名称
-	scroll               lcl.IScrollBox      // 外 滚动条
-	isDesigner           bool                // 当前窗体Form是否正在设计
-	sheet                lcl.ITabSheet       // tab sheet
-	isDown, isUp, isMove bool                // 鼠标事件
-	componentName        map[string]int      // 组件分类名, 同类组件ID序号
-	treePopupMenu        lcl.IPopupMenu      // 组件树右键菜单
-	formDesigner         *TEngFormDesigner   // 设计器处理器
-	formRoot             *DesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	tree                 lcl.ITreeView       // 组件树
+	id                   int                  // 索引, 关联 forms key: index
+	name                 string               // 窗体名称
+	scroll               lcl.IScrollBox       // 外 滚动条
+	isDesigner           bool                 // 当前窗体Form是否正在设计
+	sheet                lcl.ITabSheet        // tab sheet
+	isDown, isUp, isMove bool                 // 鼠标事件
+	componentName        map[string]int       // 组件分类名, 同类组件ID序号
+	treePopupMenu        lcl.IPopupMenu       // 组件树右键菜单
+	formDesigner         *TEngFormDesigner    // 设计器处理器
+	formRoot             *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
+	tree                 lcl.ITreeView        // 组件树
 }
 
-func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) bool {
+func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {
 	if m.formRoot != currComp && m.formRoot.Name() == name {
 		return true
 	}
-	var iterable func(comp *DesigningComponent) bool
-	iterable = func(comp *DesigningComponent) bool {
+	var iterable func(comp *TDesigningComponent) bool
+	iterable = func(comp *TDesigningComponent) bool {
 		if comp != currComp && comp.Name() == name {
 			return true
 		}
@@ -45,12 +45,12 @@ func (m *FormTab) IsDuplicateName(currComp *DesigningComponent, name string) boo
 }
 
 // 添加设计组件到组件列表
-func (m *FormTab) AddComponentToList(component *DesigningComponent) {
+func (m *FormTab) AddComponentToList(component *TDesigningComponent) {
 	m.formDesigner.AddComponentToList(component)
 }
 
 // 返回设计组件
-func (m *FormTab) GetComponentFormList(instance uintptr) *DesigningComponent {
+func (m *FormTab) GetComponentFormList(instance uintptr) *TDesigningComponent {
 	return m.formDesigner.GetComponentFormList(instance)
 }
 
@@ -60,11 +60,11 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 }
 
 // 切换组件设计
-func (m *FormTab) switchComponentEditing(targetComp *DesigningComponent) {
+func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
 	// 隐藏之前设计的组件
 	// 隐藏之前设计组件的属性和事件列表
-	var iterable func(comp *DesigningComponent)
-	iterable = func(comp *DesigningComponent) {
+	var iterable func(comp *TDesigningComponent)
+	iterable = func(comp *TDesigningComponent) {
 		if comp.isDesigner {
 			comp.drag.Hide()
 			comp.page.Hide()
@@ -85,7 +85,7 @@ func (m *FormTab) switchComponentEditing(targetComp *DesigningComponent) {
 //func (m *FormTab) show
 
 // 放置设计组件到设计面板或父组件容器
-func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
+func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	// 放置设计组件
 	isAcceptsControl := false
 	if owner.object != nil {
@@ -161,8 +161,8 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 	// 加载设计组件
 	// 默认窗体表单
 	defaultComp := m.formRoot
-	var iterable func(comp *DesigningComponent) bool
-	iterable = func(comp *DesigningComponent) bool {
+	var iterable func(comp *TDesigningComponent) bool
+	iterable = func(comp *TDesigningComponent) bool {
 		if comp == nil {
 			return false
 		}
@@ -239,7 +239,7 @@ func (m *FormTab) AddFormNode() {
 }
 
 // 添加组件节点
-func (m *FormTab) AddComponentNode(parent, child *DesigningComponent) {
+func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 	if parent == nil {
 		logs.Error("添加组件节点失败, 父节点为空")
 		return

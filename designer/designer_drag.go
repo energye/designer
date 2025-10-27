@@ -33,8 +33,8 @@ const (
 
 // 拖拽控制
 type drag struct {
-	relation    *DesigningComponent // 关联设计的组件
-	ds          DragShowStatus      // 显示方向
+	relation    *TDesigningComponent // 关联设计的组件
+	ds          DragShowStatus       // 显示方向
 	isShow      bool
 	left        lcl.IPanel
 	top         lcl.IPanel
@@ -166,7 +166,7 @@ func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
 }
 
 // 设置关联组件
-func (m *drag) SetRelation(relation *DesigningComponent) {
+func (m *drag) SetRelation(relation *TDesigningComponent) {
 	m.relation = relation
 }
 

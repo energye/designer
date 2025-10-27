@@ -48,7 +48,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 //func (m *InspectorComponentTree) Clear() {
 //m.tree.Items().Clear()
 //m.root = nil
-//m.nodeData = make(map[int]*DesigningComponent)
+//m.nodeData = make(map[int]*TDesigningComponent)
 //}
 
 // FormTab
