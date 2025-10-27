@@ -129,7 +129,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 		m.formRoot.drag.Show()
 		logs.Debug("加载窗体属性")
 		// 加载属性列表到设计器组件属性
-		inspector.LoadComponentProps(m.formRoot)
+		m.formRoot.LoadPropertyToInspector()
 		// 设置选中状态到设计器组件树
 		m.formRoot.SetSelected()
 		//lcl.Mouse.SetCapture(m.formRoot.object.Handle())
@@ -179,7 +179,7 @@ func (m *FormTab) onShow(sender lcl.IObject) {
 
 	logs.Debug("Current Designer Component")
 	// 加载组件属性
-	inspector.LoadComponentProps(defaultComp)
+	defaultComp.LoadPropertyToInspector()
 }
 
 // 获取组件名 Caption

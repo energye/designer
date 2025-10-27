@@ -36,9 +36,6 @@ func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode)
 	if component != nil {
 		component.formTab.hideAllDrag() // 隐藏所有 drag
 		component.drag.Show()           // 显示当前设计组件 drag
-		//go lcl.RunOnMainThreadAsync(func(id uint32) {
-		//	component.LoadPropertyToInspector()
-		//})
 	}
 	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
 }

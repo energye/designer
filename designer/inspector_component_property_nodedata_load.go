@@ -8,32 +8,10 @@ import (
 
 // 设计 - 组件的设计属性和设计事件数据加载
 
-// 清空树
-//func (m *InspectorComponentProperty) Clear() {
-//vtedit.ResetPropertyNodeData()
-//m.propertyTree.Clear()
-//m.eventTree.Clear()
-//}
-
-// 加载属性和事件列表
-func (m *InspectorComponentProperty) Load(component *DesigningComponent) {
-	if component != m.currentComponent {
-		m.currentComponent = component
-		// 清空树数据
-		//m.Clear()
-
-		// 加载属性列表
-		m.loadPropertyList(component)
-
-		// 加载事件列表
-		m.loadEventList(component)
-	}
-}
-
 // 加载属性列表
-func (m *InspectorComponentProperty) loadPropertyList(component *DesigningComponent) {
+func (m *DesigningComponent) loadPropertyList() {
 	configCompProp := config.ComponentProperty
-	for i, nodeData := range component.propertyList {
+	for i, nodeData := range m.propertyList {
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
@@ -47,9 +25,9 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 					// 数组只有一个元素，规则为直接作用在当前属性上
 					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
 					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
-						OriginNodeData: customProperty.Clone(), AffiliatedComponent: component}
-					component.propertyList[i] = newEditNodeData // 更新到组件属性
-					nodeData = component.propertyList[i]
+						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
+					m.propertyList[i] = newEditNodeData // 更新到组件属性
+					nodeData = m.propertyList[i]
 					newEditNodeData.Build()
 				} else {
 					// 自定义属性添加？？
@@ -58,11 +36,11 @@ func (m *InspectorComponentProperty) loadPropertyList(component *DesigningCompon
 			nodeData.IsFinal = true
 		}
 		// 属性节点数据添加到树
-		vtedit.AddPropertyNodeData(component.propertyTree, 0, nodeData)
+		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
 	}
 }
 
 // 加载事件列表
-func (m *InspectorComponentProperty) loadEventList(component *DesigningComponent) {
+func (m *DesigningComponent) loadEventList() {
 
 }

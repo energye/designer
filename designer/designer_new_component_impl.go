@@ -214,9 +214,6 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 		// 更新设计查看器的属性信息
 		m.formTab.hideAllDrag() // 隐藏所有 drag
 		m.drag.Show()           // 显示当前设计组件 drag
-		//go lcl.RunOnMainThreadAsync(func(id uint32) {
-		//	m.LoadPropertyToInspector()
-		//})
 		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 设置选中状态
@@ -314,7 +311,18 @@ func (m *DesigningComponent) SetObject(object any) {
 // 加载组件属性到设计器
 func (m *DesigningComponent) LoadPropertyToInspector() {
 	// 加载到设计器
-	inspector.LoadComponentProps(m)
+	if m == nil {
+		logs.Error("加载组件属性/事件失败, 设计组件为空")
+		return
+	}
+	// 属性列表为空时获取属性列表
+	m.GetProps()
+	// 加载属性列表
+	m.loadPropertyList()
+	// 加载事件列表
+	m.loadEventList()
+	logs.Debug("加载组件属性完成", m.ClassName())
+
 }
 
 // 设置组件父子关系
