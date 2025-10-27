@@ -69,7 +69,7 @@ func (m *DesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData
 	case "name":
 		m.node.SetText(m.TreeName())
 		if m.componentType == CtForm {
-			m.ownerFormTab.sheet.SetCaption(m.Name())
+			m.formTab.sheet.SetCaption(m.Name())
 		}
 	}
 }
@@ -85,7 +85,7 @@ func (m *DesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNode
 	switch propName {
 	case "name":
 		// 在当前设计面板只有唯一一个组件的名
-		if m.ownerFormTab.IsDuplicateName(m, data.EditValue()) {
+		if m.formTab.IsDuplicateName(m, data.EditValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", data.EditValue())
 			message.Info("修改组件名失败", "组件名 ["+data.EditValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName

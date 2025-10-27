@@ -29,29 +29,29 @@ type SyncLock struct {
 
 // 设计组件
 type DesigningComponent struct {
-	ownerFormTab      *FormTab                  // 所属设计表单面板
-	id                int                       // id 标识
-	originObject      any                       // 原始组件对象
-	object            lcl.IWinControl           // 组件 对象 可视
-	objectNon         lcl.IComponent            // 组件 对象 非可视
-	objectNonWrap     *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
-	parent            *DesigningComponent       // 所属父节点
-	child             []*DesigningComponent     // 拥有的子节点列表
-	drag              *drag                     // 拖拽控制
-	dx, dy            int32                     // 拖拽控制
-	dcl, dct          int32                     // 拖拽控制
-	isDown            bool                      // 拖拽控制
-	propertyList      []*vtedit.TEditNodeData   // 组件属性
-	eventList         []*vtedit.TEditNodeData   // 组件事件
-	isDesigner        bool                      // 组件是否正在设计
-	componentType     ComponentType             // 组件类型
-	node              lcl.ITreeNode             // 组件树节点对象
-	compPropTreeState ComponentPropTreeState    // 组件属性树状态
-	page              lcl.IPageControl          // 属性页和事件页
-	pageProperty      lcl.ITabSheet             // 属性页
-	pageEvent         lcl.ITabSheet             // 事件页
-	propertyTree      lcl.ILazVirtualStringTree // 组件属性树
-	eventTree         lcl.ILazVirtualStringTree // 组件事件树
+	formTab       *FormTab                // 所属设计窗体
+	id            int                     // id 标识
+	originObject  any                     // 原始组件对象
+	object        lcl.IWinControl         // 组件 对象 可视
+	objectNon     lcl.IComponent          // 组件 对象 非可视
+	objectNonWrap *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
+	parent        *DesigningComponent     // 所属父节点
+	child         []*DesigningComponent   // 拥有的子节点列表
+	drag          *drag                   // 拖拽控制
+	dx, dy        int32                   // 拖拽控制
+	dcl, dct      int32                   // 拖拽控制
+	isDown        bool                    // 拖拽控制
+	propertyList  []*vtedit.TEditNodeData // 数据 组件属性
+	eventList     []*vtedit.TEditNodeData // 数据 组件事件
+	isDesigner    bool                    // 组件是否正在设计
+	componentType ComponentType           // 组件类型
+	node          lcl.ITreeNode           // 查看器 组件树节点对象
+	//compPropTreeState ComponentPropTreeState    // 查看器 组件属性树状态
+	page         lcl.IPageControl          // 查看器 属性页和事件页
+	pageProperty lcl.ITabSheet             // 查看器 属性页
+	pageEvent    lcl.ITabSheet             // 查看器 事件页
+	propertyTree lcl.ILazVirtualStringTree // 查看器 组件属性树
+	eventTree    lcl.ILazVirtualStringTree // 查看器 组件事件树
 }
 
 // 组件属性树状态
@@ -105,18 +105,18 @@ func (m *DesigningComponent) createComponentPropertyPage() {
 func newVisualComponent(designerForm *FormTab) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtVisual
-	m.ownerFormTab = designerForm
+	m.formTab = designerForm
 
 	m.createComponentPropertyPage()
 	return m
 }
 
 // 创建非可视组件
-func newNonVisualComponent(designerForm *FormTab, x, y int32) *DesigningComponent {
+func newNonVisualComponent(formTab *FormTab, x, y int32) *DesigningComponent {
 	m := new(DesigningComponent)
 	m.componentType = CtNonVisual
-	m.ownerFormTab = designerForm
-	objectWrap := NewNonVisualComponentWrap(designerForm.formRoot.object, m)
+	m.formTab = formTab
+	objectWrap := NewNonVisualComponentWrap(formTab.formRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
 
@@ -189,7 +189,7 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 	m.SetHint(hint)
 	if m.isDown {
 		m.drag.Hide()
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.formRoot.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.formTab.formRoot.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		m.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
@@ -203,19 +203,19 @@ func (m *DesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftS
 // 设计组件鼠标按下事件
 func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", m.ClassName())
-	if !m.ownerFormTab.placeComponent(m, X, Y) {
+	if !m.formTab.placeComponent(m, X, Y) {
 		m.isDown = true
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.ownerFormTab.formRoot.object)
+		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.formTab.formRoot.object)
 		m.dx, m.dy = point.X, point.Y
 		br := m.BoundsRect()
 		m.dcl = br.Left
 		m.dct = br.Top
 		// 更新设计查看器的属性信息
-		m.ownerFormTab.hideAllDrag() // 隐藏所有 drag
-		m.drag.Show()                // 显示当前设计组件 drag
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.LoadPropertyToInspector()
-		})
+		m.formTab.hideAllDrag() // 隐藏所有 drag
+		m.drag.Show()           // 显示当前设计组件 drag
+		//go lcl.RunOnMainThreadAsync(func(id uint32) {
+		//	m.LoadPropertyToInspector()
+		//})
 		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 设置选中状态

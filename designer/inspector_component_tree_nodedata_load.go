@@ -16,7 +16,7 @@ func (m *DesigningComponent) instance() uintptr {
 
 // 向当前组件节点添加子组件节点
 func (m *DesigningComponent) AddChild(child *DesigningComponent) {
-	m.ownerFormTab.AddComponentNode(m, child)
+	m.formTab.AddComponentNode(m, child)
 }
 
 // 设置当前设计组件为选中状态

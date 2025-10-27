@@ -69,7 +69,7 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	// 设计面板
 	m.formRoot.originObject = designerForm
 	m.formRoot.object = designerForm
-	m.formRoot.ownerFormTab = m
+	m.formRoot.formTab = m
 	m.formRoot.GetProps()
 
 	// 窗体拖拽大小

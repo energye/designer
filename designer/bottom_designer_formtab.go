@@ -15,13 +15,13 @@ type FormTab struct {
 	id                   int                 // 索引, 关联 forms key: index
 	name                 string              // 窗体名称
 	scroll               lcl.IScrollBox      // 外 滚动条
-	isDesigner           bool                // 是否正在设计
+	isDesigner           bool                // 当前窗体Form是否正在设计
 	sheet                lcl.ITabSheet       // tab sheet
 	isDown, isUp, isMove bool                // 鼠标事件
 	componentName        map[string]int      // 组件分类名, 同类组件ID序号
 	treePopupMenu        lcl.IPopupMenu      // 组件树右键菜单
 	formDesigner         *TEngFormDesigner   // 设计器处理器
-	formRoot             *DesigningComponent // 设计器, 模拟 TForm, 也是组件树的根节点
+	formRoot             *DesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	tree                 lcl.ITreeView       // 组件树
 }
 
@@ -87,7 +87,7 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			newComp := create(m, x, y)
 			newComp.SetParent(owner)
 			// 隐藏所有 drag
-			newComp.ownerFormTab.hideAllDrag()
+			newComp.formTab.hideAllDrag()
 			// 显示当前设计组件 drag
 			newComp.drag.Show()
 			newComp.DragEnd()

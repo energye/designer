@@ -257,7 +257,7 @@ func (m *drag) Follow() {
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
 		// 转换为 form tab 的坐标
-		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.ownerFormTab.scroll)
+		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.formTab.scroll)
 		x, y := point.X, point.Y
 		width, height := br.Width(), br.Height()
 		db := dragBorder / 2

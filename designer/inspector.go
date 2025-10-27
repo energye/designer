@@ -2,7 +2,6 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -30,10 +29,10 @@ func (m *Inspector) LoadComponentProps(component *DesigningComponent) {
 	// 加载属性列表和事件列表
 	m.componentProperty.Load(component)
 	logs.Debug("加载组件属性完成", component.ClassName())
-	selectNode := component.compPropTreeState.selectNode
-	if vtedit.IsExistNodeData(selectNode) {
-		// 恢复上次选择的编辑节点
-		component.propertyTree.SetSelected(selectNode, true)
-		component.propertyTree.ScrollIntoViewWithPVirtualNodeBoolX2(selectNode, true, true)
-	}
+	//selectNode := component.compPropTreeState.selectNode
+	//if vtedit.IsExistNodeData(selectNode) {
+	//	// 恢复上次选择的编辑节点
+	//	component.propertyTree.SetSelected(selectNode, true)
+	//	component.propertyTree.ScrollIntoViewWithPVirtualNodeBoolX2(selectNode, true, true)
+	//}
 }
