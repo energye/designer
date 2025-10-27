@@ -212,8 +212,7 @@ func (m *DesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouse
 		m.dcl = br.Left
 		m.dct = br.Top
 		// 更新设计查看器的属性信息
-		m.formTab.hideAllDrag() // 隐藏所有 drag
-		m.drag.Show()           // 显示当前设计组件 drag
+		m.formTab.switchComponentEditing(m)
 		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 设置选中状态

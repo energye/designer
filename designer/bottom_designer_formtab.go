@@ -59,16 +59,26 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-// 隐藏所有组件的 drag
-func (m *FormTab) hideAllDrag() {
+// 切换组件设计
+func (m *FormTab) switchComponentEditing(targetComp *DesigningComponent) {
+	// 隐藏之前设计的组件
+	// 隐藏之前设计组件的属性和事件列表
 	var iterable func(comp *DesigningComponent)
 	iterable = func(comp *DesigningComponent) {
-		comp.drag.Hide()
+		if comp.isDesigner {
+			comp.drag.Hide()
+			comp.page.Hide()
+		}
 		for _, comp := range comp.child {
 			iterable(comp)
 		}
 	}
 	iterable(m.formRoot)
+
+	// 显示当前设计组件 drag
+	targetComp.drag.Show()
+	// 显示当前设计组件的属性和事件列表
+	targetComp.page.Show()
 }
 
 //
@@ -89,10 +99,7 @@ func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 			// 创建设计组件
 			newComp := create(m, x, y)
 			newComp.SetParent(owner)
-			// 隐藏所有 drag
-			newComp.formTab.hideAllDrag()
-			// 显示当前设计组件 drag
-			newComp.drag.Show()
+			newComp.formTab.switchComponentEditing(newComp)
 			newComp.DragEnd()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
@@ -125,11 +132,8 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
 	if !m.placeComponent(m.formRoot, x, y) {
-		m.hideAllDrag()
-		m.formRoot.drag.Show()
+		m.switchComponentEditing(m.formRoot)
 		logs.Debug("加载窗体属性")
-		// 加载属性列表到设计器组件属性
-		m.formRoot.LoadPropertyToInspector()
 		// 设置选中状态到设计器组件树
 		m.formRoot.SetSelected()
 		//lcl.Mouse.SetCapture(m.formRoot.object.Handle())
