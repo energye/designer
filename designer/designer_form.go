@@ -48,6 +48,9 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	//SetDesignMode(designerForm)
 	designerForm.SetParent(m.scroll)
 	designerForm.SetVisible(true)
+	//designerForm.SetOnMouseMove(m.designerOnMouseMove)
+	//designerForm.SetOnMouseDown(m.designerOnMouseDown)
+	//designerForm.SetOnMouseUp(m.designerOnMouseUp)
 
 	formRoot := lcl.NewPanel(designerForm)
 	formRoot.SetBevelOuter(types.BvNone)
@@ -67,16 +70,16 @@ func (m *FormTab) NewFormDesigner() *DesigningComponent {
 	//SetDesignMode(formRoot)
 
 	// 设计面板
-	m.formRoot.originObject = designerForm
-	m.formRoot.object = designerForm
-	m.formRoot.formTab = m
-	m.formRoot.GetProps()
+	dc.originObject = designerForm
+	dc.object = designerForm
+	dc.formTab = m
+	dc.GetProps()
 
 	// 窗体拖拽大小
-	m.formRoot.drag = newDrag(m.scroll, DsRightBottom)
+	dc.drag = newDrag(m.scroll, DsRightBottom)
 	//m.formRoot.drag.SetParent(m.scroll)
-	m.formRoot.drag.SetRelation(m.formRoot)
-	m.formRoot.drag.Show()
-	m.formRoot.drag.Follow()
+	dc.drag.SetRelation(dc)
+	dc.drag.Show()
+	dc.drag.Follow()
 	return dc
 }

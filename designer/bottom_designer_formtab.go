@@ -71,6 +71,9 @@ func (m *FormTab) hideAllDrag() {
 	iterable(m.formRoot)
 }
 
+//
+//func (m *FormTab) show
+
 // 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *DesigningComponent, x, y int32) bool {
 	// 放置设计组件

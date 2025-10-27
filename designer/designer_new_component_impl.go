@@ -131,6 +131,7 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	comp.SetCursor(types.CrSize)
 	comp.SetCaption(comp.Name())
 	comp.SetShowHint(true)
+	comp.SetVisible(true)
 }
 
 // 返回当前组件实例指针
@@ -319,10 +320,17 @@ func (m *DesigningComponent) LoadPropertyToInspector() {
 // 设置组件父子关系
 func (m *DesigningComponent) SetParent(parent *DesigningComponent) {
 	// 设置父组件
+	control := parent.object
+	if parent.componentType == CtForm {
+		if parent.object.ComponentCount() > 0 {
+			// 父组件是 Form 时, 获取设计窗体的Panel面板, 这个Panel是显示放置组件的
+			control = lcl.AsWinControl(parent.object.Components(0).Instance())
+		}
+	}
 	if m.componentType == CtNonVisual {
-		m.objectNonWrap.SetParent(parent.object)
+		m.objectNonWrap.SetParent(control)
 	} else {
-		m.object.SetParent(parent.object)
+		m.object.SetParent(control)
 	}
 	m.parent = parent
 	// 添加子组件
