@@ -77,8 +77,10 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetDoubleBuffered(true)
 	//m.tree.SetMultiSelect(true) // 多选控制
 	form.tree.SetTop(35)
-	form.tree.SetWidth(leftBoxWidth)
-	form.tree.SetHeight(componentTreeHeight - form.tree.Top())
+	//form.tree.SetWidth(leftBoxWidth)
+	form.tree.SetWidth(inspector.componentTree.treeBox.Width())
+	//form.tree.SetHeight(componentTreeHeight - form.tree.Top())
+	form.tree.SetHeight(inspector.componentTree.treeBox.Height() - form.tree.Top())
 	form.tree.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
 	form.tree.SetAlign(types.AlCustom)
 	//form.tree.SetAlign(types.AlClient)

@@ -93,7 +93,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	}
 	if toolbar.selectComponent != nil && isAcceptsControl {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
-		m.formRoot.drag.Hide()
+		m.switchComponentEditing(m.formRoot)
 		// 获取注册的组件创建函数
 		if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
 			// 创建设计组件

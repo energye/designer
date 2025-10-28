@@ -67,13 +67,13 @@ func SetDesignMode(component lcl.IComponent) {
 // 创建组件属性页
 func (m *TDesigningComponent) createComponentPropertyPage() {
 	m.page = lcl.NewPageControl(inspector.componentProperty.box)
-	m.page.SetParent(inspector.componentProperty.box)
 	m.page.SetTabStop(true)
 	m.page.SetTop(32)
-	m.page.SetWidth(leftBoxWidth)
+	m.page.SetWidth(inspector.componentProperty.box.Width())
 	m.page.SetHeight(inspector.componentProperty.box.Height() - m.page.Top())
 	m.page.SetAlign(types.AlCustom)
 	m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
+	m.page.SetParent(inspector.componentProperty.box)
 
 	m.pageProperty = lcl.NewTabSheet(m.page)
 	m.pageProperty.SetParent(m.page)
