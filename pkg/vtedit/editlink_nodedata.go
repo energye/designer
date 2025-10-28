@@ -60,12 +60,14 @@ func (m *TEditLinkNodeData) IsModify(originNodeData *TEditLinkNodeData) bool {
 		return m.IntValue != originNodeData.IntValue
 	case PdtFloat:
 		return m.FloatValue != originNodeData.FloatValue
-	case PdtCheckBoxList, PdtClass:
+	case PdtCheckBoxList:
 		return m.StringValue != originNodeData.StringValue
 	case PdtComboBox:
 		return m.StringValue != originNodeData.StringValue
 	case PdtColorSelect:
 		return m.IntValue != originNodeData.IntValue
+	case PdtClass:
+
 	}
 	return false
 }
@@ -253,9 +255,9 @@ func (m *TEditNodeData) Name() string {
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.AffiliatedComponent.UpdateComponentPropertyToObject(m)
-		})
+		//go lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.AffiliatedComponent.UpdateComponentPropertyToObject(m)
+		//})
 	}
 }
 
