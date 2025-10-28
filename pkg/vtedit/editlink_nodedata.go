@@ -50,28 +50,6 @@ type TPropClass struct {
 	Count    int32   // 属性值 class 属性数量
 }
 
-func (m *TEditLinkNodeData) IsModify(originNodeData *TEditLinkNodeData) bool {
-	switch m.Type {
-	case PdtCheckBox:
-		return m.Checked != originNodeData.Checked
-	case PdtText:
-		return m.StringValue != originNodeData.StringValue
-	case PdtInt, PdtInt64:
-		return m.IntValue != originNodeData.IntValue
-	case PdtFloat:
-		return m.FloatValue != originNodeData.FloatValue
-	case PdtCheckBoxList:
-		return m.StringValue != originNodeData.StringValue
-	case PdtComboBox:
-		return m.StringValue != originNodeData.StringValue
-	case PdtColorSelect:
-		return m.IntValue != originNodeData.IntValue
-	case PdtClass:
-
-	}
-	return false
-}
-
 func (m *TEditLinkNodeData) EditValue() string {
 	switch m.Type {
 	case PdtText:
@@ -272,7 +250,30 @@ func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
 
 // 是否被修改
 func (m *TEditNodeData) IsModify() bool {
-	return m.EditNodeData.IsModify(m.OriginNodeData)
+	switch m.Type() {
+	case PdtCheckBox:
+
+		//node := m.AffiliatedNode.ToGo()
+		//parentNode := node.Parent
+		//if pData := GetPropertyNodeData(parentNode); pData != nil {
+		//	nodeData = pData // 使用父节点
+		//}
+
+		return m.EditNodeData.Checked != m.OriginNodeData.Checked
+	case PdtText:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtInt, PdtInt64:
+		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
+	case PdtFloat:
+		return m.EditNodeData.FloatValue != m.OriginNodeData.FloatValue
+	case PdtCheckBoxList, PdtClass:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtComboBox:
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+	case PdtColorSelect:
+		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
+	}
+	return false
 }
 
 // 返回编辑字符串值
