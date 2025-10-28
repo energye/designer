@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	// 测试
+	// 动态链接库, 内嵌到执行文件, 需要区分 windows, linux, macOS
 	//go:embed lib/liblcl.dll
 	lib embed.FS
-	// 配置
+	// 主配置
 	//go:embed config.json
 	config embed.FS
 	// 组件属性配置
@@ -22,7 +22,7 @@ var (
 	// 图标资源
 	//go:embed images
 	images embed.FS
-	// 弹窗过滤
+	// 弹窗过滤配置
 	//go:embed dialog-filter.json
 	dialogFilter embed.FS
 )
