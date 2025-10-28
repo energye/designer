@@ -73,7 +73,6 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc.originObject = designerForm
 	dc.object = designerForm
 	dc.formTab = m
-	dc.GetProps()
 
 	// 窗体拖拽大小
 	dc.drag = newDrag(m.scroll, DsRightBottom)

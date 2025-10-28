@@ -12,17 +12,16 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id                   int                  // 索引, 关联 forms key: index
-	name                 string               // 窗体名称
-	scroll               lcl.IScrollBox       // 外 滚动条
-	isDesigner           bool                 // 当前窗体Form是否正在设计
-	sheet                lcl.ITabSheet        // tab sheet
-	isDown, isUp, isMove bool                 // 鼠标事件
-	componentName        map[string]int       // 组件分类名, 同类组件ID序号
-	treePopupMenu        lcl.IPopupMenu       // 组件树右键菜单
-	formDesigner         *TEngFormDesigner    // 设计器处理器
-	formRoot             *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	tree                 lcl.ITreeView        // 组件树
+	id            int                  // 索引, 关联 forms key: index
+	name          string               // 窗体名称
+	scroll        lcl.IScrollBox       // 外 滚动条
+	isDesigner    bool                 // 当前窗体Form是否正在设计
+	sheet         lcl.ITabSheet        // tab sheet
+	componentName map[string]int       // 组件分类名, 同类组件ID序号
+	treePopupMenu lcl.IPopupMenu       // 组件树右键菜单
+	formDesigner  *TEngFormDesigner    // 设计器处理器
+	formRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
+	tree          lcl.ITreeView        // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {
@@ -80,9 +79,6 @@ func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
 	// 显示当前设计组件的属性和事件列表
 	targetComp.page.Show()
 }
-
-//
-//func (m *FormTab) show
 
 // 放置设计组件到设计面板或父组件容器
 func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
@@ -145,45 +141,46 @@ func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButto
 	//lcl.Mouse.SetCapture(0)
 }
 
-func (m *FormTab) onHide(sender lcl.IObject) {
+func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Hide")
-	// 非设计状态
+	// 设计状态 关闭
 	m.isDesigner = false
 	m.tree.SetVisible(false)
-}
-
-func (m *FormTab) onShow(sender lcl.IObject) {
-	logs.Debug("Designer PageControl FormTab Show")
-	// 设计状态
-	m.isDesigner = true
-	m.tree.SetVisible(true)
-
-	// 加载设计组件
-	// 默认窗体表单
-	defaultComp := m.formRoot
-	var iterable func(comp *TDesigningComponent) bool
-	iterable = func(comp *TDesigningComponent) bool {
+	// 隐藏属性列表 page
+	var iterable func(comp *TDesigningComponent)
+	iterable = func(comp *TDesigningComponent) {
 		if comp == nil {
-			return false
+			return
 		}
-		// 如果有当前设计面板有正在设计的组件
-		// 加载正在设计的组件
 		if comp.isDesigner {
-			defaultComp = comp
-			return true
+			comp.page.Hide()
 		}
 		for _, comp := range comp.child {
-			if iterable(comp) {
-				return true
-			}
+			iterable(comp)
 		}
-		return false
 	}
 	iterable(m.formRoot)
+}
 
-	logs.Debug("Current Designer Component")
-	// 加载组件属性
-	defaultComp.LoadPropertyToInspector()
+func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
+	logs.Debug("Designer PageControl FormTab Show")
+	// 设计状态 开户
+	m.isDesigner = true
+	m.tree.SetVisible(true)
+	// 显示属性列表 page
+	var iterable func(comp *TDesigningComponent)
+	iterable = func(comp *TDesigningComponent) {
+		if comp == nil {
+			return
+		}
+		if comp.isDesigner {
+			comp.page.Show()
+		}
+		for _, comp := range comp.child {
+			iterable(comp)
+		}
+	}
+	iterable(m.formRoot)
 }
 
 // 获取组件名 Caption

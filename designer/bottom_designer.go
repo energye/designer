@@ -102,8 +102,8 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet.SetCaption(form.name)
-	form.sheet.SetOnHide(form.onHide)
-	form.sheet.SetOnShow(form.onShow)
+	form.sheet.SetOnHide(form.tabSheetOnHide)
+	form.sheet.SetOnShow(form.tabSheetOnShow)
 	//form.sheet.SetAlign(types.AlClient)
 	form.sheet.SetParent(m.page)
 
