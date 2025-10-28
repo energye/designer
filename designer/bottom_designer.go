@@ -7,6 +7,8 @@ import (
 	"github.com/energye/lcl/types"
 )
 
+// 窗体设计功能
+
 var (
 	designer                    *Designer
 	margin                      int32 = 0
@@ -14,8 +16,7 @@ var (
 	defaultWidth, defaultHeight int32 = 600, 400
 )
 
-// 窗体设计功能
-
+// 设计器
 type Designer struct {
 	page          lcl.IPageControl // 设计器 tabs
 	tabMenu       lcl.IPopupMenu   // tab 菜单
@@ -27,7 +28,7 @@ func GetDesignerForms() map[int]*FormTab {
 	return designer.designerForms
 }
 
-// 创建主窗口设计器的布局
+// 创建设计器的布局
 func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
 	des.designerForms = make(map[int]*FormTab)
@@ -36,6 +37,7 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.page.SetAlign(types.AlClient)
 	des.page.SetTabStop(true)
 
+	// 右键菜单
 	des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
 
 	})
@@ -60,7 +62,6 @@ func (m *Designer) createTabMenu() {
 	closeMenuItem.SetCaption("关闭窗体")
 	closeMenuItem.SetImageIndex(imageActions.ImageIndex("laz_cancel.png"))
 	items.Add(closeMenuItem)
-
 	//m.page.SetPopupMenu(m.tabMenu)
 }
 
@@ -176,18 +177,3 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 //			}
 //		}
 //	}
-
-// 测试属性
-//btn := lcl.NewButton(m)
-//btn.SetParent(m)
-//testProp := lcl.GetComponentProperties(btn)
-//for _, prop := range testProp {
-//	fmt.Printf("%+v\n", prop)
-//}
-//
-//font := lcl.NewFont()
-//fmt.Println("font.GetNamePath():", font.GetNamePath())
-//fs := lcl.Screen.Fonts()
-//for i := 0; i < int(fs.Count()); i++ {
-//	fmt.Println(fs.Strings(int32(i)))
-//}

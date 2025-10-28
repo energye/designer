@@ -43,6 +43,6 @@ func (m *TAppWindow) createMenu() {
 	helper.Add(helperAbout)
 
 	if tool.IsDarwin() {
-
+		// macOS
 	}
 }

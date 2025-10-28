@@ -11,9 +11,6 @@ var (
 	gTreeId int // 维护组件树全局数据id
 )
 
-func init() {
-}
-
 // 获取下一个树数据ID
 func nextTreeDataId() (id int) {
 	id = gTreeId

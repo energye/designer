@@ -6,7 +6,7 @@ import (
 	"github.com/energye/lcl/types/colors"
 )
 
-// 下面设计器
+// 布局下 设计器
 
 var (
 	bottomColor        = colors.RGBToColor(100, 120, 140)

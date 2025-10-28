@@ -13,7 +13,6 @@ type TopToolbar struct {
 	page            lcl.IPageControl
 	box             lcl.IPanel
 	leftTools       lcl.IPanel
-	splitter        lcl.ISplitter            // 分割线
 	rightTabs       lcl.IPanel               // 组件面板选项卡
 	componentTabs   map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
 	selectComponent *ComponentTabItem        // 选中的组件
@@ -31,11 +30,6 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.box.SetHeight(toolbarHeight)
 	bar.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 	bar.box.SetParentColor(true)
-
-	// 工具栏-分隔线
-	//bar.splitter = lcl.NewSplitter(m)
-	//bar.splitter.SetParent(bar.box)
-	//bar.splitter.SetAlign(types.AlLeft)
 
 	// 工具栏-左 工具按钮
 	bar.leftTools = lcl.NewPanel(m)

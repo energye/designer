@@ -11,7 +11,7 @@ import (
 
 // 设计 - 组件属性 - 事件
 
-// 初始化组件属性树
+// 初始化组件属性树事件
 func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree := m.propertyTree
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {

@@ -1,11 +1,13 @@
 package designer
 
 // 组件设计注册
+// 所有要实现设计的组件都在此处注册
 
 // 创建设计组件回调函数
 type TNewComponent func(designerForm *FormTab, x, y int32) *TDesigningComponent
 
 // 注册设计组件
+// key: 组件类名, value: 组件创建函数
 var registerComponents = make(map[string]TNewComponent)
 
 func init() {

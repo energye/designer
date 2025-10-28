@@ -245,8 +245,8 @@ func (m *reflector) findObject() (object reflect.Value) {
 			data = pData // 使用父节点
 		}
 	}
-	// 方法是用于遍历对象路径, 当当前节点具有父节点时且父节点为 class 时查找出所有对象目录
-	// 找到所有对象目录后从顶层对象开始调用, 直到返回当前属性所在的对象
+	// 方法是用于遍历对象路径, 当当前节点具有父节点时且父节点为 class 时查找出对象路径(paths)
+	// 找到所有对象路径(paths)后从顶层对象开始调用, 直到返回当前属性所在的对象
 	// todo 1: 可能存在的问题, 某父对象不是class一定是错误的
 	// todo 2: 当属性（对象方法）不正确时需要做特殊处理转换, 例如: Pen() >= PenToPen() 等等
 	iterObjectName := func(data *vtedit.TEditNodeData) {

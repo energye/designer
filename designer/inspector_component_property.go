@@ -9,13 +9,8 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	box    lcl.IPanel          // 组件属性盒子
-	filter lcl.ITreeFilterEdit // 组件属性过滤框
-	//page         lcl.IPageControl    // 属性和事件页
-	//pageProperty lcl.ITabSheet       // 属性页
-	//pageEvent    lcl.ITabSheet       // 事件页
-	//propertyTree     lcl.ILazVirtualStringTree // 组件属性
-	//eventTree        lcl.ILazVirtualStringTree // 组件事件
+	box              lcl.IPanel           // 组件属性盒子
+	filter           lcl.ITreeFilterEdit  // 组件属性过滤框
 	currentComponent *TDesigningComponent // 当前正在设计的组件
 }
 
@@ -35,44 +30,6 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.filter.SetWidth(leftBoxWidth - m.filter.Left())
 	m.filter.SetAlign(types.AlCustom)
 	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
-	// 选项卡
-	{
-		//m.page = lcl.NewPageControl(m.box)
-		//m.page.SetParent(m.box)
-		//m.page.SetTabStop(true)
-		//m.page.SetTop(32)
-		//m.page.SetWidth(leftBoxWidth)
-		//m.page.SetHeight(m.box.Height() - m.page.Top())
-		//m.page.SetAlign(types.AlCustom)
-		//m.page.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkBottom, types.AkRight))
-		//
-		//m.pageProperty = lcl.NewTabSheet(m.page)
-		//m.pageProperty.SetParent(m.page)
-		//m.pageProperty.SetCaption("  属性  ")
-		//m.pageProperty.SetAlign(types.AlClient)
-		//m.pageProperty.SetBorderWidth(0)
-		//
-		//m.pageEvent = lcl.NewTabSheet(m.page)
-		//m.pageEvent.SetParent(m.page)
-		//m.pageEvent.SetCaption("  事件  ")
-		//m.pageEvent.SetAlign(types.AlClient)
-	}
-	// 组件的属性列表和事件列表"树"
-	{
-		// 组件属性树列表
-		//m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
-		//m.propertyTree.SetParent(m.pageProperty)
-		//vstConfig(m.propertyTree)
-
-		// 组件事件树列表
-		//m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
-		//m.eventTree.SetParent(m.pageEvent)
-		//vstConfig(m.eventTree)
-
-	}
-	// 初始化组件属性事件
-	//m.initComponentPropertyTreeEvent()
-
 }
 
 func vstConfig(tree lcl.ILazVirtualStringTree) {

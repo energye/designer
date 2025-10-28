@@ -4,6 +4,8 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
+// 状态栏
+
 type StatusBar struct {
 	statusBar lcl.IStatusBar
 	left      lcl.IStatusPanel
