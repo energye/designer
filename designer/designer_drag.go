@@ -36,21 +36,20 @@ const minDistance = 4
 
 // 拖拽控制
 type drag struct {
-	relation     *TDesigningComponent // 关联设计的组件
-	ds           DragShowStatus       // 显示方向
-	isShow       bool                 //
-	dx, dy       int32                // 拖拽控制
-	dcl, dct     int32                // 拖拽控制
-	isDown       bool                 // 拖拽控制
-	left         lcl.IPanel
-	top          lcl.IPanel
-	right        lcl.IPanel
-	bottom       lcl.IPanel
-	leftTop      lcl.IPanel
-	rightTop     lcl.IPanel
-	leftBottom   lcl.IPanel
-	rightBottom  lcl.IPanel
-	lastX, lastY int32
+	relation    *TDesigningComponent // 关联设计的组件
+	ds          DragShowStatus       // 显示方向
+	isShow      bool                 // 是否显示
+	dx, dy      int32                // 拖拽控制
+	dcl, dct    int32                // 拖拽控制
+	isDown      bool                 // 拖拽控制
+	left        lcl.IPanel
+	top         lcl.IPanel
+	right       lcl.IPanel
+	bottom      lcl.IPanel
+	leftTop     lcl.IPanel
+	rightTop    lcl.IPanel
+	leftBottom  lcl.IPanel
+	rightBottom lcl.IPanel
 }
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
@@ -298,7 +297,6 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
-
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
 		message.Follow(msgContent)
 		go sender.UpdateNodeDataPoint(br.Left, br.Top)
