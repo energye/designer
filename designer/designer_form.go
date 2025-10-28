@@ -33,7 +33,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc := new(TDesigningComponent)
 	dc.componentType = CtForm
 	dc.createComponentPropertyPage()
-	m.formRoot = dc
+	m.FormRoot = dc
 
 	//designerForm := lcl.NewEngForm(nil)
 	//designerForm := lcl.NewForm(nil)
@@ -62,12 +62,12 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formRoot.SetCaption("")
 	formRoot.SetAlign(types.AlClient)
 	formRoot.SetShowHint(true)
-	//m.designerOnPaint(formRoot)
+	//m.designerOnPaint(FormRoot)
 	formRoot.SetOnMouseMove(m.designerOnMouseMove)
 	formRoot.SetOnMouseDown(m.designerOnMouseDown)
 	formRoot.SetOnMouseUp(m.designerOnMouseUp)
 	formRoot.SetParent(designerForm)
-	//SetDesignMode(formRoot)
+	//SetDesignMode(FormRoot)
 
 	// 设计面板
 	dc.originObject = designerForm
@@ -76,7 +76,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 
 	// 窗体拖拽大小
 	dc.drag = newDrag(m.scroll, DsRightBottom)
-	//m.formRoot.drag.SetParent(m.scroll)
+	//m.FormRoot.drag.SetParent(m.scroll)
 	dc.drag.SetRelation(dc)
 	dc.drag.Show()
 	dc.drag.Follow()

@@ -293,7 +293,7 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 	sender.SetHint(hint)
 	if m.isDown {
 		m.Hide()
-		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.formRoot.object)
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.FormRoot.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
@@ -308,7 +308,7 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
 	if !sender.formTab.placeComponent(sender, X, Y) {
 		m.isDown = true
-		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.formRoot.object)
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.FormRoot.object)
 		m.dx, m.dy = point.X, point.Y
 		br := sender.BoundsRect()
 		m.dcl = br.Left

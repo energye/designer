@@ -20,12 +20,12 @@ type FormTab struct {
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
 	treePopupMenu lcl.IPopupMenu       // 组件树右键菜单
 	formDesigner  *TEngFormDesigner    // 设计器处理器
-	formRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
+	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	tree          lcl.ITreeView        // 组件树
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {
-	if m.formRoot != currComp && m.formRoot.Name() == name {
+	if m.FormRoot != currComp && m.FormRoot.Name() == name {
 		return true
 	}
 	var iterable func(comp *TDesigningComponent) bool
@@ -33,14 +33,14 @@ func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bo
 		if comp != currComp && comp.Name() == name {
 			return true
 		}
-		for _, comp := range comp.child {
+		for _, comp := range comp.Child {
 			if iterable(comp) {
 				return true
 			}
 		}
 		return false
 	}
-	return iterable(m.formRoot)
+	return iterable(m.FormRoot)
 }
 
 // 添加设计组件到组件列表
@@ -68,11 +68,11 @@ func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
 			comp.drag.Hide()
 			comp.page.Hide()
 		}
-		for _, comp := range comp.child {
+		for _, comp := range comp.Child {
 			iterable(comp)
 		}
 	}
-	iterable(m.formRoot)
+	iterable(m.FormRoot)
 
 	// 显示当前设计组件 drag
 	targetComp.drag.Show()
@@ -89,7 +89,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	}
 	if toolbar.selectComponent != nil && isAcceptsControl {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
-		m.switchComponentEditing(m.formRoot)
+		m.switchComponentEditing(m.FormRoot)
 		// 获取注册的组件创建函数
 		if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
 			// 创建设计组件
@@ -116,23 +116,23 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 
 // 窗体设计界面 鼠标移动
 func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	br := m.formRoot.BoundsRect()
+	br := m.FormRoot.BoundsRect()
 	hint := fmt.Sprintf(`%v: TForm
 	Left: %v Top: %v
-	Width: %v Height: %v`, m.formRoot.Name(), br.Left, br.Top, br.Width(), br.Height())
-	m.formRoot.SetHint(hint)
+	Width: %v Height: %v`, m.FormRoot.Name(), br.Left, br.Top, br.Width(), br.Height())
+	m.FormRoot.SetHint(hint)
 }
 
 // 窗体设计界面 鼠标按下, 放置设计组件, 加载组件属性
 func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
-	if !m.placeComponent(m.formRoot, x, y) {
-		m.switchComponentEditing(m.formRoot)
+	if !m.placeComponent(m.FormRoot, x, y) {
+		m.switchComponentEditing(m.FormRoot)
 		logs.Debug("加载窗体属性")
 		// 设置选中状态到设计器组件树
-		m.formRoot.SetSelected()
-		//lcl.Mouse.SetCapture(m.formRoot.object.Handle())
+		m.FormRoot.SetSelected()
+		//lcl.Mouse.SetCapture(m.FormRoot.object.Handle())
 	}
 }
 
@@ -155,11 +155,11 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 		if comp.isDesigner {
 			comp.page.Hide()
 		}
-		for _, comp := range comp.child {
+		for _, comp := range comp.Child {
 			iterable(comp)
 		}
 	}
-	iterable(m.formRoot)
+	iterable(m.FormRoot)
 }
 
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
@@ -176,11 +176,11 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		if comp.isDesigner {
 			comp.page.Show()
 		}
-		for _, comp := range comp.child {
+		for _, comp := range comp.Child {
 			iterable(comp)
 		}
 	}
-	iterable(m.formRoot)
+	iterable(m.FormRoot)
 }
 
 // 获取组件名 Caption
@@ -224,15 +224,15 @@ func (m *FormTab) AddFormNode() {
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
 	items := m.tree.Items()
-	m.formRoot.id = nextTreeDataId()
-	newNode := items.AddChild(nil, m.formRoot.TreeName())
-	newNode.SetImageIndex(m.formRoot.IconIndex())    // 显示图标索引
-	newNode.SetSelectedIndex(m.formRoot.IconIndex()) // 选中图标索引
+	m.FormRoot.id = nextTreeDataId()
+	newNode := items.AddChild(nil, m.FormRoot.TreeName())
+	newNode.SetImageIndex(m.FormRoot.IconIndex())    // 显示图标索引
+	newNode.SetSelectedIndex(m.FormRoot.IconIndex()) // 选中图标索引
 	newNode.SetSelected(true)
-	newNode.SetData(m.formRoot.instance())
-	m.formRoot.node = newNode
+	newNode.SetData(m.FormRoot.instance())
+	m.FormRoot.node = newNode
 	// 添加到设计组件列表
-	m.AddComponentToList(m.formRoot)
+	m.AddComponentToList(m.FormRoot)
 }
 
 // 添加组件节点

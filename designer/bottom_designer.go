@@ -144,7 +144,7 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 //		//canvas := m.bg.Canvas()
 //		canvas := m.scroll.Canvas()
 //		canvas.PenToPen().SetColor(colors.ClBlack)
-//		width, height := m.formRoot.Width(), m.formRoot.Height()
+//		width, height := m.FormRoot.Width(), m.FormRoot.Height()
 //		println("width, height:", width, height)
 //		// X
 //		for i := 0; i <= int(width)/gridSize; i++ {

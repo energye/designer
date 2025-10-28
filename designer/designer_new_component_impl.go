@@ -28,26 +28,25 @@ type SyncLock struct {
 
 // 设计组件
 type TDesigningComponent struct {
-	formTab       *FormTab                // 所属设计窗体
-	id            int                     // id 标识
-	originObject  any                     // 原始组件对象
-	object        lcl.IWinControl         // 组件 对象 可视
-	objectNon     lcl.IComponent          // 组件 对象 非可视
-	objectNonWrap *NonVisualComponentWrap // 组件 对象 非可视, 呈现控制
-	parent        *TDesigningComponent    // 所属父节点
-	child         []*TDesigningComponent  // 拥有的子节点列表
-	drag          *drag                   // 拖拽控制
-	propertyList  []*vtedit.TEditNodeData // 数据 组件属性
-	eventList     []*vtedit.TEditNodeData // 数据 组件事件
-	isDesigner    bool                    // 组件是否正在设计
-	componentType ComponentType           // 组件类型
-	node          lcl.ITreeNode           // 查看器 组件树节点对象
-	//compPropTreeState ComponentPropTreeState    // 查看器 组件属性树状态
-	page         lcl.IPageControl          // 查看器 属性页和事件页
-	pageProperty lcl.ITabSheet             // 查看器 属性页
-	pageEvent    lcl.ITabSheet             // 查看器 事件页
-	propertyTree lcl.ILazVirtualStringTree // 查看器 组件属性树
-	eventTree    lcl.ILazVirtualStringTree // 查看器 组件事件树
+	formTab       *FormTab                  // 所属设计窗体
+	id            int                       // id 标识
+	originObject  any                       // 原始组件对象
+	object        lcl.IWinControl           // 组件 对象 可视
+	objectNon     lcl.IComponent            // 组件 对象 非可视
+	objectNonWrap *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
+	parent        *TDesigningComponent      // 所属父节点
+	Child         []*TDesigningComponent    // 拥有的子节点列表
+	drag          *drag                     // 拖拽控制
+	PropertyList  []*vtedit.TEditNodeData   // 数据 组件属性
+	EventList     []*vtedit.TEditNodeData   // 数据 组件事件
+	isDesigner    bool                      // 组件是否正在设计
+	componentType ComponentType             // 组件类型
+	node          lcl.ITreeNode             // 查看器 组件树节点对象
+	page          lcl.IPageControl          // 查看器 属性页和事件页
+	pageProperty  lcl.ITabSheet             // 查看器 属性页
+	pageEvent     lcl.ITabSheet             // 查看器 事件页
+	propertyTree  lcl.ILazVirtualStringTree // 查看器 组件属性树
+	eventTree     lcl.ILazVirtualStringTree // 查看器 组件事件树
 }
 
 // 组件属性树状态
@@ -112,7 +111,7 @@ func newNonVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
 	m := new(TDesigningComponent)
 	m.componentType = CtNonVisual
 	m.formTab = formTab
-	objectWrap := NewNonVisualComponentWrap(formTab.formRoot.object, m)
+	objectWrap := NewNonVisualComponentWrap(formTab.FormRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
 
@@ -198,7 +197,7 @@ func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 		top  *vtedit.TEditNodeData
 		left *vtedit.TEditNodeData
 	)
-	for _, prop := range m.propertyList {
+	for _, prop := range m.PropertyList {
 		switch prop.Name() {
 		case "Left":
 			top = prop
@@ -225,7 +224,7 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 		width  *vtedit.TEditNodeData
 		height *vtedit.TEditNodeData
 	)
-	for _, prop := range m.propertyList {
+	for _, prop := range m.PropertyList {
 		switch prop.Name() {
 		case "Width":
 			width = prop
@@ -293,7 +292,7 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 	}
 	m.parent = parent
 	// 添加子组件
-	parent.child = append(parent.child, m)
+	parent.Child = append(parent.Child, m)
 }
 
 // 返回组件类名
@@ -327,7 +326,7 @@ func (m *TDesigningComponent) Object() lcl.IObject {
 // 获取当前组件对象属性
 func (m *TDesigningComponent) GetProps() {
 	// 属性列表为空时获取属性列表
-	if m.propertyList == nil {
+	if m.PropertyList == nil {
 
 		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
 		logs.Debug("LoadComponent Count:", len(properties))
@@ -356,8 +355,8 @@ func (m *TDesigningComponent) GetProps() {
 		sort.Slice(propertyList, func(i, j int) bool {
 			return strings.ToLower(propertyList[i].EditNodeData.Name) < strings.ToLower(propertyList[j].EditNodeData.Name)
 		})
-		m.eventList = eventList
-		m.propertyList = propertyList
+		m.EventList = eventList
+		m.PropertyList = propertyList
 	}
 }
 

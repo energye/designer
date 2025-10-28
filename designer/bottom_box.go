@@ -70,7 +70,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 		defaultForm := designer.addDesignerFormTab()
 		// 2.1. 加载属性到设计器
 		// 此步骤会初始化并填充设计组件实例
-		defaultForm.formRoot.LoadPropertyToInspector()
+		defaultForm.FormRoot.LoadPropertyToInspector()
 		// 2.2. 添加到组件树
 		defaultForm.AddFormNode()
 	})

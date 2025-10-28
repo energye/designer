@@ -11,7 +11,7 @@ import (
 // 加载组件属性列表
 func (m *TDesigningComponent) loadPropertyList() {
 	configCompProp := config.ComponentProperty
-	for i, nodeData := range m.propertyList {
+	for i, nodeData := range m.PropertyList {
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
@@ -26,8 +26,8 @@ func (m *TDesigningComponent) loadPropertyList() {
 					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
 					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
 						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
-					m.propertyList[i] = newEditNodeData // 更新到组件属性
-					nodeData = m.propertyList[i]
+					m.PropertyList[i] = newEditNodeData // 更新到组件属性
+					nodeData = m.PropertyList[i]
 					newEditNodeData.Build()
 				} else {
 					// 自定义属性添加？？
