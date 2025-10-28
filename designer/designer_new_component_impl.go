@@ -3,7 +3,6 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -38,9 +37,6 @@ type TDesigningComponent struct {
 	parent        *TDesigningComponent    // 所属父节点
 	child         []*TDesigningComponent  // 拥有的子节点列表
 	drag          *drag                   // 拖拽控制
-	dx, dy        int32                   // 拖拽控制
-	dcl, dct      int32                   // 拖拽控制
-	isDown        bool                    // 拖拽控制
 	propertyList  []*vtedit.TEditNodeData // 数据 组件属性
 	eventList     []*vtedit.TEditNodeData // 数据 组件事件
 	isDesigner    bool                    // 组件是否正在设计
@@ -97,7 +93,7 @@ func (m *TDesigningComponent) createComponentPropertyPage() {
 	m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
 	vstConfig(m.eventTree)
 	m.eventTree.SetParent(m.pageEvent)
-
+	// 初始化组件属性树事件
 	m.initComponentPropertyTreeEvent()
 }
 
@@ -183,61 +179,17 @@ func (m *TDesigningComponent) ClientToParent(point types.TPoint, parent lcl.IWin
 
 // 设计组件鼠标移动
 func (m *TDesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-	br := m.BoundsRect()
-	hint := fmt.Sprintf(`%v
-	Left: %v Top: %v
-	Width: %v Height: %v`, m.TreeName(), br.Left, br.Top, br.Width(), br.Height())
-	m.SetHint(hint)
-	if m.isDown {
-		m.drag.Hide()
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.formTab.formRoot.object)
-		x := point.X - m.dx
-		y := point.Y - m.dy
-		m.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
-
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
-		message.Follow(msgContent)
-		go m.UpdateNodeDataPoint(br.Left, br.Top)
-	}
+	m.drag.OnMouseMove(m, shift, X, Y)
 }
 
 // 设计组件鼠标按下事件
 func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	logs.Debug("OnMouseDown 设计组件", m.ClassName())
-	if !m.formTab.placeComponent(m, X, Y) {
-		m.isDown = true
-		point := m.ClientToParent(types.TPoint{X: X, Y: Y}, m.formTab.formRoot.object)
-		m.dx, m.dy = point.X, point.Y
-		br := m.BoundsRect()
-		m.dcl = br.Left
-		m.dct = br.Top
-		// 更新设计查看器的属性信息
-		m.formTab.switchComponentEditing(m)
-		// 更新设计查看器的组件树信息
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 设置选中状态
-			m.SetSelected()
-		})
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
-		message.Follow(msgContent)
-		if m.object != nil {
-			lcl.Mouse.SetCapture(m.object.Handle())
-		}
-		m.DragBegin()
-	}
+	m.drag.OnMouseDown(m, button, shift, X, Y)
 }
 
 // 设计组件鼠标抬起事件
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	if m.isDown {
-		m.drag.Show()
-	}
-	br := m.BoundsRect()
-	go m.UpdateNodeDataPoint(br.Left, br.Top)
-	m.isDown = false
-	message.FollowHide()
-	lcl.Mouse.SetCapture(0)
-	m.DragEnd()
+	m.drag.OnMouseUp(m, button, shift, X, Y)
 }
 
 // 更新节点数据, Left Top

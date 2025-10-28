@@ -31,19 +31,26 @@ const (
 	DRightBottom
 )
 
+// 最小移动距离阈值
+const minDistance = 4
+
 // 拖拽控制
 type drag struct {
-	relation    *TDesigningComponent // 关联设计的组件
-	ds          DragShowStatus       // 显示方向
-	isShow      bool
-	left        lcl.IPanel
-	top         lcl.IPanel
-	right       lcl.IPanel
-	bottom      lcl.IPanel
-	leftTop     lcl.IPanel
-	rightTop    lcl.IPanel
-	leftBottom  lcl.IPanel
-	rightBottom lcl.IPanel
+	relation     *TDesigningComponent // 关联设计的组件
+	ds           DragShowStatus       // 显示方向
+	isShow       bool                 //
+	dx, dy       int32                // 拖拽控制
+	dcl, dct     int32                // 拖拽控制
+	isDown       bool                 // 拖拽控制
+	left         lcl.IPanel
+	top          lcl.IPanel
+	right        lcl.IPanel
+	bottom       lcl.IPanel
+	leftTop      lcl.IPanel
+	rightTop     lcl.IPanel
+	leftBottom   lcl.IPanel
+	rightBottom  lcl.IPanel
+	lastX, lastY int32
 }
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
@@ -276,4 +283,63 @@ func (m *drag) Follow() {
 			m.rightBottom.SetBounds(x+width-db, y+height-db, dragBorder, dragBorder)
 		}
 	}
+}
+
+// 设计组件鼠标移动
+func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState, X int32, Y int32) {
+	br := sender.BoundsRect()
+	hint := fmt.Sprintf(`%v
+	Left: %v Top: %v
+	Width: %v Height: %v`, sender.TreeName(), br.Left, br.Top, br.Width(), br.Height())
+	sender.SetHint(hint)
+	if m.isDown {
+		m.Hide()
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.formRoot.object)
+		x := point.X - m.dx
+		y := point.Y - m.dy
+		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
+
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
+		message.Follow(msgContent)
+		go sender.UpdateNodeDataPoint(br.Left, br.Top)
+	}
+}
+
+// 设计组件鼠标按下事件
+func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
+	if !sender.formTab.placeComponent(sender, X, Y) {
+		m.isDown = true
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.formRoot.object)
+		m.dx, m.dy = point.X, point.Y
+		br := sender.BoundsRect()
+		m.dcl = br.Left
+		m.dct = br.Top
+		// 更新设计查看器的属性信息
+		sender.formTab.switchComponentEditing(sender)
+		// 更新设计查看器的组件树信息
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 设置选中状态
+			sender.SetSelected()
+		})
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+		message.Follow(msgContent)
+		if sender.object != nil {
+			lcl.Mouse.SetCapture(sender.object.Handle())
+		}
+		sender.DragBegin()
+	}
+}
+
+// 设计组件鼠标抬起事件
+func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	if m.isDown {
+		m.Show()
+	}
+	br := sender.BoundsRect()
+	go sender.UpdateNodeDataPoint(br.Left, br.Top)
+	m.isDown = false
+	message.FollowHide()
+	lcl.Mouse.SetCapture(0)
+	sender.DragEnd()
 }
