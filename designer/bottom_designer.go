@@ -22,6 +22,11 @@ type Designer struct {
 	designerForms map[int]*FormTab // 设计器窗体列表
 }
 
+// 获取所有设计窗体
+func GetDesignerForms() map[int]*FormTab {
+	return designer.designerForms
+}
+
 // 创建主窗口设计器的布局
 func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
