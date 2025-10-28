@@ -5,6 +5,7 @@ import (
 	"github.com/energye/designer/designer"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // UI 布局文件生成, JSON 格式, 自动时时生成
@@ -12,6 +13,8 @@ import (
 // 只存放被修改的组件属性
 // xxx.ui 文件内容是 tree JSON 结构, 数据格式为组件[变更的属性列表]
 // 生成触发条件: 即时触发 防抖
+
+var ()
 
 // UIComponent 表示UI组件的结构
 type UIComponent struct {
@@ -22,7 +25,9 @@ type UIComponent struct {
 }
 
 // GenerateUIFile 生成UI文件
-func GenerateUIFile(formTab *designer.FormTab, filePath string) error {
+func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningComponent) error {
+	formId := strings.ToLower(formTab.Name)
+	filePath := filepath.Join("ui", formId+".ui")
 	// 构建UI树结构
 	uiTree := buildUITree(formTab.FormRoot)
 

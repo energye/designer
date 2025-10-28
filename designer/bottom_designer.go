@@ -101,13 +101,13 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetParent(inspector.componentTree.treeBox)
 
 	// 默认名
-	form.id = len(m.designerForms) + 1
-	form.name = fmt.Sprintf("Form%v", form.id)
+	form.Id = len(m.designerForms) + 1
+	form.Name = fmt.Sprintf("Form%v", form.Id)
 	// 窗体ID
-	m.designerForms[form.id] = form
+	m.designerForms[form.Id] = form
 
 	form.sheet = lcl.NewTabSheet(m.page)
-	form.sheet.SetCaption(form.name)
+	form.sheet.SetCaption(form.Name)
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
 	//form.sheet.SetAlign(types.AlClient)

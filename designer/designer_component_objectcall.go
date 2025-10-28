@@ -16,6 +16,25 @@ import (
 
 // 组件对象函数调用
 
+type UIGenerationCallback func(formTab *FormTab, component *TDesigningComponent)
+
+var (
+	// UI布局回调
+	onUIGeneration UIGenerationCallback
+)
+
+// 设置UI布局文件生成回调
+func SetUIGenerationCallback(callback UIGenerationCallback) {
+	onUIGeneration = callback
+}
+
+// 触发UI布局生成事件
+func triggerUIGeneration(component *TDesigningComponent) {
+	if onUIGeneration != nil {
+		onUIGeneration(component.formTab, component)
+	}
+}
+
 func methodNameToSet(name string) string {
 	name = tool.FirstToUpper(name)
 	return "Set" + name
@@ -25,21 +44,24 @@ func methodNameToSet(name string) string {
 func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()
 	defer m.drag.Show()
-	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.EditNodeData.Name)
+	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name())
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
-		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "调用 API 更新, 同时更新节点数据")
+		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
 		ref := &reflector{object: m.originObject, data: updateNodeData}
 		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
 			logs.Error("调用 API 更新组件属性失败", err.Error())
 		} else {
+			// 成功
 			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
+			go triggerUIGeneration(m)
 			m.UpdateTreeNode(updateNodeData)
 		}
-	} else if rs == err.RsIgnoreProp {
-		logs.Info("检查允许更新属性, 该属性", updateNodeData.EditNodeData.Name, "忽略 API 更新, 只更新节点数据")
+	} else if rs == err.RsIgnoreProp { // 成功的一种
+		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
+		go triggerUIGeneration(m)
 		m.UpdateTreeNode(updateNodeData)
 	} else {
 		// 更新失败
@@ -57,10 +79,10 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 
 // 更新组件树节点信息
 // 在设计组件属性修改后同步修改组件树节点可见值
-func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) {
+func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) error {
 	if !m.node.IsValid() {
 		logs.Error("更新组件树失败, 当前设计组件节点无效")
-		return
+		return errors.New("更新组件树失败, 当前设计组件节点无效")
 	}
 	data := updateNodeData.EditNodeData
 	propName := strings.ToLower(data.Name)
@@ -72,6 +94,7 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 			m.formTab.sheet.SetCaption(m.Name())
 		}
 	}
+	return nil
 }
 
 // 检查是否允许更新属性

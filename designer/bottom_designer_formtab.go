@@ -12,8 +12,8 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	id            int                  // 索引, 关联 forms key: index
-	name          string               // 窗体名称
+	Id            int                  // 索引, 关联 forms key: index
+	Name          string               // 窗体名称
 	scroll        lcl.IScrollBox       // 外 滚动条
 	isDesigner    bool                 // 当前窗体Form是否正在设计
 	sheet         lcl.ITabSheet        // tab sheet
