@@ -50,6 +50,7 @@ type TPropClass struct {
 	Count    int32   // 属性值 class 属性数量
 }
 
+// 编辑数据返回字符串值
 func (m *TEditLinkNodeData) EditStringValue() string {
 	switch m.Type {
 	case PdtText:
@@ -74,6 +75,7 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 	}
 }
 
+// 编辑数据返回原始类型值
 func (m *TEditLinkNodeData) EditValue() any {
 	switch m.Type {
 	case PdtText:
@@ -299,24 +301,12 @@ func (m *TEditNodeData) IsModify() bool {
 	return false
 }
 
-// 获取修改class的子节点
-func (m *TEditNodeData) GetModifyClassChildNodeData() *TEditNodeData {
-	if m.Type() == PdtClass {
-		for _, child := range m.Child {
-			if child.IsModify() {
-				return child
-			}
-		}
-	}
-	return nil
-}
-
-// 返回编辑字符串值
+// 编辑数据返回字符串值
 func (m *TEditNodeData) EditStringValue() string {
 	return m.EditNodeData.EditStringValue()
 }
 
-// 返回编辑值
+// 编辑数据返回原始类型值
 func (m *TEditNodeData) EditValue() any {
 	return m.EditNodeData.EditValue()
 }
