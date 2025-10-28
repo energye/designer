@@ -172,7 +172,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 			if column == 0 {
 				*cellText = data.EditNodeData.Name
 			} else if column == 1 {
-				*cellText = data.EditValue()
+				*cellText = data.EditStringValue()
 			}
 			//if data.EditNodeData.Name == m.compPropTreeState.selectPropName {
 			//	m.compPropTreeState.selectNode = node

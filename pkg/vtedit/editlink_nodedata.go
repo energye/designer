@@ -50,7 +50,7 @@ type TPropClass struct {
 	Count    int32   // 属性值 class 属性数量
 }
 
-func (m *TEditLinkNodeData) EditValue() string {
+func (m *TEditLinkNodeData) EditStringValue() string {
 	switch m.Type {
 	case PdtText:
 		return m.StringValue
@@ -67,6 +67,29 @@ func (m *TEditLinkNodeData) EditValue() string {
 		return m.StringValue
 	case PdtColorSelect:
 		return fmt.Sprintf("0x%X", m.IntValue)
+	case PdtClass:
+		return m.StringValue
+	default:
+		return ""
+	}
+}
+
+func (m *TEditLinkNodeData) EditValue() any {
+	switch m.Type {
+	case PdtText:
+		return m.StringValue
+	case PdtInt, PdtInt64:
+		return m.IntValue
+	case PdtFloat:
+		return m.FloatValue
+	case PdtCheckBox:
+		return m.Checked
+	case PdtCheckBoxList:
+		return m.StringValue
+	case PdtComboBox:
+		return m.StringValue
+	case PdtColorSelect:
+		return m.IntValue
 	case PdtClass:
 		return m.StringValue
 	default:
@@ -252,13 +275,6 @@ func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
 func (m *TEditNodeData) IsModify() bool {
 	switch m.Type() {
 	case PdtCheckBox:
-
-		//node := m.AffiliatedNode.ToGo()
-		//parentNode := node.Parent
-		//if pData := GetPropertyNodeData(parentNode); pData != nil {
-		//	nodeData = pData // 使用父节点
-		//}
-
 		return m.EditNodeData.Checked != m.OriginNodeData.Checked
 	case PdtText:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
@@ -266,22 +282,63 @@ func (m *TEditNodeData) IsModify() bool {
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
 	case PdtFloat:
 		return m.EditNodeData.FloatValue != m.OriginNodeData.FloatValue
-	case PdtCheckBoxList, PdtClass:
+	case PdtCheckBoxList:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
 	case PdtComboBox:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
 	case PdtColorSelect:
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
+	case PdtClass:
+		// 类实例, 需要判断类下的属性是否被修改
+		for _, child := range m.Child {
+			if child.IsModify() {
+				return true
+			}
+		}
 	}
 	return false
 }
 
+// 获取修改class的子节点
+func (m *TEditNodeData) GetModifyClassChildNodeData() *TEditNodeData {
+	if m.Type() == PdtClass {
+		for _, child := range m.Child {
+			if child.IsModify() {
+				return child
+			}
+		}
+	}
+	return nil
+}
+
 // 返回编辑字符串值
-func (m *TEditNodeData) EditValue() string {
+func (m *TEditNodeData) EditStringValue() string {
+	return m.EditNodeData.EditStringValue()
+}
+
+// 返回编辑值
+func (m *TEditNodeData) EditValue() any {
 	return m.EditNodeData.EditValue()
 }
 
 // 返回编辑字符串值
 func (m *TEditNodeData) SetEditValue(value any) {
 	m.EditNodeData.SetEditValue(value)
+}
+
+// 获得类的路径 Txxx.Txxx.Txxx ...
+func (m *TEditNodeData) Paths() []string {
+	// todo 1: 可能存在的问题, 某父对象不是class一定是错误的
+	var paths []string
+	pData := m.Parent
+	for pData != nil {
+		if pData.Type() == PdtClass { // todo 1
+			paths = append(paths, pData.Name())
+		} else {
+			// 不正确, 直接退出
+			panic("递归遍历属性节点对象路径错误, 对象非class类型, 节点必须为class类型: " + pData.Name())
+		}
+		pData = pData.Parent
+	}
+	return paths
 }

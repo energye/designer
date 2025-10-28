@@ -3,6 +3,9 @@ package uigen
 import (
 	"encoding/json"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/pkg/vtedit"
 	"os"
 	"path/filepath"
 	"strings"
@@ -65,8 +68,33 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	// 获取变更的属性
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
-			if prop.IsModify() { // 只保存修改过的属性
-				uiComp.Properties[prop.Name()] = prop.EditValue()
+			if tool.Equal(prop.Name(), "ChildSizing") {
+				println()
+			}
+			// 只保存修改过的属性
+			switch prop.Type() {
+			case vtedit.PdtClass:
+				// 获得类里被修改的节点
+				for _, child := range prop.Child {
+					if child.IsModify() {
+						paths := child.Paths()
+						if paths != nil {
+							tool.StringArrayReverse(paths)
+							paths = append(paths, child.Name())
+							propName := strings.Join(paths, ".")
+							propValue := child.EditValue()
+							uiComp.Properties[propName] = propValue
+						} else {
+							logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", child.Name())
+						}
+					}
+				}
+			default:
+				if prop.IsModify() {
+					propName := prop.Name()
+					propValue := prop.EditValue()
+					uiComp.Properties[propName] = propValue
+				}
 			}
 		}
 	}

@@ -108,9 +108,9 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 	switch propName {
 	case "name":
 		// 在当前设计面板只有唯一一个组件的名
-		if m.formTab.IsDuplicateName(m, data.EditValue()) {
-			logs.Error("修改组件名失败, 该组件名已存在", data.EditValue())
-			message.Info("修改组件名失败", "组件名 ["+data.EditValue()+"] 已存在", 200, 100)
+		if m.formTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
+			logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())
+			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}
 	case "enabled", "visible":
@@ -273,17 +273,7 @@ func (m *reflector) findObject() (object reflect.Value) {
 	// todo 1: 可能存在的问题, 某父对象不是class一定是错误的
 	// todo 2: 当属性（对象方法）不正确时需要做特殊处理转换, 例如: Pen() >= PenToPen() 等等
 	iterObjectName := func(data *vtedit.TEditNodeData) {
-		var paths []string
-		pData := data.Parent
-		for pData != nil {
-			if pData.Type() == vtedit.PdtClass { //todo 1
-				paths = append(paths, pData.Name())
-			} else {
-				// 不正确, 直接退出
-				panic("递归遍历属性节点对象路径错误, 对象非class类型, 节点必须为class类型: " + pData.Name())
-			}
-			pData = pData.Parent
-		}
+		paths := data.Paths()
 		if len(paths) > 0 {
 			for i := len(paths) - 1; i >= 0; i-- {
 				name := paths[i] // todo 2

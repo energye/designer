@@ -74,3 +74,12 @@ func IsExist(path string) bool {
 	}
 	return true
 }
+
+// 字符串数组元素反转
+func StringArrayReverse(array []string) {
+	n := len(array)
+	for i := 0; i < n/2; i++ {
+		j := n - 1 - i
+		array[i], array[j] = array[j], array[i]
+	}
+}
