@@ -79,6 +79,7 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		comp.OnMouseDown(sender, button, shift, x, y)
 	}
+	*message.Result() = 1
 }
 
 func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse) {
@@ -90,6 +91,7 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		comp.OnMouseUp(sender, button, shift, x, y)
 	}
+	*message.Result() = 1
 }
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
@@ -125,6 +127,19 @@ func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
 		misc.DrawGrid(m.canvas.Handle(), r, 8, 8)
 		m.canvas.SetHandle(0)
 	}
+}
+func (m *TEngFormDesigner) popupMenu(sender lcl.IControl, message *types.TLMContextMenu) {
+	//instance := sender.Instance()
+	//comp := m.GetComponentFormList(instance)
+	//if comp != nil {
+	//	x, y := int32(*message.XPos()), int32(*message.YPos())
+	//	if x == -1 && y == -1 {
+	//		point := sender.ClientToScreenWithPoint(types.TPoint{}) // todo types.TPoint{} 参数需要传递一个正确的值
+	//		x, y = point.X, point.Y
+	//	}
+	//	comp.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(x, y)
+	//}
+	*message.Result() = 1
 }
 
 const (
@@ -224,7 +239,9 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	case messages.LM_SETCURSOR:
 		m.setCursor(sender, message)
 	case messages.LM_CONTEXTMENU:
-		//logs.Debug("OnIsDesignMsg CONTEXTMENU", message.Msg, isDesign, sender.ToString())
+		logs.Debug("OnIsDesignMsg CONTEXTMENU", message.Msg, sender.ToString())
+		contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
+		m.popupMenu(sender, contextMenu)
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
 		logs.Debug("OnIsDesignMsg KEYDOWN", message.Msg, sender.ToString())
 	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
