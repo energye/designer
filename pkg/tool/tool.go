@@ -49,11 +49,16 @@ func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32
 	return images
 }
 
-// 判断两个字符串, 忽略大小写
-func Equal(s1, s2 string) bool {
+// 判断字符串相等, 忽略大小写
+func Equal(s1 string, s2 ...string) bool {
 	s1 = strings.ToLower(s1)
-	s2 = strings.ToLower(s2)
-	return s1 == s2
+	for _, s := range s2 {
+		s = strings.ToLower(s)
+		if s1 == s {
+			return true
+		}
+	}
+	return false
 }
 
 // 第一个字母转为大写

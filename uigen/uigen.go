@@ -68,39 +68,46 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	// 获取变更的属性
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
-			if tool.Equal(prop.Name(), "Header") {
-				println()
-			}
-			// 只保存修改过的属性
-			switch prop.Type() {
-			case vtedit.PdtClass:
-				var iterator func(node *vtedit.TEditNodeData)
-				iterator = func(node *vtedit.TEditNodeData) {
-					for _, data := range node.Child {
-						if data.IsModify() {
-							if data.Type() == vtedit.PdtClass {
-								iterator(data)
-							} else {
-								paths := data.Paths()
-								if paths != nil {
-									tool.StringArrayReverse(paths)
-									paths = append(paths, data.Name())
-									propName := strings.Join(paths, ".")
-									propValue := data.EditValue()
-									uiComp.Properties[propName] = propValue
+			//if tool.Equal(prop.Name(), "Header") {
+			//	println()
+			//}
+			// 默认生成的属性 Left Top Width Height
+			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height") {
+				propName := prop.Name()
+				propValue := prop.EditValue()
+				uiComp.Properties[propName] = propValue
+			} else {
+				// 只保存修改过的属性
+				switch prop.Type() {
+				case vtedit.PdtClass:
+					var iterator func(node *vtedit.TEditNodeData)
+					iterator = func(node *vtedit.TEditNodeData) {
+						for _, data := range node.Child {
+							if data.IsModify() {
+								if data.Type() == vtedit.PdtClass {
+									iterator(data)
 								} else {
-									logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
+									paths := data.Paths()
+									if paths != nil {
+										tool.StringArrayReverse(paths)
+										paths = append(paths, data.Name())
+										propName := strings.Join(paths, ".")
+										propValue := data.EditValue()
+										uiComp.Properties[propName] = propValue
+									} else {
+										logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
+									}
 								}
 							}
 						}
 					}
-				}
-				iterator(prop)
-			default:
-				if prop.IsModify() {
-					propName := prop.Name()
-					propValue := prop.EditValue()
-					uiComp.Properties[propName] = propValue
+					iterator(prop)
+				default:
+					if prop.IsModify() {
+						propName := prop.Name()
+						propValue := prop.EditValue()
+						uiComp.Properties[propName] = propValue
+					}
 				}
 			}
 		}

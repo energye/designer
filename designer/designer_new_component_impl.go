@@ -236,6 +236,7 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 		}
 	}
 	if width != nil && height != nil {
+
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			width.SetEditValue(w)
 			m.propertyTree.InvalidateNode(width.AffiliatedNode)
