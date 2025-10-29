@@ -73,6 +73,8 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 		defaultForm.FormRoot.LoadPropertyToInspector()
 		// 2.2. 添加到组件树
 		defaultForm.AddFormNode()
+
+		go triggerUIGeneration(defaultForm.FormRoot)
 	})
 
 	return box

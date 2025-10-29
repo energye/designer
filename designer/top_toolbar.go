@@ -115,6 +115,7 @@ func (m *TopToolbar) createToolBarBtns() {
 			newForm.FormRoot.LoadPropertyToInspector()
 			// 2. 添加到组件树
 			newForm.AddFormNode()
+			go triggerUIGeneration(newForm.FormRoot)
 		})
 	})
 	openFormBtn := newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开窗体", 1)

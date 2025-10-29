@@ -27,10 +27,10 @@ func init() {
 
 // UIComponent 表示UI组件的结构
 type UIComponent struct {
-	Name       string                 `json:"name"`
-	ClassName  string                 `json:"class_name"`
-	Properties map[string]interface{} `json:"properties"`
-	Children   []UIComponent          `json:"children,omitempty"`
+	Name       string         `json:"name"`
+	ClassName  string         `json:"class_name"`
+	Properties map[string]any `json:"properties"`
+	Child      []UIComponent  `json:"child,omitempty"`
 }
 
 // GenerateUIFile 生成UI文件
@@ -61,16 +61,13 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	uiComp := UIComponent{
 		Name:       component.Name(),
 		ClassName:  component.ClassName(),
-		Properties: make(map[string]interface{}),
-		Children:   make([]UIComponent, 0),
+		Properties: make(map[string]any),
+		Child:      make([]UIComponent, 0),
 	}
 
 	// 获取变更的属性
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
-			//if tool.Equal(prop.Name(), "Header") {
-			//	println()
-			//}
 			// 默认生成的属性 Left Top Width Height
 			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height") {
 				propName := prop.Name()
@@ -115,7 +112,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 
 	// 递归处理子组件
 	for _, child := range component.Child {
-		uiComp.Children = append(uiComp.Children, buildUITree(child))
+		uiComp.Child = append(uiComp.Child, buildUITree(child))
 	}
 
 	return uiComp

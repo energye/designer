@@ -104,6 +104,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
 				owner.AddChild(newComp)
 			})
+			go triggerUIGeneration(newComp)
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
