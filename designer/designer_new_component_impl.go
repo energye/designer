@@ -333,6 +333,12 @@ func (m *TDesigningComponent) Object() lcl.IObject {
 	}
 	return m.object
 }
+func (m *TDesigningComponent) WinControl() lcl.IWinControl {
+	if m.componentType == CtNonVisual {
+		return m.objectNonWrap.wrap
+	}
+	return m.object
+}
 
 // 获取当前组件对象属性
 func (m *TDesigningComponent) GetProps() {

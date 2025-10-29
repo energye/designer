@@ -38,6 +38,7 @@ func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最顶层 组件名:", comp.Name())
+		comp.WinControl().BringToFront()
 	}
 }
 
@@ -45,6 +46,7 @@ func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最底层 组件名:", comp.Name())
+		comp.WinControl().SendToBack()
 	}
 }
 
@@ -52,6 +54,14 @@ func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-向前移动一层 组件名:", comp.Name())
+		control := comp.WinControl()
+		parent := control.Parent()
+		if parent == nil || !parent.IsValid() {
+			return
+		}
+		parent.SetControlIndex(control, parent.GetControlIndex(control)+1)
+		control.ReAlign()
+		parent.ReAlign()
 	}
 }
 
@@ -59,6 +69,14 @@ func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-向后移动一层 组件名:", comp.Name())
+		control := comp.WinControl()
+		parent := control.Parent()
+		if parent == nil || !parent.IsValid() {
+			return
+		}
+		parent.SetControlIndex(control, parent.GetControlIndex(control)-1)
+		control.ReAlign()
+		parent.ReAlign()
 	}
 }
 
