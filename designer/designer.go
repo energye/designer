@@ -65,13 +65,13 @@ func (m *TEngFormDesigner) RemoveComponentFormList(instance uintptr) {
 // message
 
 func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
-	//logs.Debug("OnIsDesignMsg setCursor", message.Msg, sender.ToString())
+	//logs.Debug("Design Msg setCursor", message.Msg, sender.ToString())
 	//lcl.Screen.SetCursor(types.CrDefault)
 	//message.Result = 1
 }
 
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
-	//logs.Debug("OnIsDesignMsg mouseDown", message.Msg, sender.ToString(), message)
+	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
 	instance := sender.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -83,7 +83,7 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 }
 
 func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse) {
-	//logs.Debug("OnIsDesignMsg mouseUp", message.Msg, sender.ToString())
+	//logs.Debug("Designer message mouseUp", message.Msg, sender.ToString())
 	instance := sender.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -95,7 +95,7 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 }
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
-	//logs.Debug("OnIsDesignMsg mouseMove", message.Msg, message, sender.ToString())
+	//logs.Debug("Designer message mouseMove", message.Msg, message, sender.ToString())
 	instance := sender.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -106,16 +106,16 @@ func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMous
 }
 
 func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
-	//logs.Debug("OnIsDesignMsg move", message.Msg, message, sender.ToString(), message.MoveType, *message.XPos(), *message.YPos())
+	//logs.Debug("Designer message move", message.Msg, message, sender.ToString(), message.MoveType, *message.XPos(), *message.YPos())
 }
 
 func (m *TEngFormDesigner) size(sender lcl.IControl, message *types.TLMSize) {
-	//logs.Debug("OnIsDesignMsg size", message.Msg, message, sender.ToString())
+	//logs.Debug("Designer message size", message.Msg, message, sender.ToString())
 }
 
 func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
 	isAcceptsControl := sender.ControlStyle().In(types.CsAcceptsControls)
-	//logs.Debug("OnIsDesignMsg paint", message.Msg, "DC:", message.DC, sender.ToString(), "isAcceptsControl:", isAcceptsControl)
+	//logs.Debug("Designer message paint", message.Msg, "DC:", message.DC, sender.ToString(), "isAcceptsControl:", isAcceptsControl)
 	//comp := m.GetComponentFormList(sender.Instance())
 	if message.DC != 0 && isAcceptsControl {
 		m.canvas.SetHandle(message.DC)
@@ -233,19 +233,19 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
 		m.move(sender, move)
 	case messages.LM_ACTIVATE:
-		//logs.Debug("OnIsDesignMsg ACTIVATE", message.Msg, isDesign, sender.ToString())
+		//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
 	case messages.LM_CLOSEQUERY:
-		//logs.Debug("OnIsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
+		//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 	case messages.LM_SETCURSOR:
 		m.setCursor(sender, message)
 	case messages.LM_CONTEXTMENU:
-		logs.Debug("OnIsDesignMsg CONTEXTMENU", message.Msg, sender.ToString())
+		logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
 		contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
 		m.popupMenu(sender, contextMenu)
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-		logs.Debug("OnIsDesignMsg KEYDOWN", message.Msg, sender.ToString())
+		logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
 	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-		logs.Debug("OnIsDesignMsg KEYUP", message.Msg, sender.ToString())
+		logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
 	default:
 		result = false
 	}
