@@ -22,10 +22,12 @@ type ComponentMenu struct {
 	delete           lcl.IMenuItem  // 删除
 }
 
+// 返回当前选中组件树节点
 func (m *ComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
 	return m.form.tree.Selected()
 }
 
+// 返回当前选中组件
 func (m *ComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
 	node := m.ComponentTreeSelectNode()
 	if node != nil && node.IsValid() {
@@ -34,6 +36,7 @@ func (m *ComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
 	return nil
 }
 
+// 移动到最顶层
 func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -42,6 +45,7 @@ func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
 	}
 }
 
+// 移动到最底层
 func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -50,6 +54,7 @@ func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
 	}
 }
 
+// 向前移动一层
 func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -65,6 +70,7 @@ func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 	}
 }
 
+// 向后移动一层
 func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -80,6 +86,7 @@ func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 	}
 }
 
+// 剪切
 func (m *ComponentMenu) OnCut(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -87,6 +94,7 @@ func (m *ComponentMenu) OnCut(sender lcl.IObject) {
 	}
 }
 
+// 复制
 func (m *ComponentMenu) OnCopy(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -94,6 +102,7 @@ func (m *ComponentMenu) OnCopy(sender lcl.IObject) {
 	}
 }
 
+// 粘贴
 func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
@@ -101,6 +110,7 @@ func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
 	}
 }
 
+// 删除
 func (m *ComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {

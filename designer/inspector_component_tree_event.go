@@ -9,10 +9,12 @@ import (
 
 // 设计 - 组件树 - 事件
 
+// 组件树右键菜单
 func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
 	logs.Debug("TreeOnContextPopup mousePos:", mousePos)
 }
 
+// 组件树鼠标按下事件
 func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("TreeOnMouseDown x:", X, "y:", Y)
 	if button == types.MbRight {

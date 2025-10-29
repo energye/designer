@@ -23,3 +23,8 @@ func (m *TDesigningComponent) AddChild(child *TDesigningComponent) {
 func (m *TDesigningComponent) SetSelected() {
 	m.node.SetSelected(true)
 }
+
+// 重新排序当前组件树节点
+func (m *TDesigningComponent) Order() {
+
+}
