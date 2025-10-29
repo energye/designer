@@ -41,89 +41,111 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 }
 
-// 清除组件树数据
-//func (m *InspectorComponentTree) Clear() {
-//m.tree.Items().Clear()
-//m.root = nil
-//m.nodeData = make(map[int]*TDesigningComponent)
-//}
+// 组件菜单
+type ComponentMenu struct {
+	form          *FormTab
+	treePopupMenu lcl.IPopupMenu // 组件树右键菜单
+}
 
-// FormTab
+func (m *ComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
+	return m.form.tree.Selected()
+}
+func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
+	node := m.ComponentTreeSelectNode()
+	if node != nil {
+
+	}
+}
+func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnCut(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnCopy(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
+
+}
+func (m *ComponentMenu) OnDelete(sender lcl.IObject) {
+
+}
 
 // 创建树右键菜单
-func (m *FormTab) TreePopupMenu() lcl.IPopupMenu {
-	m.treePopupMenu = lcl.NewPopupMenu(m.tree)
-	m.treePopupMenu.SetImages(imageItem.ImageList100())
+func (m *FormTab) CreateComponentMenu() {
+	if m.componentMenu != nil {
+		return
+	}
+	menu := new(ComponentMenu)
+	menu.form = m
+	menu.treePopupMenu = lcl.NewPopupMenu(m.tree)
+	menu.treePopupMenu.SetImages(imageItem.ImageList100())
+	menu.treePopupMenu.SetParent(m.tree)
+	m.componentMenu = menu
+	menuItems := menu.treePopupMenu.Items()
 
 	// 层级菜单
 	zLevel := lcl.NewMenuItem(m.tree)
 	zLevel.SetCaption("Z 序")
-	m.treePopupMenu.Items().Add(zLevel)
+	menuItems.Add(zLevel)
 
 	zLevelFront := lcl.NewMenuItem(m.tree)
 	zLevelFront.SetCaption("移动到最顶层")
 	zLevelFront.SetImageIndex(imageItem.ImageIndex("order_move_front.png"))
 	zLevel.Add(zLevelFront)
-	zLevelFront.SetOnClick(func(sender lcl.IObject) {
-
-	})
+	zLevelFront.SetOnClick(menu.OnLevelFront)
 
 	zLevelBack := lcl.NewMenuItem(m.tree)
 	zLevelBack.SetCaption("移动到最底层")
 	zLevelBack.SetImageIndex(imageItem.ImageIndex("order_move_back.png"))
 	zLevel.Add(zLevelBack)
-	zLevelBack.SetOnClick(func(sender lcl.IObject) {
-
-	})
+	zLevelBack.SetOnClick(menu.OnLevelBack)
 
 	zLevelForwardOne := lcl.NewMenuItem(m.tree)
 	zLevelForwardOne.SetCaption("向前移动一层")
 	zLevelForwardOne.SetImageIndex(imageItem.ImageIndex("order_forward_one.png"))
 	zLevel.Add(zLevelForwardOne)
-	zLevelForwardOne.SetOnClick(func(sender lcl.IObject) {
-
-	})
+	zLevelForwardOne.SetOnClick(menu.OnLevelForwardOne)
 
 	zLevelBackOne := lcl.NewMenuItem(m.tree)
 	zLevelBackOne.SetCaption("向后移动一层")
 	zLevelBackOne.SetImageIndex(imageItem.ImageIndex("order_back_one.png"))
 	zLevel.Add(zLevelBackOne)
-	zLevelBackOne.SetOnClick(func(sender lcl.IObject) {
-
-	})
+	zLevelBackOne.SetOnClick(menu.OnLevelBackOne)
 
 	line := lcl.NewMenuItem(m.tree)
 	line.SetCaption("-")
-	m.treePopupMenu.Items().Add(line)
+	menuItems.Add(line)
 
 	cut := lcl.NewMenuItem(m.tree)
 	cut.SetCaption("剪切")
 	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
-	cut.SetOnClick(func(lcl.IObject) {
-	})
-	m.treePopupMenu.Items().Add(cut)
+	cut.SetOnClick(menu.OnCut)
+	menuItems.Add(cut)
 
 	copy := lcl.NewMenuItem(m.tree)
 	copy.SetCaption("复制")
 	copy.SetImageIndex(imageItem.ImageIndex("item_copy.png"))
-	copy.SetOnClick(func(lcl.IObject) {
-	})
-	m.treePopupMenu.Items().Add(copy)
+	copy.SetOnClick(menu.OnCopy)
+	menuItems.Add(copy)
 
 	paste := lcl.NewMenuItem(m.tree)
 	paste.SetCaption("粘贴")
 	paste.SetImageIndex(imageItem.ImageIndex("item_paste.png"))
-	paste.SetOnClick(func(lcl.IObject) {
-	})
-	m.treePopupMenu.Items().Add(paste)
+	paste.SetOnClick(menu.OnPaste)
+	menuItems.Add(paste)
 
 	delete := lcl.NewMenuItem(m.tree)
 	delete.SetCaption("删除")
 	delete.SetImageIndex(imageItem.ImageIndex("item_delete_selection.png"))
-	delete.SetOnClick(func(lcl.IObject) {
-	})
-	m.treePopupMenu.Items().Add(delete)
+	delete.SetOnClick(menu.OnDelete)
+	menuItems.Add(delete)
 
-	m.treePopupMenu.SetParent(m.tree)
-	return m.treePopupMenu
 }

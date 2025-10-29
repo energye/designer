@@ -18,10 +18,10 @@ type FormTab struct {
 	isDesigner    bool                 // 当前窗体Form是否正在设计
 	sheet         lcl.ITabSheet        // tab sheet
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
-	treePopupMenu lcl.IPopupMenu       // 组件树右键菜单
 	formDesigner  *TEngFormDesigner    // 设计器处理器
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	tree          lcl.ITreeView        // 组件树
+	componentMenu *ComponentMenu       // 组件菜单
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {

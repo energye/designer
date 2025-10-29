@@ -97,7 +97,8 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
 	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
 	// 树菜单
-	form.tree.SetPopupMenu(form.TreePopupMenu())
+	form.CreateComponentMenu()
+	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
 	form.tree.SetParent(inspector.componentTree.treeBox)
 
 	// 默认名
