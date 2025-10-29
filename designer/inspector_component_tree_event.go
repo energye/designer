@@ -17,7 +17,7 @@ func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton,
 	logs.Debug("TreeOnMouseDown x,y:", X, Y)
 	if button == types.MbRight {
 		selectNode := m.tree.GetNodeAt(X, Y)
-		if selectNode.IsValid() {
+		if selectNode != nil && selectNode.IsValid() {
 			m.tree.SetSelected(selectNode)
 		}
 	}
