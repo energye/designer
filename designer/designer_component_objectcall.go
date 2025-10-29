@@ -272,20 +272,17 @@ func (m *reflector) findObject() (object reflect.Value) {
 	// 找到所有对象路径(paths)后从顶层对象开始调用, 直到返回当前属性所在的对象
 	// todo 1: 可能存在的问题, 某父对象不是class一定是错误的
 	// todo 2: 当属性（对象方法）不正确时需要做特殊处理转换, 例如: Pen() >= PenToPen() 等等
-	iterObjectName := func(data *vtedit.TEditNodeData) {
-		paths := data.Paths()
-		if len(paths) > 0 {
-			for i := len(paths) - 1; i >= 0; i-- {
-				name := paths[i] // todo 2
-				in := make([]reflect.Value, 0)
-				method := m.findMethod(object, name)
-				results := method.Call(in)
-				// 当前属性的所属对象
-				object = results[0]
-			}
+	paths := data.Paths()
+	if len(paths) > 0 {
+		for i := len(paths) - 1; i >= 0; i-- {
+			name := paths[i] // todo 2
+			in := make([]reflect.Value, 0)
+			method := m.findMethod(object, name)
+			results := method.Call(in)
+			// 当前属性的所属对象
+			object = results[0]
 		}
 	}
-	iterObjectName(data)
 	return
 }
 

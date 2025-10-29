@@ -306,6 +306,22 @@ func (m *TEditNodeData) IsModify() bool {
 	return false
 }
 
+// 获取修改class的子节点
+func (m *TEditNodeData) GetModifyClassChildNodeData() *TEditNodeData {
+	if m.Type() == PdtClass {
+		for _, child := range m.Child {
+			if child.IsModify() {
+				if child.Type() == PdtClass {
+					return child.GetModifyClassChildNodeData()
+				} else {
+					return child
+				}
+			}
+		}
+	}
+	return nil
+}
+
 // 编辑数据返回字符串值
 func (m *TEditNodeData) EditStringValue() string {
 	return m.EditNodeData.EditStringValue()

@@ -68,27 +68,49 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	// 获取变更的属性
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
-			if tool.Equal(prop.Name(), "ChildSizing") {
+			if tool.Equal(prop.Name(), "Header") {
 				println()
 			}
 			// 只保存修改过的属性
 			switch prop.Type() {
 			case vtedit.PdtClass:
-				// 获得类里被修改的节点
-				for _, child := range prop.Child {
-					if child.IsModify() {
-						paths := child.Paths()
-						if paths != nil {
-							tool.StringArrayReverse(paths)
-							paths = append(paths, child.Name())
-							propName := strings.Join(paths, ".")
-							propValue := child.EditValue()
-							uiComp.Properties[propName] = propValue
-						} else {
-							logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", child.Name())
+				var iterator func(node *vtedit.TEditNodeData)
+				iterator = func(node *vtedit.TEditNodeData) {
+					for _, data := range node.Child {
+						if data.IsModify() {
+							if data.Type() == vtedit.PdtClass {
+								iterator(data)
+							} else {
+								paths := data.Paths()
+								if paths != nil {
+									tool.StringArrayReverse(paths)
+									paths = append(paths, data.Name())
+									propName := strings.Join(paths, ".")
+									propValue := data.EditValue()
+									uiComp.Properties[propName] = propValue
+								} else {
+									logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
+								}
+							}
 						}
 					}
 				}
+				iterator(prop)
+				//modifyNodeData := prop.GetModifyClassChildNodeData()
+				//if modifyNodeData != nil && modifyNodeData.IsModify() {
+				//	paths := modifyNodeData.Paths()
+				//	if paths != nil {
+				//		tool.StringArrayReverse(paths)
+				//		paths = append(paths, modifyNodeData.Name())
+				//		propName := strings.Join(paths, ".")
+				//		propValue := modifyNodeData.EditValue()
+				//		uiComp.Properties[propName] = propValue
+				//	} else {
+				//		logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", modifyNodeData.Name())
+				//	}
+				//} else {
+				//	logs.Error("错误, 生成UI布局文件, 属性是 class 获取被修改的子节点失败. 属性名: ", prop.Name())
+				//}
 			default:
 				if prop.IsModify() {
 					propName := prop.Name()
