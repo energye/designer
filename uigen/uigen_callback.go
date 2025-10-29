@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+//
+
 func InitUIGeneration() {
 	designer.SetUIGenerationCallback(UIGeneration)
 }
@@ -20,7 +22,7 @@ var (
 	debounceDelay  = 500 * time.Millisecond
 )
 
-// 带防抖的UI生成
+// UI生成
 func DebouncedGenerate(formTab *designer.FormTab, component *designer.TDesigningComponent) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()

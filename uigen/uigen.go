@@ -33,6 +33,11 @@ type UIComponent struct {
 	Child      []UIComponent  `json:"child,omitempty"`
 }
 
+type Property struct {
+	Type  vtedit.PropertyDataType
+	Value any
+}
+
 // GenerateUIFile 生成UI文件
 func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningComponent) error {
 	formId := strings.ToLower(formTab.Name)
@@ -69,7 +74,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
 			// 默认生成的属性 Left Top Width Height
-			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height") {
+			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height", "Caption") {
 				propName := prop.Name()
 				propValue := prop.EditValue()
 				uiComp.Properties[propName] = propValue
