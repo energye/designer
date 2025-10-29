@@ -32,6 +32,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 }
 
+// 属性列表虚拟树配置方法
 func vstConfig(tree lcl.ILazVirtualStringTree) {
 	tree.SetBorderStyleToBorderStyle(types.BsNone)
 	tree.SetAlign(types.AlClient)

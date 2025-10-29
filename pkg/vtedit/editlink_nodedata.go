@@ -285,7 +285,12 @@ func (m *TEditNodeData) IsModify() bool {
 	case PdtFloat:
 		return m.EditNodeData.FloatValue != m.OriginNodeData.FloatValue
 	case PdtCheckBoxList:
-		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+		// CheckBox 判断集合是否修改
+		for i, item := range m.EditNodeData.CheckBoxValue {
+			if item.Checked != m.OriginNodeData.CheckBoxValue[i].Checked {
+				return true
+			}
+		}
 	case PdtComboBox:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
 	case PdtColorSelect:

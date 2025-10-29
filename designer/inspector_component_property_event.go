@@ -137,9 +137,11 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 					link := vtedit.NewColorSelectEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtClass:
+					// class 属性实例, 根据属性名控制不同的操作
 					propName := data.EditNodeData.Name
 					switch propName {
 					case "Icon":
+						// 图标弹窗
 						link := vtedit.NewIconEditLink(data)
 						*outEditLink = link.AsIVTEditLink()
 					default:

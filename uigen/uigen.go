@@ -89,8 +89,6 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 						}
 					}
 				}
-			case vtedit.PdtCheckBox:
-
 			default:
 				if prop.IsModify() {
 					propName := prop.Name()
