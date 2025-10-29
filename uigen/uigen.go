@@ -96,21 +96,6 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 					}
 				}
 				iterator(prop)
-				//modifyNodeData := prop.GetModifyClassChildNodeData()
-				//if modifyNodeData != nil && modifyNodeData.IsModify() {
-				//	paths := modifyNodeData.Paths()
-				//	if paths != nil {
-				//		tool.StringArrayReverse(paths)
-				//		paths = append(paths, modifyNodeData.Name())
-				//		propName := strings.Join(paths, ".")
-				//		propValue := modifyNodeData.EditValue()
-				//		uiComp.Properties[propName] = propValue
-				//	} else {
-				//		logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", modifyNodeData.Name())
-				//	}
-				//} else {
-				//	logs.Error("错误, 生成UI布局文件, 属性是 class 获取被修改的子节点失败. 属性名: ", prop.Name())
-				//}
 			default:
 				if prop.IsModify() {
 					propName := prop.Name()
