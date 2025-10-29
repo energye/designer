@@ -183,12 +183,21 @@ func (m *TDesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShift
 
 // 设计组件鼠标按下事件
 func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	m.drag.OnMouseDown(m, button, shift, X, Y)
+	if button == types.MbRight {
+		m.SetSelected()
+	} else {
+		m.drag.OnMouseDown(m, button, shift, X, Y)
+	}
 }
 
 // 设计组件鼠标抬起事件
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	m.drag.OnMouseUp(m, button, shift, X, Y)
+	if button == types.MbRight {
+		cursorPos := lcl.Mouse.CursorPos()
+		m.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
+	} else {
+		m.drag.OnMouseUp(m, button, shift, X, Y)
+	}
 }
 
 // 更新节点数据, Left Top
