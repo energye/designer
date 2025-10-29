@@ -10,11 +10,11 @@ import (
 // 设计 - 组件树 - 事件
 
 func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
-	logs.Debug("TreeOnContextPopup pos:", mousePos)
+	logs.Debug("TreeOnContextPopup mousePos:", mousePos)
 }
 
 func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	logs.Debug("TreeOnMouseDown x,y:", X, Y)
+	logs.Debug("TreeOnMouseDown x:", X, "y:", Y)
 	if button == types.MbRight {
 		selectNode := m.tree.GetNodeAt(X, Y)
 		if selectNode != nil && selectNode.IsValid() {
