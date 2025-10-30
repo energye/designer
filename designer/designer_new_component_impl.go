@@ -395,8 +395,59 @@ func (m *TDesigningComponent) Parent() *TDesigningComponent {
 	return m.parent
 }
 
+// MoveTo 将当前设计组件移动到指定的目标组件位置
+//
+// 参数:
+//
+//	destination - 目标设计组件，表示要移动到的位置
+//	mode - 节点附加模式，控制移动的具体行为和位置关系
 func (m *TDesigningComponent) MoveTo(destination *TDesigningComponent, mode types.TNodeAttachMode) {
+	// 从当前父组件中完全移除自己
+	if m.parent != nil {
+		idx := m.Index()
+		if idx != -1 {
+			m.parent.Child = append(m.parent.Child[:idx], m.parent.Child[idx+1:]...)
+		}
+	}
 
+	switch mode {
+	case types.NaAddChild: // 添加到最后
+		if destination.parent != nil {
+			m.parent = destination.parent
+			destination.parent.Child = append(destination.parent.Child, m)
+		}
+	case types.NaAddFirst: // 添加到最前面
+		if destination.parent != nil {
+			m.parent = destination.parent
+			destination.parent.Child = append([]*TDesigningComponent{m}, destination.parent.Child...)
+		}
+	case types.NaInsert: // 插入到目标节点前面
+		if destination.parent != nil {
+			targetIndex := destination.Index()
+			if targetIndex != -1 {
+				m.parent = destination.parent
+				m.parent.Child = append(
+					m.parent.Child[:targetIndex],
+					append([]*TDesigningComponent{m}, m.parent.Child[targetIndex:]...)...,
+				)
+			}
+		}
+	case types.NaInsertBehind: // 插入到目标节点后面
+		if destination.parent != nil {
+			targetIndex := destination.Index()
+			if targetIndex != -1 {
+				m.parent = destination.parent
+				insertIndex := targetIndex + 1
+				if insertIndex > len(m.parent.Child) {
+					insertIndex = len(m.parent.Child)
+				}
+				m.parent.Child = append(
+					m.parent.Child[:insertIndex],
+					append([]*TDesigningComponent{m}, m.parent.Child[insertIndex:]...)...,
+				)
+			}
+		}
+	}
 }
 
 func (m *TDesigningComponent) LastChild() *TDesigningComponent {
@@ -415,15 +466,20 @@ func (m *TDesigningComponent) FirstChild() *TDesigningComponent {
 	return nil
 }
 
-func (m *TDesigningComponent) NextSibling() *TDesigningComponent {
+func (m *TDesigningComponent) Index() int {
 	if m.parent != nil {
-		idx := -1
 		for i, comp := range m.parent.Child {
 			if m == comp {
-				idx = i
-				break
+				return i
 			}
 		}
+	}
+	return -1
+}
+
+func (m *TDesigningComponent) NextSibling() *TDesigningComponent {
+	if m.parent != nil {
+		idx := m.Index()
 		if idx != -1 && idx < len(m.parent.Child)-1 {
 			return m.parent.Child[idx+1]
 		}
@@ -433,13 +489,7 @@ func (m *TDesigningComponent) NextSibling() *TDesigningComponent {
 
 func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
 	if m.parent != nil {
-		idx := -1
-		for i, comp := range m.parent.Child {
-			if m == comp {
-				idx = i
-				break
-			}
-		}
+		idx := m.Index()
 		if idx != -1 && idx > 0 {
 			return m.parent.Child[idx-1]
 		}

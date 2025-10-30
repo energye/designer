@@ -67,9 +67,15 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 	case CLevelBack:
 
 	case CLevelForwardOne:
-
+		nextComp := m.NextSibling()
+		if nextComp != nil {
+			m.MoveTo(nextComp, types.NaInsertBehind)
+		}
 	case CLevelBackOne:
-
+		prevComp := m.PrevSibling()
+		if prevComp != nil {
+			m.MoveTo(prevComp, types.NaInsert)
+		}
 	}
 	go triggerUIGeneration(m)
 }
