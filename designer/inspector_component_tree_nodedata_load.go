@@ -25,6 +25,11 @@ func (m *TDesigningComponent) SetSelected() {
 }
 
 // 重新排序当前组件树节点
-func (m *TDesigningComponent) Order() {
-
+func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
+	switch changeLevel {
+	case CLevelFront:
+	case CLevelBack:
+	case CLevelForwardOne:
+	case CLevelBackOne:
+	}
 }

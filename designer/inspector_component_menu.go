@@ -7,6 +7,16 @@ import (
 
 // 设计 - 组件右键菜单
 
+// 改变 Z 序
+type ChangeLevel int32
+
+const (
+	CLevelFront ChangeLevel = iota
+	CLevelBack
+	CLevelForwardOne
+	CLevelBackOne
+)
+
 // 组件菜单
 type ComponentMenu struct {
 	form             *FormTab
@@ -42,6 +52,7 @@ func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最顶层 组件名:", comp.Name())
 		comp.WinControl().BringToFront()
+		comp.Order(CLevelFront)
 	}
 }
 
@@ -51,6 +62,7 @@ func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最底层 组件名:", comp.Name())
 		comp.WinControl().SendToBack()
+		comp.Order(CLevelBack)
 	}
 }
 
@@ -67,6 +79,7 @@ func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 		parent.SetControlIndex(control, parent.GetControlIndex(control)+1)
 		control.ReAlign()
 		parent.ReAlign()
+		comp.Order(CLevelForwardOne)
 	}
 }
 
@@ -83,6 +96,7 @@ func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 		parent.SetControlIndex(control, parent.GetControlIndex(control)-1)
 		control.ReAlign()
 		parent.ReAlign()
+		comp.Order(CLevelBackOne)
 	}
 }
 
