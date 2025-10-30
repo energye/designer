@@ -39,9 +39,7 @@ type Property struct {
 }
 
 // GenerateUIFile 生成UI文件
-func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningComponent) error {
-	formId := strings.ToLower(formTab.Name)
-	filePath := filepath.Join(projectPath, "ui", formId+".ui")
+func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningComponent, filePath string) error {
 	// 构建UI树结构
 	uiTree := buildUITree(formTab.FormRoot)
 

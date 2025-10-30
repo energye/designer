@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/energye/designer/codegen"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
@@ -23,6 +24,8 @@ func main() {
 		libname.LibName = resources.LibPath
 	}
 	lcl.Init(nil, nil)
+	// 初始化代码生成
+	codegen.InitCodeGeneration()
 	// 初始化UI生成
 	uigen.InitUIGeneration()
 	// 运行设计器

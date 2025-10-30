@@ -2,11 +2,13 @@ package uigen
 
 import (
 	"github.com/energye/designer/designer"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
 
-//
+// UI 布局文件回调函数
 
 func InitUIGeneration() {
 	designer.SetUIGenerationCallback(UIGeneration)
@@ -38,11 +40,14 @@ func DebouncedGenerate(formTab *designer.FormTab, component *designer.TDesigning
 		delete(debounceTimers, formID)
 		debounceMutex.Unlock()
 
+		formId := strings.ToLower(formTab.Name)
+		uiFilePath := filepath.Join(projectPath, "ui", formId+".ui")
+
 		// 执行UI生成
-		GenerateUIFile(formTab, component)
+		GenerateUIFile(formTab, component, uiFilePath)
 
 		// 触发代码生成
-		//codegen.GenerateCode(filePath)
+		triggerCodeGeneration(uiFilePath)
 	})
 
 	debounceTimers[formID] = timer
