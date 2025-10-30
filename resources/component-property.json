@@ -8,7 +8,9 @@
       "AnchorSideBottom",
       "AnchorSideLeft",
       "AnchorSideRight",
-      "AnchorSideTop"
+      "AnchorSideTop",
+      "ClientHeight",
+      "ClientWidth"
     ],
     "include": [
       {

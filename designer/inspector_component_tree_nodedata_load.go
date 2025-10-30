@@ -7,12 +7,6 @@ import (
 
 // 设计 - 组件设计树数据加载
 
-// 删除当前节点
-func (m *TDesigningComponent) Remove() {
-	//owner:=m.owner
-	//m.owner=nil
-}
-
 func (m *TDesigningComponent) instance() uintptr {
 	return uintptr(unsafe.Pointer(m))
 }
@@ -91,5 +85,14 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 			m.MoveTo(prevComp, types.NaInsert)
 		}
 	}
+	// TODO 排序所有控件显示 Z 序, 显示有些问题, laz也有
+	//control := m.WinControl()
+	//parent := control.Parent()
+	//if parent != nil && parent.IsValid() {
+	//	for i := 0; i < int(parent.ControlCount()); i++ {
+	//		child := parent.Controls(int32(i))
+	//		println("ControlIndex:", parent.GetControlIndex(child), child.Name())
+	//	}
+	//}
 	go triggerUIGeneration(m)
 }

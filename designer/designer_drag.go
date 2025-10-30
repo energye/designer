@@ -52,6 +52,23 @@ type drag struct {
 	rightBottom lcl.IPanel
 }
 
+func (m *drag) Free() {
+	m.relation = nil
+	if m.ds == DsAll {
+		m.left.Free()
+		m.top.Free()
+		m.right.Free()
+		m.bottom.Free()
+		m.leftTop.Free()
+		m.rightTop.Free()
+		m.leftBottom.Free()
+		m.rightBottom.Free()
+	} else {
+		m.right.Free()
+		m.bottom.Free()
+		m.rightBottom.Free()
+	}
+}
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
 	pnl.SetWidth(dragBorder)

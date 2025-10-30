@@ -128,7 +128,10 @@ func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
 func (m *ComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
+		parent := comp.parent
 		logs.Debug("组件菜单-删除 组件名:", comp.Name())
+		comp.Remove()
+		go triggerUIGeneration(parent)
 	}
 }
 
@@ -187,6 +190,7 @@ func (m *FormTab) CreateComponentMenu() {
 	cut.SetCaption("剪切")
 	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
 	cut.SetOnClick(menu.OnCut)
+	cut.SetEnabled(false) // TODO 先禁用未实现
 	menu.cut = cut
 	menuItems.Add(cut)
 
@@ -194,6 +198,7 @@ func (m *FormTab) CreateComponentMenu() {
 	copy.SetCaption("复制")
 	copy.SetImageIndex(imageItem.ImageIndex("item_copy.png"))
 	copy.SetOnClick(menu.OnCopy)
+	copy.SetEnabled(false) // TODO 先禁用未实现
 	menu.copy = copy
 	menuItems.Add(copy)
 
@@ -201,6 +206,7 @@ func (m *FormTab) CreateComponentMenu() {
 	paste.SetCaption("粘贴")
 	paste.SetImageIndex(imageItem.ImageIndex("item_paste.png"))
 	paste.SetOnClick(menu.OnPaste)
+	paste.SetEnabled(false) // TODO 先禁用未实现
 	menu.paste = paste
 	menuItems.Add(paste)
 

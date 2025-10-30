@@ -63,6 +63,48 @@ func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
+func (m *TDesigningComponent) Free() {
+	m.formTab = nil
+	if m.object != nil && m.object.IsValid() {
+		m.object.Free()
+	}
+	if m.objectNon != nil && m.objectNon.IsValid() {
+		m.objectNon.Free()
+	}
+	if m.objectNonWrap != nil {
+		m.objectNonWrap.Free()
+		m.objectNonWrap = nil
+	}
+	m.parent = nil
+	for _, child := range m.Child {
+		child.Free()
+	}
+	m.Child = nil
+	if m.drag != nil {
+		m.drag.Free()
+	}
+	m.PropertyList = nil
+	m.EventList = nil
+	if m.node.IsValid() {
+		m.node.Free()
+	}
+	if m.node.IsValid() {
+		m.page.Free()
+	}
+	if m.pageProperty.IsValid() {
+		m.pageProperty.Free()
+	}
+	if m.pageEvent.IsValid() {
+		m.pageEvent.Free()
+	}
+	if m.propertyTree.IsValid() {
+		m.propertyTree.Free()
+	}
+	if m.eventTree.IsValid() {
+		m.eventTree.Free()
+	}
+}
+
 // 创建组件属性页
 func (m *TDesigningComponent) createComponentPropertyPage() {
 	m.page = lcl.NewPageControl(inspector.componentProperty.box)
@@ -393,6 +435,21 @@ func (m *TDesigningComponent) DragEnd() {
 
 func (m *TDesigningComponent) Parent() *TDesigningComponent {
 	return m.parent
+}
+
+// 删除当前节点
+func (m *TDesigningComponent) Remove() {
+	// 父组件删除
+	if m.parent != nil {
+		idx := m.Index()
+		if idx != -1 {
+			m.parent.Child = append(m.parent.Child[:idx], m.parent.Child[idx+1:]...)
+		}
+	}
+	// 组件树删除
+	m.node.Delete()
+	// 设计窗体删除
+	m.Free()
 }
 
 // MoveTo 将当前设计组件移动到指定的目标组件位置
