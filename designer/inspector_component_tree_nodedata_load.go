@@ -63,9 +63,23 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 	// 调整组件对象顺序
 	switch changeLevel {
 	case CLevelFront:
-
+		parentComp := m.Parent()
+		if parentComp == nil {
+			return
+		}
+		lastChild := parentComp.LastChild()
+		if lastChild != nil {
+			m.MoveTo(lastChild, types.NaInsertBehind)
+		}
 	case CLevelBack:
-
+		parentComp := m.Parent()
+		if parentComp == nil {
+			return
+		}
+		firstChild := parentComp.FirstChild()
+		if firstChild != nil {
+			m.MoveTo(firstChild, types.NaInsert)
+		}
 	case CLevelForwardOne:
 		nextComp := m.NextSibling()
 		if nextComp != nil {

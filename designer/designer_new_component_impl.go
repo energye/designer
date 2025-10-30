@@ -403,28 +403,33 @@ func (m *TDesigningComponent) Parent() *TDesigningComponent {
 //	mode - 节点附加模式，控制移动的具体行为和位置关系
 func (m *TDesigningComponent) MoveTo(destination *TDesigningComponent, mode types.TNodeAttachMode) {
 	// 从当前父组件中完全移除自己
-	if m.parent != nil {
-		idx := m.Index()
-		if idx != -1 {
-			m.parent.Child = append(m.parent.Child[:idx], m.parent.Child[idx+1:]...)
+	removeSelf := func() {
+		if m.parent != nil {
+			idx := m.Index()
+			if idx != -1 {
+				m.parent.Child = append(m.parent.Child[:idx], m.parent.Child[idx+1:]...)
+			}
 		}
 	}
 
 	switch mode {
 	case types.NaAddChild: // 添加到最后
 		if destination.parent != nil {
+			removeSelf()
 			m.parent = destination.parent
 			destination.parent.Child = append(destination.parent.Child, m)
 		}
 	case types.NaAddFirst: // 添加到最前面
 		if destination.parent != nil {
+			removeSelf()
 			m.parent = destination.parent
 			destination.parent.Child = append([]*TDesigningComponent{m}, destination.parent.Child...)
 		}
 	case types.NaInsert: // 插入到目标节点前面
 		if destination.parent != nil {
 			targetIndex := destination.Index()
-			if targetIndex != -1 {
+			if targetIndex != -1 && destination != m {
+				removeSelf()
 				m.parent = destination.parent
 				m.parent.Child = append(
 					m.parent.Child[:targetIndex],
@@ -435,7 +440,8 @@ func (m *TDesigningComponent) MoveTo(destination *TDesigningComponent, mode type
 	case types.NaInsertBehind: // 插入到目标节点后面
 		if destination.parent != nil {
 			targetIndex := destination.Index()
-			if targetIndex != -1 {
+			if targetIndex != -1 && destination != m {
+				removeSelf()
 				m.parent = destination.parent
 				insertIndex := targetIndex + 1
 				if insertIndex > len(m.parent.Child) {
