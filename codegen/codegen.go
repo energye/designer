@@ -13,7 +13,7 @@ import (
 
 // go 代码生成 自动时时生成
 // 依赖 uigen UI 布局文件
-// 生成触发条件: 检查文件修改
+// 生成触发条件: UI 布局文件修改后
 
 // GenerateCode 根据UI文件生成Go代码
 func GenerateCode(uiFilePath string) error {

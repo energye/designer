@@ -5,6 +5,8 @@ import (
 	"github.com/energye/designer/uigen"
 )
 
+// Go代码生成回调函数
+
 func InitCodeGeneration() {
 	uigen.SetCodeGenerationCallback(CodeGeneration)
 }
