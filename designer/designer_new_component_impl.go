@@ -390,3 +390,59 @@ func (m *TDesigningComponent) DragEnd() {
 		m.objectNonWrap.TextFollowShow()
 	}
 }
+
+func (m *TDesigningComponent) Parent() *TDesigningComponent {
+	return m.parent
+}
+
+func (m *TDesigningComponent) MoveTo(destination *TDesigningComponent, mode types.TNodeAttachMode) {
+
+}
+
+func (m *TDesigningComponent) LastChild() *TDesigningComponent {
+	size := len(m.Child)
+	if size > 0 {
+		return m.Child[size-1]
+	}
+	return nil
+}
+
+func (m *TDesigningComponent) FirstChild() *TDesigningComponent {
+	size := len(m.Child)
+	if size > 0 {
+		return m.Child[0]
+	}
+	return nil
+}
+
+func (m *TDesigningComponent) NextSibling() *TDesigningComponent {
+	if m.parent != nil {
+		idx := -1
+		for i, comp := range m.parent.Child {
+			if m == comp {
+				idx = i
+				break
+			}
+		}
+		if idx != -1 && idx < len(m.parent.Child)-1 {
+			return m.parent.Child[idx+1]
+		}
+	}
+	return nil
+}
+
+func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
+	if m.parent != nil {
+		idx := -1
+		for i, comp := range m.parent.Child {
+			if m == comp {
+				idx = i
+				break
+			}
+		}
+		if idx != -1 && idx > 0 {
+			return m.parent.Child[idx-1]
+		}
+	}
+	return nil
+}

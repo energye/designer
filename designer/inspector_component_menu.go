@@ -11,10 +11,10 @@ import (
 type ChangeLevel int32
 
 const (
-	CLevelFront ChangeLevel = iota
-	CLevelBack
-	CLevelForwardOne
-	CLevelBackOne
+	CLevelFront      ChangeLevel = iota //
+	CLevelBack                          //
+	CLevelForwardOne                    //
+	CLevelBackOne                       //
 )
 
 // 组件菜单
