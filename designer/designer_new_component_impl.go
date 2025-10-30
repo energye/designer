@@ -234,7 +234,7 @@ func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMous
 
 // 设计组件鼠标抬起事件
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	if button == types.MbRight {
+	if button == types.MbRight && m.componentType != CtForm {
 		cursorPos := lcl.Mouse.CursorPos()
 		m.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
 	} else {

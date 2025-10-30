@@ -127,11 +127,13 @@ func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
 // 删除
 func (m *ComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
-	if comp != nil {
+	if comp != nil && comp.componentType != CtForm {
 		parent := comp.parent
+		// 在删除之前先切换编辑父节组件
+		parent.formTab.switchComponentEditing(parent)
 		logs.Debug("组件菜单-删除 组件名:", comp.Name())
-		comp.Remove()
-		go triggerUIGeneration(parent)
+		comp.Remove()                  // 删除当前组件
+		go triggerUIGeneration(parent) // 更新布局文件
 	}
 }
 

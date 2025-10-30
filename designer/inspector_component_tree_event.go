@@ -12,6 +12,14 @@ import (
 // 组件树右键菜单
 func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
 	logs.Debug("TreeOnContextPopup mousePos:", mousePos)
+	node := m.tree.Selected()
+	if node != nil && node.IsValid() {
+		data := node.Data()
+		component := m.DataToDesigningComponent(data)
+		if component != nil && component.componentType == CtForm {
+			*handled = true
+		}
+	}
 }
 
 // 组件树鼠标按下事件
