@@ -96,7 +96,10 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 		}
 	case "enabled", "visible":
 		return err.RsIgnoreProp
-
+	case "autosize":
+		if m.componentType == CtForm {
+			return err.RsIgnoreProp
+		}
 	}
 	return err.RsSuccess
 }
