@@ -31,12 +31,12 @@ func GenerateCode(uiFilePath string) error {
 	}
 
 	// 生成自动代码文件 (form[n].ui.go)
-	if err := generateAutoCode(uiFilePath, uiComponent); err != nil {
+	if err := generateAutoCode(uiFilePath, &uiComponent); err != nil {
 		return fmt.Errorf("生成自动代码失败: %w", err)
 	}
 
 	// 生成用户代码文件 (form[n].go) - 仅当文件不存在时
-	if err := generateUserCode(uiFilePath, uiComponent); err != nil {
+	if err := generateUserCode(uiFilePath, &uiComponent); err != nil {
 		return fmt.Errorf("生成用户代码失败: %w", err)
 	}
 
@@ -44,7 +44,7 @@ func GenerateCode(uiFilePath string) error {
 }
 
 // 生成自动代码文件
-func generateAutoCode(uiFilePath string, component uigen.TUIComponent) error {
+func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
@@ -82,7 +82,7 @@ func generateAutoCode(uiFilePath string, component uigen.TUIComponent) error {
 }
 
 // generateUserCode 生成用户代码文件
-func generateUserCode(uiFilePath string, component uigen.TUIComponent) error {
+func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 	// 检查文件是否已存在
 	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	userFileName := baseName + ".go"

@@ -28,11 +28,11 @@ func init() {
 
 // 表示UI组件的结构
 type TUIComponent struct {
-	Name          string                 `json:"name"`            // 组件名称
-	ClassName     string                 `json:"class_name"`      // 组件类名
-	ComponentType designer.ComponentType `json:"component_type"`  // 组件类型
-	Properties    []TProperty            `json:"properties"`      // 组件属性列表
-	Child         []TUIComponent         `json:"child,omitempty"` // 组件子组件列表
+	Name       string                 `json:"name"`            // 组件名称
+	ClassName  string                 `json:"class_name"`      // 组件类名
+	Type       designer.ComponentType `json:"type"`            // 组件类型
+	Properties []TProperty            `json:"properties"`      // 组件属性列表
+	Child      []TUIComponent         `json:"child,omitempty"` // 组件子组件列表
 }
 
 // 组件属性
@@ -67,11 +67,11 @@ func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningCom
 // buildUITree 构建UI树结构
 func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 	uiComp := TUIComponent{
-		Name:          component.Name(),
-		ClassName:     component.ClassName(),
-		Properties:    make([]TProperty, 0),
-		Child:         make([]TUIComponent, 0),
-		ComponentType: component.ComponentType,
+		Name:       component.Name(),
+		ClassName:  component.ClassName(),
+		Properties: make([]TProperty, 0),
+		Child:      make([]TUIComponent, 0),
+		Type:       component.ComponentType,
 	}
 
 	// 获取变更的属性

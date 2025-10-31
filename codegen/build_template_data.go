@@ -13,7 +13,7 @@ type TAutoTemplateData struct {
 	PackageName string
 	FormName    string
 	ClassName   string
-	Components  []TComponentData
+	Components  []*TComponentData
 	Properties  []uigen.TProperty
 	BaseInfo    TBaseInfo
 }
@@ -29,19 +29,19 @@ type TBaseInfo struct {
 type TUserTemplateData struct {
 	PackageName string
 	FormName    string
-	Components  []TComponentData
+	Components  []*TComponentData
 }
 
 // 组件数据
 type TComponentData struct {
 	Name       string            // 组件名称
 	ClassName  string            // 组件类名
-	Parent     string            // 组件所属父类
+	Parent     *TComponentData   // 组件所属父类
 	Properties []uigen.TProperty // 组件属性
 }
 
 // 构建自动代码模板数据
-func buildAutoTemplateData(component uigen.TUIComponent) TAutoTemplateData {
+func buildAutoTemplateData(component *uigen.TUIComponent) TAutoTemplateData {
 	data := TAutoTemplateData{
 		PackageName: packageName,
 		FormName:    component.Name,
@@ -50,38 +50,45 @@ func buildAutoTemplateData(component uigen.TUIComponent) TAutoTemplateData {
 	}
 
 	// 处理子组件
-	data.Components = buildComponents(component.Child, component.Name)
+	data.Components = buildComponents(component.Child, component)
 
 	return data
 }
 
 // 构建用户代码模板数据
-func buildUserTemplateData(component uigen.TUIComponent) TUserTemplateData {
+func buildUserTemplateData(component *uigen.TUIComponent) TUserTemplateData {
 	return TUserTemplateData{
 		PackageName: packageName,
 		FormName:    component.Name,
-		Components:  buildComponents(component.Child, component.Name),
+		Components:  buildComponents(component.Child, component),
 	}
 }
 
 // 构建组件列表
-func buildComponents(children []uigen.TUIComponent, parentName string) []TComponentData {
-	var components []TComponentData
+func buildComponents(children []uigen.TUIComponent, parent *uigen.TUIComponent) []*TComponentData {
+	var components []*TComponentData
 	for _, child := range children {
-		comp := TComponentData{
-			Name:       child.Name,
-			ClassName:  child.ClassName,
-			Parent:     parentName,
-			Properties: child.Properties,
-		}
+		comp := UIComponentToTemplateData(&child)
+		comp.Parent = UIComponentToTemplateData(parent)
 		components = append(components, comp)
 		// 递归处理子组件
 		if len(child.Child) > 0 {
-			subComponents := buildComponents(child.Child, child.Name)
+			subComponents := buildComponents(child.Child, &child)
 			components = append(components, subComponents...)
 		}
 	}
 	return components
+}
+
+func UIComponentToTemplateData(component *uigen.TUIComponent) *TComponentData {
+	if component == nil {
+		return nil
+	}
+	return &TComponentData{
+		Name:       component.Name,
+		ClassName:  component.ClassName,
+		Properties: component.Properties,
+	}
 }
 
 // 获取属性类型
