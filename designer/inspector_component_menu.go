@@ -18,7 +18,7 @@ const (
 )
 
 // 组件菜单
-type ComponentMenu struct {
+type TComponentMenu struct {
 	form             *FormTab
 	treePopupMenu    lcl.IPopupMenu // 组件树右键菜单
 	zLevel           lcl.IMenuItem  // z 序
@@ -33,12 +33,12 @@ type ComponentMenu struct {
 }
 
 // 返回当前选中组件树节点
-func (m *ComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
+func (m *TComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
 	return m.form.tree.Selected()
 }
 
 // 返回当前选中组件
-func (m *ComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
+func (m *TComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
 	node := m.ComponentTreeSelectNode()
 	if node != nil && node.IsValid() {
 		return m.form.DataToDesigningComponent(node.Data())
@@ -47,7 +47,7 @@ func (m *ComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
 }
 
 // 移动到最顶层
-func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
+func (m *TComponentMenu) OnLevelFront(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最顶层 组件名:", comp.Name())
@@ -57,7 +57,7 @@ func (m *ComponentMenu) OnLevelFront(sender lcl.IObject) {
 }
 
 // 移动到最底层
-func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
+func (m *TComponentMenu) OnLevelBack(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最底层 组件名:", comp.Name())
@@ -67,7 +67,7 @@ func (m *ComponentMenu) OnLevelBack(sender lcl.IObject) {
 }
 
 // 向前移动一层
-func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
+func (m *TComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-向前移动一层 组件名:", comp.Name())
@@ -84,7 +84,7 @@ func (m *ComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 }
 
 // 向后移动一层
-func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
+func (m *TComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-向后移动一层 组件名:", comp.Name())
@@ -101,7 +101,7 @@ func (m *ComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 }
 
 // 剪切
-func (m *ComponentMenu) OnCut(sender lcl.IObject) {
+func (m *TComponentMenu) OnCut(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-剪切 组件名:", comp.Name())
@@ -109,7 +109,7 @@ func (m *ComponentMenu) OnCut(sender lcl.IObject) {
 }
 
 // 复制
-func (m *ComponentMenu) OnCopy(sender lcl.IObject) {
+func (m *TComponentMenu) OnCopy(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-复制 组件名:", comp.Name())
@@ -117,7 +117,7 @@ func (m *ComponentMenu) OnCopy(sender lcl.IObject) {
 }
 
 // 粘贴
-func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
+func (m *TComponentMenu) OnPaste(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil {
 		logs.Debug("组件菜单-粘贴 组件名:", comp.Name())
@@ -125,7 +125,7 @@ func (m *ComponentMenu) OnPaste(sender lcl.IObject) {
 }
 
 // 删除
-func (m *ComponentMenu) OnDelete(sender lcl.IObject) {
+func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil && comp.componentType != CtForm {
 		parent := comp.parent
@@ -142,7 +142,7 @@ func (m *FormTab) CreateComponentMenu() {
 	if m.componentMenu != nil {
 		return
 	}
-	menu := new(ComponentMenu)
+	menu := new(TComponentMenu)
 	m.componentMenu = menu
 	menu.form = m
 	menu.treePopupMenu = lcl.NewPopupMenu(m.tree)

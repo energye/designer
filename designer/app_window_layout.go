@@ -4,7 +4,7 @@ package designer
 
 func (m *TAppWindow) createDesignerLayout() {
 	// 顶部菜单
-	m.createMenu()
+	m.createMainMenu()
 	// 工具栏
 	m.createTopToolbar()
 	// 底部布局

@@ -25,7 +25,7 @@ var (
 // 设计器应用窗口
 type TAppWindow struct {
 	lcl.TEngForm
-	mainMenu            lcl.IMainMenu              // 主菜单
+	mainMenu            *TMainMenu                 // 主菜单
 	componentProperties lcl.IApplicationProperties //
 	box                 *BottomBox                 // 底部布局盒子
 	bar                 *StatusBar
