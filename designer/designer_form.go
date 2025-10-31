@@ -40,7 +40,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	designerForm := &TDesignerForm{}
 	lcl.Application.NewForm(designerForm)
 	designerForm.SetName(m.Name)
-	designerForm.SetCaption("")
+	designerForm.SetCaption(m.Name)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
