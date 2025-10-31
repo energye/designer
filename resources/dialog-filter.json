@@ -15,5 +15,10 @@
   ],
   "file": {
 
-  }
+  },
+  "ui": [
+    "UI 布局 (*.ui;*.json)|*.ui;*.json",
+    "UI 布局文件 (*.ui)|*.ui",
+    "UI 布局文件 (*.json)|*.json"
+  ]
 }

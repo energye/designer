@@ -64,13 +64,34 @@ func (m *TMainMenu) macOS() {
 }
 
 func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
-	fileCreateWindow := lcl.NewMenuItem(owner)
-	fileCreateWindow.SetCaption("新建窗体(&N)")
-	fileCreateWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
-	fileCreateWindow.SetOnClick(func(lcl.IObject) {
-		logs.Debug("单击了新建窗体")
+	createWindow := lcl.NewMenuItem(owner)
+	createWindow.SetCaption("新建窗体(&N)")
+	createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
+	createWindow.SetOnClick(func(lcl.IObject) {
+		logs.Debug("新建窗体")
 	})
-	m.file.Add(fileCreateWindow)
+	m.file.Add(createWindow)
+	openWindow := lcl.NewMenuItem(owner)
+	openWindow.SetCaption("打开窗体(&O)")
+	openWindow.SetShortCut(api.TextToShortCut("Ctrl+O"))
+	openWindow.SetOnClick(func(lcl.IObject) {
+		logs.Debug("打开窗体")
+	})
+	m.file.Add(openWindow)
+	saveWindow := lcl.NewMenuItem(owner)
+	saveWindow.SetCaption("保存窗体(&O)")
+	saveWindow.SetShortCut(api.TextToShortCut("Ctrl+S"))
+	saveWindow.SetOnClick(func(lcl.IObject) {
+		logs.Debug("保存窗体")
+	})
+	m.file.Add(saveWindow)
+	saveAllWindow := lcl.NewMenuItem(owner)
+	saveAllWindow.SetCaption("保存所有窗体(&L)")
+	saveAllWindow.SetShortCut(api.TextToShortCut("Ctrl+L"))
+	saveAllWindow.SetOnClick(func(lcl.IObject) {
+		logs.Debug("保存所有窗体")
+	})
+	m.file.Add(saveAllWindow)
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
@@ -82,16 +103,22 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 }
 
 func (m *TMainMenu) projectMenu(owner lcl.IComponent) {
-
+	createProject := lcl.NewMenuItem(owner)
+	createProject.SetCaption("新建项目(&P)")
+	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
+	createProject.SetOnClick(func(lcl.IObject) {
+		logs.Debug("新建项目")
+	})
+	m.project.Add(createProject)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 	_, _, _, _, _, v := api.LCLVersion()
-	helperAbout := lcl.NewMenuItem(owner)
-	helperAbout.SetCaption("关于")
-	helperAbout.SetOnClick(func(sender lcl.IObject) {
+	about := lcl.NewMenuItem(owner)
+	about.SetCaption("关于")
+	about.SetOnClick(func(sender lcl.IObject) {
 		versionInfo := api.PasStr("ENERGY Designer " + config.Config.Version + "\nLCL " + v)
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
 	})
-	m.helper.Add(helperAbout)
+	m.helper.Add(about)
 }
