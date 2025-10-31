@@ -63,3 +63,21 @@ func (f *{{.FormName}}) On{{.Name}}Click(sender lcl.IObject) {
 }
 {{end}}
 `
+
+// main 文件代码模板
+// main.go 不存在项目目录时创建
+const mainCodeTemplate = `package main
+
+import (
+	"github.com/energye/lcl/lcl"
+)
+
+func main() {
+	lcl.Init(nil, nil)
+	lcl.Application.Initialize()
+	lcl.Application.SetMainFormOnTaskBar(true)
+	lcl.Application.SetScaled(true)
+	lcl.Application.NewForms(&MainForm, &Form1)
+	lcl.Application.Run()
+}
+`

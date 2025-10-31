@@ -20,5 +20,9 @@
     "UI 布局 (*.ui;*.json)|*.ui;*.json",
     "UI 布局文件 (*.ui)|*.ui",
     "UI 布局文件 (*.json)|*.json"
+  ],
+  "project": [
+    "ENERGY 项目 (*.egp)|*.egp",
+    "项目文件 (*.egp)|*.egp"
   ]
 }
