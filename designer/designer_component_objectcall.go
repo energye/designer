@@ -71,7 +71,7 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 	switch propName {
 	case "name":
 		m.node.SetText(m.TreeName())
-		if m.componentType == CtForm {
+		if m.ComponentType == CtForm {
 			m.formTab.sheet.SetCaption(m.Name())
 		}
 	}
@@ -97,7 +97,7 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 	case "enabled", "visible":
 		return err.RsIgnoreProp
 	case "autosize":
-		if m.componentType == CtForm {
+		if m.ComponentType == CtForm {
 			return err.RsIgnoreProp
 		}
 	}

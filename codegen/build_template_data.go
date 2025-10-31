@@ -34,9 +34,10 @@ type TUserTemplateData struct {
 
 // 组件数据
 type TComponentData struct {
-	Name      string
-	ClassName string
-	Parent    string
+	Name       string           // 组件名称
+	ClassName  string           // 组件类名
+	Parent     string           // 组件所属父类
+	Properties []uigen.Property // 组件属性
 }
 
 // 构建自动代码模板数据
@@ -68,9 +69,10 @@ func buildComponents(children []uigen.UIComponent, parentName string) []TCompone
 	var components []TComponentData
 	for _, child := range children {
 		comp := TComponentData{
-			Name:      child.Name,
-			ClassName: child.ClassName,
-			Parent:    parentName,
+			Name:       child.Name,
+			ClassName:  child.ClassName,
+			Parent:     parentName,
+			Properties: child.Properties,
 		}
 		components = append(components, comp)
 		// 递归处理子组件

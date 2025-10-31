@@ -245,7 +245,7 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		logs.Error("添加组件节点失败, 子节点为空")
 		return
 	}
-	if child.componentType == CtVisual || child.componentType == CtNonVisual {
+	if child.ComponentType == CtVisual || child.ComponentType == CtNonVisual {
 		m.tree.BeginUpdate()
 		defer m.tree.EndUpdate()
 		items := m.tree.Items()

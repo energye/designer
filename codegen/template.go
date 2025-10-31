@@ -10,7 +10,7 @@ const autoCodeTemplate = `// ===================================================
 //     生成时间: {{.BaseInfo.DateTime}}
 //     设计文件: {{.BaseInfo.UIFile}}
 //     用户文件: {{.BaseInfo.UserFile}}
-//     功能描述: 基于ENERGY GUI框架的实现, 包含UI组件创建
+//     功能描述: 基于 ENERGY GUI 框架的实现, 包含UI组件创建
 // ==============================================================================
 
 package {{.PackageName}}

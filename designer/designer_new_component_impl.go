@@ -40,7 +40,7 @@ type TDesigningComponent struct {
 	PropertyList  []*vtedit.TEditNodeData   // 数据 组件属性
 	EventList     []*vtedit.TEditNodeData   // 数据 组件事件
 	isDesigner    bool                      // 组件是否正在设计
-	componentType ComponentType             // 组件类型
+	ComponentType ComponentType             // 组件类型
 	node          lcl.ITreeNode             // 查看器 组件树节点对象
 	page          lcl.IPageControl          // 查看器 属性页和事件页
 	pageProperty  lcl.ITabSheet             // 查看器 属性页
@@ -141,7 +141,7 @@ func (m *TDesigningComponent) createComponentPropertyPage() {
 // 创建可视组件
 func newVisualComponent(designerForm *FormTab) *TDesigningComponent {
 	m := new(TDesigningComponent)
-	m.componentType = CtVisual
+	m.ComponentType = CtVisual
 	m.formTab = designerForm
 
 	m.createComponentPropertyPage()
@@ -151,7 +151,7 @@ func newVisualComponent(designerForm *FormTab) *TDesigningComponent {
 // 创建非可视组件
 func newNonVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
 	m := new(TDesigningComponent)
-	m.componentType = CtNonVisual
+	m.ComponentType = CtNonVisual
 	m.formTab = formTab
 	objectWrap := NewNonVisualComponentWrap(formTab.FormRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
@@ -173,14 +173,14 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 
 // 返回当前组件实例指针
 func (m *TDesigningComponent) Instance() uintptr {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNonWrap.Instance()
 	} else {
 		return m.object.Instance()
 	}
 }
 func (m *TDesigningComponent) SetHint(hint string) {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNonWrap.SetHint(hint)
 	} else {
 		m.object.SetHint(hint)
@@ -188,7 +188,7 @@ func (m *TDesigningComponent) SetHint(hint string) {
 }
 
 func (m *TDesigningComponent) ClassName() string {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNon.ToString()
 	} else {
 		return m.object.ToString()
@@ -196,7 +196,7 @@ func (m *TDesigningComponent) ClassName() string {
 }
 
 func (m *TDesigningComponent) BoundsRect() types.TRect {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNonWrap.BoundsRect()
 	} else {
 		return m.object.BoundsRect()
@@ -204,7 +204,7 @@ func (m *TDesigningComponent) BoundsRect() types.TRect {
 }
 
 func (m *TDesigningComponent) SetBounds(x, y, w, h int32) {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNonWrap.SetLeftTop(x, y)
 	} else {
 		m.object.SetBounds(x, y, w, h)
@@ -212,7 +212,7 @@ func (m *TDesigningComponent) SetBounds(x, y, w, h int32) {
 }
 
 func (m *TDesigningComponent) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNonWrap.ClientToParent(point, parent)
 	}
 	return m.object.ClientToParent(point, parent)
@@ -234,7 +234,7 @@ func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMous
 
 // 设计组件鼠标抬起事件
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	if button == types.MbRight && m.componentType != CtForm {
+	if button == types.MbRight && m.ComponentType != CtForm {
 		cursorPos := lcl.Mouse.CursorPos()
 		m.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
 	} else {
@@ -300,7 +300,7 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 
 // 设置对象实例
 func (m *TDesigningComponent) SetObject(object any) {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNon = lcl.AsComponent(object)
 		//SetDesignMode(m.objectNonWrap.wrap)
 		SetDesignMode(m.objectNonWrap.icon) // 使用icon
@@ -332,13 +332,13 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 	// 设置父组件
 	control := parent.object
-	if parent.componentType == CtForm {
+	if parent.ComponentType == CtForm {
 		if parent.object.ComponentCount() > 0 {
 			// 父组件是 Form 时, 获取设计窗体的Panel面板, 这个Panel是显示放置组件的
 			control = lcl.AsWinControl(parent.object.Components(0).Instance())
 		}
 	}
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNonWrap.SetParent(control)
 	} else {
 		m.object.SetParent(control)
@@ -350,7 +350,7 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 
 // 返回组件类名
 func (m *TDesigningComponent) Name() string {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNon.Name()
 	} else {
 		return m.object.Name()
@@ -370,13 +370,13 @@ func (m *TDesigningComponent) IconIndex() int32 {
 
 // 返回真实对象
 func (m *TDesigningComponent) Object() lcl.IObject {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNon
 	}
 	return m.object
 }
 func (m *TDesigningComponent) WinControl() lcl.IWinControl {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		return m.objectNonWrap.wrap
 	}
 	return m.object
@@ -421,14 +421,14 @@ func (m *TDesigningComponent) GetProps() {
 
 // 拖拽开始调用
 func (m *TDesigningComponent) DragBegin() {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNonWrap.TextFollowHide()
 	}
 }
 
 // 拖拽结束调用，或创建后调用
 func (m *TDesigningComponent) DragEnd() {
-	if m.componentType == CtNonVisual {
+	if m.ComponentType == CtNonVisual {
 		m.objectNonWrap.TextFollowShow()
 	}
 }

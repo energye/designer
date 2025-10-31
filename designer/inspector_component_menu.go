@@ -127,7 +127,7 @@ func (m *TComponentMenu) OnPaste(sender lcl.IObject) {
 // 删除
 func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
-	if comp != nil && comp.componentType != CtForm {
+	if comp != nil && comp.ComponentType != CtForm {
 		parent := comp.parent
 		// 在删除之前先切换编辑父节组件
 		parent.formTab.switchComponentEditing(parent)

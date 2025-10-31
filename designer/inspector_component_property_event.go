@@ -82,7 +82,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			if data.EditNodeData.Type == vtedit.PdtClass {
+			if data.Type() == vtedit.PdtClass {
 				switch data.EditNodeData.Name {
 				case "Icon":
 					//m.compPropTreeState.selectPropName = data.EditNodeData.Name
@@ -113,7 +113,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				switch data.EditNodeData.Type {
+				switch data.Type() {
 				case vtedit.PdtText:
 					link := vtedit.NewStringEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
@@ -138,7 +138,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 					*outEditLink = link.AsIVTEditLink()
 				case vtedit.PdtClass:
 					// class 属性实例, 根据属性名控制不同的操作
-					propName := data.EditNodeData.Name
+					propName := data.Name()
 					switch propName {
 					case "Icon":
 						// 图标弹窗
@@ -176,9 +176,6 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 			} else if column == 1 {
 				*cellText = data.EditStringValue()
 			}
-			//if data.EditNodeData.Name == m.compPropTreeState.selectPropName {
-			//	m.compPropTreeState.selectNode = node
-			//}
 		}
 	})
 	tree.SetNodeDataSize(int32(unsafe.Sizeof(uintptr(0))))
