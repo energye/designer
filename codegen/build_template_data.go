@@ -14,7 +14,7 @@ type TAutoTemplateData struct {
 	FormName    string
 	ClassName   string
 	Components  []TComponentData
-	Properties  []uigen.Property
+	Properties  []uigen.TProperty
 	BaseInfo    TBaseInfo
 }
 
@@ -34,14 +34,14 @@ type TUserTemplateData struct {
 
 // 组件数据
 type TComponentData struct {
-	Name       string           // 组件名称
-	ClassName  string           // 组件类名
-	Parent     string           // 组件所属父类
-	Properties []uigen.Property // 组件属性
+	Name       string            // 组件名称
+	ClassName  string            // 组件类名
+	Parent     string            // 组件所属父类
+	Properties []uigen.TProperty // 组件属性
 }
 
 // 构建自动代码模板数据
-func buildAutoTemplateData(component uigen.UIComponent) TAutoTemplateData {
+func buildAutoTemplateData(component uigen.TUIComponent) TAutoTemplateData {
 	data := TAutoTemplateData{
 		PackageName: packageName,
 		FormName:    component.Name,
@@ -56,7 +56,7 @@ func buildAutoTemplateData(component uigen.UIComponent) TAutoTemplateData {
 }
 
 // 构建用户代码模板数据
-func buildUserTemplateData(component uigen.UIComponent) TUserTemplateData {
+func buildUserTemplateData(component uigen.TUIComponent) TUserTemplateData {
 	return TUserTemplateData{
 		PackageName: packageName,
 		FormName:    component.Name,
@@ -65,7 +65,7 @@ func buildUserTemplateData(component uigen.UIComponent) TUserTemplateData {
 }
 
 // 构建组件列表
-func buildComponents(children []uigen.UIComponent, parentName string) []TComponentData {
+func buildComponents(children []uigen.TUIComponent, parentName string) []TComponentData {
 	var components []TComponentData
 	for _, child := range children {
 		comp := TComponentData{

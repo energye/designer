@@ -25,7 +25,7 @@ func GenerateCode(uiFilePath string) error {
 		return fmt.Errorf("读取UI文件失败: %w", err)
 	}
 
-	var uiComponent uigen.UIComponent
+	var uiComponent uigen.TUIComponent
 	if err := json.Unmarshal(data, &uiComponent); err != nil {
 		return fmt.Errorf("解析UI文件失败: %w", err)
 	}
@@ -44,7 +44,7 @@ func GenerateCode(uiFilePath string) error {
 }
 
 // 生成自动代码文件
-func generateAutoCode(uiFilePath string, component uigen.UIComponent) error {
+func generateAutoCode(uiFilePath string, component uigen.TUIComponent) error {
 	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
@@ -82,7 +82,7 @@ func generateAutoCode(uiFilePath string, component uigen.UIComponent) error {
 }
 
 // generateUserCode 生成用户代码文件
-func generateUserCode(uiFilePath string, component uigen.UIComponent) error {
+func generateUserCode(uiFilePath string, component uigen.TUIComponent) error {
 	// 检查文件是否已存在
 	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	userFileName := baseName + ".go"
