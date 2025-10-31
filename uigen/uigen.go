@@ -18,6 +18,7 @@ import (
 // 生成触发条件: 即时触发 防抖
 
 var (
+	// TODO 这是一个测试变量 --test
 	projectPath string
 )
 
@@ -38,6 +39,7 @@ type Property struct {
 	Name  string                  // 属性名称
 	Value any                     // 属性值
 	Type  vtedit.PropertyDataType // 属性类型
+	//ClassInstance uintptr                 // 属性值 class 实例, 当属性类型是 PdtClass 时有效
 }
 
 // GenerateUIFile 生成UI文件
@@ -78,7 +80,8 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height", "Caption") {
 				propName := prop.Name()
 				propValue := prop.EditValue()
-				uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: prop.Type()})
+				uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue,
+					Type: prop.Type()})
 			} else {
 				// 只保存修改过的属性
 				switch prop.Type() {
@@ -96,7 +99,8 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 										paths = append(paths, data.Name())
 										propName := strings.Join(paths, ".")
 										propValue := data.EditValue()
-										uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: data.Type()})
+										uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue,
+											Type: data.Type()})
 									} else {
 										logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
 									}
@@ -109,7 +113,8 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 					if prop.IsModify() {
 						propName := prop.Name()
 						propValue := prop.EditValue()
-						uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: prop.Type()})
+						uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue,
+							Type: prop.Type()})
 					}
 				}
 			}
