@@ -27,15 +27,16 @@ func init() {
 
 // UIComponent 表示UI组件的结构
 type UIComponent struct {
-	Name       string         `json:"name"`
-	ClassName  string         `json:"class_name"`
-	Properties map[string]any `json:"properties"`
-	Child      []UIComponent  `json:"child,omitempty"`
+	Name       string        `json:"name"`
+	ClassName  string        `json:"class_name"`
+	Properties []Property    `json:"properties"`
+	Child      []UIComponent `json:"child,omitempty"`
 }
 
 type Property struct {
-	Type  vtedit.PropertyDataType
-	Value any
+	Name  string                  // 属性名称
+	Value any                     // 属性值
+	Type  vtedit.PropertyDataType // 属性类型
 }
 
 // GenerateUIFile 生成UI文件
@@ -64,7 +65,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 	uiComp := UIComponent{
 		Name:       component.Name(),
 		ClassName:  component.ClassName(),
-		Properties: make(map[string]any),
+		Properties: make([]Property, 0),
 		Child:      make([]UIComponent, 0),
 	}
 
@@ -75,7 +76,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height", "Caption") {
 				propName := prop.Name()
 				propValue := prop.EditValue()
-				uiComp.Properties[propName] = propValue
+				uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: prop.Type()})
 			} else {
 				// 只保存修改过的属性
 				switch prop.Type() {
@@ -93,7 +94,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 										paths = append(paths, data.Name())
 										propName := strings.Join(paths, ".")
 										propValue := data.EditValue()
-										uiComp.Properties[propName] = propValue
+										uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: data.Type()})
 									} else {
 										logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
 									}
@@ -106,7 +107,7 @@ func buildUITree(component *designer.TDesigningComponent) UIComponent {
 					if prop.IsModify() {
 						propName := prop.Name()
 						propValue := prop.EditValue()
-						uiComp.Properties[propName] = propValue
+						uiComp.Properties = append(uiComp.Properties, Property{Name: propName, Value: propValue, Type: prop.Type()})
 					}
 				}
 			}
