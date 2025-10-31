@@ -3,19 +3,21 @@ package codegen
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/uigen"
 	"go/format"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 )
 
 // go 代码生成 自动时时生成
 // 依赖 uigen UI 布局文件
 // 生成触发条件: UI 布局文件修改后
 
-// GenerateCode 根据UI文件生成Go代码
+// 根据UI文件生成Go代码
 func GenerateCode(uiFilePath string) error {
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
@@ -28,12 +30,12 @@ func GenerateCode(uiFilePath string) error {
 		return fmt.Errorf("解析UI文件失败: %w", err)
 	}
 
-	// 生成自动代码文件 (main_form.ui.go)
+	// 生成自动代码文件 (form[n].ui.go)
 	if err := generateAutoCode(uiFilePath, uiComponent); err != nil {
 		return fmt.Errorf("生成自动代码失败: %w", err)
 	}
 
-	// 生成用户代码文件 (main_form.go) - 仅当文件不存在时
+	// 生成用户代码文件 (form[n].go) - 仅当文件不存在时
 	if err := generateUserCode(uiFilePath, uiComponent); err != nil {
 		return fmt.Errorf("生成用户代码失败: %w", err)
 	}
@@ -41,10 +43,14 @@ func GenerateCode(uiFilePath string) error {
 	return nil
 }
 
-// generateAutoCode 生成自动代码文件
+// 生成自动代码文件
 func generateAutoCode(uiFilePath string, component uigen.UIComponent) error {
+	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
+	data.BaseInfo = TBaseInfo{
+		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
+		UIFile: baseName + ".ui", UserFile: baseName + ".go"}
 
 	// 解析模板
 	tmpl, err := template.New("auto").Parse(autoCodeTemplate)
@@ -65,7 +71,6 @@ func generateAutoCode(uiFilePath string, component uigen.UIComponent) error {
 	}
 
 	// 写入文件
-	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	autoFileName := baseName + ".ui.go"
 	autoFilePath := filepath.Join(filepath.Dir(uiFilePath), autoFileName)
 

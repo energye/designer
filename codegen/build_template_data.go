@@ -15,6 +15,14 @@ type TAutoTemplateData struct {
 	ClassName   string
 	Components  []TComponentData
 	Properties  []uigen.Property
+	BaseInfo    TBaseInfo
+}
+
+type TBaseInfo struct {
+	DesignerVersion string
+	DateTime        string
+	UIFile          string
+	UserFile        string
 }
 
 // 用户代码模板数据
