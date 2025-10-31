@@ -4,47 +4,49 @@ import (
 	"github.com/energye/designer/uigen"
 )
 
-// AutoTemplateData 自动代码模板数据
-type AutoTemplateData struct {
+const packageName = "forms"
+
+// TAutoTemplateData 自动代码模板数据
+type TAutoTemplateData struct {
 	PackageName string
 	FormName    string
 	ClassName   string
-	Components  []ComponentData
-	Properties  []PropertyData
+	Components  []TComponentData
+	Properties  []TPropertyData
 }
 
-// UserTemplateData 用户代码模板数据
-type UserTemplateData struct {
+// TUserTemplateData 用户代码模板数据
+type TUserTemplateData struct {
 	PackageName string
 	FormName    string
-	Components  []ComponentData
+	Components  []TComponentData
 }
 
-// ComponentData 组件数据
-type ComponentData struct {
+// TComponentData 组件数据
+type TComponentData struct {
 	Name      string
 	ClassName string
 	Parent    string
 }
 
-// PropertyData 属性数据
-type PropertyData struct {
+// TPropertyData 属性数据
+type TPropertyData struct {
 	Name  string
 	Value any
 	Type  string
 }
 
 // buildAutoTemplateData 构建自动代码模板数据
-func buildAutoTemplateData(component uigen.UIComponent) AutoTemplateData {
-	data := AutoTemplateData{
-		PackageName: "main",
+func buildAutoTemplateData(component uigen.UIComponent) TAutoTemplateData {
+	data := TAutoTemplateData{
+		PackageName: packageName,
 		FormName:    component.Name,
 		ClassName:   component.ClassName,
 	}
 
 	// 处理属性
 	for name, value := range component.Properties {
-		prop := PropertyData{
+		prop := TPropertyData{
 			Name:  name,
 			Value: value,
 			Type:  getPropertyType(value),
@@ -59,33 +61,30 @@ func buildAutoTemplateData(component uigen.UIComponent) AutoTemplateData {
 }
 
 // buildUserTemplateData 构建用户代码模板数据
-func buildUserTemplateData(component uigen.UIComponent) UserTemplateData {
-	return UserTemplateData{
-		PackageName: "main",
+func buildUserTemplateData(component uigen.UIComponent) TUserTemplateData {
+	return TUserTemplateData{
+		PackageName: packageName,
 		FormName:    component.Name,
 		Components:  buildComponents(component.Child, component.Name),
 	}
 }
 
 // buildComponents 构建组件列表
-func buildComponents(children []uigen.UIComponent, parentName string) []ComponentData {
-	var components []ComponentData
-
+func buildComponents(children []uigen.UIComponent, parentName string) []TComponentData {
+	var components []TComponentData
 	for _, child := range children {
-		comp := ComponentData{
+		comp := TComponentData{
 			Name:      child.Name,
 			ClassName: child.ClassName,
 			Parent:    parentName,
 		}
 		components = append(components, comp)
-
 		// 递归处理子组件
 		if len(child.Child) > 0 {
 			subComponents := buildComponents(child.Child, child.Name)
 			components = append(components, subComponents...)
 		}
 	}
-
 	return components
 }
 

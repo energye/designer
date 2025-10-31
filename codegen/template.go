@@ -11,33 +11,26 @@ import (
 )
 
 type {{.FormName}} struct {
-	*lcl.TForm
-	{{range .Components}}{{.Name}} *lcl.{{.ClassName}}
+	lcl.TEngForm
+	{{range .Components}}{{.Name}} lcl.{{.ClassName}}
 	{{end}}
-}
+} 
 
 // New{{.FormName}} 创建新的{{.FormName}}实例
-func New{{.FormName}}() *{{.FormName}} {
-	form := &{{.FormName}}{}
-	form.TForm = lcl.NewForm(nil)
-	form.TForm.SetName("{{.FormName}}")
-	
+func (m *{{.FormName}}) FormCreate(sender lcl.IObject) {
 	// 设置窗体属性
 	{{range .Properties}}
-	form.TForm.Set{{.Name}}({{.Value}})
+	m.Set{{.Name}}({{.Value}})
 	{{end}}
-	
 	// 初始化组件
-	form.initComponents()
-	
-	return form
+	m.initComponents()
+	m.OnFormCreate(sender)
 }
 
 // initComponents 初始化组件
-func (f *{{.FormName}}) initComponents() {
+func (m *{{.FormName}}) initComponents() {
 	{{range .Components}}
-	f.{{.Name}} = lcl.New{{.ClassName}}(f.TForm)
-	f.{{.Name}}.SetName("{{.Name}}")
+	m.{{.Name}} = lcl.New{{.ClassName}}(m)
 	{{end}}
 }
 `
@@ -45,14 +38,15 @@ func (f *{{.FormName}}) initComponents() {
 // userCodeTemplate 用户代码模板
 const userCodeTemplate = `// {{.FormName}} 用户代码文件
 // 可以在此文件中添加事件处理和业务逻辑
+
 package {{.PackageName}}
 
 import (
 	"github.com/energye/lcl/lcl"
 )
 
-// OnInitForm 窗体初始化事件
-func (f *{{.FormName}}) OnInitForm(sender lcl.IObject) {
+// OnFormCreate 窗体初始化事件
+func (m *{{.FormName}}) OnFormCreate(sender lcl.IObject) {
 	// 在此处添加窗体初始化代码
 }
 
