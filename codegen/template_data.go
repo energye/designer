@@ -30,7 +30,7 @@ type ComponentData struct {
 // PropertyData 属性数据
 type PropertyData struct {
 	Name  string
-	Value interface{}
+	Value any
 	Type  string
 }
 
@@ -90,7 +90,7 @@ func buildComponents(children []uigen.UIComponent, parentName string) []Componen
 }
 
 // getPropertyType 获取属性类型
-func getPropertyType(value interface{}) string {
+func getPropertyType(value any) string {
 	switch value.(type) {
 	case string:
 		return "string"
@@ -101,6 +101,6 @@ func getPropertyType(value interface{}) string {
 	case bool:
 		return "bool"
 	default:
-		return "interface{}"
+		return "any"
 	}
 }
