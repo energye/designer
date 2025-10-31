@@ -79,7 +79,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	})
 	m.file.Add(openWindow)
 	saveWindow := lcl.NewMenuItem(owner)
-	saveWindow.SetCaption("保存窗体(&O)")
+	saveWindow.SetCaption("保存窗体(&S)")
 	saveWindow.SetShortCut(api.TextToShortCut("Ctrl+S"))
 	saveWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("保存窗体")
@@ -87,11 +87,18 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.file.Add(saveWindow)
 	saveAllWindow := lcl.NewMenuItem(owner)
 	saveAllWindow.SetCaption("保存所有窗体(&L)")
-	saveAllWindow.SetShortCut(api.TextToShortCut("Ctrl+L"))
+	saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
 	saveAllWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("保存所有窗体")
 	})
 	m.file.Add(saveAllWindow)
+	exitWindow := lcl.NewMenuItem(owner)
+	exitWindow.SetCaption("退出(&Q)")
+	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))
+	exitWindow.SetOnClick(func(lcl.IObject) {
+		logs.Debug("退出")
+	})
+	m.file.Add(exitWindow)
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
