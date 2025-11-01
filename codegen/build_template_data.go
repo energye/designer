@@ -114,26 +114,26 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 	if len(namePaths) > 0 {
 		name := namePaths[len(namePaths)-1]
 		// 参数, 多种类型
-		//switch m.Type {
-		//case vtedit.PtBool:
-		//	prop.WriteString(".Set", name, "(", tool.BoolToString(m.Value.(bool)), ")")
-		//case vtedit.PtInt:
-		//	prop.WriteString(".Set", name, "(", tool.IntToString(m.Value.(int)), ")")
-		//case vtedit.PtFloat:
-		//	prop.WriteString(".Set", name, "(", tool.FloatToString(m.Value.(float64)), ")")
-		//case vtedit.PtString:
-		//}
+		value := ""
 		switch m.Type {
-		case vtedit.PdtText:
-		case vtedit.PdtInt, vtedit.PdtInt64:
-		case vtedit.PdtFloat:
-		case vtedit.PdtCheckBox:
-		case vtedit.PdtCheckBoxList:
-		case vtedit.PdtComboBox:
-		case vtedit.PdtColorSelect:
-		case vtedit.PdtClass:
+		case vtedit.PdtText: // string
+			value = `"` + m.Value.(string) + `"`
+		case vtedit.PdtInt, vtedit.PdtInt64: // int32 or int64
+			value = tool.IntToString(m.Value)
+		case vtedit.PdtFloat: // float32 or float64
+			value = tool.FloatToString(m.Value)
+		case vtedit.PdtCheckBox: // bool
+			value = tool.BoolToString(m.Value)
+		case vtedit.PdtCheckBoxList: // set: types.NewSet
+			value = "types.NewSet()"
+		case vtedit.PdtComboBox: // package: mapper.GetLCL([name])
+			value = "types." + m.Value.(string)
+		case vtedit.PdtColorSelect: // uint32: types.Color([value])
+			value = tool.IntToString(m.Value)
+		case vtedit.PdtClass: // Class instance
+			logs.Debug("属性类对象实例未设置:", m.Value)
 		}
-		prop.WriteString(".Set", name, "()")
+		prop.WriteString(".Set", name, "(", value, ")")
 	}
 	return prop.String()
 }
