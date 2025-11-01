@@ -30,9 +30,9 @@ type TBaseInfo struct {
 type TComponentData struct {
 	Name       string            // 组件名称
 	ClassName  string            // 组件类名
+	Properties []uigen.TProperty // 组件属性
 	Parent     *TComponentData   // 组件所属父类
 	Children   []*TComponentData // 子组件列表
-	Properties []uigen.TProperty // 组件属性
 }
 
 // 构建自动代码模板数据
