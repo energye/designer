@@ -50,3 +50,5 @@ ENERGY Designer 是一个基于 ENERGY GUI 框架开发的跨平台 GUI 可视�
 
 
 *ENERGY Designer - 让 GUI 开发更简单*
+
+![designer_window.png](docs%2Fimage%2Fdesigner_window.png)
