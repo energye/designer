@@ -125,7 +125,16 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 		case vtedit.PdtCheckBox: // bool
 			value = tool.BoolToString(m.Value)
 		case vtedit.PdtCheckBoxList: // set: types.NewSet
-			value = "types.NewSet()"
+			setStr := tool.SetToString(m.Value)
+			items := strings.Split(setStr, ",")
+			sets := tool.Buffer{}
+			for i, item := range items {
+				if i > 0 {
+					sets.WriteString(",")
+				}
+				sets.WriteString("types.", item)
+			}
+			value = "types.NewSet(" + sets.String() + ")"
 		case vtedit.PdtComboBox: // package: mapper.GetLCL([name])
 			value = "types." + m.Value.(string)
 		case vtedit.PdtColorSelect: // uint32: types.Color([value])

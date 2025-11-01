@@ -16,6 +16,7 @@ package tool
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // IntToString 数字转字符串
@@ -78,4 +79,11 @@ func FloatToString(value any) string {
 	default:
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+// SetToString 集合转字符串
+// [Xxx,Xxx,Xxx] > Xxx,Xxx,Xxx
+func SetToString(value any) string {
+	val := fmt.Sprintf("%v", value)
+	return strings.Trim(val, "[]")
 }

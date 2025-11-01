@@ -28,7 +28,6 @@ type TMainMenu struct {
 	file    lcl.IMenuItem
 	edit    lcl.IMenuItem
 	setting lcl.IMenuItem
-	project lcl.IMenuItem
 	helper  lcl.IMenuItem
 }
 
@@ -54,10 +53,6 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu.setting.SetCaption("设置(&S)")
 	menuItems.Add(mainMenu.setting)
 
-	mainMenu.project = lcl.NewMenuItem(m)
-	mainMenu.project.SetCaption("项目(&P)")
-	menuItems.Add(mainMenu.project)
-
 	mainMenu.helper = lcl.NewMenuItem(m)
 	mainMenu.helper.SetCaption("帮助(&H)")
 	menuItems.Add(mainMenu.helper)
@@ -65,7 +60,6 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu.fileMenu(m)
 	mainMenu.editMenu(m)
 	mainMenu.settingMenu(m)
-	mainMenu.projectMenu(m)
 	mainMenu.helperMenu(m)
 	mainMenu.macOS()
 }
@@ -77,18 +71,35 @@ func (m *TMainMenu) macOS() {
 }
 
 func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
+	create := lcl.NewMenuItem(owner)
+	create.SetCaption("新建(&N)")
+	m.file.Add(create)
+
+	createProject := lcl.NewMenuItem(owner)
+	createProject.SetCaption("新建项目")
+	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
+	createProject.SetOnClick(func(lcl.IObject) {
+		logs.Debug("新建项目")
+	})
+	create.Add(createProject)
+
+	split := lcl.NewMenuItem(owner)
+	split.SetCaption("-")
+	create.Add(split)
+
 	createWindow := lcl.NewMenuItem(owner)
-	createWindow.SetCaption("新建窗体(&N)")
+	createWindow.SetCaption("新建窗体")
 	createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
 	createWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("新建窗体")
 	})
-	m.file.Add(createWindow)
+	create.Add(createWindow)
+
 	openWindow := lcl.NewMenuItem(owner)
-	openWindow.SetCaption("打开窗体(&O)")
+	openWindow.SetCaption("打开(&O)")
 	openWindow.SetShortCut(api.TextToShortCut("Ctrl+O"))
 	openWindow.SetOnClick(func(lcl.IObject) {
-		logs.Debug("打开窗体")
+		logs.Debug("打开")
 	})
 	m.file.Add(openWindow)
 	saveWindow := lcl.NewMenuItem(owner)
@@ -120,16 +131,6 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 
-}
-
-func (m *TMainMenu) projectMenu(owner lcl.IComponent) {
-	createProject := lcl.NewMenuItem(owner)
-	createProject.SetCaption("新建项目(&P)")
-	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
-	createProject.SetOnClick(func(lcl.IObject) {
-		logs.Debug("新建项目")
-	})
-	m.project.Add(createProject)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {

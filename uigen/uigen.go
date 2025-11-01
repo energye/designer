@@ -50,10 +50,9 @@ type TUIComponent struct {
 
 // 组件属性
 type TProperty struct {
-	Name  string                  // 属性名称
-	Value any                     // 属性值
-	Type  vtedit.PropertyDataType // 属性类型
-	//ClassInstance uintptr                 // 属性值 class 实例, 当属性类型是 PdtClass 时有效
+	Name  string                  `json:"name"`  // 属性名称
+	Value any                     `json:"value"` // 属性值
+	Type  vtedit.PropertyDataType `json:"type"`  // 属性类型
 }
 
 // 生成UI文件
