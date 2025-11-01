@@ -62,9 +62,11 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
-	data.BaseInfo = TBaseInfo{
+	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UIFile: baseName + ".ui", UserFile: baseName + ".go"}
+		UIFile: baseName + ".ui", UserFile: baseName + ".go",
+		PackageName: packageName,
+	}
 
 	// 解析模板
 	tmpl, err := template.New("auto").Parse(autoCodeTemplate)

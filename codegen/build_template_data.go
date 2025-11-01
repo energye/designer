@@ -26,25 +26,6 @@ import (
 
 const packageName = "forms"
 
-// 自动代码模板数据
-type TTemplateData struct {
-	PackageName string                 // 包名
-	FormName    string                 // 窗体名称
-	ClassName   string                 // 窗体类名
-	Type        designer.ComponentType // 组件类型
-	BaseInfo    TBaseInfo              // 基础信息
-	Properties  []TPropertyData        // 窗体属性列表
-	Components  []*TComponentData      // 组件列表
-}
-
-// 基础信息
-type TBaseInfo struct {
-	DesignerVersion string // 生成工具版本
-	DateTime        string // 生成时间
-	UIFile          string // UI 文件
-	UserFile        string // 用户文件
-}
-
 // 组件数据
 type TComponentData struct {
 	Name       string                 // 组件名称
@@ -53,6 +34,16 @@ type TComponentData struct {
 	Properties []TPropertyData        // 组件属性
 	Parent     *TComponentData        // 组件所属父类
 	Children   []*TComponentData      // 子组件列表
+	BaseInfo   *TBaseInfo             // 基础信息
+}
+
+// 基础信息
+type TBaseInfo struct {
+	DesignerVersion string // 生成工具版本
+	DateTime        string // 生成时间
+	UIFile          string // UI 文件
+	UserFile        string // 用户文件
+	PackageName     string // 包名
 }
 
 // 属性数组
@@ -148,33 +139,31 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 }
 
 // 构建自动代码模板数据
-func buildAutoTemplateData(component *uigen.TUIComponent) TTemplateData {
-	data := TTemplateData{
-		PackageName: packageName,
-		FormName:    component.Name,
-		ClassName:   component.ClassName,
-		Type:        component.Type,
-		Properties:  uiPropertiesToTemplateProperties(component.Properties),
+func buildAutoTemplateData(component *uigen.TUIComponent) *TComponentData {
+	data := &TComponentData{
+		Name:       component.Name,
+		ClassName:  component.ClassName,
+		Type:       component.Type,
+		Properties: uiPropertiesToTemplateProperties(component.Properties),
 	}
-	data.Components = data.buildComponents(component)
+	data.Children = data.buildComponents(component)
 	return data
 }
 
 // 构建用户代码模板数据
-func buildUserTemplateData(component *uigen.TUIComponent) TTemplateData {
-	data := TTemplateData{
-		PackageName: packageName,
-		FormName:    component.Name,
-		ClassName:   component.ClassName,
-		Type:        component.Type,
-		Properties:  uiPropertiesToTemplateProperties(component.Properties),
+func buildUserTemplateData(component *uigen.TUIComponent) *TComponentData {
+	data := &TComponentData{
+		Name:       component.Name,
+		ClassName:  component.ClassName,
+		Type:       component.Type,
+		Properties: uiPropertiesToTemplateProperties(component.Properties),
 	}
-	data.Components = data.buildComponents(component)
+	data.Children = data.buildComponents(component)
 	return data
 }
 
 // 构建组件列表
-func (m *TTemplateData) buildComponents(component *uigen.TUIComponent) []*TComponentData {
+func (m *TComponentData) buildComponents(component *uigen.TUIComponent) []*TComponentData {
 	var components []*TComponentData
 	// 创建根组件（窗体）的模板数据
 	rootComponent := &TComponentData{
@@ -190,7 +179,7 @@ func (m *TTemplateData) buildComponents(component *uigen.TUIComponent) []*TCompo
 }
 
 // 递归构建子组件
-func (m *TTemplateData) buildChildComponents(uiParent *uigen.TUIComponent, templateParent *TComponentData, result *[]*TComponentData) {
+func (m *TComponentData) buildChildComponents(uiParent *uigen.TUIComponent, templateParent *TComponentData, result *[]*TComponentData) {
 	for _, child := range uiParent.Child {
 		// 为每个子组件创建模板数据
 		childTemplate := &TComponentData{

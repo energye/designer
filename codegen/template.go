@@ -26,27 +26,28 @@ const autoCodeTemplate = `// ===================================================
 //     功能描述: 基于 ENERGY GUI 框架的实现, 包含UI组件创建
 // ==============================================================================
 
-package {{.PackageName}}
+package {{.BaseInfo.PackageName}}
 
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
 
-type T{{.FormName}} struct {
+type T{{.Name}} struct {
 	lcl.TEngForm
-	{{range .Components -}} 
+	{{range .Children -}} 
 	{{.GoFieldName}} {{.GoIntfName}}
 	{{end -}}
 }
 
-var {{.FormName}} T{{.FormName}}
+var {{.Name}} T{{.Name}}
 
 // FormCreate 窗体创建接口实现. 自动调用
-func (m *T{{.FormName}}) FormCreate(sender lcl.IObject) {
+func (m *T{{.Name}}) FormCreate(sender lcl.IObject) {
 	// 设置窗体属性
-	{{range .Properties -}} 
-    m.Set{{.Name}}({{.Value}})
+	{{$form := .}}
+	{{- range $propIndex, $prop := .Properties -}} 
+		{{$prop.GoPropertySet $form}} 
 	{{end -}}
 	// 初始化组件
 	m.initComponents()
@@ -55,9 +56,9 @@ func (m *T{{.FormName}}) FormCreate(sender lcl.IObject) {
 }
 
 // initComponents 初始化组件
-func (m *T{{.FormName}}) initComponents() {
+func (m *T{{.Name}}) initComponents() {
     // 组件初始化和设置属性
-	{{range $compIndex, $comp := .Components -}} 
+	{{range $compIndex, $comp := .Children -}} 
 		{{$comp.GoNewObject}}
 	{{- range $propIndex, $prop := $comp.Properties -}} 
 		{{$prop.GoPropertySet $comp}} 
@@ -82,23 +83,23 @@ import (
 )
 
 // OnFormCreate 窗体初始化事件
-func (m *T{{.FormName}}) OnFormCreate(sender lcl.IObject) {
+func (m *T{{.Name}}) OnFormCreate(sender lcl.IObject) {
 	// TODO 在此处添加窗体初始化代码
 }
 
 // OnCloseQuery 窗体关闭前询问事件
-func (m *T{{.FormName}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+func (m *T{{.Name}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	// TODO 在此处添加窗体关闭前询问代码
 }
 
 // OnClose 仅当 OnCloseQuery 中 CanClose 被设置为 True 后会触发
-func (m *T{{.FormName}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+func (m *T{{.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	// TODO 在此处添加窗体关闭代码
 }
 
 {{range .Components}}
 // On{{.Name}}Click {{.Name}}点击事件
-func (m *T{{.FormName}}) On{{.Name}}Click(sender lcl.IObject) {
+func (m *T{{.Name}}) On{{.Name}}Click(sender lcl.IObject) {
 	// TODO 在此处添加{{.Name}}点击事件处理代码
 }
 {{end}}
