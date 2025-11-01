@@ -2,6 +2,7 @@ package uigen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/project"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -41,7 +42,7 @@ func DebouncedGenerate(formTab *designer.FormTab, component *designer.TDesigning
 		debounceMutex.Unlock()
 
 		formId := strings.ToLower(formTab.Name)
-		uiFilePath := filepath.Join(projectPath, "forms", formId+".ui")
+		uiFilePath := filepath.Join(project.Path, "forms", formId+".ui")
 
 		// 执行UI生成
 		GenerateUIFile(formTab, component, uiFilePath)

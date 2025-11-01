@@ -30,15 +30,6 @@ import (
 // xxx.ui 文件内容是 tree JSON 结构, 数据格式为组件[变更的属性列表]
 // 生成触发条件: 即时触发 防抖
 
-var (
-	// TODO 这是一个测试变量 --test
-	projectPath string
-)
-
-func init() {
-	projectPath = "C:\\app\\workspace\\test"
-}
-
 // 表示UI组件的结构
 type TUIComponent struct {
 	Name       string                 `json:"name"`            // 组件名称
