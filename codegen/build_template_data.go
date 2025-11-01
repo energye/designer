@@ -2,9 +2,11 @@ package codegen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/designer/uigen"
+	"strings"
 )
 
 // 构建模板数据
@@ -54,35 +56,63 @@ func (m *TComponentData) GoIntfName() string {
 }
 
 // 模板调用函数 - 返回组件在Go创建方法名
-func (m *TComponentData) GoNewFuncName() string {
-	newFuncName := tool.Buffer{}
-	newFuncName.WriteString("lcl.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+func (m *TComponentData) GoNewObject() string {
+	// m.{{$comp.GoFieldName}} =
+	newObject := tool.Buffer{}
+	newObject.WriteString("m.", m.GoFieldName(), " = ")
+	newObject.WriteString("lcl.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+	return newObject.String()
+}
 
-	// 组件所属父类
-	parentName := ""
-	if m.Parent != nil {
-		switch m.Parent.Type {
-		case designer.CtForm:
-			parentName = "m"
-		default:
-			parentName = "m." + m.Parent.FieldName()
-		}
-	}
+// 模板调用函数 - 返回组件在Go创建方法名
+func (m *TComponentData) GoSetObjectParent() string {
+	newObject := tool.Buffer{}
 	switch m.Type {
 	case designer.CtVisual:
-		newFuncName.WriteString("m.", m.FieldName(), ".SetParent(", parentName, ")", "\n")
+		// 组件所属父类
+		parentName := ""
+		if m.Parent != nil {
+			switch m.Parent.Type {
+			case designer.CtForm:
+				parentName = "m"
+			default:
+				parentName = "m." + m.Parent.GoFieldName()
+			}
+		} else {
+			logs.Warn("设置对象父类时父类对象为 nil, 父类为空, 字段名:", m.GoFieldName(), "类名:", m.ClassName)
+		}
+		newObject.WriteString("m.", m.GoFieldName(), ".SetParent(", parentName, ")", "\n")
 	}
-	return newFuncName.String()
+	return newObject.String()
 }
 
 // 模板调用函数 - 返回组件字段名
-func (m *TComponentData) FieldName() string {
+func (m *TComponentData) GoFieldName() string {
 	return m.Name
 }
 
-// 模板调用函数 - 返回对象调用的属性
-func (m *TPropertyData) GoPropertyName() string {
-	return m.Name
+// 模板调用函数 - 设置对象属性
+func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
+	//m.Set{{.Name}}({{.Value}})
+	prop := tool.Buffer{}
+	object := ""
+	switch comp.Type {
+	case designer.CtForm:
+		object = "m"
+	default:
+		object = "m." + comp.GoFieldName()
+	}
+	prop.WriteString(object)
+	// 属性路径 Font.Style
+	namePaths := strings.Split(m.Name, ".")
+	for i := 0; i < len(namePaths)-1; i++ {
+		prop.WriteString(".", namePaths[i], "()")
+	}
+	if len(namePaths) > 0 {
+		name := namePaths[len(namePaths)-1]
+		prop.WriteString(".Set", name, "()")
+	}
+	return prop.String()
 }
 
 // 构建自动代码模板数据

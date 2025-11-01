@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/uigen"
 	"go/format"
 	"os"
@@ -67,7 +68,9 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	// 格式化代码
 	formatted, err := format.Source([]byte(buf.String()))
 	if err != nil {
-		return fmt.Errorf("格式化代码失败: %w", err)
+		//return fmt.Errorf("格式化代码失败: %w", err)
+		logs.Error("格式化代码失败:", err.Error())
+		formatted = []byte(buf.String())
 	}
 
 	// 写入文件

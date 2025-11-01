@@ -22,8 +22,9 @@ import (
 
 type T{{.FormName}} struct {
 	lcl.TEngForm
-	{{range .Components}} {{.FieldName}} {{.GoIntfName}}
-	{{end}}
+	{{range .Components -}} 
+	{{.GoFieldName}} {{.GoIntfName}}
+	{{end -}}
 }
 
 var {{.FormName}} T{{.FormName}}
@@ -31,8 +32,9 @@ var {{.FormName}} T{{.FormName}}
 // FormCreate 窗体创建接口实现. 自动调用
 func (m *T{{.FormName}}) FormCreate(sender lcl.IObject) {
 	// 设置窗体属性
-	{{range .Properties}} m.Set{{.Name}}({{.Value}})
-	{{end}}
+	{{range .Properties -}} 
+    m.Set{{.Name}}({{.Value}})
+	{{end -}}
 	// 初始化组件
 	m.initComponents()
     // 调用用户创建窗体事件
@@ -42,8 +44,13 @@ func (m *T{{.FormName}}) FormCreate(sender lcl.IObject) {
 // initComponents 初始化组件
 func (m *T{{.FormName}}) initComponents() {
     // 组件初始化和设置属性
-	{{range .Components}} m.{{.FieldName}} = {{.GoNewFuncName}}
-	{{end}}
+	{{range $compIndex, $comp := .Components -}} 
+		{{$comp.GoNewObject}}
+	{{- range $propIndex, $prop := $comp.Properties -}} 
+		{{$prop.GoPropertySet $comp}} 
+	{{end -}}
+		{{$comp.GoSetObjectParent}}
+	{{end -}}
 }
 `
 
