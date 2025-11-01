@@ -22,7 +22,7 @@ import (
 
 type T{{.FormName}} struct {
 	lcl.TEngForm
-	{{range .Components}}{{.Name}} lcl.{{.ClassName}}
+	{{range .Components}} {{.FieldName}} {{.GoIntfName}}
 	{{end}}
 }
 
@@ -41,7 +41,8 @@ func (m *T{{.FormName}}) FormCreate(sender lcl.IObject) {
 
 // initComponents 初始化组件
 func (m *T{{.FormName}}) initComponents() {
-	{{range .Components}} m.{{.Name}} = lcl.New{{.ClassName}}(m)
+    // 组件初始化和设置属性
+	{{range .Components}} m.{{.FieldName}} = {{.GoNewFuncName}}
 	{{end}}
 }
 `

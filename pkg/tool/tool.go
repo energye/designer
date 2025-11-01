@@ -61,6 +61,17 @@ func Equal(s1 string, s2 ...string) bool {
 	return false
 }
 
+// 删除道字母 T
+func RemoveT(name string) string {
+	if name == "" {
+		return ""
+	}
+	if name[0] == 'T' {
+		return name[1:]
+	}
+	return name
+}
+
 // 第一个字母转为大写
 func FirstToUpper(s string) string {
 	return strings.ToUpper(string(s[0])) + s[1:]
