@@ -80,6 +80,11 @@ func (m *TComponentData) FieldName() string {
 	return m.Name
 }
 
+// 模板调用函数 - 返回对象调用的属性
+func (m *TPropertyData) GoPropertyName() string {
+	return m.Name
+}
+
 // 构建自动代码模板数据
 func buildAutoTemplateData(component *uigen.TUIComponent) TTemplateData {
 	data := TTemplateData{
