@@ -113,6 +113,11 @@ func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 
 	// 构建模板数据
 	data := buildUserTemplateData(component)
+	data.BaseInfo = &TBaseInfo{
+		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
+		UIFile: baseName + ".ui", UserFile: baseName + ".go",
+		PackageName: packageName,
+	}
 
 	// 解析模板
 	tmpl, err := template.New("user").Parse(userCodeTemplate)

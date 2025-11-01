@@ -13,12 +13,20 @@
 
 package project
 
-// 项目信息 xxx.egp 配置文件
+// 项目文件 xxx.egp 配置文件
+// 存在于项目根目录
 
 var (
-	// Path 项目路径, 默认为当前目录
-	Path string
+	// Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
+	Path    string
+	Project *TProject
 )
 
+// TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
+	Name        string `json:"name"`        // 项目名称
+	Version     string `json:"version"`     // 项目版本
+	Description string `json:"description"` // 项目描述
+	Author      string `json:"author"`      // 项目作者
+	Main        string `json:"main"`        // 主程序入口文件或相对文件目录名
 }

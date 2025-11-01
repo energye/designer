@@ -70,12 +70,13 @@ func (m *T{{.Name}}) initComponents() {
 
 // userCodeTemplate 用户代码模板
 const userCodeTemplate = `// ==============================================================================
-// 📚 Form1 用户代码文件
+// 📚 T{{.Name}} 用户代码文件
 // 📌 该文件不存在时自动创建
 // ✏️ 可在此文件中添加事件处理和业务逻辑
+//    生成时间: {{.BaseInfo.DateTime}}
 // ==============================================================================
 
-package {{.PackageName}}
+package {{.BaseInfo.PackageName}}
 
 import (
 	"github.com/energye/lcl/lcl"
@@ -97,7 +98,7 @@ func (m *T{{.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction
 	// TODO 在此处添加窗体关闭代码
 }
 
-{{range .Components}}
+{{range .Children}}
 // On{{.Name}}Click {{.Name}}点击事件
 func (m *T{{.Name}}) On{{.Name}}Click(sender lcl.IObject) {
 	// TODO 在此处添加{{.Name}}点击事件处理代码
