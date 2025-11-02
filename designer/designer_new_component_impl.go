@@ -25,34 +25,30 @@ import (
 	"strings"
 )
 
-// 组件实现函数
-
-type SyncLock struct {
-	Point bool
-	Size  bool
-}
+// 设计组件实现
 
 // 设计组件
 type TDesigningComponent struct {
-	formTab       *FormTab                  // 所属设计窗体
-	id            int                       // id 标识
-	originObject  any                       // 原始组件对象
-	object        lcl.IWinControl           // 组件 对象 可视
-	objectNon     lcl.IComponent            // 组件 对象 非可视
-	objectNonWrap *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
-	parent        *TDesigningComponent      // 所属父节点
-	Child         []*TDesigningComponent    // 拥有的子节点列表
-	drag          *drag                     // 拖拽控制
-	PropertyList  []*vtedit.TEditNodeData   // 数据 组件属性
-	EventList     []*vtedit.TEditNodeData   // 数据 组件事件
-	isDesigner    bool                      // 组件是否正在设计
-	ComponentType consts.ComponentType      // 组件类型
-	node          lcl.ITreeNode             // 查看器 组件树节点对象
-	page          lcl.IPageControl          // 查看器 属性页和事件页
-	pageProperty  lcl.ITabSheet             // 查看器 属性页
-	pageEvent     lcl.ITabSheet             // 查看器 事件页
-	propertyTree  lcl.ILazVirtualStringTree // 查看器 组件属性树
-	eventTree     lcl.ILazVirtualStringTree // 查看器 组件事件树
+	formTab         *FormTab                  // 所属设计窗体
+	id              int                       // id 标识
+	ComponentModule consts.ComponentModule    // 组件所属模块
+	originObject    any                       // 原始组件对象
+	object          lcl.IWinControl           // 组件 对象 可视
+	objectNon       lcl.IComponent            // 组件 对象 非可视
+	objectNonWrap   *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
+	parent          *TDesigningComponent      // 所属父节点
+	Child           []*TDesigningComponent    // 拥有的子节点列表
+	drag            *drag                     // 拖拽控制
+	PropertyList    []*vtedit.TEditNodeData   // 数据 组件属性
+	EventList       []*vtedit.TEditNodeData   // 数据 组件事件
+	isDesigner      bool                      // 组件是否正在设计
+	ComponentType   consts.ComponentType      // 组件类型
+	node            lcl.ITreeNode             // 查看器 组件树节点对象
+	page            lcl.IPageControl          // 查看器 属性页和事件页
+	pageProperty    lcl.ITabSheet             // 查看器 属性页
+	pageEvent       lcl.ITabSheet             // 查看器 事件页
+	propertyTree    lcl.ILazVirtualStringTree // 查看器 组件属性树
+	eventTree       lcl.ILazVirtualStringTree // 查看器 组件事件树
 }
 
 // 组件属性树状态

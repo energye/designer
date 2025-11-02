@@ -24,14 +24,15 @@ import (
 var cmd *command.CMD
 
 // 构建项目
-func build() {
-	cmd := command.NewCMD()
-	cmd.Dir = project.Path
-	cmd.MessageCallback = func(bytes []byte, err error) {
+func build(output string) {
+	buildCmd := command.NewCMD()
+	buildCmd.Dir = project.Path
+	buildCmd.MessageCallback = func(bytes []byte, err error) {
 		info := string(bytes)
 		logs.Info(info)
 	}
-	cmd.Command("go", "build", "-o", "./build/main.exe")
+	// TODO 需要通过配置, 构建参数
+	buildCmd.Command("go", "build", "-o", output)
 }
 
 // 执行应用程序的预览功能
@@ -41,7 +42,11 @@ func runPreview(state chan<- any) {
 		return
 	}
 	state <- consts.PsStarting
-	build()
+	// TODO 需要通过配置
+	output := "./build/main.exe"
+	// 构建项目二进制
+	build(output)
+	// 运行命令
 	cmd = command.NewCMD()
 	cmd.Dir = project.Path
 	cmd.MessageCallback = func(bytes []byte, err error) {
@@ -54,7 +59,7 @@ func runPreview(state chan<- any) {
 	}
 	// 开始运行
 	state <- consts.PsStarted
-	cmd.Command("./build/main.exe")
+	cmd.Command(output)
 	state <- consts.PsStop
 	close(state)
 	logs.Debug("run preview end")

@@ -27,13 +27,14 @@ const packageName = "forms"
 
 // 组件数据
 type TComponentData struct {
-	Name       string               // 组件名称
-	ClassName  string               // 组件类名
-	Type       consts.ComponentType // 组件类型
-	Properties []TPropertyData      // 组件属性
-	Parent     *TComponentData      // 组件所属父类
-	Children   []*TComponentData    // 子组件列表
-	BaseInfo   *TBaseInfo           // 基础信息
+	Name            string                 // 组件名称
+	ClassName       string                 // 组件类名
+	ComponentModule consts.ComponentModule // 组件所属模块
+	Type            consts.ComponentType   // 组件类型
+	Properties      []TPropertyData        // 组件属性
+	Parent          *TComponentData        // 组件所属父类
+	Children        []*TComponentData      // 子组件列表
+	BaseInfo        *TBaseInfo             // 基础信息
 }
 
 // 基础信息

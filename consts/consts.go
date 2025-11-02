@@ -106,3 +106,14 @@ const (
 	CLevelForwardOne                    //
 	CLevelBackOne                       //
 )
+
+// 组件模块
+type ComponentModule int32
+
+const (
+	CmLCL       ComponentModule = iota // LCL
+	CmCEF                              // CEF
+	CmWVWindows                        // Webview2 Windows
+	CmWVMacOS                          // Webkit2 MacOS
+	CmWVLinux                          // Webkit2 Linux
+)
