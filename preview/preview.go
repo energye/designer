@@ -40,6 +40,7 @@ func runPreview(state chan<- any) {
 	if cmd != nil {
 		return
 	}
+	state <- consts.PsStarting
 	build()
 	cmd = command.NewCMD()
 	cmd.Dir = project.Path
@@ -52,7 +53,7 @@ func runPreview(state chan<- any) {
 		}
 	}
 	// 开始运行
-	state <- consts.PsStart
+	state <- consts.PsStarted
 	cmd.Command("./build/main.exe")
 	state <- consts.PsStop
 	close(state)

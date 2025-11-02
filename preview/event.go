@@ -35,12 +35,12 @@ func (m *TPreview) Start() {
 		case trigger := <-m.trigger:
 			ps, ok := trigger.Payload.(consts.PreviewState)
 			if ok {
-				if ps == consts.PsStart {
+				if ps == consts.PsStarted {
 					// 启动运行预览
 					go func() {
 						runPreview(trigger.Result)
 					}()
-				} else {
+				} else if ps == consts.PsStop {
 					// 停止运行预览
 					go stopPreview()
 				}

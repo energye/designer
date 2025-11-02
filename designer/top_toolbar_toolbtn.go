@@ -91,9 +91,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
 	newSep()
 
-	toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行预览窗体", 3)
-	toolbarBtn.runPreviewBtn.SetHint("运行(F9)")
-	toolbarBtn.runPreviewBtn.SetShowHint(true)
+	toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行(F9)", 3)
 	toolbarBtn.runPreviewBtn.SetOnClick(toolbarBtn.onRunPreviewForm)
 }
 
@@ -125,7 +123,7 @@ func (m *TToolbarToolBtn) onSaveAllForm(sender lcl.IObject) {
 
 func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 预览窗体")
-	if m.previewState == consts.PsStart {
+	if m.previewState == consts.PsStarted {
 		logs.Debug("工具栏按钮, 停止预览窗体")
 		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStop})
 	} else {
@@ -137,7 +135,7 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 				logs.Debug("预览窗口结果:", res)
 				if status, ok := res.(consts.PreviewState); ok {
 					m.switchPreviewBtn(status)
-					if status == 0 {
+					if status == consts.PsStop {
 						// 运行结束
 						break
 					}
@@ -151,7 +149,7 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 			logs.Debug("状态监听结束")
 		}()
 		// 启动运行预览
-		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStart, Result: result})
+		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStarted, Result: result})
 	}
 }
 
@@ -159,9 +157,16 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 	logs.Debug("切换预览按钮状态 status:", status)
 	m.previewState = status
-	if m.previewState == consts.PsStart {
-
+	m.runPreviewBtn.SetEnabled(true)
+	if m.previewState == consts.PsStarted {
+		m.runPreviewBtn.SetHint("停止(F9)")
+		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
+	} else if m.previewState == consts.PsStarting {
+		m.runPreviewBtn.SetEnabled(false)
+		m.runPreviewBtn.SetHint("停止(F9)")
+		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
 	} else {
-
+		m.runPreviewBtn.SetHint("运行(F9)")
+		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
 	}
 }

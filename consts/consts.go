@@ -17,6 +17,7 @@ package consts
 type PreviewState int
 
 const (
-	PsStop  PreviewState = iota // 停止
-	PsStart                     // 启动
+	PsStop     PreviewState = iota // 停止
+	PsStarting PreviewState = iota // 停止
+	PsStarted                      // 启动
 )
