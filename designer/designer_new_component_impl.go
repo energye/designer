@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -399,6 +400,20 @@ func (m *TDesigningComponent) WinControl() lcl.IWinControl {
 func (m *TDesigningComponent) GetProps() {
 	// 属性列表为空时获取属性列表
 	if m.PropertyList == nil {
+		methods := tool.GetObjectMethodNames(m.originObject)
+		if methods == nil {
+			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
+		}
+		// 修复属性名
+		fixPropName := func(prop *lcl.ComponentProperties) {
+			name := strings.ToLower(prop.Name)
+			if methods.ContainsKey(name) {
+				// 当前属性名不存在于对象的方法列表中
+				// 原因: 1. 完全不存在, 2. 属性名与对象方法名不一致
+				// 当为原因2时需要将属性名改为实际的方法名
+				prop.Name = methods.Get(name)
+			}
+		}
 
 		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
 		logs.Debug("LoadComponent Count:", len(properties))
@@ -409,6 +424,7 @@ func (m *TDesigningComponent) GetProps() {
 		)
 		for _, prop := range properties {
 			newProp := prop
+			fixPropName(&newProp)
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m}
 			if newProp.Kind == "tkMethod" {
