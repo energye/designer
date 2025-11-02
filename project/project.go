@@ -28,16 +28,17 @@ func init() {
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name        string   `json:"name"`         // 项目名称
-	Version     string   `json:"version"`      // 项目版本
-	Description string   `json:"description"`  // 项目描述
-	Author      string   `json:"author"`       // 项目作者
-	Main        string   `json:"main"`         // 主程序入口文件或相对文件目录名
-	Forms       []*TForm `json:"forms"`        // 窗体信息
-	HistoryForm []*TForm `json:"history_form"` // 项目历史窗口 todo
+	Name        string   `json:"name"`        // 项目名称
+	Version     string   `json:"version"`     // 项目版本
+	Description string   `json:"description"` // 项目描述
+	Author      string   `json:"author"`      // 项目作者
+	Main        string   `json:"main"`        // 主程序入口文件或相对文件目录名
+	Forms       []*TForm `json:"forms"`       // 窗体信息
 }
 
 // TForm 窗体信息
 type TForm struct {
-	Name string `json:"name"` // 窗体名称
+	Name       string `json:"name"`      // 窗体名称
+	UpdateTime string `json:"date_time"` // 更新时间
+	Active     bool   `json:"active"`    // 是否激活设计, 同一时间只允许一个窗体激活设计
 }

@@ -17,15 +17,18 @@ package event
 type GenType int32
 
 const (
-	GtUI   GenType = iota // 生成UI布局文件
-	GtCode                // 生成代码
+	GtUI      GenType = iota // 生成UI布局文件
+	GtCode                   // 生成代码
+	GtProject                // 项目配置
 )
 
 var (
-	GenUI   *TGenerator // UI 布局文件生成实例
-	GenCode *TGenerator // 代码生成实例
+	GenUI      *TGenerator // UI 布局文件生成实例
+	GenCode    *TGenerator // 代码生成实例
+	GenProject *TGenerator // 项目配置更新实例
 )
 
+// TGeneratorTrigger 生成事件触发器数据结构
 type TGeneratorTrigger struct {
 	GenType GenType // 生成类型
 	Payload any     // 数据
@@ -55,11 +58,15 @@ func (m *TGenerator) Cancel() {
 	m.cancel <- true
 }
 
+// CancelAll 取消所有生成事件, 在退出时调用
 func CancelAll() {
 	if GenUI != nil {
 		GenUI.Cancel()
 	}
 	if GenCode != nil {
 		GenCode.Cancel()
+	}
+	if GenProject != nil {
+		GenProject.Cancel()
 	}
 }

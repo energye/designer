@@ -18,7 +18,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-// Go代码生成回调函数
+// Go代码生成
 
 // 生成器实例
 var gen = &TGenCode{trigger: make(chan event.TGeneratorTrigger, 1), cancel: make(chan bool, 1)}

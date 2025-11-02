@@ -14,12 +14,11 @@
 package main
 
 import (
-	_ "github.com/energye/designer/codegen"
 	"github.com/energye/designer/designer"
+	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/designer/resources"
-	_ "github.com/energye/designer/uigen"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
