@@ -23,12 +23,24 @@ import (
 
 var cmd *command.CMD
 
+// 构建项目
+func build() {
+	cmd := command.NewCMD()
+	cmd.Dir = project.Path
+	cmd.MessageCallback = func(bytes []byte, err error) {
+		info := string(bytes)
+		logs.Info(info)
+	}
+	cmd.Command("go", "build", "-o", "./build/main.exe")
+}
+
 // 执行应用程序的预览功能
 // 根据项目配置预览当前项目
 func runPreview(state chan<- any) {
 	if cmd != nil {
 		return
 	}
+	build()
 	cmd = command.NewCMD()
 	cmd.Dir = project.Path
 	cmd.MessageCallback = func(bytes []byte, err error) {
@@ -41,7 +53,7 @@ func runPreview(state chan<- any) {
 	}
 	// 开始运行
 	state <- consts.PsStart
-	cmd.Command("go", "run", "main.go")
+	cmd.Command("./build/main.exe")
 	state <- consts.PsStop
 	close(state)
 	logs.Debug("run preview end")
@@ -51,7 +63,9 @@ func runPreview(state chan<- any) {
 func stopPreview() {
 	// 停止运行
 	if cmd != nil {
-		cmd.Kill()
+		logs.Debug("停止预览, 进程ID:", cmd.Cmd.Process.Pid)
+		err := cmd.Cmd.Process.Kill()
+		logs.Debug("停止预览, 进程ID:", cmd.Cmd.Process.Pid, "结果:", err)
 	}
 	cmd = nil
 }

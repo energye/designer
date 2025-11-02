@@ -92,6 +92,8 @@ func (m *TopToolbar) createToolBarBtns() {
 	newSep()
 
 	toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行预览窗体", 3)
+	toolbarBtn.runPreviewBtn.SetHint("运行(F9)")
+	toolbarBtn.runPreviewBtn.SetShowHint(true)
 	toolbarBtn.runPreviewBtn.SetOnClick(toolbarBtn.onRunPreviewForm)
 }
 
