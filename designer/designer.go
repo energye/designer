@@ -302,3 +302,8 @@ func (m *TEngFormDesigner) onUniqueName(baseName string) string {
 func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 	println("onPrepareFreeDesigner")
 }
+
+func init() {
+	// 注册组件
+	initRegisterComponent()
+}

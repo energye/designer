@@ -23,7 +23,7 @@ type TNewComponent func(designerForm *FormTab, x, y int32) *TDesigningComponent
 // key: 组件类名, value: 组件创建函数
 var registerComponents = make(map[string]TNewComponent)
 
-func init() {
+func initRegisterComponent() {
 	registerComponents["TButton"] = NewButtonDesigner
 	registerComponents["TEdit"] = NewEditDesigner
 	registerComponents["TCheckBox"] = NewCheckBoxDesigner
