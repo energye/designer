@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -44,7 +45,7 @@ func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
 // 创建设计窗体
 func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc := new(TDesigningComponent)
-	dc.ComponentType = CtForm
+	dc.ComponentType = consts.CtForm
 	dc.createComponentPropertyPage()
 	m.FormRoot = dc
 
@@ -88,7 +89,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc.formTab = m
 
 	// 窗体拖拽大小
-	dc.drag = newDrag(m.scroll, DsRightBottom)
+	dc.drag = newDrag(m.scroll, consts.DsRightBottom)
 	//m.FormRoot.drag.SetParent(m.scroll)
 	dc.drag.SetRelation(dc)
 	dc.drag.Show()

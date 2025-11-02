@@ -14,21 +14,12 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 )
 
 // 设计 - 组件右键菜单
-
-// 改变 Z 序
-type ChangeLevel int32
-
-const (
-	CLevelFront      ChangeLevel = iota //
-	CLevelBack                          //
-	CLevelForwardOne                    //
-	CLevelBackOne                       //
-)
 
 // 组件菜单
 type TComponentMenu struct {
@@ -65,7 +56,7 @@ func (m *TComponentMenu) OnLevelFront(sender lcl.IObject) {
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最顶层 组件名:", comp.Name())
 		comp.WinControl().BringToFront()
-		comp.Order(CLevelFront)
+		comp.Order(consts.CLevelFront)
 	}
 }
 
@@ -75,7 +66,7 @@ func (m *TComponentMenu) OnLevelBack(sender lcl.IObject) {
 	if comp != nil {
 		logs.Debug("组件菜单-移动到最底层 组件名:", comp.Name())
 		comp.WinControl().SendToBack()
-		comp.Order(CLevelBack)
+		comp.Order(consts.CLevelBack)
 	}
 }
 
@@ -92,7 +83,7 @@ func (m *TComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 		parent.SetControlIndex(control, parent.GetControlIndex(control)+1)
 		control.ReAlign()
 		parent.ReAlign()
-		comp.Order(CLevelForwardOne)
+		comp.Order(consts.CLevelForwardOne)
 	}
 }
 
@@ -109,7 +100,7 @@ func (m *TComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 		parent.SetControlIndex(control, parent.GetControlIndex(control)-1)
 		control.ReAlign()
 		parent.ReAlign()
-		comp.Order(CLevelBackOne)
+		comp.Order(consts.CLevelBackOne)
 	}
 }
 
@@ -140,7 +131,7 @@ func (m *TComponentMenu) OnPaste(sender lcl.IObject) {
 // 删除
 func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
-	if comp != nil && comp.ComponentType != CtForm {
+	if comp != nil && comp.ComponentType != consts.CtForm {
 		parent := comp.parent
 		// 在删除之前先切换编辑父节组件
 		parent.formTab.switchComponentEditing(parent)

@@ -17,16 +17,6 @@ import "github.com/energye/designer/pkg/logs"
 
 // 事件处理
 
-// GenType 事件类型
-type GenType int32
-
-const (
-	GtUI      GenType = iota // UI布局文件
-	GtCode                   // 代码
-	GtProject                // 项目配置
-	GtOther                  // 其它功能
-)
-
 // 定义固定的事件
 var (
 	GenUI   *TEvent // UI 布局文件实例
@@ -37,7 +27,6 @@ var (
 
 // TEventTrigger 事件触发器数据结构
 type TEventTrigger struct {
-	GenType GenType    // 类型
 	Payload any        // 数据
 	Result  chan<- any // 返回值
 }

@@ -15,6 +15,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -258,7 +259,7 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		logs.Error("添加组件节点失败, 子节点为空")
 		return
 	}
-	if child.ComponentType == CtVisual || child.ComponentType == CtNonVisual {
+	if child.ComponentType == consts.CtVisual || child.ComponentType == consts.CtNonVisual {
 		m.tree.BeginUpdate()
 		defer m.tree.EndUpdate()
 		items := m.tree.Items()

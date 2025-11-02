@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/lcl"
@@ -64,10 +65,10 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 				font := targetCanvas.FontToFont()
 				// 编辑列 需要动态控制时
 				switch data.EditNodeData.Type {
-				case vtedit.PdtColorSelect:
+				case consts.PdtColorSelect:
 					font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(colors.TColor(data.EditNodeData.IntValue))
-				case vtedit.PdtClass:
+				case consts.PdtClass:
 					// class 样式
 					font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(0x2D5BC4)
@@ -95,7 +96,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			if data.Type() == vtedit.PdtClass {
+			if data.Type() == consts.PdtClass {
 				switch data.EditNodeData.Name {
 				case "Icon":
 					//m.compPropTreeState.selectPropName = data.EditNodeData.Name
@@ -103,7 +104,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 				default:
 
 				}
-			} else if data.EditNodeData.Type == vtedit.PdtCheckBoxList {
+			} else if data.EditNodeData.Type == consts.PdtCheckBoxList {
 			} else {
 				//m.compPropTreeState.selectPropName = data.EditNodeData.Name
 				tree.EditNode(node, 1)
@@ -113,7 +114,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, allowed *bool) {
 		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == vtedit.PdtText {
+			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == consts.PdtText {
 				*allowed = true
 				return
 			}
@@ -127,29 +128,29 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type() {
-				case vtedit.PdtText:
+				case consts.PdtText:
 					link := vtedit.NewStringEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtInt, vtedit.PdtInt64:
+				case consts.PdtInt, consts.PdtInt64:
 					link := vtedit.NewIntEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtFloat:
+				case consts.PdtFloat:
 					link := vtedit.NewFloatEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtCheckBox:
+				case consts.PdtCheckBox:
 					link := vtedit.NewCheckBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtCheckBoxList:
+				case consts.PdtCheckBoxList:
 					//link := vtedit.NewStringEditLink(data)
 					//link.SetReadOnly(true)
 					//*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtComboBox:
+				case consts.PdtComboBox:
 					link := vtedit.NewComboBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtColorSelect:
+				case consts.PdtColorSelect:
 					link := vtedit.NewColorSelectEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
-				case vtedit.PdtClass:
+				case consts.PdtClass:
 					// class 属性实例, 根据属性名控制不同的操作
 					propName := data.Name()
 					switch propName {

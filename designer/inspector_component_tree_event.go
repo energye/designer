@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -29,7 +30,7 @@ func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, 
 	if node != nil && node.IsValid() {
 		data := node.Data()
 		component := m.DataToDesigningComponent(data)
-		if component != nil && component.ComponentType == CtForm {
+		if component != nil && component.ComponentType == consts.CtForm {
 			*handled = true
 		}
 	}

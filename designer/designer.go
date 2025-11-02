@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
@@ -155,27 +156,11 @@ func (m *TEngFormDesigner) popupMenu(sender lcl.IControl, message *types.TLMCont
 	*message.Result() = 1
 }
 
-const (
-	// Mouse message key states
-	MK_LBUTTON  = 1
-	MK_RBUTTON  = 2
-	MK_SHIFT    = 4
-	MK_CONTROL  = 8
-	MK_MBUTTON  = 0x10
-	MK_XBUTTON1 = 0x20
-	MK_XBUTTON2 = 0x40
-	// following are "virtual" key states
-	MK_DOUBLECLICK = 0x80
-	MK_TRIPLECLICK = 0x100
-	MK_QUADCLICK   = 0x200
-	MK_ALT         = 0x20000000
-)
-
 func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift types.TShiftState, button types.TMouseButton) {
-	if message.Keys&MK_SHIFT == MK_SHIFT {
+	if message.Keys&consts.MK_SHIFT == consts.MK_SHIFT {
 		shift = shift.Include(types.SsShift)
 	}
-	if message.Keys&MK_CONTROL == MK_CONTROL {
+	if message.Keys&consts.MK_CONTROL == consts.MK_CONTROL {
 		shift = shift.Include(types.SsCtrl)
 	}
 	switch message.Msg {
@@ -189,19 +174,19 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 		shift = shift.Include(types.SsRight)
 		button = types.MbRight
 	default:
-		if message.Keys&MK_MBUTTON != 0 {
+		if message.Keys&consts.MK_MBUTTON != 0 {
 			shift = shift.Include(types.SsMiddle)
 			button = types.MbMiddle
-		} else if message.Keys&MK_RBUTTON != 0 {
+		} else if message.Keys&consts.MK_RBUTTON != 0 {
 			shift = shift.Include(types.SsRight)
 			button = types.MbRight
-		} else if message.Keys&MK_LBUTTON != 0 {
+		} else if message.Keys&consts.MK_LBUTTON != 0 {
 			shift = shift.Include(types.SsShift)
 			button = types.MbLeft
-		} else if message.Keys&MK_XBUTTON1 != 0 {
+		} else if message.Keys&consts.MK_XBUTTON1 != 0 {
 			shift = shift.Include(types.SsExtra1)
 			button = types.MbExtra1
-		} else if message.Keys&MK_XBUTTON2 != 0 {
+		} else if message.Keys&consts.MK_XBUTTON2 != 0 {
 			shift = shift.Include(types.SsExtra2)
 			button = types.MbExtra2
 		}

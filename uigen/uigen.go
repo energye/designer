@@ -15,6 +15,7 @@ package uigen
 
 import (
 	"encoding/json"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -32,18 +33,18 @@ import (
 
 // 表示UI组件的结构
 type TUIComponent struct {
-	Name       string                 `json:"name"`            // 组件名称
-	ClassName  string                 `json:"class_name"`      // 组件类名
-	Type       designer.ComponentType `json:"type"`            // 组件类型
-	Properties []TProperty            `json:"properties"`      // 组件属性列表
-	Child      []TUIComponent         `json:"child,omitempty"` // 组件子组件列表
+	Name       string               `json:"name"`            // 组件名称
+	ClassName  string               `json:"class_name"`      // 组件类名
+	Type       consts.ComponentType `json:"type"`            // 组件类型
+	Properties []TProperty          `json:"properties"`      // 组件属性列表
+	Child      []TUIComponent       `json:"child,omitempty"` // 组件子组件列表
 }
 
 // 组件属性
 type TProperty struct {
 	Name  string                  `json:"name"`  // 属性名称
 	Value any                     `json:"value"` // 属性值
-	Type  vtedit.PropertyDataType `json:"type"`  // 属性类型
+	Type  consts.PropertyDataType `json:"type"`  // 属性类型
 }
 
 // 生成UI文件
@@ -89,12 +90,12 @@ func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 			} else {
 				// 只保存修改过的属性
 				switch prop.Type() {
-				case vtedit.PdtClass:
+				case consts.PdtClass:
 					var iterator func(node *vtedit.TEditNodeData)
 					iterator = func(node *vtedit.TEditNodeData) {
 						for _, data := range node.Child {
 							if data.IsModify() {
-								if data.Type() == vtedit.PdtClass {
+								if data.Type() == consts.PdtClass {
 									iterator(data)
 								} else {
 									paths := data.Paths()

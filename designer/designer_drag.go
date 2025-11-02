@@ -15,6 +15,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/message"
 	"github.com/energye/lcl/lcl"
@@ -24,37 +25,19 @@ import (
 
 // 拖拽控制
 
-type DragShowStatus int32
-
 var dragBorder int32 = 4
-
-const (
-	DsAll         DragShowStatus = iota // 显示所有
-	DsRightBottom                       // 显示 右 右下 下
-)
-
-const (
-	DLeft = iota
-	DTop
-	DRight
-	DBottom
-	DLeftTop
-	DRightTop
-	DLeftBottom
-	DRightBottom
-)
 
 // 最小移动距离阈值
 const minDistance = 4
 
 // 拖拽控制
 type drag struct {
-	relation    *TDesigningComponent // 关联设计的组件
-	ds          DragShowStatus       // 显示方向
-	isShow      bool                 // 是否显示
-	dx, dy      int32                // 拖拽控制
-	dcl, dct    int32                // 拖拽控制
-	isDown      bool                 // 拖拽控制
+	relation    *TDesigningComponent  // 关联设计的组件
+	ds          consts.DragShowStatus // 显示方向
+	isShow      bool                  // 是否显示
+	dx, dy      int32                 // 拖拽控制
+	dcl, dct    int32                 // 拖拽控制
+	isDown      bool                  // 拖拽控制
 	left        lcl.IPanel
 	top         lcl.IPanel
 	right       lcl.IPanel
@@ -67,7 +50,7 @@ type drag struct {
 
 func (m *drag) Free() {
 	m.relation = nil
-	if m.ds == DsAll {
+	if m.ds == consts.DsAll {
 		m.left.Free()
 		m.top.Free()
 		m.right.Free()
@@ -116,37 +99,37 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 		if isDown {
 			switch d {
-			case DLeft:
+			case consts.DLeft:
 				x := X - dx
 				w := dcw - x
 				m.relation.SetBounds(dcx+x, dcy, w, dch)
-			case DTop:
+			case consts.DTop:
 				y := Y - dy
 				h := dch - y
 				m.relation.SetBounds(dcx, dcy+y, dcw, h)
-			case DRight:
+			case consts.DRight:
 				x := X - dx
 				m.relation.SetBounds(dcx, dcy, dcw+x, dch)
-			case DBottom:
+			case consts.DBottom:
 				y := Y - dy
 				m.relation.SetBounds(dcx, dcy, dcw, dch+y)
-			case DLeftTop:
+			case consts.DLeftTop:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
 				h := dch - y
 				m.relation.SetBounds(dcx+x, dcy+y, w, h)
-			case DRightTop:
+			case consts.DRightTop:
 				y := Y - dy
 				h := dch - y
 				x := X - dx
 				m.relation.SetBounds(dcx, dcy+y, dcw+x, h)
-			case DLeftBottom:
+			case consts.DLeftBottom:
 				x := X - dx
 				w := dcw - x
 				y := Y - dy
 				m.relation.SetBounds(dcx+x, dcy, w, dch+y)
-			case DRightBottom:
+			case consts.DRightBottom:
 				x := X - dx
 				y := Y - dy
 				m.relation.SetBounds(dcx, dcy, dcw+x, dch+y)
@@ -181,22 +164,22 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	return pnl
 }
 
-func newDrag(owner lcl.IWinControl, ds DragShowStatus) *drag {
+func newDrag(owner lcl.IWinControl, ds consts.DragShowStatus) *drag {
 	m := new(drag)
 	m.ds = ds
-	if m.ds == DsAll {
-		m.left = m.newDragPanel(owner, types.CrSizeWE, DLeft)
-		m.top = m.newDragPanel(owner, types.CrSizeNS, DTop)
-		m.right = m.newDragPanel(owner, types.CrSizeWE, DRight)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS, DBottom)
-		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE, DLeftTop)
-		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW, DRightTop)
-		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW, DLeftBottom)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, DRightBottom)
+	if m.ds == consts.DsAll {
+		m.left = m.newDragPanel(owner, types.CrSizeWE, consts.DLeft)
+		m.top = m.newDragPanel(owner, types.CrSizeNS, consts.DTop)
+		m.right = m.newDragPanel(owner, types.CrSizeWE, consts.DRight)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS, consts.DBottom)
+		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE, consts.DLeftTop)
+		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW, consts.DRightTop)
+		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW, consts.DLeftBottom)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, consts.DRightBottom)
 	} else {
-		m.right = m.newDragPanel(owner, types.CrSizeWE, DRight)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS, DBottom)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, DRightBottom)
+		m.right = m.newDragPanel(owner, types.CrSizeWE, consts.DRight)
+		m.bottom = m.newDragPanel(owner, types.CrSizeNS, consts.DBottom)
+		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, consts.DRightBottom)
 	}
 	return m
 }
@@ -213,7 +196,7 @@ func (m *drag) Hide() {
 	}
 	m.relation.isDesigner = false
 	m.isShow = false
-	if m.ds == DsAll {
+	if m.ds == consts.DsAll {
 		m.left.SetVisible(false)
 		m.top.SetVisible(false)
 		m.right.SetVisible(false)
@@ -236,7 +219,7 @@ func (m *drag) Show() {
 	}
 	m.relation.isDesigner = true
 	m.isShow = true
-	if m.ds == DsAll {
+	if m.ds == consts.DsAll {
 		m.left.SetVisible(true)
 		m.top.SetVisible(true)
 		m.right.SetVisible(true)
@@ -255,7 +238,7 @@ func (m *drag) Show() {
 }
 
 func (m *drag) BringToFront() {
-	if m.ds == DsAll {
+	if m.ds == consts.DsAll {
 		m.left.BringToFront()
 		m.top.BringToFront()
 		m.right.BringToFront()
@@ -272,7 +255,7 @@ func (m *drag) BringToFront() {
 }
 
 func (m *drag) SetParent(value lcl.IWinControl) {
-	if m.ds == DsAll {
+	if m.ds == consts.DsAll {
 		m.left.SetParent(value)
 		m.top.SetParent(value)
 		m.right.SetParent(value)
@@ -297,7 +280,7 @@ func (m *drag) Follow() {
 		x, y := point.X, point.Y
 		width, height := br.Width(), br.Height()
 		db := dragBorder / 2
-		if m.ds == DsAll {
+		if m.ds == consts.DsAll {
 			m.left.SetBounds(x-db, y+(height/2)-db, dragBorder, dragBorder)
 			m.top.SetBounds(x+(width/2)-db, y-db, dragBorder, dragBorder)
 			m.right.SetBounds(x+width-db, y+(height/2)-db, dragBorder, dragBorder)

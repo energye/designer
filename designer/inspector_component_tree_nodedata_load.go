@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/lcl/types"
 	"unsafe"
 )
@@ -35,10 +36,10 @@ func (m *TDesigningComponent) SetSelected() {
 }
 
 // 重新排序当前组件树节点
-func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
+func (m *TDesigningComponent) Order(changeLevel consts.ChangeLevel) {
 	// 调整组件树节点显示顺序
 	switch changeLevel {
-	case CLevelFront:
+	case consts.CLevelFront:
 		parentNode := m.node.Parent()
 		if parentNode == nil || !parentNode.IsValid() {
 			return
@@ -47,7 +48,7 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 		if lastChild != nil && lastChild.IsValid() {
 			m.node.MoveTo(lastChild, types.NaInsertBehind)
 		}
-	case CLevelBack:
+	case consts.CLevelBack:
 		parentNode := m.node.Parent()
 		if parentNode == nil || !parentNode.IsValid() {
 			return
@@ -56,12 +57,12 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 		if firstChild != nil && firstChild.IsValid() {
 			m.node.MoveTo(firstChild, types.NaInsert)
 		}
-	case CLevelForwardOne:
+	case consts.CLevelForwardOne:
 		nextNode := m.node.GetNextSibling()
 		if nextNode != nil && nextNode.IsValid() {
 			m.node.MoveTo(nextNode, types.NaInsertBehind)
 		}
-	case CLevelBackOne:
+	case consts.CLevelBackOne:
 		prevNode := m.node.GetPrevSibling()
 		if prevNode != nil && prevNode.IsValid() {
 			m.node.MoveTo(prevNode, types.NaInsert)
@@ -69,7 +70,7 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 	}
 	// 调整组件对象顺序
 	switch changeLevel {
-	case CLevelFront:
+	case consts.CLevelFront:
 		parentComp := m.Parent()
 		if parentComp == nil {
 			return
@@ -78,7 +79,7 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 		if lastChild != nil {
 			m.MoveTo(lastChild, types.NaInsertBehind)
 		}
-	case CLevelBack:
+	case consts.CLevelBack:
 		parentComp := m.Parent()
 		if parentComp == nil {
 			return
@@ -87,12 +88,12 @@ func (m *TDesigningComponent) Order(changeLevel ChangeLevel) {
 		if firstChild != nil {
 			m.MoveTo(firstChild, types.NaInsert)
 		}
-	case CLevelForwardOne:
+	case consts.CLevelForwardOne:
 		nextComp := m.NextSibling()
 		if nextComp != nil {
 			m.MoveTo(nextComp, types.NaInsertBehind)
 		}
-	case CLevelBackOne:
+	case consts.CLevelBackOne:
 		prevComp := m.PrevSibling()
 		if prevComp != nil {
 			m.MoveTo(prevComp, types.NaInsert)

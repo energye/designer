@@ -15,6 +15,7 @@ package vtedit
 
 import (
 	"bytes"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -61,7 +62,7 @@ func (m *TCheckBoxEditLink) Create() {
 		parentNode := node.Parent
 		if pData := GetPropertyNodeData(parentNode); pData != nil {
 			// 只当前节点的父节点是 PdtCheckBoxList 类型时才修改父节点的显示单元格
-			if pData.EditNodeData.Type != PdtCheckBoxList {
+			if pData.EditNodeData.Type != consts.PdtCheckBoxList {
 				return
 			}
 			dataList := pData.EditNodeData.CheckBoxValue

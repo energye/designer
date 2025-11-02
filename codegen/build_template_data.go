@@ -14,10 +14,9 @@
 package codegen
 
 import (
-	"github.com/energye/designer/designer"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/designer/uigen"
 	"strings"
 )
@@ -28,13 +27,13 @@ const packageName = "forms"
 
 // 组件数据
 type TComponentData struct {
-	Name       string                 // 组件名称
-	ClassName  string                 // 组件类名
-	Type       designer.ComponentType // 组件类型
-	Properties []TPropertyData        // 组件属性
-	Parent     *TComponentData        // 组件所属父类
-	Children   []*TComponentData      // 子组件列表
-	BaseInfo   *TBaseInfo             // 基础信息
+	Name       string               // 组件名称
+	ClassName  string               // 组件类名
+	Type       consts.ComponentType // 组件类型
+	Properties []TPropertyData      // 组件属性
+	Parent     *TComponentData      // 组件所属父类
+	Children   []*TComponentData    // 子组件列表
+	BaseInfo   *TBaseInfo           // 基础信息
 }
 
 // 基础信息
@@ -50,7 +49,7 @@ type TBaseInfo struct {
 type TPropertyData struct {
 	Name  string                  // 属性名称
 	Value any                     // 属性值
-	Type  vtedit.PropertyDataType // 属性类型
+	Type  consts.PropertyDataType // 属性类型
 }
 
 // 模板调用函数 - 返回组件在Go定义的接口名
@@ -72,12 +71,12 @@ func (m *TComponentData) GoNewObject() string {
 func (m *TComponentData) GoSetObjectParent() string {
 	newObject := tool.Buffer{}
 	switch m.Type {
-	case designer.CtVisual:
+	case consts.CtVisual:
 		// 组件所属父类
 		parentName := ""
 		if m.Parent != nil {
 			switch m.Parent.Type {
-			case designer.CtForm:
+			case consts.CtForm:
 				parentName = "m"
 			default:
 				parentName = "m." + m.Parent.GoFieldName()
@@ -100,7 +99,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 	prop := tool.Buffer{}
 	object := ""
 	switch comp.Type {
-	case designer.CtForm:
+	case consts.CtForm:
 		object = "m"
 	default:
 		object = "m." + comp.GoFieldName()
@@ -116,15 +115,15 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 		// 参数, 多种类型
 		value := ""
 		switch m.Type {
-		case vtedit.PdtText: // string
+		case consts.PdtText: // string
 			value = `"` + m.Value.(string) + `"`
-		case vtedit.PdtInt, vtedit.PdtInt64: // int32 or int64
+		case consts.PdtInt, consts.PdtInt64: // int32 or int64
 			value = tool.IntToString(m.Value)
-		case vtedit.PdtFloat: // float32 or float64
+		case consts.PdtFloat: // float32 or float64
 			value = tool.FloatToString(m.Value)
-		case vtedit.PdtCheckBox: // bool
+		case consts.PdtCheckBox: // bool
 			value = tool.BoolToString(m.Value)
-		case vtedit.PdtCheckBoxList: // set: types.NewSet
+		case consts.PdtCheckBoxList: // set: types.NewSet
 			setStr := tool.SetToString(m.Value)
 			items := strings.Split(setStr, ",")
 			sets := tool.Buffer{}
@@ -135,11 +134,11 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 				sets.WriteString("types.", item)
 			}
 			value = "types.NewSet(" + sets.String() + ")"
-		case vtedit.PdtComboBox: // package: mapper.GetLCL([name])
+		case consts.PdtComboBox: // package: mapper.GetLCL([name])
 			value = "types." + m.Value.(string)
-		case vtedit.PdtColorSelect: // uint32: types.Color([value])
+		case consts.PdtColorSelect: // uint32: types.Color([value])
 			value = tool.IntToString(m.Value)
-		case vtedit.PdtClass: // Class instance
+		case consts.PdtClass: // Class instance
 			logs.Debug("属性类对象实例未设置:", m.Value)
 		}
 		prop.WriteString(".Set", name, "(", value, ")")

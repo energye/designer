@@ -32,9 +32,7 @@ func (m *TProjectConfig) Start() {
 	for {
 		select {
 		case trigger := <-m.trigger:
-			if trigger.GenType == event.GtProject {
-				println(trigger.Payload)
-			}
+			println(trigger.Payload)
 		case <-m.cancel:
 			// 停止项目配置更新生成器
 			logs.Info("停止项目配置更新生成器")

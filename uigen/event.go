@@ -34,10 +34,8 @@ func (m *TGenUI) Start() {
 		select {
 		case trigger := <-m.trigger:
 			// 处理UI生成事件
-			if trigger.GenType == event.GtUI { //增强判断, 确保是UI生成事件
-				if formTab, ok := trigger.Payload.(*designer.FormTab); ok {
-					runDebouncedGenerate(formTab)
-				}
+			if formTab, ok := trigger.Payload.(*designer.FormTab); ok {
+				runDebouncedGenerate(formTab)
 			}
 		case <-m.cancel:
 			// 停止UI生成器

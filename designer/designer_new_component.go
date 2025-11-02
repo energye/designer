@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -25,7 +26,7 @@ func NewButtonDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp := lcl.NewButton(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Button"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -38,7 +39,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
 	comp.SetText(comp.Name())
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -54,7 +55,7 @@ func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent
 	comp.SetOnChange(func(sender lcl.IObject) {
 		comp.SetChecked(false)
 	})
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -66,7 +67,7 @@ func NewPanelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp := lcl.NewPanel(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -77,7 +78,7 @@ func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewMainMenu(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -88,7 +89,7 @@ func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponen
 	m := newNonVisualComponent(designerForm, x, y)
 	comp := lcl.NewPopupMenu(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -100,7 +101,7 @@ func NewLabelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp := lcl.NewLabel(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Label"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -112,7 +113,7 @@ func NewMemoDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp := lcl.NewMemo(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -124,7 +125,7 @@ func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponen
 	comp := lcl.NewToggleBox(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
@@ -136,7 +137,7 @@ func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesign
 	comp := lcl.NewLazVirtualStringTree(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("LazVirtualStringTree"))
 	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, DsAll)
+	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m

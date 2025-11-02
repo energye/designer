@@ -16,6 +16,7 @@ package vtedit
 import (
 	"bytes"
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -23,24 +24,6 @@ import (
 )
 
 // 查看器的数据类型
-
-// PropertyDataType 属性数据组件类型
-type PropertyDataType int32
-
-const (
-	PdtText PropertyDataType = iota
-	PdtInt
-	PdtInt64
-	PdtFloat
-	PdtRadiobutton
-	PdtCheckBox
-	PdtCheckBoxDraw
-	PdtCheckBoxList
-	PdtComboBox
-	PdtClassDialog
-	PdtColorSelect
-	PdtClass
-)
 
 // 节点数据
 type TEditLinkNodeData struct {
@@ -55,7 +38,7 @@ type TEditLinkNodeData struct {
 	Class         TPropClass               // 属性值 class 实例
 	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
 	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
-	Type          PropertyDataType         // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	Type          consts.PropertyDataType  // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
 type TPropClass struct {
@@ -66,22 +49,22 @@ type TPropClass struct {
 // 编辑数据返回字符串值
 func (m *TEditLinkNodeData) EditStringValue() string {
 	switch m.Type {
-	case PdtText:
+	case consts.PdtText:
 		return m.StringValue
-	case PdtInt, PdtInt64:
+	case consts.PdtInt, consts.PdtInt64:
 		return strconv.Itoa(m.IntValue)
-	case PdtFloat:
+	case consts.PdtFloat:
 		val := strconv.FormatFloat(m.FloatValue, 'f', 2, 64)
 		return val
-	case PdtCheckBox:
+	case consts.PdtCheckBox:
 		return strconv.FormatBool(m.Checked)
-	case PdtCheckBoxList:
+	case consts.PdtCheckBoxList:
 		return m.StringValue
-	case PdtComboBox:
+	case consts.PdtComboBox:
 		return m.StringValue
-	case PdtColorSelect:
+	case consts.PdtColorSelect:
 		return fmt.Sprintf("0x%X", m.IntValue)
-	case PdtClass:
+	case consts.PdtClass:
 		return m.StringValue
 	default:
 		return ""
@@ -91,21 +74,21 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 // 编辑数据返回原始类型值
 func (m *TEditLinkNodeData) EditValue() any {
 	switch m.Type {
-	case PdtText:
+	case consts.PdtText:
 		return m.StringValue
-	case PdtInt, PdtInt64:
+	case consts.PdtInt, consts.PdtInt64:
 		return m.IntValue
-	case PdtFloat:
+	case consts.PdtFloat:
 		return m.FloatValue
-	case PdtCheckBox:
+	case consts.PdtCheckBox:
 		return m.Checked
-	case PdtCheckBoxList:
+	case consts.PdtCheckBoxList:
 		return m.StringValue
-	case PdtComboBox:
+	case consts.PdtComboBox:
 		return m.StringValue
-	case PdtColorSelect:
+	case consts.PdtColorSelect:
 		return m.IntValue
-	case PdtClass:
+	case consts.PdtClass:
 		return m.StringValue
 	default:
 		return ""
@@ -114,19 +97,19 @@ func (m *TEditLinkNodeData) EditValue() any {
 
 func (m *TEditLinkNodeData) SetEditValue(value any) {
 	switch m.Type {
-	case PdtText:
+	case consts.PdtText:
 		m.StringValue = value.(string)
-	case PdtInt, PdtInt64:
+	case consts.PdtInt, consts.PdtInt64:
 		m.IntValue = int(value.(int32))
-	case PdtFloat:
+	case consts.PdtFloat:
 		m.FloatValue = value.(float64)
-	case PdtCheckBox:
+	case consts.PdtCheckBox:
 		m.Checked = value.(bool)
-	case PdtCheckBoxList:
+	case consts.PdtCheckBoxList:
 		m.StringValue = value.(string)
-	case PdtComboBox:
+	case consts.PdtComboBox:
 		m.StringValue = value.(string)
-	case PdtColorSelect:
+	case consts.PdtColorSelect:
 		m.IntValue = int(value.(uint32))
 	}
 }
@@ -208,7 +191,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 	data.AffiliatedNode = node
 	// 设置到数据列表, 增加绑定关系
 	propertyTreeDataList[node] = data
-	if data.Type() == PdtCheckBoxList {
+	if data.Type() == consts.PdtCheckBoxList {
 		// 复选框列表
 		dataList := data.EditNodeData.CheckBoxValue
 		buf := bytes.Buffer{}
@@ -227,7 +210,7 @@ func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNo
 		}
 		buf.WriteString("]")
 		data.EditNodeData.StringValue = buf.String()
-	} else if data.Type() == PdtClass {
+	} else if data.Type() == consts.PdtClass {
 		for _, nodeData := range data.Child {
 			AddPropertyNodeData(tree, node, nodeData)
 		}
@@ -257,7 +240,7 @@ func DelPropertyNodeData(node types.PVirtualNode) {
 	delete(propertyTreeDataList, node)
 }
 
-func (m *TEditNodeData) Type() PropertyDataType {
+func (m *TEditNodeData) Type() consts.PropertyDataType {
 	return m.EditNodeData.Type
 }
 func (m *TEditNodeData) Class() TPropClass {
@@ -289,26 +272,26 @@ func (m *TEditNodeData) FormComponentPropertyToInspectorProperty() {
 // 是否被修改
 func (m *TEditNodeData) IsModify() bool {
 	switch m.Type() {
-	case PdtCheckBox:
+	case consts.PdtCheckBox:
 		return m.EditNodeData.Checked != m.OriginNodeData.Checked
-	case PdtText:
+	case consts.PdtText:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
-	case PdtInt, PdtInt64:
+	case consts.PdtInt, consts.PdtInt64:
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
-	case PdtFloat:
+	case consts.PdtFloat:
 		return m.EditNodeData.FloatValue != m.OriginNodeData.FloatValue
-	case PdtCheckBoxList:
+	case consts.PdtCheckBoxList:
 		// CheckBox 判断集合是否修改
 		for i, item := range m.EditNodeData.CheckBoxValue {
 			if item.Checked != m.OriginNodeData.CheckBoxValue[i].Checked {
 				return true
 			}
 		}
-	case PdtComboBox:
+	case consts.PdtComboBox:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
-	case PdtColorSelect:
+	case consts.PdtColorSelect:
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
-	case PdtClass:
+	case consts.PdtClass:
 		// 类实例, 需要判断类下的属性是否被修改
 		for _, child := range m.Child {
 			if child.IsModify() {
@@ -321,10 +304,10 @@ func (m *TEditNodeData) IsModify() bool {
 
 // 获取修改class的子节点
 func (m *TEditNodeData) GetModifyClassChildNodeData() *TEditNodeData {
-	if m.Type() == PdtClass {
+	if m.Type() == consts.PdtClass {
 		for _, child := range m.Child {
 			if child.IsModify() {
-				if child.Type() == PdtClass {
+				if child.Type() == consts.PdtClass {
 					return child.GetModifyClassChildNodeData()
 				} else {
 					return child
@@ -356,7 +339,7 @@ func (m *TEditNodeData) Paths() []string {
 	var paths []string
 	pData := m.Parent
 	for pData != nil {
-		if pData.Type() == PdtClass { // todo 1
+		if pData.Type() == consts.PdtClass { // todo 1
 			paths = append(paths, pData.Name())
 		} else {
 			// 不正确, 直接退出

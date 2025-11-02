@@ -35,12 +35,10 @@ func (m *TGenCode) Start() {
 		select {
 		case trigger := <-m.trigger:
 			// 触发代码生成事件
-			if trigger.GenType == event.GtCode { //增强判断, 确保是代码生成事件
-				if uiFilePath, ok := trigger.Payload.(string); ok {
-					err := runGenerateCode(uiFilePath)
-					if err != nil {
-						logs.Error("代码生成错误:", err.Error())
-					}
+			if uiFilePath, ok := trigger.Payload.(string); ok {
+				err := runGenerateCode(uiFilePath)
+				if err != nil {
+					logs.Error("代码生成错误:", err.Error())
 				}
 			}
 		case <-m.cancel:

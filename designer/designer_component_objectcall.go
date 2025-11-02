@@ -16,6 +16,7 @@ package designer
 import (
 	"errors"
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/mapper"
@@ -84,7 +85,7 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 	switch propName {
 	case "name":
 		m.node.SetText(m.TreeName())
-		if m.ComponentType == CtForm {
+		if m.ComponentType == consts.CtForm {
 			m.formTab.sheet.SetCaption(m.Name())
 		}
 	}
@@ -110,7 +111,7 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 	case "enabled", "visible":
 		return err.RsIgnoreProp
 	case "autosize":
-		if m.ComponentType == CtForm {
+		if m.ComponentType == consts.CtForm {
 			return err.RsIgnoreProp
 		}
 	}
@@ -171,19 +172,19 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 
 func (m *reflector) convertArgsValue() (args []any) {
 	switch m.data.EditNodeData.Type {
-	case vtedit.PdtText:
+	case consts.PdtText:
 		// string
 		args = append(args, m.data.EditNodeData.StringValue)
-	case vtedit.PdtInt:
+	case consts.PdtInt:
 		// int
 		args = append(args, m.data.EditNodeData.IntValue)
-	case vtedit.PdtInt64:
+	case consts.PdtInt64:
 		// int64
 		args = append(args, int64(m.data.EditNodeData.IntValue))
-	case vtedit.PdtFloat:
+	case consts.PdtFloat:
 		// float
 		args = append(args, m.data.EditNodeData.FloatValue)
-	case vtedit.PdtCheckBox:
+	case consts.PdtCheckBox:
 		// bool
 		data := m.data.AffiliatedNode.ToGo()
 		if pData := vtedit.GetPropertyNodeData(data.Parent); pData != nil {
@@ -204,7 +205,7 @@ func (m *reflector) convertArgsValue() (args []any) {
 		} else {
 			args = append(args, m.data.EditNodeData.Checked)
 		}
-	case vtedit.PdtCheckBoxList:
+	case consts.PdtCheckBoxList:
 		// TSet 集合
 		dataList := m.data.EditNodeData.CheckBoxValue
 		set := types.NewSet()
@@ -219,10 +220,10 @@ func (m *reflector) convertArgsValue() (args []any) {
 			}
 		}
 		args = append(args, set)
-	case vtedit.PdtComboBox:
+	case consts.PdtComboBox:
 		// const
 		args = append(args, m.data.EditNodeData.StringValue)
-	case vtedit.PdtColorSelect:
+	case consts.PdtColorSelect:
 		// uint32
 		args = append(args, uint32(m.data.EditNodeData.IntValue))
 	default:
@@ -235,7 +236,7 @@ func (m *reflector) convertArgsValue() (args []any) {
 func (m *reflector) findMethodName() string {
 	var methodName string
 	switch m.data.Type() {
-	case vtedit.PdtCheckBox:
+	case consts.PdtCheckBox:
 		node := m.data.AffiliatedNode.ToGo()
 		parentNode := node.Parent
 		// 有父节点 PdtCheckBoxList
@@ -257,7 +258,7 @@ func (m *reflector) findObject() (object reflect.Value) {
 	data := m.data
 
 	switch data.Type() {
-	case vtedit.PdtCheckBox:
+	case consts.PdtCheckBox:
 		// checkbox 需要从父节点获得所属实际节点
 		node := m.data.AffiliatedNode.ToGo()
 		parentNode := node.Parent
