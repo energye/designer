@@ -112,3 +112,19 @@ func StringArrayReverse(array []string) {
 		array[i], array[j] = array[j], array[i]
 	}
 }
+
+func Split(s, sep string) []string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return nil
+	}
+	var result []string
+	for _, v := range strings.Split(s, sep) {
+		v = strings.TrimSpace(v)
+		if v == "" {
+			continue
+		}
+		result = append(result, v)
+	}
+	return result[:]
+}

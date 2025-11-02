@@ -126,7 +126,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 			value = tool.BoolToString(m.Value)
 		case consts.PdtCheckBoxList: // set: types.NewSet
 			setStr := tool.SetToString(m.Value)
-			items := strings.Split(setStr, ",")
+			items := tool.Split(setStr, ",")
 			sets := tool.Buffer{}
 			for i, item := range items {
 				if i > 0 {

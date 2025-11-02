@@ -58,6 +58,15 @@
         "type": "TCursor",
         "options": "CrDefault,CrNone,CrArrow,CrCross,CrIBeam,CrSize,CrSizeNESW,CrSizeNS,CrSizeNWSE,CrSizeWE,CrSizeNW,CrSizeN,CrSizeNE,CrSizeW,CrSizeE,CrSizeSW,CrSizeS,CrSizeSE,CrUpArrow,CrHourGlass,CrDrag,CrNoDrop,CrHSplit,CrVSplit,CrMultiDrag,CrSQLWait,CrNo,CrAppStart,CrHelp,CrHandPoint,CrSizeAll,CrLow"
       }
+    ],
+    "BorderIcons": [
+      {
+        "name": "BorderIcons",
+        "value": "BiSystemMenu,BiMinimize,BiMaximize",
+        "kind": "tkSet",
+        "type": "TBorderIcons",
+        "options": "BiSystemMenu,BiMinimize,BiMaximize,BiHelp"
+      }
     ]
   }
 }
