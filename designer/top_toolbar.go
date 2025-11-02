@@ -27,6 +27,7 @@ type TopToolbar struct {
 	box             lcl.IPanel
 	leftTools       lcl.IPanel
 	rightTabs       lcl.IPanel               // 组件面板选项卡
+	toolbarBtn      *TToolbarToolBtn         // 工具栏按钮
 	componentTabs   map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
 	selectComponent *ComponentTabItem        // 选中的组件
 }
@@ -80,74 +81,4 @@ func (m *TopToolbar) ResetTabComponentDown() {
 // 之后在设计器里使用
 func (m *TopToolbar) SetSelectComponentItem(item *ComponentTabItem) {
 	m.selectComponent = item
-}
-
-// 工具按钮
-func (m *TopToolbar) createToolBarBtns() {
-	toolBtnBar := lcl.NewToolBar(m.box)
-	toolBtnBar.SetParent(m.leftTools)
-	toolBtnBar.SetAlign(types.AlCustom)
-	toolBtnBar.SetTop(16)
-	toolBtnBar.SetButtonWidth(32)
-	toolBtnBar.SetButtonHeight(32)
-	toolBtnBar.SetHeight(32)
-	toolBtnBar.SetWidth(m.leftTools.Width())
-	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
-	toolBtnBar.SetEdgeBorders(types.NewSet())
-	toolBtnBar.SetImages(imageMenu.ImageList150())
-	newSepa := func() {
-		seap := lcl.NewToolButton(toolBtnBar)
-		seap.SetParent(toolBtnBar)
-		seap.SetStyle(types.TbsSeparator)
-	}
-
-	newBtn := func(imageIndex int32, hint string, margin int32) lcl.IToolButton {
-		btn := lcl.NewToolButton(toolBtnBar)
-		btn.SetParent(toolBtnBar)
-		btn.SetHint(hint)
-		btn.SetImageIndex(imageIndex)
-		btn.SetShowHint(true)
-		//btn := lcl.NewBitBtn(toolBtnBarf)
-		//btn.SetParent(toolBtnBarf)
-		//btn.SetWidth(32)
-		//btn.SetHeight(32)
-		//btn.SetTabStop(true)
-		//btn.SetImages(imageList)
-		//btn.SetImageIndex(imageIndex)
-		//btn.SetMargin(margin)
-		return btn
-	}
-
-	newFormBtn := newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体", 0)
-	newFormBtn.SetOnClick(func(sender lcl.IObject) {
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			newForm := designer.addDesignerFormTab()
-			designer.ActiveFormTab(newForm)
-			// 1. 加载属性到设计器
-			// 此步骤会初始化并填充设计组件实例
-			newForm.FormRoot.LoadPropertyToInspector()
-			// 2. 添加到组件树
-			newForm.AddFormNode()
-			go triggerUIGeneration(newForm.FormRoot)
-		})
-	})
-	openFormBtn := newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开窗体", 1)
-	openFormBtn.SetOnClick(func(sender lcl.IObject) {
-
-	})
-	newSepa()
-	saveFormBtn := newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存窗体", 1)
-	saveFormBtn.SetOnClick(func(sender lcl.IObject) {
-
-	})
-	saveAllFormBtn := newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
-	saveAllFormBtn.SetOnClick(func(sender lcl.IObject) {
-
-	})
-	newSepa()
-	runFormBtn := newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行预览窗体", 3)
-	runFormBtn.SetOnClick(func(sender lcl.IObject) {
-
-	})
-
 }

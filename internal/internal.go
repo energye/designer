@@ -17,6 +17,7 @@ package internal
 
 import (
 	_ "github.com/energye/designer/codegen"
+	_ "github.com/energye/designer/preview"
 	_ "github.com/energye/designer/project"
 	_ "github.com/energye/designer/uigen"
 )

@@ -36,14 +36,13 @@ func (m *TPreview) Start() {
 				runPreview()
 			}
 		case <-m.cancel:
-			// 停止项目配置更新生成器
-			logs.Info("停止项目配置更新生成器")
+			logs.Info("停止预览事件处理器失败")
 			return
 		}
 	}
 }
 
 func init() {
-	event.Project = event.NewEvent(preview.trigger, preview.cancel)
+	event.Preview = event.NewEvent(preview.trigger, preview.cancel)
 	go preview.Start()
 }

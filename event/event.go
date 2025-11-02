@@ -13,37 +13,41 @@
 
 package event
 
+import "github.com/energye/designer/pkg/logs"
+
 // 事件处理
 
-// GenType 生成事件类型
+// GenType 事件类型
 type GenType int32
 
 const (
-	GtUI      GenType = iota // 生成UI布局文件
-	GtCode                   // 生成代码
+	GtUI      GenType = iota // UI布局文件
+	GtCode                   // 代码
 	GtProject                // 项目配置
+	GtOther                  // 其它功能
 )
 
+// 定义固定的事件
 var (
-	GenUI   *TEvent // UI 布局文件生成实例
-	GenCode *TEvent // 代码生成实例
+	GenUI   *TEvent // UI 布局文件实例
+	GenCode *TEvent // 代码实例
 	Project *TEvent // 项目配置更新实例
 	Preview *TEvent // 预览实例
 )
 
-// TEventTrigger 生成事件触发器数据结构
+// TEventTrigger 事件触发器数据结构
 type TEventTrigger struct {
-	GenType GenType // 生成类型
+	GenType GenType // 类型
 	Payload any     // 数据
 }
 
-// TEvent 是UI生成器的核心结构体，持有输入输出通道
+// TEvent 事件实例
 type TEvent struct {
 	trigger chan TEventTrigger
 	cancel  chan bool
 }
 
-// NewEvent 创建生成器实例
+// NewEvent 创建事件实例
 func NewEvent(trigger chan TEventTrigger, cancel chan bool) *TEvent {
 	return &TEvent{
 		trigger: trigger,
@@ -51,17 +55,25 @@ func NewEvent(trigger chan TEventTrigger, cancel chan bool) *TEvent {
 	}
 }
 
-// TriggerEvent 触发生成事件
+// TriggerEvent 触发事件
 func (m *TEvent) TriggerEvent(trigger TEventTrigger) {
+	if m == nil {
+		logs.Error("触发事件失败, 当前实例为空")
+		return
+	}
 	m.trigger <- trigger
 }
 
-// Cancel 取消生成事件
+// Cancel 取消事件
 func (m *TEvent) Cancel() {
+	if m == nil {
+		logs.Error("取消事件失败, 当前实例为空")
+		return
+	}
 	m.cancel <- true
 }
 
-// CancelAll 取消所有生成事件, 在退出时调用
+// CancelAll 取消所有事件, 在退出时调用
 func CancelAll() {
 	if GenUI != nil {
 		GenUI.Cancel()
