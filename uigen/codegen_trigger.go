@@ -11,22 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package codegen
+package uigen
 
-import (
-	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/uigen"
-)
+import "github.com/energye/designer/event"
 
-// Go代码生成回调函数
+// 生成回调事件
 
-func InitCodeGeneration() {
-	uigen.SetCodeGenerationCallback(CodeGeneration)
-}
-
-func CodeGeneration(uiFilePath string) {
-	err := GenerateCode(uiFilePath)
-	if err != nil {
-		logs.Error("代码生成错误:", err.Error())
-	}
+// 触发Go代码生成事件
+func triggerCodeGeneration(uiFilePath string) {
+	event.GenCode.TriggerEvent(event.TGeneratorTrigger{GenType: event.GtCode, Payload: uiFilePath})
 }

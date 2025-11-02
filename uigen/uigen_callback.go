@@ -2,6 +2,7 @@ package uigen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
 	"path/filepath"
 	"strings"
@@ -9,15 +10,7 @@ import (
 	"time"
 )
 
-// UI 布局文件回调函数
-
-func InitUIGeneration() {
-	designer.SetUIGenerationCallback(UIGeneration)
-}
-
-func UIGeneration(formTab *designer.FormTab, component *designer.TDesigningComponent) {
-	DebouncedGenerate(formTab, component)
-}
+// UI 布局文件生成
 
 var (
 	debounceTimers = make(map[string]*time.Timer)
@@ -25,31 +18,34 @@ var (
 	debounceDelay  = 500 * time.Millisecond
 )
 
-// UI生成
-func DebouncedGenerate(formTab *designer.FormTab, component *designer.TDesigningComponent) {
+// UI布局文件生成
+func DebouncedGenerate(formTab *designer.FormTab) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
-	formID := formTab.Name
+	formName := formTab.Name
 	// 取消之前的定时器
-	if timer, exists := debounceTimers[formID]; exists {
+	if timer, exists := debounceTimers[formName]; exists {
 		timer.Stop()
 	}
 
 	// 创建新的定时器
 	timer := time.AfterFunc(debounceDelay, func() {
 		debounceMutex.Lock()
-		delete(debounceTimers, formID)
+		delete(debounceTimers, formName)
 		debounceMutex.Unlock()
 
-		formId := strings.ToLower(formTab.Name)
+		formId := strings.ToLower(formName)
 		uiFilePath := filepath.Join(project.Path, "forms", formId+".ui")
 
 		// 执行UI生成
-		GenerateUIFile(formTab, component, uiFilePath)
-
-		// 触发代码生成
-		triggerCodeGeneration(uiFilePath)
+		err := GenerateUIFile(formTab.FormRoot, uiFilePath)
+		if err != nil {
+			logs.Error("UI布局文件生成错误:", err.Error())
+		} else {
+			// 触发代码生成
+			triggerCodeGeneration(uiFilePath)
+		}
 	})
 
-	debounceTimers[formID] = timer
+	debounceTimers[formName] = timer
 }

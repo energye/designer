@@ -47,9 +47,9 @@ type TProperty struct {
 }
 
 // 生成UI文件
-func GenerateUIFile(formTab *designer.FormTab, component *designer.TDesigningComponent, filePath string) error {
+func GenerateUIFile(formComponent *designer.TDesigningComponent, filePath string) error {
 	// 构建UI树结构
-	uiTree := buildUITree(formTab.FormRoot)
+	uiTree := buildUITree(formComponent)
 
 	// 序列化为JSON
 	data, err := json.MarshalIndent(uiTree, "", "  ")
