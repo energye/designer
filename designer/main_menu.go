@@ -126,11 +126,15 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
-
 }
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
-
+	buildOption := lcl.NewMenuItem(owner)
+	buildOption.SetCaption("构建选项")
+	buildOption.SetOnClick(func(lcl.IObject) {
+		logs.Debug("构建选项")
+	})
+	m.setting.Add(buildOption)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
