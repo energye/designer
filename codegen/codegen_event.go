@@ -45,6 +45,7 @@ func (m *TGenCode) Start() {
 			}
 		case <-m.cancel:
 			// 停止代码生成器
+			logs.Info("停止代码生成器")
 			return
 		}
 	}

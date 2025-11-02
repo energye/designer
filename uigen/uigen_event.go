@@ -3,6 +3,7 @@ package uigen
 import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/logs"
 )
 
 // 生成器实例
@@ -27,6 +28,7 @@ func (m *TGenUI) Start() {
 			}
 		case <-m.cancel:
 			// 停止UI生成器
+			logs.Info("停止UI生成器")
 			return
 		}
 	}

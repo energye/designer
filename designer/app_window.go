@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -98,6 +99,8 @@ func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 
 func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	logs.Info("OnClose")
+	// 取消所有生成事件
+	event.CancelAll()
 }
 
 func AddOnShow(fn func()) {
