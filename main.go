@@ -24,6 +24,7 @@ import (
 	"github.com/energye/lcl/tool"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 	if !tool.IsExist(libname.LibName) {
 		libname.LibName = resources.LibPath
 	}
+	logs.Debug(strings.Join(os.Args, " "))
 	lcl.Init(nil, nil)
 	// 运行设计器
 	designer.Run()

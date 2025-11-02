@@ -27,6 +27,7 @@ type TMainMenu struct {
 	main    lcl.IMainMenu
 	file    lcl.IMenuItem
 	edit    lcl.IMenuItem
+	run     lcl.IMenuItem
 	setting lcl.IMenuItem
 	helper  lcl.IMenuItem
 }
@@ -39,6 +40,7 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu := new(TMainMenu)
 	m.mainMenu = mainMenu
 	mainMenu.main = lcl.NewMainMenu(m)
+	//mainMenu.main.SetImages()
 	menuItems := mainMenu.main.Items()
 
 	mainMenu.file = lcl.NewMenuItem(m)
@@ -48,6 +50,10 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu.edit = lcl.NewMenuItem(m)
 	mainMenu.edit.SetCaption("编辑(&E)")
 	menuItems.Add(mainMenu.edit)
+
+	mainMenu.run = lcl.NewMenuItem(m)
+	mainMenu.run.SetCaption("运行(&R)")
+	menuItems.Add(mainMenu.run)
 
 	mainMenu.setting = lcl.NewMenuItem(m)
 	mainMenu.setting.SetCaption("设置(&S)")
@@ -59,6 +65,7 @@ func (m *TAppWindow) createMainMenu() {
 
 	mainMenu.fileMenu(m)
 	mainMenu.editMenu(m)
+	mainMenu.runMenu(m)
 	mainMenu.settingMenu(m)
 	mainMenu.helperMenu(m)
 	mainMenu.macOS()
@@ -83,9 +90,9 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	})
 	create.Add(createProject)
 
-	split := lcl.NewMenuItem(owner)
-	split.SetCaption("-")
-	create.Add(split)
+	sep := lcl.NewMenuItem(owner)
+	sep.SetCaption("-")
+	create.Add(sep)
 
 	createWindow := lcl.NewMenuItem(owner)
 	createWindow.SetCaption("新建窗体")
@@ -126,6 +133,33 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
+}
+
+func (m *TMainMenu) runMenu(owner lcl.IComponent) {
+	build := lcl.NewMenuItem(owner)
+	build.SetCaption("构建")
+	build.SetOnClick(func(lcl.IObject) {
+		logs.Debug("构建")
+	})
+	m.run.Add(build)
+
+	cleanBuild := lcl.NewMenuItem(owner)
+	cleanBuild.SetCaption("清理构建")
+	cleanBuild.SetOnClick(func(lcl.IObject) {
+		logs.Debug("清理构建")
+	})
+	m.run.Add(cleanBuild)
+
+	sep := lcl.NewMenuItem(owner)
+	sep.SetCaption("-")
+	m.run.Add(sep)
+
+	run := lcl.NewMenuItem(owner)
+	run.SetCaption("运行")
+	run.SetOnClick(func(lcl.IObject) {
+		logs.Debug("运行")
+	})
+	m.run.Add(run)
 }
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
