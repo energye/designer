@@ -13,6 +13,8 @@
 
 package event
 
+// 事件处理
+
 // GenType 生成事件类型
 type GenType int32
 
