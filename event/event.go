@@ -37,14 +37,15 @@ var (
 
 // TEventTrigger 事件触发器数据结构
 type TEventTrigger struct {
-	GenType GenType // 类型
-	Payload any     // 数据
+	GenType GenType    // 类型
+	Payload any        // 数据
+	Result  chan<- any // 返回值
 }
 
 // TEvent 事件实例
 type TEvent struct {
-	trigger chan TEventTrigger
-	cancel  chan bool
+	trigger chan<- TEventTrigger
+	cancel  chan<- bool
 }
 
 // NewEvent 创建事件实例
@@ -71,6 +72,8 @@ func (m *TEvent) Cancel() {
 		return
 	}
 	m.cancel <- true
+	close(m.trigger)
+	close(m.cancel)
 }
 
 // CancelAll 取消所有事件, 在退出时调用

@@ -14,17 +14,44 @@
 package preview
 
 import (
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
 	"github.com/energye/lcl/tool/command"
 )
 
+var cmd *command.CMD
+
 // 执行应用程序的预览功能
 // 根据项目配置预览当前项目
-func runPreview() {
-	cmd := command.NewCMD()
+func runPreview(state chan<- any) {
+	if cmd != nil {
+		return
+	}
+	cmd = command.NewCMD()
 	cmd.Dir = project.Path
 	cmd.MessageCallback = func(bytes []byte, err error) {
-
+		info := string(bytes)
+		logs.Info(info)
+		if tool.Equal(info, "exit") {
+			// 退出
+			//state <- 0
+		}
 	}
+	// 开始运行
+	state <- consts.PsStart
 	cmd.Command("go", "run", "main.go")
+	state <- consts.PsStop
+	close(state)
+	logs.Debug("run preview end")
+	cmd = nil
+}
+
+func stopPreview() {
+	// 停止运行
+	if cmd != nil {
+		cmd.Kill()
+	}
+	cmd = nil
 }

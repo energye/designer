@@ -14,6 +14,7 @@
 package preview
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 )
@@ -31,8 +32,21 @@ type TPreview struct {
 func (m *TPreview) Start() {
 	for {
 		select {
-		case <-m.trigger:
-			runPreview()
+		case trigger := <-m.trigger:
+			ps, ok := trigger.Payload.(consts.PreviewState)
+			if ok {
+				if ps == consts.PsStart {
+					// 启动运行预览
+					go func() {
+						runPreview(trigger.Result)
+					}()
+				} else {
+					// 停止运行预览
+					go stopPreview()
+				}
+			} else {
+				logs.Error("运行预览错误, 操作参数不正确, option:", ps)
+			}
 		case <-m.cancel:
 			logs.Info("停止预览事件处理器")
 			return

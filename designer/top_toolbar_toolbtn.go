@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
@@ -29,6 +30,7 @@ type TToolbarToolBtn struct {
 	saveFormBtn    lcl.IToolButton
 	saveAllFormBtn lcl.IToolButton
 	runPreviewBtn  lcl.IToolButton
+	previewState   consts.PreviewState // 预览状态
 }
 
 // 工具按钮
@@ -120,6 +122,44 @@ func (m *TToolbarToolBtn) onSaveAllForm(sender lcl.IObject) {
 }
 
 func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
-	logs.Debug("工具栏按钮, 运行预览窗体")
-	event.Preview.TriggerEvent(event.TEventTrigger{})
+	logs.Debug("工具栏按钮, 预览窗体")
+	if m.previewState == consts.PsStart {
+		logs.Debug("工具栏按钮, 停止预览窗体")
+		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStop})
+	} else {
+		logs.Debug("工具栏按钮, 运行预览窗体")
+		result := make(chan any)
+		go func() {
+			logs.Debug("状态监听开始")
+			for res := range result {
+				logs.Debug("预览窗口结果:", res)
+				if status, ok := res.(consts.PreviewState); ok {
+					m.switchPreviewBtn(status)
+					if status == 0 {
+						// 运行结束
+						break
+					}
+				} else {
+					logs.Error("预览窗口结果错误:", res)
+					// 运行结束
+					m.switchPreviewBtn(consts.PsStop)
+					break
+				}
+			}
+			logs.Debug("状态监听结束")
+		}()
+		// 启动运行预览
+		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStart, Result: result})
+	}
+}
+
+// 切换预览按钮状态, 在运行和结束运行之间切换
+func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
+	logs.Debug("切换预览按钮状态 status:", status)
+	m.previewState = status
+	if m.previewState == consts.PsStart {
+
+	} else {
+
+	}
 }
