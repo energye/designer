@@ -31,10 +31,8 @@ type TPreview struct {
 func (m *TPreview) Start() {
 	for {
 		select {
-		case trigger := <-m.trigger:
-			if trigger.GenType == event.GtProject {
-				runPreview()
-			}
+		case <-m.trigger:
+			runPreview()
 		case <-m.cancel:
 			logs.Info("停止预览事件处理器")
 			return

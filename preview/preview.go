@@ -13,6 +13,18 @@
 
 package preview
 
-func runPreview() {
+import (
+	"github.com/energye/designer/project"
+	"github.com/energye/lcl/tool/command"
+)
 
+// 执行应用程序的预览功能
+// 根据项目配置预览当前项目
+func runPreview() {
+	cmd := command.NewCMD()
+	cmd.Dir = project.Path
+	cmd.MessageCallback = func(bytes []byte, err error) {
+
+	}
+	cmd.Command("go", "run", "main.go")
 }
