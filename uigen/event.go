@@ -20,12 +20,12 @@ import (
 )
 
 // 生成器实例
-var gen = &TGenUI{trigger: make(chan event.TGeneratorTrigger, 1), cancel: make(chan bool, 1)}
+var gen = &TGenUI{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
 
 // TGenUI UI生成器
 type TGenUI struct {
-	trigger chan event.TGeneratorTrigger // 触发UI生成事件
-	cancel  chan bool                    // 取消UI生成事件
+	trigger chan event.TEventTrigger // 触发UI生成事件
+	cancel  chan bool                // 取消UI生成事件
 }
 
 // Start 启动UI生成器
@@ -36,7 +36,7 @@ func (m *TGenUI) Start() {
 			// 处理UI生成事件
 			if trigger.GenType == event.GtUI { //增强判断, 确保是UI生成事件
 				if formTab, ok := trigger.Payload.(*designer.FormTab); ok {
-					DebouncedGenerate(formTab)
+					runDebouncedGenerate(formTab)
 				}
 			}
 		case <-m.cancel:
@@ -49,7 +49,7 @@ func (m *TGenUI) Start() {
 
 func init() {
 	// 注册UI生成事件
-	event.GenUI = event.NewGenerator(gen.trigger, gen.cancel)
+	event.GenUI = event.NewEvent(gen.trigger, gen.cancel)
 	// 启动UI生成器
 	go gen.Start()
 }

@@ -32,7 +32,7 @@ var (
 )
 
 // UI布局文件生成
-func DebouncedGenerate(formTab *designer.FormTab) {
+func runDebouncedGenerate(formTab *designer.FormTab) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
 	formName := formTab.Name

@@ -32,7 +32,7 @@ import (
 // 生成触发条件: UI 布局文件修改后
 
 // 根据UI文件生成Go代码
-func GenerateCode(uiFilePath string) error {
+func runGenerateCode(uiFilePath string) error {
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
 	if err != nil {

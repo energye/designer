@@ -11,29 +11,29 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package project
+package preview
 
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 )
 
-// 项目配置文件生成实例
-var gen = &TProjectConfig{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
+// 预览事件实例
+var preview = &TPreview{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
 
-// TProjectConfig 配置生成和更新
-type TProjectConfig struct {
+// TPreview 预览
+type TPreview struct {
 	trigger chan event.TEventTrigger // 触发生成事件
 	cancel  chan bool                // 取消生成事件
 }
 
 // Start 启动项目配置文件更新
-func (m *TProjectConfig) Start() {
+func (m *TPreview) Start() {
 	for {
 		select {
 		case trigger := <-m.trigger:
 			if trigger.GenType == event.GtProject {
-				println(trigger.Payload)
+				runPreview()
 			}
 		case <-m.cancel:
 			// 停止项目配置更新生成器
@@ -44,6 +44,6 @@ func (m *TProjectConfig) Start() {
 }
 
 func init() {
-	event.Project = event.NewEvent(gen.trigger, gen.cancel)
-	go gen.Start()
+	event.Project = event.NewEvent(preview.trigger, preview.cancel)
+	go preview.Start()
 }

@@ -11,13 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package uigen
+package preview
 
-import "github.com/energye/designer/event"
+func runPreview() {
 
-// 生成回调事件
-
-// 触发Go代码生成事件
-func triggerCodeGeneration(uiFilePath string) {
-	event.GenCode.TriggerEvent(event.TEventTrigger{GenType: event.GtCode, Payload: uiFilePath})
 }

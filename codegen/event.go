@@ -21,12 +21,12 @@ import (
 // Go代码生成
 
 // 生成器实例
-var gen = &TGenCode{trigger: make(chan event.TGeneratorTrigger, 1), cancel: make(chan bool, 1)}
+var gen = &TGenCode{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
 
 // TGenCode	生成器
 type TGenCode struct {
-	trigger chan event.TGeneratorTrigger // 触发代码生成事件
-	cancel  chan bool                    // 取消代码生成事件
+	trigger chan event.TEventTrigger // 触发代码生成事件
+	cancel  chan bool                // 取消代码生成事件
 }
 
 // Start 启动代码生成器
@@ -37,7 +37,7 @@ func (m *TGenCode) Start() {
 			// 触发代码生成事件
 			if trigger.GenType == event.GtCode { //增强判断, 确保是代码生成事件
 				if uiFilePath, ok := trigger.Payload.(string); ok {
-					err := GenerateCode(uiFilePath)
+					err := runGenerateCode(uiFilePath)
 					if err != nil {
 						logs.Error("代码生成错误:", err.Error())
 					}
@@ -53,7 +53,7 @@ func (m *TGenCode) Start() {
 
 func init() {
 	// 注册代码生成事件
-	event.GenCode = event.NewGenerator(gen.trigger, gen.cancel)
+	event.GenCode = event.NewEvent(gen.trigger, gen.cancel)
 	// 启动代码生成器
 	go gen.Start()
 }

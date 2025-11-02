@@ -25,38 +25,39 @@ const (
 )
 
 var (
-	GenUI      *TGenerator // UI 布局文件生成实例
-	GenCode    *TGenerator // 代码生成实例
-	GenProject *TGenerator // 项目配置更新实例
+	GenUI   *TEvent // UI 布局文件生成实例
+	GenCode *TEvent // 代码生成实例
+	Project *TEvent // 项目配置更新实例
+	Preview *TEvent // 预览实例
 )
 
-// TGeneratorTrigger 生成事件触发器数据结构
-type TGeneratorTrigger struct {
+// TEventTrigger 生成事件触发器数据结构
+type TEventTrigger struct {
 	GenType GenType // 生成类型
 	Payload any     // 数据
 }
 
-// TGenerator 是UI生成器的核心结构体，持有输入输出通道
-type TGenerator struct {
-	trigger chan TGeneratorTrigger
+// TEvent 是UI生成器的核心结构体，持有输入输出通道
+type TEvent struct {
+	trigger chan TEventTrigger
 	cancel  chan bool
 }
 
-// NewGenerator 创建生成器实例
-func NewGenerator(trigger chan TGeneratorTrigger, cancel chan bool) *TGenerator {
-	return &TGenerator{
+// NewEvent 创建生成器实例
+func NewEvent(trigger chan TEventTrigger, cancel chan bool) *TEvent {
+	return &TEvent{
 		trigger: trigger,
 		cancel:  cancel,
 	}
 }
 
 // TriggerEvent 触发生成事件
-func (m *TGenerator) TriggerEvent(trigger TGeneratorTrigger) {
+func (m *TEvent) TriggerEvent(trigger TEventTrigger) {
 	m.trigger <- trigger
 }
 
 // Cancel 取消生成事件
-func (m *TGenerator) Cancel() {
+func (m *TEvent) Cancel() {
 	m.cancel <- true
 }
 
@@ -68,7 +69,10 @@ func CancelAll() {
 	if GenCode != nil {
 		GenCode.Cancel()
 	}
-	if GenProject != nil {
-		GenProject.Cancel()
+	if Project != nil {
+		Project.Cancel()
+	}
+	if Preview != nil {
+		Preview.Cancel()
 	}
 }

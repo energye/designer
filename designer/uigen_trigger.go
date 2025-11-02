@@ -22,5 +22,5 @@ func triggerUIGeneration(component *TDesigningComponent) {
 	if component == nil {
 		return
 	}
-	event.GenUI.TriggerEvent(event.TGeneratorTrigger{GenType: event.GtUI, Payload: component.formTab})
+	event.GenUI.TriggerEvent(event.TEventTrigger{GenType: event.GtUI, Payload: component.formTab})
 }
