@@ -22,19 +22,15 @@ import (
 // 消息弹框
 
 type TMessage struct {
-	//form        lcl.IForm
 	alphaStep   byte
 	showTimer   lcl.ITimer
 	afterTime   *time.Timer
 	displayTime int32
-	//content     lcl.ILabel
-	hintWindow lcl.IHintWindow
+	hintWindow  lcl.IHintWindow
 }
 
 var (
-	message       *TMessage
-	isFollowShow  bool
-	width, height = int32(100), int32(35)
+	message *TMessage
 )
 
 func mustMessage() {
