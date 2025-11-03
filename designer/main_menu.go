@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
@@ -40,7 +41,7 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu := new(TMainMenu)
 	m.mainMenu = mainMenu
 	mainMenu.main = lcl.NewMainMenu(m)
-	//mainMenu.main.SetImages()
+	mainMenu.main.SetImages(imageMenu.ImageList100())
 	menuItems := mainMenu.main.Items()
 
 	mainMenu.file = lcl.NewMenuItem(m)
@@ -85,6 +86,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createProject := lcl.NewMenuItem(owner)
 	createProject.SetCaption("新建项目")
 	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
+	createProject.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	createProject.SetOnClick(func(lcl.IObject) {
 		logs.Debug("新建项目")
 	})
@@ -97,6 +99,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createWindow := lcl.NewMenuItem(owner)
 	createWindow.SetCaption("新建窗体")
 	createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
+	createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	createWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("新建窗体")
 	})
@@ -105,6 +108,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	openWindow := lcl.NewMenuItem(owner)
 	openWindow.SetCaption("打开(&O)")
 	openWindow.SetShortCut(api.TextToShortCut("Ctrl+O"))
+	openWindow.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
 	openWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("打开")
 	})
@@ -112,6 +116,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	saveWindow := lcl.NewMenuItem(owner)
 	saveWindow.SetCaption("保存窗体(&S)")
 	saveWindow.SetShortCut(api.TextToShortCut("Ctrl+S"))
+	saveWindow.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
 	saveWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("保存窗体")
 	})
@@ -119,6 +124,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	saveAllWindow := lcl.NewMenuItem(owner)
 	saveAllWindow.SetCaption("保存所有窗体(&L)")
 	saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
+	saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
 	saveAllWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("保存所有窗体")
 	})
@@ -126,6 +132,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	exitWindow := lcl.NewMenuItem(owner)
 	exitWindow.SetCaption("退出(&Q)")
 	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))
+	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
 	exitWindow.SetOnClick(func(lcl.IObject) {
 		logs.Debug("退出")
 	})
@@ -138,6 +145,7 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	build := lcl.NewMenuItem(owner)
 	build.SetCaption("构建")
+	build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
 	build.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建")
 	})
@@ -145,6 +153,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 
 	cleanBuild := lcl.NewMenuItem(owner)
 	cleanBuild.SetCaption("清理构建")
+	cleanBuild.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
 	cleanBuild.SetOnClick(func(lcl.IObject) {
 		logs.Debug("清理构建")
 	})
@@ -156,19 +165,33 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 
 	run := lcl.NewMenuItem(owner)
 	run.SetCaption("运行")
+	run.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	run.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
 	})
 	m.run.Add(run)
 }
 
+func (m *TMainMenu) switchRunMenuItem(status consts.PreviewState) {
+
+}
+
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	buildOption := lcl.NewMenuItem(owner)
 	buildOption.SetCaption("构建选项")
+	buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
 	buildOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建选项")
 	})
 	m.setting.Add(buildOption)
+
+	environmentOption := lcl.NewMenuItem(owner)
+	environmentOption.SetCaption("环境配置")
+	environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	environmentOption.SetOnClick(func(lcl.IObject) {
+		logs.Debug("环境配置")
+	})
+	m.setting.Add(environmentOption)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
