@@ -139,6 +139,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
+			//m.Follow() // TODO 需要修改
 		}
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
