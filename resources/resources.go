@@ -15,17 +15,10 @@ package resources
 
 import (
 	"embed"
-	"github.com/energye/designer/pkg/err"
-	"github.com/energye/designer/pkg/logs"
-	"io/fs"
-	"os"
-	"path/filepath"
+	_ "github.com/energye/designer/resources/lib"
 )
 
 var (
-	// 动态链接库, 内嵌到执行文件, 需要区分 windows, linux, macOS
-	//go:embed lib/liblcl.dll
-	lib embed.FS
 	// 主配置
 	//go:embed config.json
 	config embed.FS
@@ -38,10 +31,6 @@ var (
 	// 弹窗过滤配置
 	//go:embed dialog-filter.json
 	dialogFilter embed.FS
-)
-
-var (
-	LibPath string
 )
 
 // 配置文件
@@ -89,14 +78,4 @@ func ComponentProperty() []byte {
 		return d
 	}
 	return nil
-}
-
-func init() {
-	tempDir := os.TempDir()
-	outPath := filepath.Join(tempDir, "lib-energy.dll")
-	libByte, e := lib.ReadFile("lib/liblcl.dll")
-	err.CheckErr(e)
-	os.WriteFile(outPath, libByte, fs.ModePerm)
-	LibPath = outPath
-	logs.Info("Lib Path:", outPath)
 }

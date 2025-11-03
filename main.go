@@ -18,7 +18,7 @@ import (
 	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
-	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/lib"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -31,10 +31,10 @@ func main() {
 	logs.Level = logs.LevelDebug
 	libname.LibName = func() string {
 		wd, _ := os.Getwd()
-		return filepath.Join(wd, "../", "gen", "gout", "liblcl.dll")
+		return filepath.Join(wd, "../", "gen", "gout", lib.Name)
 	}()
 	if !tool.IsExist(libname.LibName) {
-		libname.LibName = resources.LibPath
+		libname.LibName = lib.Path
 	}
 	logs.Debug(strings.Join(os.Args, " "))
 	lcl.Init(nil, nil)
