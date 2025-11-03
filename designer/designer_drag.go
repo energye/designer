@@ -139,7 +139,6 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
-			//m.Follow() // TODO 需要修改
 		}
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
@@ -151,14 +150,17 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		br := m.relation.BoundsRect()
 		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
 		isDown = true
-
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", dcx, dcy, dcw, dch)
 		message.Follow(msgContent)
 		m.relation.DragBegin()
 	})
 	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 		logs.Debug("DRAG OnMouseUP direction:", d)
-		m.Show()
+		if !tool.IsLinux() {
+			m.Show()
+		} else {
+			m.Follow()
+		}
 		isDown = false
 		message.FollowHide()
 		br := m.relation.BoundsRect()
