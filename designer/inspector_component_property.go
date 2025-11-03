@@ -35,7 +35,11 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.propFilterBox.SetBevelOuter(types.BvNone)
 	m.propFilterBox.SetDoubleBuffered(true)
 	m.propFilterBox.SetAlign(types.AlTop)
-	m.propFilterBox.SetHeight(45)
+	if tool.IsLinux() {
+		m.propFilterBox.SetHeight(45)
+	} else {
+		m.propFilterBox.SetHeight(35)
+	}
 	m.propFilterBox.SetParent(m.propBox)
 
 	componentPropertyTitle := lcl.NewLabel(m.propFilterBox)

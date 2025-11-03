@@ -45,7 +45,11 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilterBox.SetBevelOuter(types.BvNone)
 	m.treeFilterBox.SetDoubleBuffered(true)
 	m.treeFilterBox.SetAlign(types.AlTop)
-	m.treeFilterBox.SetHeight(45)
+	if tool.IsLinux() {
+		m.treeFilterBox.SetHeight(45)
+	} else {
+		m.treeFilterBox.SetHeight(35)
+	}
 	m.treeFilterBox.SetParent(m.treeBox)
 
 	componentTreeTitle := lcl.NewLabel(m.treeFilterBox)
