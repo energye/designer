@@ -46,6 +46,7 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilterBox.SetDoubleBuffered(true)
 	m.treeFilterBox.SetAlign(types.AlTop)
 	if tool.IsLinux() {
+		// Linux 编辑框高度差异
 		m.treeFilterBox.SetHeight(45)
 	} else {
 		m.treeFilterBox.SetHeight(35)

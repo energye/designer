@@ -26,9 +26,8 @@ import (
 
 var (
 	mainWindow       TAppWindow
-	toolbarHeight    int32 = 72
-	bgDrakColor            = colors.RGBToColor(56, 57, 60)
-	bgLightColor           = colors.ClWhite
+	bgDrakColor      = colors.RGBToColor(56, 57, 60)
+	bgLightColor     = colors.ClWhite
 	windowShowEvents []func()
 	imageActions     *tool.ImageList
 	imageComponents  *tool.ImageList

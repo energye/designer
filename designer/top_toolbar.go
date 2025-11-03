@@ -15,12 +15,25 @@ package designer
 
 import (
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
 )
 
 // 顶部工具栏
 
-var toolbar *TopToolbar
+var (
+	toolbarHeight int32 = 72
+	toolbar       *TopToolbar
+)
+
+// 初始化工具栏相关配置
+func initConfigToolbar() {
+	if tool.IsLinux() {
+		toolbarHeight = 72
+	} else {
+		toolbarHeight = 66
+	}
+}
 
 type TopToolbar struct {
 	page            lcl.IPageControl

@@ -36,6 +36,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	m.propFilterBox.SetDoubleBuffered(true)
 	m.propFilterBox.SetAlign(types.AlTop)
 	if tool.IsLinux() {
+		// Linux 编辑框高度差异
 		m.propFilterBox.SetHeight(45)
 	} else {
 		m.propFilterBox.SetHeight(35)
