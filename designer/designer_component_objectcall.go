@@ -105,6 +105,7 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 		// 在当前设计面板只有唯一一个组件的名
 		if m.formTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())
+
 			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}

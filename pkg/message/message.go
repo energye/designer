@@ -16,51 +16,97 @@ package message
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 	"time"
 )
 
 // 消息弹框
 
 type TMessage struct {
-	form        lcl.IForm
+	//form        lcl.IForm
 	alphaStep   byte
 	showTimer   lcl.ITimer
 	afterTime   *time.Timer
 	displayTime int32
-	content     lcl.ILabel
+	//content     lcl.ILabel
+	hintWindow lcl.IHintWindow
 }
 
-var message *TMessage
+var (
+	message       *TMessage
+	isFollowShow  bool
+	width, height = int32(100), int32(35)
+)
 
 func mustMessage() {
 	if message == nil {
 		message = new(TMessage)
 		message.alphaStep = 5
-		form := lcl.NewForm(nil)
-		message.form = form
-		form.SetBorderStyleToFormBorderStyle(types.BsNone)
-		form.Canvas().SetAntialiasingMode(types.AmOn)
-		form.SetControlStyle(form.ControlStyle().Include(types.CsParentBackground))
-		form.SetFormStyle(types.FsSystemStayOnTop)
-		form.SetAlphaBlend(true)
-		form.SetAlphaBlendValue(0)
-		form.SetColor(colors.ClNone)
+		// 当鼠标指针悬停在某个对象上时，弹出的包含辅助信息的对话框。
+		// THintWindow 是 TCustomForm 的子类，用于显示文本提示。它不适合与子控件搭配使用。
+		//
+		// HintWindow := THintWindow.Create(nil);
+		// Rect := HintWindow.CalcHintRect(0, 'This is the hint',nil);
+		// HintWindow.ActivateHint(Rect, 'This is the hint');
 
-		form.SetOnPaint(message.OnPaint)
-		form.SetOnClick(message.OnClick)
-
-		showTimer := lcl.NewTimer(form)
+		message.hintWindow = lcl.NewHintWindow(nil)
+		message.hintWindow.SetAlphaBlend(true)
+		message.hintWindow.SetAlphaBlendValue(0)
+		message.hintWindow.Canvas().SetAntialiasingMode(types.AmOn)
+		message.hintWindow.SetControlStyle(message.hintWindow.ControlStyle().Include(types.CsParentBackground))
+		showTimer := lcl.NewTimer(message.hintWindow)
 		showTimer.SetEnabled(false)
 		showTimer.SetInterval(15)
 		showTimer.SetOnTimer(message.OnShowTimer)
 		message.showTimer = showTimer
-
-		content := lcl.NewLabel(form)
-		content.SetParent(form)
-		content.SetColor(colors.ClNone)
-		message.content = content
 	}
+}
+
+func Follow(content string) {
+	mustMessage()
+	cursorPos := lcl.Mouse.CursorPos()
+	hintRect := message.hintWindow.CalcHintRect(0, content, 0)
+	w, h := hintRect.Width(), hintRect.Height()
+	hintRect.Left = cursorPos.X + 20
+	hintRect.Top = cursorPos.Y + 20
+	hintRect.SetWidth(w)
+	hintRect.SetHeight(h)
+	message.hintWindow.SetAlphaBlendValue(255)
+	message.hintWindow.SetBoundsRect(hintRect)
+	message.hintWindow.SetCaption(content)
+	message.hintWindow.Show()
+	//message.hintWindow.ActivateHintWithRectString(hintRect, content)
+}
+
+func FollowHide() {
+	mustMessage()
+	if message != nil {
+		message.hintWindow.SetAlphaBlendValue(0)
+		message.hintWindow.Hide()
+	}
+}
+
+func Info(title, content string, w, h int32) {
+	mustMessage()
+	msg := title + "\n  " + content
+	message.displayTime = 3 // 秒
+	message.showTimer.SetEnabled(true)
+	windowCenterRect := rect(w, h)
+	message.hintWindow.ActivateHintWithRectString(windowCenterRect, msg)
+}
+
+func (m *TMessage) OnShowTimer(sender lcl.IObject) {
+	abv := m.hintWindow.AlphaBlendValue()
+	if abv >= 255 {
+		m.showTimer.SetEnabled(false)
+		// displayTime 秒后关闭
+		m.afterTime = time.AfterFunc(time.Second*time.Duration(m.displayTime), func() {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				FollowHide()
+			})
+		})
+		return
+	}
+	m.hintWindow.SetAlphaBlendValue(abv + m.alphaStep)
 }
 
 func rect(width, height int32) types.TRect {
@@ -70,83 +116,4 @@ func rect(width, height int32) types.TRect {
 	rect.SetWidth(width)
 	rect.SetHeight(height)
 	return rect
-}
-
-func Info(title, content string, width, height int32) {
-	mustMessage()
-	message.Hide()
-	message.displayTime = 3 // 秒
-	message.form.SetBoundsRect(rect(width, height))
-	message.content.SetCaption(title + "\n  " + content)
-	message.showTimer.SetEnabled(true)
-	message.form.Show()
-}
-
-var (
-	isFollowShow  bool
-	width, height = int32(100), int32(35)
-)
-
-// 跟随使用 内容
-func Follow(content string) {
-	cursorPos := lcl.Mouse.CursorPos()
-	displayRect := lcl.Screen.WorkAreaRect()
-	x, y := cursorPos.X+20, cursorPos.Y+20
-	if x+width > displayRect.Width() {
-		x = x - (x + width - displayRect.Width())
-	}
-	if y+height > displayRect.Height() {
-		y = y - (y + height - displayRect.Height())
-	}
-	mustMessage()
-	message.content.SetCaption(content)
-	message.form.SetBounds(x, y, width, height)
-	if !isFollowShow {
-		isFollowShow = true
-		message.form.SetAlphaBlendValue(255)
-		message.form.Show()
-	}
-}
-
-// 跟随使用 隐藏
-func FollowHide() {
-	isFollowShow = false
-	if message != nil {
-		message.content.SetCaption("")
-		message.form.SetAlphaBlendValue(0)
-		message.form.Hide()
-	}
-}
-
-func (m *TMessage) OnShowTimer(sender lcl.IObject) {
-	abv := m.form.AlphaBlendValue()
-	if abv >= 255 {
-		m.showTimer.SetEnabled(false)
-		// displayTime 秒后关闭
-		m.afterTime = time.AfterFunc(time.Second*time.Duration(m.displayTime), func() {
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.Hide()
-			})
-		})
-		return
-	}
-	m.form.SetAlphaBlendValue(abv + m.alphaStep)
-}
-
-func (m *TMessage) OnPaint(sender lcl.IObject) {
-
-}
-
-func (m *TMessage) Hide() {
-	if m.afterTime != nil {
-		m.afterTime.Stop()
-		m.afterTime = nil
-	}
-	m.showTimer.SetEnabled(false)
-	m.form.SetAlphaBlendValue(0)
-	m.form.Hide()
-}
-
-func (m *TMessage) OnClick(sender lcl.IObject) {
-	m.Hide()
 }

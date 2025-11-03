@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/message"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
@@ -142,7 +143,9 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 		logs.Debug("DRAG OnMouseDown direction:", d)
-		m.Hide()
+		if !tool.IsLinux() {
+			m.Hide()
+		}
 		dx, dy = X, Y
 		br := m.relation.BoundsRect()
 		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()

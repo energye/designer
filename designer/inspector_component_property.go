@@ -94,13 +94,16 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
 	propNameCol.SetText("名")
-	propNameCol.SetWidth(125)
 	propNameCol.SetAlignment(types.TaLeftJustify)
+	propNameCol.SetWidth(125)
 	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("值")
-	//propValueCol.SetWidth(leftBoxWidth - 125)
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
+	if tool.IsLinux() {
+		width := int32(135) // tree.Width() - 65
+		propValueCol.SetWidth(width)
+	}
 }
