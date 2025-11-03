@@ -67,9 +67,11 @@ func Follow(content string) {
 	hintRect.SetWidth(w)
 	hintRect.SetHeight(h)
 	message.hintWindow.SetAlphaBlendValue(255)
+
 	message.hintWindow.SetBoundsRect(hintRect)
 	message.hintWindow.SetCaption(content)
 	message.hintWindow.Show()
+	message.hintWindow.Invalidate()
 	//message.hintWindow.ActivateHintWithRectString(hintRect, content)
 }
 
