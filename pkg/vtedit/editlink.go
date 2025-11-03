@@ -117,8 +117,4 @@ func (m *TBaseEditLink) OnDestroy(sender lcl.IObject) {
 	if m.self != nil {
 		m.self.Destroy(sender)
 	}
-	m.VTree = nil
-	m.baseEditLink = nil
-	m.BindData = nil
-	m.self = nil
 }

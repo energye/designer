@@ -28,13 +28,13 @@ import (
 type FormTab struct {
 	Id            int                  // 索引, 关联 forms key: index
 	Name          string               // 窗体名称
-	scroll        lcl.IScrollBox       // 外 滚动条
 	isDesigner    bool                 // 当前窗体Form是否正在设计
 	sheet         lcl.ITabSheet        // tab sheet
+	scroll        lcl.IScrollBox       // 外 滚动条
+	tree          lcl.ITreeView        // 组件树
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
 	formDesigner  *TEngFormDesigner    // 设计器处理器
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	tree          lcl.ITreeView        // 组件树
 	componentMenu *TComponentMenu      // 组件菜单
 }
 

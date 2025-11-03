@@ -35,7 +35,6 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 
 		tree := new(InspectorComponentTree)
 		tree.treeBox = lcl.NewPanel(m.leftBox)
-		tree.treeBox.SetParent(m.leftBox)
 		tree.treeBox.SetBevelOuter(types.BvNone)
 		tree.treeBox.SetDoubleBuffered(true)
 		tree.treeBox.SetWidth(m.leftBox.Width())
@@ -43,17 +42,18 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		tree.treeBox.Constraints().SetMinWidth(50)
 		tree.treeBox.Constraints().SetMinHeight(50)
 		tree.treeBox.SetAlign(types.AlTop)
+		tree.treeBox.SetParent(m.leftBox)
 		ins.componentTree = tree
 
 		property := new(InspectorComponentProperty)
-		property.box = lcl.NewPanel(m.leftBox)
-		property.box.SetParent(m.leftBox)
-		property.box.SetBevelOuter(types.BvNone)
-		property.box.SetDoubleBuffered(true)
-		property.box.SetWidth(m.leftBox.Width())
-		property.box.Constraints().SetMinWidth(50)
-		property.box.Constraints().SetMinHeight(50)
-		property.box.SetAlign(types.AlClient)
+		property.propBox = lcl.NewPanel(m.leftBox)
+		property.propBox.SetBevelOuter(types.BvNone)
+		property.propBox.SetDoubleBuffered(true)
+		property.propBox.SetWidth(m.leftBox.Width())
+		property.propBox.Constraints().SetMinWidth(50)
+		property.propBox.Constraints().SetMinHeight(50)
+		property.propBox.SetAlign(types.AlClient)
+		property.propBox.SetParent(m.leftBox)
 		ins.componentProperty = property
 		//ins.componentPropertyBox.SetColor(colors.Cl3DDkShadow)
 	}

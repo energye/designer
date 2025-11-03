@@ -56,9 +56,11 @@ func (m *TColorSelectEditLink) CreateEdit() {
 	m.colorText.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TColorSelectEditLink OnKeyDown key:", *key)
 		if *key == keys.VkReturn {
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.VTree.EndEditNode()
-			})
+			if m.VTree != nil {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.VTree.EndEditNode()
+				})
+			}
 		}
 	})
 
@@ -72,9 +74,11 @@ func (m *TColorSelectEditLink) CreateEdit() {
 		m.BindData.EditNodeData.IntValue = int(color)
 		m.colorText.SetText(fmt.Sprintf("0x%X", color))
 		clrFont.SetColor(color)
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.VTree.EndEditNode()
-		})
+		if m.VTree != nil {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.VTree.EndEditNode()
+			})
+		}
 	})
 }
 

@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
@@ -22,27 +23,46 @@ import (
 // 设计 - 组件属性
 
 type InspectorComponentProperty struct {
-	box              lcl.IPanel           // 组件属性盒子
-	filter           lcl.ITreeFilterEdit  // 组件属性过滤框
-	currentComponent *TDesigningComponent // 当前正在设计的组件
+	propBox           lcl.IPanel           // 组件属性盒子
+	propFilterBox     lcl.IPanel           // 组件属性过滤盒子
+	propComponentProp lcl.IPanel           // 组件属性
+	filter            lcl.ITreeFilterEdit  // 组件属性过滤框
+	currentComponent  *TDesigningComponent // 当前正在设计的组件
 }
 
 func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
-	componentPropertyTitle := lcl.NewLabel(m.box)
-	componentPropertyTitle.SetParent(m.box)
+	m.propFilterBox = lcl.NewPanel(m.propBox)
+	m.propFilterBox.SetBevelOuter(types.BvNone)
+	m.propFilterBox.SetDoubleBuffered(true)
+	m.propFilterBox.SetAlign(types.AlTop)
+	m.propFilterBox.SetHeight(45)
+	m.propFilterBox.SetParent(m.propBox)
+
+	componentPropertyTitle := lcl.NewLabel(m.propFilterBox)
 	componentPropertyTitle.SetCaption("属性")
 	componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
-
-	componentPropertyTitle.SetTop(5)
+	componentPropertyTitle.SetTop(8)
 	componentPropertyTitle.SetLeft(5)
+	componentPropertyTitle.SetParent(m.propFilterBox)
 
-	m.filter = lcl.NewTreeFilterEdit(m.box)
-	m.filter.SetParent(m.box)
+	m.filter = lcl.NewTreeFilterEdit(m.propFilterBox)
 	m.filter.SetTop(2)
 	m.filter.SetLeft(30)
-	m.filter.SetWidth(leftBoxWidth - m.filter.Left())
+	if tool.IsLinux() {
+		m.filter.SetLeft(40)
+	} else {
+		m.filter.SetLeft(30)
+	}
+	m.filter.SetWidth(m.propFilterBox.Width() - m.filter.Left())
 	m.filter.SetAlign(types.AlCustom)
 	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	m.filter.SetParent(m.propFilterBox)
+
+	m.propComponentProp = lcl.NewPanel(m.propBox)
+	m.propComponentProp.SetBevelOuter(types.BvNone)
+	m.propComponentProp.SetDoubleBuffered(true)
+	m.propComponentProp.SetAlign(types.AlClient)
+	m.propComponentProp.SetParent(m.propBox)
 }
 
 // 属性列表虚拟树配置方法

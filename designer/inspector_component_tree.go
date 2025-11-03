@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
 )
 
@@ -33,23 +34,43 @@ func nextTreeDataId() (id int) {
 
 // 查看器组件树
 type InspectorComponentTree struct {
-	treeBox    lcl.IPanel          // 组件树盒子
-	treeFilter lcl.ITreeFilterEdit // 组件树过滤框
+	treeBox           lcl.IPanel          // 组件树盒子
+	treeFilterBox     lcl.IPanel          // 组件树过滤盒子
+	treeComponentTree lcl.IPanel          // 组件树
+	treeFilter        lcl.ITreeFilterEdit // 组件树过滤框
 }
 
 func (m *InspectorComponentTree) init(leftBoxWidth int32) {
-	componentTreeTitle := lcl.NewLabel(m.treeBox)
-	componentTreeTitle.SetParent(m.treeBox)
+	m.treeFilterBox = lcl.NewPanel(m.treeBox)
+	m.treeFilterBox.SetBevelOuter(types.BvNone)
+	m.treeFilterBox.SetDoubleBuffered(true)
+	m.treeFilterBox.SetAlign(types.AlTop)
+	m.treeFilterBox.SetHeight(45)
+	m.treeFilterBox.SetParent(m.treeBox)
+
+	componentTreeTitle := lcl.NewLabel(m.treeFilterBox)
 	componentTreeTitle.SetCaption("组件")
 	componentTreeTitle.Font().SetStyle(types.NewSet(types.FsBold))
 	componentTreeTitle.SetTop(8)
 	componentTreeTitle.SetLeft(5)
+	componentTreeTitle.SetParent(m.treeFilterBox)
 
-	m.treeFilter = lcl.NewTreeFilterEdit(m.treeBox)
-	m.treeFilter.SetParent(m.treeBox)
-	m.treeFilter.SetTop(5)
-	m.treeFilter.SetLeft(30)
-	m.treeFilter.SetWidth(leftBoxWidth - m.treeFilter.Left())
+	m.treeFilter = lcl.NewTreeFilterEdit(m.treeFilterBox)
+	m.treeFilter.SetTop(3)
+	if tool.IsLinux() {
+		m.treeFilter.SetLeft(40)
+	} else {
+		m.treeFilter.SetLeft(30)
+	}
+	m.treeFilter.SetWidth(m.treeFilterBox.Width() - m.treeFilter.Left())
 	m.treeFilter.SetAlign(types.AlCustom)
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	m.treeFilter.SetParent(m.treeFilterBox)
+
+	m.treeFilterBox = lcl.NewPanel(m.treeBox)
+	m.treeFilterBox.SetBevelOuter(types.BvNone)
+	m.treeFilterBox.SetDoubleBuffered(true)
+	m.treeFilterBox.SetAlign(types.AlClient)
+	m.treeFilterBox.SetParent(m.treeBox)
+
 }

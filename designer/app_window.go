@@ -26,7 +26,7 @@ import (
 
 var (
 	mainWindow       TAppWindow
-	toolbarHeight    int32 = 66
+	toolbarHeight    int32 = 72
 	bgDrakColor            = colors.RGBToColor(56, 57, 60)
 	bgLightColor           = colors.ClWhite
 	windowShowEvents []func()
