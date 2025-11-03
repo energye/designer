@@ -31,6 +31,7 @@ type TMainMenu struct {
 	run     lcl.IMenuItem
 	setting lcl.IMenuItem
 	helper  lcl.IMenuItem
+	runItem lcl.IMenuItem
 }
 
 // 设计器主菜单
@@ -163,17 +164,29 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	sep.SetCaption("-")
 	m.run.Add(sep)
 
-	run := lcl.NewMenuItem(owner)
-	run.SetCaption("运行")
-	run.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
-	run.SetOnClick(func(lcl.IObject) {
+	m.runItem = lcl.NewMenuItem(owner)
+	m.runItem.SetCaption("运行")
+	m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
+	m.runItem.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
+		toolbar.toolbarBtn.onRunPreviewForm(m.runItem)
 	})
-	m.run.Add(run)
+	m.run.Add(m.runItem)
 }
 
 func (m *TMainMenu) switchRunMenuItem(status consts.PreviewState) {
-
+	m.runItem.SetEnabled(true)
+	if status == consts.PsStarted {
+		m.runItem.SetCaption("停止")
+		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
+	} else if status == consts.PsStarting {
+		m.runItem.SetEnabled(false)
+		m.runItem.SetCaption("停止")
+		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
+	} else {
+		m.runItem.SetCaption("运行")
+		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
+	}
 }
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {

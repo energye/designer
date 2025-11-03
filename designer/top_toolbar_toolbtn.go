@@ -169,4 +169,5 @@ func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 		m.runPreviewBtn.SetHint("运行(F9)")
 		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
 	}
+	mainWindow.mainMenu.switchRunMenuItem(status)
 }
