@@ -86,7 +86,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createProject := lcl.NewMenuItem(owner)
 	createProject.SetCaption("新建项目")
 	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
-	createProject.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
+	createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	createProject.SetOnClick(func(lcl.IObject) {
 		logs.Debug("新建项目")
 	})
