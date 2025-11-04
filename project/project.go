@@ -13,6 +13,8 @@
 
 package project
 
+import "github.com/energye/lcl/tool"
+
 // 项目文件 xxx.egp 配置文件
 // 存在于项目根目录
 
@@ -23,7 +25,12 @@ var (
 )
 
 func init() {
-	Path = "C:\\app\\workspace\\test" // TODO 测试
+	// TODO 需要通过配置 --test
+	if tool.IsWindows() {
+		Path = "C:\\app\\workspace\\test" // TODO 测试
+	} else if tool.IsLinux() {
+		Path = "/home/yanghy/app/projects/workspace/test"
+	}
 }
 
 // TProject 项目信息 xxx.egp 配置文件

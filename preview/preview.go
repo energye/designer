@@ -18,6 +18,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
+	lclTool "github.com/energye/lcl/tool"
 	"github.com/energye/lcl/tool/command"
 )
 
@@ -42,8 +43,13 @@ func runPreview(state chan<- any) {
 		return
 	}
 	state <- consts.PsStarting
-	// TODO 需要通过配置
-	output := "./build/main.exe"
+	var output string
+	// TODO 需要通过配置 --test
+	if lclTool.IsWindows() {
+		output = "./build/main.exe"
+	} else {
+		output = "./build/main"
+	}
 	// 构建项目二进制
 	build(output)
 	// 运行命令
