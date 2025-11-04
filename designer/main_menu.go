@@ -205,6 +205,14 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 		logs.Debug("环境配置")
 	})
 	m.setting.Add(environmentOption)
+
+	projectOption := lcl.NewMenuItem(owner)
+	projectOption.SetCaption("项目配置")
+	projectOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	projectOption.SetOnClick(func(lcl.IObject) {
+		logs.Debug("项目配置")
+	})
+	m.setting.Add(projectOption)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
