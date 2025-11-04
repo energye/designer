@@ -1,22 +1,38 @@
 package tool
 
-import "testing"
+import (
+	"testing"
+)
 
-// 测试结构体 - 用于测试方法获取
 type TestStruct struct{}
 
-// TestStruct的方法
 func (t TestStruct) Method1()  {}
-func (t TestStruct) Method2()  {}
-func (t *TestStruct) Method3() {}
+func (t *TestStruct) Method2() {}
+func (t TestStruct) Method3()  {}
 
-// 实现接口的结构体
 type TestStruct2 struct {
 	TestStruct
 }
 
-func (i TestStruct2) Method21() {}
-func (i TestStruct2) Method22() {}
+func (i TestStruct2) Method21()  {}
+func (i *TestStruct2) Method22() {}
+
+type TestStruct3 struct {
+	TestStruct2
+}
+
+func (i TestStruct3) Method31()  {}
+func (i *TestStruct3) Method32() {}
+
+func TestSimpleObjectMethodNames(t *testing.T) {
+	var ts3 TestStruct3
+	methods := GetObjectMethodNames(&ts3)
+	t.Log("方法列表:")
+	methods.Iterate(func(key string, method *TMethod) bool {
+		t.Log("方法名:", method.Name, "所属结构体:", method.StructName, "层级:", method.Level)
+		return false
+	})
+}
 
 // 测试GetObjectMethodNames函数
 func TestGetObjectMethodNames(t *testing.T) {
@@ -88,7 +104,7 @@ func TestGetObjectMethodNames(t *testing.T) {
 			// 验证每个期望的方法都存在
 			for _, expectedMethod := range tt.expected {
 				found := false
-				if method := result.Get(expectedMethod); method != "" {
+				if method := result.Get(expectedMethod); method.Name != "" {
 					found = true
 					break
 				}
