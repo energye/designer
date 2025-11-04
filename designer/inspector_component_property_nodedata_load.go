@@ -36,7 +36,15 @@ func (m *TDesigningComponent) loadPropertyList() {
 			if customProps := configCompProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
 				if len(customProps) == 1 {
 					// 数组只有一个元素，规则为直接作用在当前属性上
-					customProperty := vtedit.NewEditLinkNodeData(&customProps[0])
+					customProp := &customProps[0]
+					// 默认值设置
+					if customProp.Options == "" {
+						// 未配置options时,使用默认值
+						customProp.Options = nodeData.EditNodeData.Metadata.Options
+					} else {
+						// TODO 其它元数据的字段默认值??
+					}
+					customProperty := vtedit.NewEditLinkNodeData(customProp)
 					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
 						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
 					m.PropertyList[i] = newEditNodeData // 更新到组件属性

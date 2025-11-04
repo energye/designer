@@ -110,8 +110,11 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 			return err.RsDuplicateName
 		}
 	case "enabled", "visible":
+		// 忽略调用API的属性
 		return err.RsIgnoreProp
-	case "autosize":
+	case "autosize", "borderstyle", "borderstyletoformborderstyle":
+		// 忽略调用API的属性
+		// Form 组件
 		if m.ComponentType == consts.CtForm {
 			return err.RsIgnoreProp
 		}

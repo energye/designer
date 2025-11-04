@@ -22,7 +22,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 // 查看器的数据类型 构建
@@ -35,7 +34,7 @@ func (m *TEditLinkNodeData) Build() {
 		m.Type = consts.PdtComboBox
 		m.Name = m.Metadata.Name
 		m.StringValue = tool.FirstToUpper(m.Metadata.Value)
-		options := strings.Split(m.Metadata.Options, ",")
+		options := tool.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
 			option = tool.FirstToUpper(option)
@@ -45,8 +44,8 @@ func (m *TEditLinkNodeData) Build() {
 	case consts.TkSet: // 集合 多选, 使用子菜单列表
 		m.Type = consts.PdtCheckBoxList
 		m.Name = m.Metadata.Name
-		values := strings.Split(m.Metadata.Value, ",")
-		options := strings.Split(m.Metadata.Options, ",")
+		values := tool.Split(m.Metadata.Value, ",")
+		options := tool.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
 		for _, option := range options {
 			option = tool.FirstToUpper(option)
@@ -113,12 +112,17 @@ func (m *TEditNodeData) Build() {
 	if m.EditNodeData.Type == consts.PdtClass {
 		if m.EditNodeData.Class.Instance != 0 {
 			object := lcl.AsObject(m.EditNodeData.Class.Instance)
+			methods := tool.GetObjectMethodNames(object)
+			if methods == nil {
+				logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
+			}
 			var properties []lcl.ComponentProperties
 			properties = lcl.DesigningComponent().GetComponentProperties(object)
 			m.EditNodeData.Class.Count = int32(len(properties))
 			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
 			for _, prop := range properties {
 				newProp := prop
+				tool.FixPropInfo(methods, &newProp)
 				if newProp.Kind == "tkMethod" {
 					continue // tkMethod 事件函数
 				}

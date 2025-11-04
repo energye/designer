@@ -14,15 +14,18 @@
 package tool
 
 import (
+	"gen/tool"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/lcl"
 	"reflect"
 	"strings"
 )
 
 // TMethod 存储方法信息
 type TMethod struct {
-	Name       string
-	StructName string
-	Level      int
+	Name       string // 方法名
+	StructName string // 所属结构
+	Level      int    // 等级, 0~[1...] 数字越小表示优先级高
 }
 
 // GetAllMethods 获取结构体及其嵌入结构体的所有导出方法
@@ -87,4 +90,33 @@ func GetObjectMethodNames(v any) *ArrayMap[*TMethod] {
 	}
 	methods := methodNames(t)
 	return methods
+}
+
+// 修复属性信息
+func FixPropInfo(methods *ArrayMap[*TMethod], prop *lcl.ComponentProperties) {
+	if methods == nil {
+		return
+	}
+	name := strings.ToLower(prop.Name)
+	if methods.ContainsKey(name) {
+		// 当前属性名不存在于对象的方法列表中
+		// 原因: 1. 完全不存在, 2. 属性名与对象方法名不一致
+		// 当为原因2时需要将属性名改为实际的方法名
+		prop.Name = methods.Get(name).Name
+	} else if prop.Kind == "tkMethod" {
+		// TODO on event
+	} else {
+		logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
+		// 遍历对象方法列表, 匹配出所有属性名
+		type_ := strings.ToLower(tool.RemoveT(prop.Type))
+		name_ := strings.ToLower(name)
+		methods.Iterate(func(methodName string, value *TMethod) bool {
+			if strings.Contains(methodName, name_) && strings.Contains(methodName, type_) {
+				prop.Name = value.Name
+				return true
+			}
+			return false
+		})
+	}
+	// 获取属性默认值
 }

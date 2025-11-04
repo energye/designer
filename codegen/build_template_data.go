@@ -18,7 +18,6 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/uigen"
-	"strings"
 )
 
 // 构建模板数据
@@ -107,7 +106,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 	}
 	prop.WriteString(object)
 	// 属性路径 Font.Style
-	namePaths := strings.Split(m.Name, ".")
+	namePaths := tool.Split(m.Name, ".")
 	for i := 0; i < len(namePaths)-1; i++ {
 		prop.WriteString(".", namePaths[i], "()")
 	}

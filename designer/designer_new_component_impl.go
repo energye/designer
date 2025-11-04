@@ -387,29 +387,6 @@ func (m *TDesigningComponent) GetProps() {
 		if methods == nil {
 			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 		}
-		// 修复属性名
-		fixPropName := func(prop *lcl.ComponentProperties) {
-			name := strings.ToLower(prop.Name)
-			if methods.ContainsKey(name) {
-				// 当前属性名不存在于对象的方法列表中
-				// 原因: 1. 完全不存在, 2. 属性名与对象方法名不一致
-				// 当为原因2时需要将属性名改为实际的方法名
-				prop.Name = methods.Get(name).Name
-			} else if prop.Kind == "tkMethod" {
-				// TODO on event
-			} else {
-				logs.Error("当前属性和对象属性不匹配, 当前属性名:", prop.Name, "对象:", m.Name())
-				methods.Iterate(func(key string, value *tool.TMethod) bool {
-					if strings.HasPrefix(key, name) || strings.HasPrefix(name, key) {
-						//prop.Name = value
-						//return true
-						fmt.Println("methods.Iterate:", key, value.Level)
-					}
-					return false
-				})
-			}
-		}
-
 		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
 		logs.Debug("LoadComponent Count:", len(properties))
 		// 拆分 属性和事件
@@ -419,7 +396,7 @@ func (m *TDesigningComponent) GetProps() {
 		)
 		for _, prop := range properties {
 			newProp := prop
-			fixPropName(&newProp)
+			tool.FixPropInfo(methods, &newProp)
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m}
 			if newProp.Kind == "tkMethod" {
