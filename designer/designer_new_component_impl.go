@@ -399,7 +399,7 @@ func (m *TDesigningComponent) GetProps() {
 			tool.FixPropInfo(methods, &newProp)
 			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
 			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m}
-			if newProp.Kind == "tkMethod" {
+			if newProp.Kind == consts.TkMethod {
 				// tkMethod 事件函数
 				eventList = append(eventList, newEditNodeData)
 			} else {

@@ -123,7 +123,7 @@ func (m *TEditNodeData) Build() {
 			for _, prop := range properties {
 				newProp := prop
 				tool.FixPropInfo(methods, &newProp)
-				if newProp.Kind == "tkMethod" {
+				if newProp.Kind == consts.TkMethod {
 					continue // tkMethod 事件函数
 				}
 				newEditLinkNodeData := NewEditLinkNodeData(&newProp)

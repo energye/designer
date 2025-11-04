@@ -76,7 +76,7 @@ const (
 	PdtClass
 )
 
-type PropertyKind string
+type PropertyKind = string
 
 const (
 	TkClass       PropertyKind = "tkClass"
@@ -87,6 +87,7 @@ const (
 	TkChar        PropertyKind = "tkChar"
 	TkInteger     PropertyKind = "tkInteger"
 	TkInt64       PropertyKind = "tkInt64"
+	TkMethod      PropertyKind = "tkMethod"
 )
 
 // 组件类型
