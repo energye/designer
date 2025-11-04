@@ -86,23 +86,8 @@ func (m *TDesigningComponent) Free() {
 	}
 	m.PropertyList = nil
 	m.EventList = nil
-	if m.node.IsValid() {
-		m.node.Free()
-	}
-	if m.node.IsValid() {
+	if m.page.IsValid() {
 		m.page.Free()
-	}
-	if m.pageProperty.IsValid() {
-		m.pageProperty.Free()
-	}
-	if m.pageEvent.IsValid() {
-		m.pageEvent.Free()
-	}
-	if m.propertyTree.IsValid() {
-		m.propertyTree.Free()
-	}
-	if m.eventTree.IsValid() {
-		m.eventTree.Free()
 	}
 }
 
