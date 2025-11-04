@@ -15,6 +15,7 @@ package tool
 
 import (
 	"gen/tool"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"reflect"
@@ -103,7 +104,7 @@ func FixPropInfo(methods *ArrayMap[*TMethod], prop *lcl.ComponentProperties) {
 		// 原因: 1. 完全不存在, 2. 属性名与对象方法名不一致
 		// 当为原因2时需要将属性名改为实际的方法名
 		prop.Name = methods.Get(name).Name
-	} else if prop.Kind == "tkMethod" {
+	} else if prop.Kind == consts.TkMethod {
 		// TODO on event
 	} else {
 		logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
