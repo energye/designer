@@ -114,8 +114,11 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, allowed *bool) {
 		logs.Debug("[object inspector-property] OnEditing column:", column)
 		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil && data.EditNodeData.Type == consts.PdtText {
-				*allowed = true
+			if data := vtedit.GetPropertyNodeData(node); data != nil {
+				switch data.EditNodeData.Type {
+				case consts.PdtText, consts.PdtUint16:
+					*allowed = true
+				}
 				return
 			}
 		}
@@ -128,7 +131,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type() {
-				case consts.PdtText:
+				case consts.PdtText, consts.PdtUint16:
 					link := vtedit.NewStringEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				case consts.PdtInt, consts.PdtInt64:

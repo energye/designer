@@ -67,9 +67,9 @@ func (m *TEditLinkNodeData) Build() {
 		m.Name = m.Metadata.Name
 		m.StringValue = m.Metadata.Value
 	case consts.TkChar: // 密码
-		m.Type = consts.PdtText
+		m.Type = consts.PdtUint16
 		m.Name = m.Metadata.Name
-		m.StringValue = ""
+		m.StringValue = "" // 默认 0 == 空
 	case consts.TkInteger: // 数字
 		m.Type = consts.PdtInt
 		m.Name = m.Metadata.Name

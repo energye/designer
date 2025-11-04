@@ -63,6 +63,7 @@ type PropertyDataType int32
 const (
 	PdtText PropertyDataType = iota
 	PdtInt
+	PdtUint16
 	PdtInt64
 	PdtFloat
 	PdtRadiobutton

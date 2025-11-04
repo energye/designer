@@ -112,13 +112,23 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 	}
 	if len(namePaths) > 0 {
 		name := namePaths[len(namePaths)-1]
-		// 参数, 多种类型
+		// 参数, 多种类型, 每种类型传入的方式不一样
 		value := ""
 		switch m.Type {
 		case consts.PdtText: // string
 			value = `"` + m.Value.(string) + `"`
 		case consts.PdtInt, consts.PdtInt64: // int32 or int64
 			value = tool.IntToString(m.Value)
+		case consts.PdtUint16: // uint16
+			if size := len(m.Value.(string)); size == 1 {
+				// 单字符使用单引号 "'" 直接转换
+				value = `'` + m.Value.(string) + `'`
+			} else if size > 1 {
+				// 多字符串串转换成 uint16
+				if uv, err := tool.StrToUint16(m.Value.(string)); err == nil {
+					value = tool.IntToString(uv)
+				}
+			}
 		case consts.PdtFloat: // float32 or float64
 			value = tool.FloatToString(m.Value)
 		case consts.PdtCheckBox: // bool

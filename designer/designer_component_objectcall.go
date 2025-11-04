@@ -176,7 +176,7 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 
 func (m *reflector) convertArgsValue() (args []any) {
 	switch m.data.EditNodeData.Type {
-	case consts.PdtText:
+	case consts.PdtText, consts.PdtUint16:
 		// string
 		args = append(args, m.data.EditNodeData.StringValue)
 	case consts.PdtInt:
@@ -352,6 +352,54 @@ func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect
 		val := mapper.GetLCL(value.(string))
 		if val != nil {
 			return reflect.ValueOf(val).Convert(targetType), nil
+		}
+	}
+	if v, ok := value.(string); ok {
+		switch targetType.Kind() {
+		case reflect.Bool:
+			r, err := tool.StrToBool(v)
+			return reflect.ValueOf(r), err
+		case reflect.Int:
+			r, err := tool.StrToInt(v)
+			return reflect.ValueOf(r), err
+		case reflect.Int8:
+			r, err := tool.StrToInt8(v)
+			return reflect.ValueOf(r), err
+		case reflect.Int16:
+			r, err := tool.StrToInt16(v)
+			return reflect.ValueOf(r), err
+		case reflect.Int32:
+			r, err := tool.StrToInt32(v)
+			return reflect.ValueOf(r), err
+		case reflect.Int64:
+			r, err := tool.StrToInt64(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uint:
+			r, err := tool.StrToUint(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uint8:
+			r, err := tool.StrToUint8(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uint16:
+			r, err := tool.StrToUint16(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uint32:
+			r, err := tool.StrToUint32(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uint64:
+			r, err := tool.StrToUint64(v)
+			return reflect.ValueOf(r), err
+		case reflect.Uintptr:
+			r, err := tool.StrToUintptr(v)
+			return reflect.ValueOf(r), err
+		case reflect.Float32:
+			r, err := tool.StrToFloat32(v)
+			return reflect.ValueOf(r), err
+		case reflect.Float64:
+			r, err := tool.StrToFloat64(v)
+			return reflect.ValueOf(r), err
+		case reflect.String:
+			return reflect.ValueOf(v), nil
 		}
 	}
 	return reflect.Value{}, errors.New("参数类型转换失败")

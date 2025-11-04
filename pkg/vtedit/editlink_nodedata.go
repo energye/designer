@@ -49,7 +49,7 @@ type TPropClass struct {
 // 编辑数据返回字符串值
 func (m *TEditLinkNodeData) EditStringValue() string {
 	switch m.Type {
-	case consts.PdtText:
+	case consts.PdtText, consts.PdtUint16:
 		return m.StringValue
 	case consts.PdtInt, consts.PdtInt64:
 		return strconv.Itoa(m.IntValue)
@@ -74,7 +74,7 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 // 编辑数据返回原始类型值
 func (m *TEditLinkNodeData) EditValue() any {
 	switch m.Type {
-	case consts.PdtText:
+	case consts.PdtText, consts.PdtUint16:
 		return m.StringValue
 	case consts.PdtInt, consts.PdtInt64:
 		return m.IntValue
@@ -97,7 +97,7 @@ func (m *TEditLinkNodeData) EditValue() any {
 
 func (m *TEditLinkNodeData) SetEditValue(value any) {
 	switch m.Type {
-	case consts.PdtText:
+	case consts.PdtText, consts.PdtUint16:
 		m.StringValue = value.(string)
 	case consts.PdtInt, consts.PdtInt64:
 		m.IntValue = int(value.(int32))
@@ -274,7 +274,7 @@ func (m *TEditNodeData) IsModify() bool {
 	switch m.Type() {
 	case consts.PdtCheckBox:
 		return m.EditNodeData.Checked != m.OriginNodeData.Checked
-	case consts.PdtText:
+	case consts.PdtText, consts.PdtUint16:
 		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
 	case consts.PdtInt, consts.PdtInt64:
 		return m.EditNodeData.IntValue != m.OriginNodeData.IntValue
