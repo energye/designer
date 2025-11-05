@@ -14,6 +14,8 @@
 package preview
 
 import (
+	"errors"
+	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
@@ -27,18 +29,22 @@ import (
 var runCmd *command.CMD
 
 // 构建项目
-func build(output string) {
+func build(output string) (err error) {
 	buildCmd := command.NewCMD()
 	buildCmd.IsPrint = false
 	buildCmd.Dir = project.Path
 	buildCmd.Console = func(data string, level command.Level) {
-		logs.Info("[", level.String(), "]", data)
+		logs.Info("Level", level.String(), data)
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
+		if level == command.LError && err == nil {
+			err = errors.New(data)
+		}
 	}
 	// TODO 需要通过配置, 构建参数
 	args := []string{"build", "-v", "-o", output}
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "go " + strings.Join(args, " ")}})
 	buildCmd.Command("go", args...)
+	return
 }
 
 // 执行应用程序的预览功能
@@ -57,10 +63,14 @@ func runPreview(state chan<- any) {
 	} else {
 		output = "./build/main"
 	}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "编译程序: " + output}})
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "构建程序: " + output}})
 	// 构建项目二进制
-	build(output)
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "运行预览: " + output}})
+	if err := build(output); err != nil {
+		msg := fmt.Sprintf("构建程序失败: %v", err.Error())
+		logs.Error(msg)
+		state <- consts.PsStop
+		return
+	}
 	// 运行命令
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
@@ -74,6 +84,7 @@ func runPreview(state chan<- any) {
 		}
 	}
 	// 开始运行
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "运行预览: " + output}})
 	state <- consts.PsStarted
 	runCmd.Command(output)
 	state <- consts.PsStop

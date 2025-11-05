@@ -171,7 +171,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) str
 			if i > 0 {
 				sets.WriteString(",")
 			}
-			sets.WriteString("types.", item)
+			sets.WriteString("lclTypes.", item)
 		}
 		value = "lclTypes.NewSet(" + sets.String() + ")"
 		form.Imports.Add(lclTypes)
