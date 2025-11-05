@@ -34,6 +34,6 @@ func init() {
 			logs.Error("运行预览错误, 操作参数不正确, option:", ps)
 		}
 	}, func() {
-		logs.Info("开始预览事件处理器")
+		logs.Info("停止预览处理器")
 	})
 }
