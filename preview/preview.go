@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/project"
 	lclTool "github.com/energye/lcl/tool"
 	"github.com/energye/lcl/tool/command"
+	"strings"
 )
 
 var runCmd *command.CMD
@@ -35,7 +36,9 @@ func build(output string) {
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
 	}
 	// TODO 需要通过配置, 构建参数
-	buildCmd.Command("go", "build", "-v", "-o", output)
+	args := []string{"build", "-v", "-o", output}
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "go " + strings.Join(args, " ")}})
+	buildCmd.Command("go", args...)
 }
 
 // 执行应用程序的预览功能
@@ -57,7 +60,7 @@ func runPreview(state chan<- any) {
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "编译程序: " + output}})
 	// 构建项目二进制
 	build(output)
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "开始预览运行: " + output}})
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "运行预览: " + output}})
 	// 运行命令
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
@@ -77,7 +80,7 @@ func runPreview(state chan<- any) {
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "结束预览运行"}}) //运行结束消息
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "结束预览"}}) //运行结束消息
 }
 
 func stopPreview() {

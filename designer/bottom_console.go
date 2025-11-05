@@ -19,7 +19,6 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 type TConsole struct {
@@ -43,7 +42,7 @@ func (m *BottomBox) createConsole() {
 	console.consoleBox.SetBevelOuter(types.BvNone)
 	console.consoleBox.SetDoubleBuffered(true)
 	console.consoleBox.SetAlign(types.AlBottom)
-	console.consoleBox.SetColor(colors.ClBlue)
+	//console.consoleBox.SetColor(colors.ClBlue)
 	console.consoleBox.SetHeight(100)
 	console.consoleBox.SetParent(m.rightBox)
 
@@ -51,7 +50,10 @@ func (m *BottomBox) createConsole() {
 	console.console.SetAlign(types.AlClient)
 	console.console.SetBorderStyle(types.BsNone)
 	console.console.SetScrollBars(types.SsAutoBoth)
+	console.console.SetDoubleBuffered(true)
 	console.console.SetReadOnly(true)
+	console.console.SetColor(bgDrakColor)
+	console.console.Font().SetColor(bgLightColor)
 	console.console.SetParent(console.consoleBox)
 }
 
