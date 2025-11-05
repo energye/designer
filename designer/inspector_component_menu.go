@@ -23,17 +23,17 @@ import (
 
 // 组件菜单
 type TComponentMenu struct {
-	form             *FormTab
-	treePopupMenu    lcl.IPopupMenu // 组件树右键菜单
-	zLevel           lcl.IMenuItem  // z 序
-	zLevelFront      lcl.IMenuItem  // 移动到最顶层
-	zLevelBack       lcl.IMenuItem  // 移动到最底层
-	zLevelForwardOne lcl.IMenuItem  // 向前移动一层
-	zLevelBackOne    lcl.IMenuItem  // 向后移动一层
-	cut              lcl.IMenuItem  // 剪切
-	copy             lcl.IMenuItem  // 复制
-	paste            lcl.IMenuItem  // 粘贴
-	delete           lcl.IMenuItem  // 删除
+	form          *FormTab
+	treePopupMenu lcl.IPopupMenu // 组件树右键菜单
+	//zLevel           lcl.IMenuItem  // z 序
+	zLevelFront      lcl.IMenuItem // 移动到最顶层
+	zLevelBack       lcl.IMenuItem // 移动到最底层
+	zLevelForwardOne lcl.IMenuItem // 向前移动一层
+	zLevelBackOne    lcl.IMenuItem // 向后移动一层
+	cut              lcl.IMenuItem // 剪切
+	copy             lcl.IMenuItem // 复制
+	paste            lcl.IMenuItem // 粘贴
+	delete           lcl.IMenuItem // 删除
 }
 
 // 返回当前选中组件树节点
@@ -157,37 +157,37 @@ func (m *FormTab) CreateComponentMenu() {
 	menuItems := menu.treePopupMenu.Items()
 
 	// 层级菜单
-	zLevel := lcl.NewMenuItem(m.tree)
-	zLevel.SetCaption("Z 序")
-	menu.zLevel = zLevel
-	menuItems.Add(zLevel)
+	//zLevel := lcl.NewMenuItem(m.tree)
+	//zLevel.SetCaption("Z 序")
+	//menu.zLevel = zLevel
+	//menuItems.Add(zLevel)
 
 	zLevelFront := lcl.NewMenuItem(m.tree)
 	zLevelFront.SetCaption("移动到最顶层")
 	zLevelFront.SetImageIndex(imageItem.ImageIndex("order_move_front.png"))
 	menu.zLevelFront = zLevelFront
-	zLevel.Add(zLevelFront)
+	menuItems.Add(zLevelFront)
 	zLevelFront.SetOnClick(menu.OnLevelFront)
 
 	zLevelBack := lcl.NewMenuItem(m.tree)
 	zLevelBack.SetCaption("移动到最底层")
 	zLevelBack.SetImageIndex(imageItem.ImageIndex("order_move_back.png"))
 	menu.zLevelBack = zLevelBack
-	zLevel.Add(zLevelBack)
+	menuItems.Add(zLevelBack)
 	zLevelBack.SetOnClick(menu.OnLevelBack)
 
 	zLevelForwardOne := lcl.NewMenuItem(m.tree)
 	zLevelForwardOne.SetCaption("向前移动一层")
 	zLevelForwardOne.SetImageIndex(imageItem.ImageIndex("order_forward_one.png"))
 	menu.zLevelForwardOne = zLevelForwardOne
-	zLevel.Add(zLevelForwardOne)
+	menuItems.Add(zLevelForwardOne)
 	zLevelForwardOne.SetOnClick(menu.OnLevelForwardOne)
 
 	zLevelBackOne := lcl.NewMenuItem(m.tree)
 	zLevelBackOne.SetCaption("向后移动一层")
 	zLevelBackOne.SetImageIndex(imageItem.ImageIndex("order_back_one.png"))
 	menu.zLevelBackOne = zLevelBackOne
-	zLevel.Add(zLevelBackOne)
+	menuItems.Add(zLevelBackOne)
 	zLevelBackOne.SetOnClick(menu.OnLevelBackOne)
 
 	line := lcl.NewMenuItem(m.tree)
