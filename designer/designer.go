@@ -289,6 +289,8 @@ func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 }
 
 func init() {
+	// 注册控制台消息处理器事件
+	initConsoleEvent()
 	// 初始化工具栏相关配置
 	initConfigToolbar()
 	// 注册组件
