@@ -27,6 +27,20 @@ import (
 	"time"
 )
 
+const (
+	packageName    = "forms"                                          // 包名
+	lcl            = `"github.com/energye/lcl/lcl"`                   // lcl 组件库
+	cef            = `"github.com/energye/cef"`                       // cef 组件库
+	wvWindows      = `"github.com/energye/wv/windows"`                // webview2 组件库
+	wvLinux        = `"github.com/energye/wv/linux"`                  // gtk webkit2 组件库
+	wvDarwin       = `"github.com/energye/wv/darwin"`                 // cocoa darwin 组件库
+	lclTypes       = `lclTypes "github.com/energye/lcl/types"`        // lcl 类型
+	cefTypes       = `cefTypes "github.com/energye/cef/types"`        // cef 类型
+	wvTypesWindows = `cefTypes "github.com/energye/wv/types/windows"` // webview2 windows 类型
+	wvTypesLinux   = `cefTypes "github.com/energye/wv/types/linux"`   // gtk webkit2 linux 类型
+	wvTypesDarwin  = `cefTypes "github.com/energye/wv/types/darwin"`  // cocoa webkit2 darwin 类型
+)
+
 // go 代码生成 自动时时生成
 // 依赖 uigen UI 布局文件
 // 生成触发条件: UI 布局文件修改后
@@ -65,8 +79,9 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		UIFile: baseName + ".ui", UserFile: baseName + ".go",
-		PackageName: packageName,
 	}
+	data.Imports.Add(lcl)
+	data.IncludePackage()
 
 	// 解析模板
 	tmpl, err := template.New("auto").Parse(autoCodeTemplate)
@@ -116,8 +131,9 @@ func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		UIFile: baseName + ".ui", UserFile: baseName + ".go",
-		PackageName: packageName,
 	}
+	data.Imports.Add(lcl)
+	data.IncludePackage()
 
 	// 解析模板
 	tmpl, err := template.New("user").Parse(userCodeTemplate)

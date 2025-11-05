@@ -26,28 +26,29 @@ const autoCodeTemplate = `// ===================================================
 //     功能描述: 基于 ENERGY GUI 框架的实现, 包含UI组件创建
 // ==============================================================================
 
-package {{.BaseInfo.PackageName}}
+{{$Form := .}}
+
+package {{$Form.PackageName}}
 
 import (
-	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/types"
+	{{$Form.GoGetImports}}
 )
 
-type T{{.Name}} struct {
+type T{{$Form.Form.Name}} struct {
 	lcl.TEngForm
-	{{range .Children -}} 
+	{{range $Form.Form.Children -}}
 	{{.GoFieldName}} {{.GoIntfName}}
 	{{end -}}
 }
 
-var {{.Name}} T{{.Name}}
+var {{$Form.Form.Name}} T{{$Form.Form.Name}}
 
 // FormCreate 窗体创建接口实现. 自动调用
-func (m *T{{.Name}}) FormCreate(sender lcl.IObject) {
+func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
 	// 设置窗体属性
-	{{$form := .}}
-	{{- range $propIndex, $prop := .Properties -}} 
-		{{$prop.GoPropertySet $form}} 
+	{{$formComp := $Form.Form}}
+	{{- range $propIndex, $prop := $formComp.Properties -}}
+		{{$prop.GoPropertySet $formComp $Form}}
 	{{end -}}
 	// 初始化组件
 	m.initComponents()
@@ -56,12 +57,12 @@ func (m *T{{.Name}}) FormCreate(sender lcl.IObject) {
 }
 
 // initComponents 初始化组件
-func (m *T{{.Name}}) initComponents() {
+func (m *T{{$Form.Form.Name}}) initComponents() {
     // 组件初始化和设置属性
-	{{range $compIndex, $comp := .Children -}} 
+	{{range $compIndex, $comp := $Form.Form.Children -}}
 		{{$comp.GoNewObject}}
-	{{- range $propIndex, $prop := $comp.Properties -}} 
-		{{$prop.GoPropertySet $comp}} 
+	{{- range $propIndex, $prop := $comp.Properties -}}
+		{{$prop.GoPropertySet $comp $Form}}
 	{{end -}}
 		{{$comp.GoSetObjectParent}}
 	{{end -}}
@@ -70,38 +71,39 @@ func (m *T{{.Name}}) initComponents() {
 
 // userCodeTemplate 用户代码模板
 const userCodeTemplate = `// ==============================================================================
-// 📚 T{{.Name}} 用户代码文件
+// 📚 {{.BaseInfo.UserFile}} 用户代码文件
 // 📌 该文件不存在时自动创建
 // ✏️ 可在此文件中添加事件处理和业务逻辑
 //    生成时间: {{.BaseInfo.DateTime}}
 // ==============================================================================
 
-package {{.BaseInfo.PackageName}}
+{{$Form := .}}
+
+package {{$Form.PackageName}}
 
 import (
-	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/types"
+	{{$Form.GoGetImports}}
 )
 
 // OnFormCreate 窗体初始化事件
-func (m *T{{.Name}}) OnFormCreate(sender lcl.IObject) {
+func (m *T{{$Form.Form.Name}}) OnFormCreate(sender lcl.IObject) {
 	// TODO 在此处添加窗体初始化代码
 }
 
 // OnCloseQuery 窗体关闭前询问事件
-func (m *T{{.Name}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+func (m *T{{$Form.Form.Name}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	// TODO 在此处添加窗体关闭前询问代码
 }
 
 // OnClose 仅当 OnCloseQuery 中 CanClose 被设置为 True 后会触发
-func (m *T{{.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+func (m *T{{$Form.Form.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	// TODO 在此处添加窗体关闭代码
 }
 
-{{range .Children}}
+{{range $Form.Form.Children}}
 // On{{.Name}}Click {{.Name}}点击事件
-func (m *T{{.Name}}) On{{.Name}}Click(sender lcl.IObject) {
-	// TODO 在此处添加{{.Name}}点击事件处理代码
+func (m *T{{$Form.Form.Name}}) On{{.Name}}Click(sender lcl.IObject) {
+	// TODO 在此处添加点击事件处理代码
 }
 {{end}}
 `

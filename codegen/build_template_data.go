@@ -18,11 +18,18 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/uigen"
+	"strings"
 )
 
 // 构建模板数据
 
-const packageName = "forms"
+// 窗体数据
+type TFormData struct {
+	BaseInfo    *TBaseInfo      // 基础信息
+	PackageName string          // 包名
+	Imports     *tool.HashSet   // 导入包
+	Form        *TComponentData // 窗体根组件节点
+}
 
 // 组件数据
 type TComponentData struct {
@@ -33,7 +40,6 @@ type TComponentData struct {
 	Properties      []TPropertyData        // 组件属性
 	Parent          *TComponentData        // 组件所属父类
 	Children        []*TComponentData      // 子组件列表
-	BaseInfo        *TBaseInfo             // 基础信息
 }
 
 // 基础信息
@@ -42,7 +48,6 @@ type TBaseInfo struct {
 	DateTime        string // 生成时间
 	UIFile          string // UI 文件
 	UserFile        string // 用户文件
-	PackageName     string // 包名
 }
 
 // 属性数组
@@ -94,8 +99,35 @@ func (m *TComponentData) GoFieldName() string {
 	return m.Name
 }
 
+// 模板调用函数 - 返回当前使用的包
+func (m *TFormData) GoGetImports() string {
+	imports := strings.Join(m.Imports.Values(), "\n")
+	return imports
+}
+
+// 包含的包
+// 该函数在渲染之前执行, 获取当前所依赖的模块包
+// 根据不同的属性和组件所属模板区分包
+func (m *TFormData) IncludePackage() {
+	var findPackages func(comp *TComponentData)
+	findPackages = func(comp *TComponentData) {
+		//comp.ComponentModule // TODO 后面要根据组件所属模块区分 types
+		for _, prop := range comp.Properties {
+			switch prop.Type {
+			case consts.PdtCheckBoxList, consts.PdtComboBox:
+				m.Imports.Add(lclTypes)
+				// 其它 ...
+			}
+		}
+		for _, childComp := range comp.Children {
+			findPackages(childComp)
+		}
+	}
+	findPackages(m.Form)
+}
+
 // 模板调用函数 - 设置对象属性
-func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
+func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) string {
 	prop := tool.Buffer{}
 	object := ""
 	switch comp.Type {
@@ -110,74 +142,79 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData) string {
 	for i := 0; i < len(namePaths)-1; i++ {
 		prop.WriteString(".", namePaths[i], "()")
 	}
-	if len(namePaths) > 0 {
-		name := namePaths[len(namePaths)-1]
-		// 参数, 多种类型, 每种类型传入的方式不一样
-		value := ""
-		switch m.Type {
-		case consts.PdtText: // string
-			value = `"` + m.Value.(string) + `"`
-		case consts.PdtInt, consts.PdtInt64: // int32 or int64
-			value = tool.IntToString(m.Value)
-		case consts.PdtUint16: // uint16
-			if size := len(m.Value.(string)); size == 1 {
-				// 单字符使用单引号 "'" 直接转换
-				value = `'` + m.Value.(string) + `'`
-			} else if size > 1 {
-				// 多字符串串转换成 uint16
-				if uv, err := tool.StrToUint16(m.Value.(string)); err == nil {
-					value = tool.IntToString(uv)
-				}
+	// 参数, 多种类型, 每种类型传入的方式不一样
+	value := ""
+	switch m.Type {
+	case consts.PdtText: // string
+		value = `"` + m.Value.(string) + `"`
+	case consts.PdtInt, consts.PdtInt64: // int32 or int64
+		value = tool.IntToString(m.Value)
+	case consts.PdtUint16: // uint16
+		if size := len(m.Value.(string)); size == 1 {
+			// 单字符使用单引号 "'" 直接转换
+			value = `'` + m.Value.(string) + `'`
+		} else if size > 1 {
+			// 多字符串串转换成 uint16
+			if uv, err := tool.StrToUint16(m.Value.(string)); err == nil {
+				value = tool.IntToString(uv)
 			}
-		case consts.PdtFloat: // float32 or float64
-			value = tool.FloatToString(m.Value)
-		case consts.PdtCheckBox: // bool
-			value = tool.BoolToString(m.Value)
-		case consts.PdtCheckBoxList: // set: types.NewSet
-			setStr := tool.SetToString(m.Value)
-			items := tool.Split(setStr, ",")
-			sets := tool.Buffer{}
-			for i, item := range items {
-				if i > 0 {
-					sets.WriteString(",")
-				}
-				sets.WriteString("types.", item)
-			}
-			value = "types.NewSet(" + sets.String() + ")"
-		case consts.PdtComboBox: // package: mapper.GetLCL([name])
-			value = "types." + m.Value.(string)
-		case consts.PdtColorSelect: // uint32: types.Color([value])
-			value = tool.IntToString(m.Value)
-		case consts.PdtClass: // Class instance
-			logs.Debug("属性类对象实例未设置:", m.Value)
 		}
-		prop.WriteString(".Set", name, "(", value, ")")
+	case consts.PdtFloat: // float32 or float64
+		value = tool.FloatToString(m.Value)
+	case consts.PdtCheckBox: // bool
+		value = tool.BoolToString(m.Value)
+	case consts.PdtCheckBoxList: // set: types.NewSet
+		setStr := tool.SetToString(m.Value)
+		items := tool.Split(setStr, ",")
+		sets := tool.Buffer{}
+		for i, item := range items {
+			if i > 0 {
+				sets.WriteString(",")
+			}
+			sets.WriteString("types.", item)
+		}
+		value = "lclTypes.NewSet(" + sets.String() + ")"
+		form.Imports.Add(lclTypes)
+	case consts.PdtComboBox: // package: mapper.GetLCL([name])
+		value = "lclTypes." + m.Value.(string)
+		form.Imports.Add(lclTypes)
+	case consts.PdtColorSelect: // uint32: types.Color([value])
+		value = tool.IntToString(m.Value)
+	case consts.PdtClass: // Class instance
+		logs.Debug("属性类对象实例未设置:", m.Value)
 	}
+	// 属性名
+	name := namePaths[len(namePaths)-1]
+	prop.WriteString(".Set", name, "(", value, ")")
 	return prop.String()
 }
 
 // 构建自动代码模板数据
-func buildAutoTemplateData(component *uigen.TUIComponent) *TComponentData {
-	data := &TComponentData{
+func buildAutoTemplateData(component *uigen.TUIComponent) *TFormData {
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: packageName, Imports: tool.NewHashSet()}
+	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
 		Type:       component.Type,
 		Properties: uiPropertiesToTemplateProperties(component.Properties),
+		Children:   make([]*TComponentData, 0),
 	}
-	data.Children = data.buildComponents(component)
-	return data
+	formData.Form.Children = formData.Form.buildComponents(component)
+	return formData
 }
 
 // 构建用户代码模板数据
-func buildUserTemplateData(component *uigen.TUIComponent) *TComponentData {
-	data := &TComponentData{
+func buildUserTemplateData(component *uigen.TUIComponent) *TFormData {
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: packageName, Imports: tool.NewHashSet()}
+	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
 		Type:       component.Type,
 		Properties: uiPropertiesToTemplateProperties(component.Properties),
+		Children:   make([]*TComponentData, 0),
 	}
-	data.Children = data.buildComponents(component)
-	return data
+	formData.Form.Children = formData.Form.buildComponents(component)
+	return formData
 }
 
 // 构建组件列表
@@ -235,21 +272,5 @@ func uiPropertyToTemplateProperty(uiProperty uigen.TProperty) TPropertyData {
 		Name:  uiProperty.Name,
 		Value: uiProperty.Value,
 		Type:  uiProperty.Type,
-	}
-}
-
-// 获取属性类型
-func getPropertyType(value any) string {
-	switch value.(type) {
-	case string:
-		return "string"
-	case int, int32, int64:
-		return "int"
-	case float32, float64:
-		return "float64"
-	case bool:
-		return "bool"
-	default:
-		return "any"
 	}
 }
