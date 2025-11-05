@@ -15,6 +15,7 @@ package tool
 
 import (
 	"github.com/energye/designer/resources"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"os"
 	"strings"
@@ -133,4 +134,9 @@ func Split(s, sep string) []string {
 // 字符串替换
 func Replace(s, old, new string) string {
 	return strings.Replace(s, old, new, -1)
+}
+
+// 判断当前是否为主线程
+func IsMainThread() bool {
+	return api.MainThreadId() == api.CurrentThreadId()
 }

@@ -31,51 +31,53 @@ type BottomBox struct {
 	leftBox  lcl.IPanel    // 左侧-面板组件对象查看器
 	splitter lcl.ISplitter // 分割线
 	rightBox lcl.IPanel    // 右侧-窗体设计器
+	console  *TConsole     // 底部输出
 }
 
 func (m *TAppWindow) createBottomBox() *BottomBox {
 	box := &BottomBox{}
 	box.box = lcl.NewPanel(m)
-	box.box.SetParent(m)
 	box.box.SetBevelOuter(types.BvNone)
 	box.box.SetDoubleBuffered(true)
 	box.box.SetTop(toolbarHeight)
 	box.box.SetWidth(m.Width())
 	box.box.SetHeight(m.Height() - box.box.Top())
 	box.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
+	box.box.SetParent(m)
 	//box.box.SetColor(bottomColor)
 	m.box = box
 
 	// 工具栏-分隔线
 	box.splitter = lcl.NewSplitter(box.box)
-	box.splitter.SetParent(box.box)
 	box.splitter.SetAlign(types.AlLeft)
 	box.splitter.SetWidth(5)
 	box.splitter.SetMinSize(50)
 	box.splitter.SetResizeStyle(types.RsNone)
+	box.splitter.SetParent(box.box)
 
 	// 左侧-面板组件对象查看器
 	box.leftBox = lcl.NewPanel(box.box)
-	box.leftBox.SetParent(box.box)
 	box.leftBox.SetBevelOuter(types.BvNone)
 	box.leftBox.SetDoubleBuffered(true)
 	box.leftBox.SetWidth(leftBoxWidth)
 	box.leftBox.SetHeight(box.box.Height())
 	box.leftBox.Constraints().SetMinWidth(50)
 	box.leftBox.SetAlign(types.AlLeft)
+	box.leftBox.SetParent(box.box)
 
 	// 右侧-窗体设计器
 	box.rightBox = lcl.NewPanel(box.box)
-	box.rightBox.SetParent(box.box)
 	box.rightBox.SetBevelOuter(types.BvNone)
 	box.rightBox.SetDoubleBuffered(true)
 	box.rightBox.SetAlign(types.AlClient)
+	box.rightBox.SetParent(box.box)
 
 	// 创建对象查看器
 	inspector = box.createInspectorLayout()
 
 	// 创建窗体设计器
 	designer = box.createFromDesignerLayout()
+	box.createConsole()
 
 	AddOnShow(func() {
 		// 2. 添加到组件树

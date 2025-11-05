@@ -46,9 +46,9 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
 	des.designerForms = make(map[int]*FormTab)
 	des.page = lcl.NewPageControl(m.box)
-	des.page.SetParent(m.rightBox)
 	des.page.SetAlign(types.AlClient)
 	des.page.SetTabStop(true)
+	des.page.SetParent(m.rightBox)
 
 	// 右键菜单
 	des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {

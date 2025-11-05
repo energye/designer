@@ -19,5 +19,5 @@ import "github.com/energye/designer/event"
 
 // 触发Go代码生成事件
 func triggerCodeGeneration(uiFilePath string) {
-	event.GenCode.TriggerEvent(event.TEventTrigger{Payload: uiFilePath})
+	event.Emit(event.TTrigger{Name: event.GenCode, Payload: uiFilePath})
 }

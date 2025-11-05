@@ -125,7 +125,7 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 预览窗体")
 	if m.previewState == consts.PsStarted {
 		logs.Debug("工具栏按钮, 停止预览窗体")
-		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStop})
+		event.Emit(event.TTrigger{Name: event.Preview, Payload: consts.PsStop})
 	} else {
 		logs.Debug("工具栏按钮, 运行预览窗体")
 		result := make(chan any)
@@ -149,7 +149,7 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 			logs.Debug("状态监听结束")
 		}()
 		// 启动运行预览
-		event.Preview.TriggerEvent(event.TEventTrigger{Payload: consts.PsStarted, Result: result})
+		event.Emit(event.TTrigger{Name: event.Preview, Payload: consts.PsStarted, Result: result})
 	}
 }
 
