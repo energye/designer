@@ -17,11 +17,14 @@ ENERGY Designer 是一个基于 ENERGY GUI 框架开发的跨平台 GUI 可视�
 
 ## 🎯 使用场景
 
-1. **快速原型开发**：快速构建 GUI 应用原型
+1. **快速原型开发**：快速构建 GUI 应用
 2. **界面设计**：可视化设计复杂的用户界面
 3. **代码生成**：自动生 ENERGY GUI 的代码
 4. **丰富的组件**：原生控件, CEF控件, Webview控件
 
 *ENERGY Designer - 让 GUI 开发更简单*
 
-![designer_window.png](docs%2Fimage%2Fdesigner_window.png)
+
+![ENERGY-designer.png](docs%2Fimage%2FENERGY-designer.png)
+
+![ENERGY-designer-preview.png](docs%2Fimage%2FENERGY-designer-preview.png)
