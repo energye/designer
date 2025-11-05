@@ -15,6 +15,7 @@ package preview
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
@@ -31,6 +32,7 @@ func build(output string) {
 	buildCmd.Dir = project.Path
 	buildCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)
+		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
 	}
 	// TODO 需要通过配置, 构建参数
 	buildCmd.Command("go", "build", "-x", "-o", output)
@@ -42,6 +44,8 @@ func runPreview(state chan<- any) {
 	if runCmd != nil {
 		return
 	}
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 1}}) //清空控制台消息
+
 	state <- consts.PsStarting
 	var output string
 	// TODO 需要通过配置 --test
@@ -58,6 +62,7 @@ func runPreview(state chan<- any) {
 	runCmd.Dir = project.Path
 	runCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)
+		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
 		if tool.Equal(data, "exit") {
 			// 退出
 			//state <- 0
@@ -70,6 +75,7 @@ func runPreview(state chan<- any) {
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "预览运行结束"}}) //运行结束消息
 }
 
 func stopPreview() {

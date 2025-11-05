@@ -19,42 +19,21 @@ import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-// 预览事件实例
-var preview = &TPreview{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
-
-// TPreview 预览
-type TPreview struct {
-	trigger chan event.TEventTrigger // 触发生成事件
-	cancel  chan bool                // 取消生成事件
-}
-
-// Start 启动项目配置文件更新
-func (m *TPreview) Start() {
-	for {
-		select {
-		case trigger := <-m.trigger:
-			ps, ok := trigger.Payload.(consts.PreviewState)
-			if ok {
-				if ps == consts.PsStarted {
-					// 启动运行预览
-					go func() {
-						runPreview(trigger.Result)
-					}()
-				} else if ps == consts.PsStop {
-					// 停止运行预览
-					go stopPreview()
-				}
-			} else {
-				logs.Error("运行预览错误, 操作参数不正确, option:", ps)
-			}
-		case <-m.cancel:
-			logs.Info("停止预览事件处理器")
-			return
-		}
-	}
-}
-
 func init() {
-	event.Preview = event.NewEvent(preview.trigger, preview.cancel)
-	go preview.Start()
+	event.On(event.Preview, func(trigger event.TTrigger) {
+		ps, ok := trigger.Payload.(consts.PreviewState)
+		if ok {
+			if ps == consts.PsStarted {
+				// 启动运行预览
+				go runPreview(trigger.Result)
+			} else if ps == consts.PsStop {
+				// 停止运行预览
+				go stopPreview()
+			}
+		} else {
+			logs.Error("运行预览错误, 操作参数不正确, option:", ps)
+		}
+	}, func() {
+		logs.Info("开始预览事件处理器")
+	})
 }

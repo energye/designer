@@ -18,30 +18,10 @@ import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-// 项目配置文件生成实例
-var gen = &TProjectConfig{trigger: make(chan event.TEventTrigger, 1), cancel: make(chan bool, 1)}
-
-// TProjectConfig 配置生成和更新
-type TProjectConfig struct {
-	trigger chan event.TEventTrigger // 触发生成事件
-	cancel  chan bool                // 取消生成事件
-}
-
-// Start 启动项目配置文件更新
-func (m *TProjectConfig) Start() {
-	for {
-		select {
-		case trigger := <-m.trigger:
-			println(trigger.Payload)
-		case <-m.cancel:
-			// 停止项目配置更新生成器
-			logs.Info("停止项目配置更新生成器")
-			return
-		}
-	}
-}
-
 func init() {
-	event.Project = event.NewEvent(gen.trigger, gen.cancel)
-	go gen.Start()
+	event.On(event.Project, func(trigger event.TTrigger) {
+		println(trigger.Payload)
+	}, func() {
+		logs.Info("停止项目配置更新生成器")
+	})
 }
