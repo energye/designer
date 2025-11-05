@@ -23,20 +23,28 @@ import (
 	"github.com/energye/designer/pkg/message"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"reflect"
 	"strings"
+	"sync"
+	"time"
 )
 
 // 组件对象函数调用
+
+var (
+	updateComponentTimers = make(map[string]*time.Timer)
+	updateComponentMutex  sync.Mutex
+	updateComponentDelay  = 50 * time.Millisecond
+)
 
 func methodNameToSet(name string) string {
 	name = tool.FirstToUpper(name)
 	return "Set" + name
 }
 
-// 更新组件属性到对象
-func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
+func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
 	m.drag.Hide()
 	defer m.drag.Show()
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name())
@@ -70,6 +78,28 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs)
 		}
 	}
+}
+
+// 更新组件属性到对象
+func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
+	updateComponentMutex.Lock()
+	defer updateComponentMutex.Unlock()
+	compName := m.Name()
+	// 取消之前的定时器
+	if timer, exists := updateComponentTimers[compName]; exists {
+		timer.Stop()
+	}
+	// 创建新的定时器
+	timer := time.AfterFunc(updateComponentDelay, func() {
+		updateComponentMutex.Lock()
+		delete(updateComponentTimers, compName)
+		updateComponentMutex.Unlock()
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.doUpdateComponentPropertyToObject(updateNodeData)
+		})
+	})
+	updateComponentTimers[compName] = timer
+
 }
 
 // 更新组件树节点信息
@@ -191,7 +221,8 @@ func (m *reflector) convertArgsValue() (args []any) {
 	case consts.PdtCheckBox:
 		// bool
 		data := m.data.AffiliatedNode.ToGo()
-		if pData := vtedit.GetPropertyNodeData(data.Parent); pData != nil {
+		if pData := vtedit.GetPropertyNodeData(data.Parent); pData != nil && pData.Type() != consts.PdtClass {
+			// 当节点不是 class 时才处理
 			dataList := pData.EditNodeData.CheckBoxValue
 			var vals []int32
 			for _, item := range dataList {
@@ -245,11 +276,19 @@ func (m *reflector) findMethodName() string {
 		parentNode := node.Parent
 		// 有父节点 PdtCheckBoxList
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
-			methodName = pData.Name()
+			if pData.Type() == consts.PdtClass {
+				//父节点是 class 时使用当前属性名
+				methodName = m.data.Name()
+			} else {
+				//父节点不是 class 时使用父节点属性名, 此时应为 PdtCheckBoxList
+				methodName = pData.Name()
+			}
 		} else {
+			// 没有父节点, 使用当前属性名
 			methodName = m.data.Name()
 		}
 	default:
+		// 其它默认当前属性名
 		methodName = m.data.Name()
 	}
 	// Setter
@@ -267,7 +306,13 @@ func (m *reflector) findObject() (object reflect.Value) {
 		node := m.data.AffiliatedNode.ToGo()
 		parentNode := node.Parent
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
-			data = pData // 使用父节点
+			if pData.Type() == consts.PdtClass {
+				// 父节点是 class 时, object 使用父节点对象
+				// 在下面 paths 时获取
+			} else {
+				//父节点不是 class 时使用父节点, 此时应为 PdtCheckBoxList
+				data = pData // 使用父节点
+			}
 		}
 	}
 	// 方法是用于遍历对象路径, 当当前节点具有父节点时且父节点为 class 时查找出对象路径(paths)
@@ -334,7 +379,6 @@ func (m *reflector) callMethod() ([]any, error) {
 		out[i] = result.Interface()
 	}
 	logs.Debug("调用方法结束 对象:", object.Type().Name(), "方法:", methodName, "返回值:", out)
-
 	return out, nil
 }
 
@@ -354,53 +398,58 @@ func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect
 			return reflect.ValueOf(val).Convert(targetType), nil
 		}
 	}
-	if v, ok := value.(string); ok {
-		switch targetType.Kind() {
-		case reflect.Bool:
-			r, err := tool.StrToBool(v)
-			return reflect.ValueOf(r), err
-		case reflect.Int:
-			r, err := tool.StrToInt(v)
-			return reflect.ValueOf(r), err
-		case reflect.Int8:
-			r, err := tool.StrToInt8(v)
-			return reflect.ValueOf(r), err
-		case reflect.Int16:
-			r, err := tool.StrToInt16(v)
-			return reflect.ValueOf(r), err
-		case reflect.Int32:
-			r, err := tool.StrToInt32(v)
-			return reflect.ValueOf(r), err
-		case reflect.Int64:
-			r, err := tool.StrToInt64(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uint:
-			r, err := tool.StrToUint(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uint8:
-			r, err := tool.StrToUint8(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uint16:
-			r, err := tool.StrToUint16(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uint32:
-			r, err := tool.StrToUint32(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uint64:
-			r, err := tool.StrToUint64(v)
-			return reflect.ValueOf(r), err
-		case reflect.Uintptr:
-			r, err := tool.StrToUintptr(v)
-			return reflect.ValueOf(r), err
-		case reflect.Float32:
-			r, err := tool.StrToFloat32(v)
-			return reflect.ValueOf(r), err
-		case reflect.Float64:
-			r, err := tool.StrToFloat64(v)
-			return reflect.ValueOf(r), err
-		case reflect.String:
-			return reflect.ValueOf(v), nil
-		}
+	if v, err := tool.ValueToTargetType(value, targetType); err == nil {
+		return reflect.ValueOf(v), nil
+	} else {
+		return reflect.Value{}, err
 	}
-	return reflect.Value{}, errors.New("参数类型转换失败")
+	//if v, ok := value.(string); ok {
+	//	switch targetType.Kind() {
+	//	case reflect.Bool:
+	//		r, err := tool.StrToBool(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Int:
+	//		r, err := tool.StrToInt(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Int8:
+	//		r, err := tool.StrToInt8(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Int16:
+	//		r, err := tool.StrToInt16(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Int32:
+	//		r, err := tool.StrToInt32(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Int64:
+	//		r, err := tool.StrToInt64(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uint:
+	//		r, err := tool.StrToUint(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uint8:
+	//		r, err := tool.StrToUint8(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uint16:
+	//		r, err := tool.StrToUint16(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uint32:
+	//		r, err := tool.StrToUint32(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uint64:
+	//		r, err := tool.StrToUint64(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Uintptr:
+	//		r, err := tool.StrToUintptr(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Float32:
+	//		r, err := tool.StrToFloat32(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.Float64:
+	//		r, err := tool.StrToFloat64(v)
+	//		return reflect.ValueOf(r), err
+	//	case reflect.String:
+	//		return reflect.ValueOf(v), nil
+	//	}
+	//}
+	//return reflect.Value{}, errors.New("参数类型转换失败")
 }

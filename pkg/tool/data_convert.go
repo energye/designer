@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -181,4 +182,92 @@ func StrToFloat32(s string) (float32, error) {
 func StrToFloat64(s string) (float64, error) {
 	val, err := strconv.ParseFloat(s, 64)
 	return val, err
+}
+
+// ValueToTargetType 基本类型转换函数, 将值转换为目标类型
+func ValueToTargetType(value any, targetType reflect.Type) (any, error) {
+	sourceType := reflect.TypeOf(value)
+	if sourceType == targetType {
+		return value, nil
+	}
+	if value == nil {
+		return getZeroValue(targetType), nil
+	}
+	strValue, err := toString(value)
+	if err != nil {
+		return nil, fmt.Errorf("ValueToTargetType 转换到 string 类型失败: %v", err)
+	}
+	return fromString(strValue, targetType)
+}
+
+// toString 将任意基本类型转换为字符串
+func toString(value any) (string, error) {
+	switch v := value.(type) {
+	case string:
+		return v, nil
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return fmt.Sprintf("%d", v), nil
+	case float32, float64:
+		return fmt.Sprintf("%f", v), nil
+	case bool:
+		return fmt.Sprintf("%t", v), nil
+	default:
+		return "", fmt.Errorf("unsupported source type: %T", value)
+	}
+}
+
+// fromString 将字符串转换为目标类型
+func fromString(strValue string, targetType reflect.Type) (any, error) {
+	switch targetType.Kind() {
+	case reflect.String:
+		return strValue, nil
+	case reflect.Uintptr:
+		return StrToUintptr(strValue)
+	case reflect.Int:
+		return StrToInt(strValue)
+	case reflect.Int8:
+		return StrToInt8(strValue)
+	case reflect.Int16:
+		return StrToInt16(strValue)
+	case reflect.Int32:
+		return StrToInt32(strValue)
+	case reflect.Int64:
+		return StrToInt64(strValue)
+	case reflect.Uint:
+		return StrToUint(strValue)
+	case reflect.Uint8:
+		return StrToUint8(strValue)
+	case reflect.Uint16:
+		return StrToUint16(strValue)
+	case reflect.Uint32:
+		return StrToUint32(strValue)
+	case reflect.Uint64:
+		return StrToUint64(strValue)
+	case reflect.Float32:
+		return StrToFloat32(strValue)
+	case reflect.Float64:
+		return StrToFloat64(strValue)
+	case reflect.Bool:
+		return StrToBool(strValue)
+	default:
+		return nil, fmt.Errorf("不支持的目标类型转换: %v", targetType)
+	}
+}
+
+// getZeroValue 获取目标类型的零值
+func getZeroValue(targetType reflect.Type) any {
+	switch targetType.Kind() {
+	case reflect.String:
+		return ""
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return uint(0)
+	case reflect.Float32, reflect.Float64:
+		return 0.0
+	case reflect.Bool:
+		return false
+	default:
+		return nil
+	}
 }
