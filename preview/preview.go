@@ -22,24 +22,24 @@ import (
 	"github.com/energye/lcl/tool/command"
 )
 
-var cmd *command.CMD
+var runCmd *command.CMD
 
 // 构建项目
 func build(output string) {
 	buildCmd := command.NewCMD()
+	buildCmd.IsPrint = false
 	buildCmd.Dir = project.Path
-	buildCmd.MessageCallback = func(bytes []byte, err error) {
-		info := string(bytes)
-		logs.Info(info)
+	buildCmd.Console = func(data string, level command.Level) {
+		logs.Info("[", level.String(), "]", data)
 	}
 	// TODO 需要通过配置, 构建参数
-	buildCmd.Command("go", "build", "-o", output)
+	buildCmd.Command("go", "build", "-x", "-o", output)
 }
 
 // 执行应用程序的预览功能
 // 根据项目配置预览当前项目
 func runPreview(state chan<- any) {
-	if cmd != nil {
+	if runCmd != nil {
 		return
 	}
 	state <- consts.PsStarting
@@ -53,31 +53,31 @@ func runPreview(state chan<- any) {
 	// 构建项目二进制
 	build(output)
 	// 运行命令
-	cmd = command.NewCMD()
-	cmd.Dir = project.Path
-	cmd.MessageCallback = func(bytes []byte, err error) {
-		info := string(bytes)
-		logs.Info(info)
-		if tool.Equal(info, "exit") {
+	runCmd = command.NewCMD()
+	runCmd.IsPrint = false
+	runCmd.Dir = project.Path
+	runCmd.Console = func(data string, level command.Level) {
+		logs.Info("[", level.String(), "]", data)
+		if tool.Equal(data, "exit") {
 			// 退出
 			//state <- 0
 		}
 	}
 	// 开始运行
 	state <- consts.PsStarted
-	cmd.Command(output)
+	runCmd.Command(output)
 	state <- consts.PsStop
 	close(state)
 	logs.Debug("run preview end")
-	cmd = nil
+	runCmd = nil
 }
 
 func stopPreview() {
 	// 停止运行
-	if cmd != nil {
-		logs.Debug("停止预览, 进程ID:", cmd.Cmd.Process.Pid)
-		err := cmd.Cmd.Process.Kill()
-		logs.Debug("停止预览, 进程ID:", cmd.Cmd.Process.Pid, "结果:", err)
+	if runCmd != nil {
+		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid)
+		err := runCmd.Cmd.Process.Kill()
+		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)
 	}
-	cmd = nil
+	runCmd = nil
 }
