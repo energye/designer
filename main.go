@@ -18,6 +18,7 @@ import (
 	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
+	"github.com/energye/designer/project"
 	"github.com/energye/designer/resources/lib"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
@@ -29,6 +30,10 @@ import (
 
 func main() {
 	logs.Level = logs.LevelDebug
+	// 通过参数加载项目, 打开方试为 Designer 程
+	if len(os.Args) > 1 {
+		project.Load(os.Args[1])
+	}
 	libname.LibName = func() string {
 		wd, _ := os.Getwd()
 		return filepath.Join(wd, "../", "gen", "gout", lib.Name)

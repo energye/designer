@@ -13,7 +13,14 @@
 
 package project
 
-import "github.com/energye/lcl/tool"
+import (
+	"encoding/json"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/tool"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 // 项目文件 xxx.egp 配置文件
 // 存在于项目根目录
@@ -21,8 +28,10 @@ import "github.com/energye/lcl/tool"
 var (
 	// Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
 	Path    string
-	Project *TProject
+	Project TProject
 )
+
+const egp = ".egp"
 
 func init() {
 	// TODO 需要通过配置 --test
@@ -48,4 +57,30 @@ type TForm struct {
 	Name       string `json:"name"`      // 窗体名称
 	UpdateTime string `json:"date_time"` // 更新时间
 	Active     bool   `json:"active"`    // 是否激活设计, 同一时间只允许一个窗体激活设计
+}
+
+func Create() {
+
+}
+
+// 加载项目
+func Load(egpPath string) {
+	if tool.IsExist(egpPath) {
+		isEgp := strings.ToLower(filepath.Ext(egpPath)) == egp
+		if !isEgp {
+			logs.Warn("文件目录非 .egp 项目配置文件")
+			return
+		}
+		data, err := os.ReadFile(egpPath)
+		if err != nil {
+			logs.Error("读取项目配置文件失败:", err)
+			return
+		}
+		err = json.Unmarshal(data, &Project)
+		if err != nil {
+			logs.Error("解析项目配置文件失败:", err)
+			return
+		}
+
+	}
 }
