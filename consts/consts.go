@@ -18,8 +18,8 @@ type PreviewState int
 
 const (
 	PsStop     PreviewState = iota // 停止
-	PsStarting PreviewState = iota // 停止
-	PsStarted                      // 启动
+	PsStarting                     // 启动中
+	PsStarted                      // 启动完成
 )
 
 // DragShowStatus 拖拽显示状态
