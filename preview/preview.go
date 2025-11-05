@@ -35,7 +35,7 @@ func build(output string) {
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
 	}
 	// TODO 需要通过配置, 构建参数
-	buildCmd.Command("go", "build", "-x", "-o", output)
+	buildCmd.Command("go", "build", "-v", "-o", output)
 }
 
 // 执行应用程序的预览功能
@@ -54,8 +54,10 @@ func runPreview(state chan<- any) {
 	} else {
 		output = "./build/main"
 	}
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "编译程序: " + output}})
 	// 构建项目二进制
 	build(output)
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "开始预览运行: " + output}})
 	// 运行命令
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
@@ -75,7 +77,7 @@ func runPreview(state chan<- any) {
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "预览运行结束"}}) //运行结束消息
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "结束预览运行"}}) //运行结束消息
 }
 
 func stopPreview() {
