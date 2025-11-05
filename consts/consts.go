@@ -109,7 +109,7 @@ const (
 	CLevelBackOne                       //
 )
 
-// 组件模块
+// 组件所属模块 LCL, CEF, Webview2, Webkit2, Webkit2
 type ComponentModule int32
 
 const (
