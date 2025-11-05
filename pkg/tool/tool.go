@@ -113,6 +113,7 @@ func StringArrayReverse(array []string) {
 	}
 }
 
+// 分割字符串并去除空字符串 aa,bb,,cc > [aa,bb,cc]
 func Split(s, sep string) []string {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -127,4 +128,9 @@ func Split(s, sep string) []string {
 		result = append(result, v)
 	}
 	return result[:]
+}
+
+// 字符串替换
+func Replace(s, old, new string) string {
+	return strings.Replace(s, old, new, -1)
 }

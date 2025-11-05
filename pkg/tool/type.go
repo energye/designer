@@ -101,6 +101,14 @@ func (m *HashSet) Add(value ...string) {
 	}
 }
 
+func (m *HashSet) Iterate(fn func(key string) bool) {
+	for key, _ := range m.values {
+		if fn(key) {
+			break
+		}
+	}
+}
+
 func NewArraySet() *ArraySet {
 	return &ArraySet{keys: make([]string, 0), hash: make(map[string]bool)}
 }
