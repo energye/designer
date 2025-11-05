@@ -57,6 +57,7 @@ func (m *TCheckBoxEditLink) Create() {
 	m.checkbox.SetOnChange(func(sender lcl.IObject) {
 		m.checkbox.SetCaption("(" + strconv.FormatBool(m.checkbox.Checked()) + ")")
 		m.BindData.EditNodeData.Checked = m.checkbox.Checked()
+		m.BindData.FormInspectorPropertyToComponentProperty()
 		logs.Debug("TCheckBoxEditLink OnChange checked:", m.BindData.EditNodeData.Checked)
 		node := m.Node.ToGo()
 		parentNode := node.Parent
