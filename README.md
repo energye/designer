@@ -24,7 +24,20 @@ ENERGY Designer 是一个基于 ENERGY GUI 框架开发的跨平台 GUI 可视�
 
 *ENERGY Designer - 让 GUI 开发更简单*
 
+## 示例项目生成目录说明
+- `test/`: 项目根目录
+    - `build/`: 构建输出目录
+    - `forms/`: 
+        - `form1.go`: 用户的 Go 代码
+        - `form1.ui`: UI 布局文件
+        - `form1.ui.go`: 自动生成的 Go 代码
+- `main.go`: 主程序入口
+- `test.egp`: ENERGY GUI 项目配置文件
+- `go.mod`: Go 模块依赖文件
+
+## 截图
 
 ![ENERGY-designer.png](docs%2Fimage%2FENERGY-designer.png)
 
 ![ENERGY-designer-preview.png](docs%2Fimage%2FENERGY-designer-preview.png)
+
