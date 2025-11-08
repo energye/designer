@@ -17,6 +17,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
+	"widget/wg"
 )
 
 // 顶部工具栏
@@ -36,7 +37,8 @@ func initConfigToolbar() {
 }
 
 type TopToolbar struct {
-	page            lcl.IPageControl
+	//page            lcl.IPageControl
+	tab             *wg.TTab
 	box             lcl.IPanel
 	leftTools       lcl.IPanel
 	rightTabs       lcl.IPanel               // 组件面板选项卡
@@ -73,6 +75,7 @@ func (m *TAppWindow) createTopToolbar() {
 	bar.rightTabs.SetBevelOuter(types.BvNone)
 	bar.rightTabs.SetDoubleBuffered(true)
 	bar.rightTabs.SetHeight(bar.box.Height())
+	bar.rightTabs.SetWidth(bar.box.Width())
 	bar.rightTabs.SetAlign(types.AlClient)
 
 	// 创建工具按钮

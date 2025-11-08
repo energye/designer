@@ -18,11 +18,14 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"widget/wg"
 )
 
 // 组件选项卡
 type ComponentTab struct {
-	sheet         lcl.ITabSheet
+	//sheet         lcl.ITabSheet
+	sheet         *wg.TPage
 	toolbar       lcl.IToolBar
 	selectToolBtn lcl.IToolButton
 	components    map[string]*ComponentTabItem
@@ -39,12 +42,15 @@ type ComponentTabItem struct {
 
 // 组件选项卡
 func (m *TopToolbar) createComponentTabs() {
-	page := lcl.NewPageControl(m.box)
-	page.SetParent(m.rightTabs)
-	page.SetAlign(types.AlClient)
-	page.SetTabStop(true)
-	m.page = page
-	m.page.SetOnChange(func(sender lcl.IObject) {
+	//page := lcl.NewPageControl(m.box)
+	tab := wg.NewTab(m.box)
+	m.tab = tab
+	tab.SetBounds(0, 0, m.rightTabs.Width(), m.rightTabs.Height())
+	tab.SetAlign(types.AlClient)
+	tab.EnableScrollButton(false)
+	tab.SetColor(colors.ClGray)
+	tab.SetParent(m.rightTabs)
+	tab.SetOnChange(func(sender lcl.IObject) {
 		logs.Debug("Toolbar Tabs Change")
 		m.ResetTabComponentDown()
 	})
@@ -54,49 +60,59 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab := func(tab config.Tab) {
 		compTab := &ComponentTab{components: make(map[string]*ComponentTabItem)}
 		m.componentTabs[tab.En] = compTab
-		sheet := lcl.NewTabSheet(page)
-		sheet.SetParent(page)
-		sheet.SetCaption(tab.Cn)
-		sheet.SetAlign(types.AlClient)
+		//sheet := lcl.NewTabSheet(m.tab)
+		sheet := m.tab.NewPage()
+		sheet.Button().SetText(tab.Cn)                                // 设置标签按钮显示文本
+		sheet.Button().SetColorGradient(colors.ClGray, colors.ClGray) // 设置标签按钮过度颜色
+		sheet.SetDefaultColor(colors.ClGray)                          // 设置默认颜色
+		sheet.SetActiveColor(wg.LightenColor(colors.ClGray, 0.3))     // 设置激活颜色
+		sheet.SetColor(colors.ClGray)                                 // 设置背景色
+		//sheet.SetAlign(types.AlClient)
+		//sheet.SetParent(m.tab)
 		compTab.sheet = sheet
 
 		// 显示组件工具按钮
 		componentToolbar := lcl.NewToolBar(sheet)
-		componentToolbar.SetParent(sheet)
 		componentToolbar.SetImages(imageComponents.ImageList150())
 		componentToolbar.SetButtonWidth(36)
 		componentToolbar.SetButtonHeight(36)
 		componentToolbar.SetHeight(36)
+		componentToolbar.SetTop(3)
+		componentToolbar.SetWidth(sheet.Width())
 		componentToolbar.SetEdgeBorders(types.NewSet())
+		componentToolbar.SetAlign(types.AlCustom)
+		componentToolbar.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
+		componentToolbar.SetBorderStyleToBorderStyle(types.BsNone)
+		componentToolbar.SetParent(sheet)
 		compTab.toolbar = componentToolbar
 
 		// 选择工具 鼠标
 		selectToolBtn := lcl.NewToolButton(componentToolbar)
-		selectToolBtn.SetParent(componentToolbar)
 		selectToolBtn.SetHint("选择工具")
 		selectToolBtn.SetImageIndex(imageComponents.ImageIndex("cursortool_150.png"))
 		selectToolBtn.SetShowHint(true)
 		selectToolBtn.SetDown(true)
+		selectToolBtn.SetParent(componentToolbar)
 		comp := &ComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
 		compTab.components[comp.name] = comp
 		compTab.selectToolBtn = selectToolBtn
 
-		seap := lcl.NewToolButton(componentToolbar)
-		seap.SetParent(componentToolbar)
-		seap.SetStyle(types.TbsSeparator)
+		sep := lcl.NewToolButton(componentToolbar)
+		sep.SetStyle(types.TbsSeparator)
+		sep.SetParent(componentToolbar)
 
 		// 创建组件按钮
 		for i, name := range tab.Component {
 			btn := lcl.NewToolButton(componentToolbar)
-			btn.SetParent(componentToolbar)
 			btn.SetHint(name)
 			btn.SetImageIndex(imageComponents.ImageIndex(name + "_150.png")) // 36px
 			btn.SetShowHint(true)
+			btn.SetParent(componentToolbar)
 			comp = &ComponentTabItem{owner: compTab, index: i, inspectorTreeImageIndex: inspectorTreeImageIndex, name: name, btn: btn}
 			compTab.components[name] = comp
 			inspectorTreeImageIndex++
 		}
-		compTab.BindToolBtnEvent()
+		go compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡
 	newComponentTab(config.Config.ComponentTabs.Standard)
@@ -107,6 +123,10 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.Config.ComponentTabs.System)
 	newComponentTab(config.Config.ComponentTabs.LazControl)
 	newComponentTab(config.Config.ComponentTabs.WebView)
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		tab.RecalculatePosition()
+		m.componentTabs[config.Config.ComponentTabs.Standard.En].sheet.Active(true)
+	})
 }
 
 // 绑定事件

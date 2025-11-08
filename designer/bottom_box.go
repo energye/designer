@@ -80,16 +80,16 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.createConsole()
 
 	AddOnShow(func() {
-		// 2. 添加到组件树
-		// 2.1. 显示之后创建一个默认的设计面板
-		defaultForm := designer.addDesignerFormTab()
-		// 2.1. 加载属性到设计器
-		// 此步骤会初始化并填充设计组件实例
-		defaultForm.FormRoot.LoadPropertyToInspector()
-		// 2.2. 添加到组件树
-		defaultForm.AddFormNode()
-
-		go triggerUIGeneration(defaultForm.FormRoot)
+		//// 2. 添加到组件树
+		//// 2.1. 显示之后创建一个默认的设计面板
+		//defaultForm := designer.addDesignerFormTab()
+		//// 2.1. 加载属性到设计器
+		//// 此步骤会初始化并填充设计组件实例
+		//defaultForm.FormRoot.LoadPropertyToInspector()
+		//// 2.2. 添加到组件树
+		//defaultForm.AddFormNode()
+		//
+		//go triggerUIGeneration(defaultForm.FormRoot)
 	})
 
 	return box
