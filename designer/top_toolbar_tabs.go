@@ -55,6 +55,22 @@ func (m *TopToolbar) createComponentTabs() {
 		m.ResetTabComponentDown()
 	})
 
+	borderSet := func() {
+		pageSize := len(m.tab.Pages())
+		for i, page := range m.tab.Pages() {
+			if i < pageSize-1 {
+				// 前面所有不加右边框
+				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdTop, wg.BbdBottom))
+			} else {
+				// 最后一个加上全边框
+				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdTop, wg.BbdBottom, wg.BbdRight))
+				page.Button().ForcePaint(func() {
+					page.Button().Invalidate()
+				})
+			}
+		}
+	}
+
 	inspectorTreeImageIndex := 0 // 查看器组件树图片索引
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
@@ -112,6 +128,10 @@ func (m *TopToolbar) createComponentTabs() {
 			compTab.components[name] = comp
 			inspectorTreeImageIndex++
 		}
+		borderSet()
+		sheet.SetOnClose(func(sender lcl.IObject) {
+			borderSet()
+		})
 		go compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡
