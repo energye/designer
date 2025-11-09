@@ -34,7 +34,7 @@ type TDesigningComponent struct {
 	originObject  any                       // 原始组件对象
 	object        lcl.IWinControl           // 组件 对象 可视
 	objectNon     lcl.IComponent            // 组件 对象 非可视
-	objectNonWrap *NonVisualComponentWrap   // 组件 对象 非可视, 呈现控制
+	objectNonWrap *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
 	parent        *TDesigningComponent      // 所属父节点
 	Child         []*TDesigningComponent    // 拥有的子节点列表
 	drag          *drag                     // 拖拽控制

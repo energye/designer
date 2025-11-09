@@ -24,15 +24,16 @@ var (
 	nonWrapW, nonWrapH int32 = 38, 38
 )
 
-type NonVisualComponentWrap struct {
+// 非可视化组件
+type TNonVisualComponentWrap struct {
 	wrap lcl.IPanel
 	icon lcl.IImage
 	text lcl.ILabel
 	comp *TDesigningComponent
 }
 
-func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent) *NonVisualComponentWrap {
-	m := new(NonVisualComponentWrap)
+func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent) *TNonVisualComponentWrap {
+	m := new(TNonVisualComponentWrap)
 	wrap := lcl.NewPanel(owner)
 	wrap.SetWidth(nonWrapW)
 	wrap.SetHeight(nonWrapH)
@@ -50,18 +51,18 @@ func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent)
 	m.comp = comp
 	return m
 }
-func (m *NonVisualComponentWrap) Free() {
+func (m *TNonVisualComponentWrap) Free() {
 	m.wrap.Free()
 	m.text.Free()
 	m.icon.Free()
 	m.comp = nil
 }
 
-func (m *NonVisualComponentWrap) TextFollowHide() {
+func (m *TNonVisualComponentWrap) TextFollowHide() {
 	m.text.SetVisible(false)
 }
 
-func (m *NonVisualComponentWrap) TextFollowShow() {
+func (m *TNonVisualComponentWrap) TextFollowShow() {
 	m.icon.SetImageIndex(m.comp.IconIndex())
 	caption := m.comp.Name()
 	m.text.SetCaption(caption)
@@ -74,27 +75,27 @@ func (m *NonVisualComponentWrap) TextFollowShow() {
 	m.text.SetVisible(true)
 }
 
-func (m *NonVisualComponentWrap) SetHint(hint string) {
+func (m *TNonVisualComponentWrap) SetHint(hint string) {
 	m.wrap.SetHint(hint)
 }
 
-func (m *NonVisualComponentWrap) SetParent(parent lcl.IWinControl) {
+func (m *TNonVisualComponentWrap) SetParent(parent lcl.IWinControl) {
 	m.wrap.SetParent(parent)
 	m.text.SetParent(parent)
 }
 
-func (m *NonVisualComponentWrap) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
+func (m *TNonVisualComponentWrap) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
 	return m.wrap.ClientToParent(point, parent)
 }
 
-func (m *NonVisualComponentWrap) SetLeftTop(x, y int32) {
+func (m *TNonVisualComponentWrap) SetLeftTop(x, y int32) {
 	m.wrap.SetBounds(x, y, nonWrapW, nonWrapH)
 }
 
-func (m *NonVisualComponentWrap) BoundsRect() types.TRect {
+func (m *TNonVisualComponentWrap) BoundsRect() types.TRect {
 	return m.wrap.BoundsRect()
 }
 
-func (m *NonVisualComponentWrap) Instance() uintptr {
+func (m *TNonVisualComponentWrap) Instance() uintptr {
 	return m.icon.Instance()
 }
