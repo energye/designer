@@ -48,7 +48,7 @@ func (m *TopToolbar) createComponentTabs() {
 	tab.SetBounds(0, 0, m.rightTabs.Width(), m.rightTabs.Height())
 	tab.SetAlign(types.AlClient)
 	tab.EnableScrollButton(false)
-	tab.SetColor(colors.ClGray)
+	SetComponentDefaultColor(tab)
 	tab.SetParent(m.rightTabs)
 	tab.SetOnChange(func(sender lcl.IObject) {
 		logs.Debug("Toolbar Tabs Change")
@@ -58,15 +58,20 @@ func (m *TopToolbar) createComponentTabs() {
 	borderSet := func() {
 		pageSize := len(m.tab.Pages())
 		for i, page := range m.tab.Pages() {
-			if i < pageSize-1 {
-				// 前面所有不加右边框
-				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdTop, wg.BbdBottom))
+			if page.Active() {
+				if i == pageSize-1 {
+					page.Button().Font().SetColor(colors.ClBlack)
+					page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdRight))
+				} else {
+					page.Button().Font().SetColor(colors.ClBlack)
+					page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft))
+				}
+			} else if i == pageSize-1 {
+				page.Button().Font().SetColor(colors.ClBlack)
+				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom, wg.BbdRight))
 			} else {
-				// 最后一个加上全边框
-				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdTop, wg.BbdBottom, wg.BbdRight))
-				page.Button().ForcePaint(func() {
-					page.Button().Invalidate()
-				})
+				page.Button().Font().SetColor(colors.ClBlack)
+				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom))
 			}
 		}
 	}
@@ -78,11 +83,16 @@ func (m *TopToolbar) createComponentTabs() {
 		m.componentTabs[tab.En] = compTab
 		//sheet := lcl.NewTabSheet(m.tab)
 		sheet := m.tab.NewPage()
-		sheet.Button().SetText(tab.Cn)                                // 设置标签按钮显示文本
-		sheet.Button().SetColorGradient(colors.ClGray, colors.ClGray) // 设置标签按钮过度颜色
-		sheet.SetDefaultColor(colors.ClGray)                          // 设置默认颜色
-		sheet.SetActiveColor(wg.LightenColor(colors.ClGray, 0.3))     // 设置激活颜色
-		sheet.SetColor(colors.ClGray)                                 // 设置背景色
+		//sheet.Button().Font().SetStyle(types.NewSet(types.FsBold))
+		sheet.Button().SetText(tab.Cn)                              // 设置标签按钮显示文本
+		sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
+		sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
+		sheet.SetActiveColor(0xF5F5F5)                              // 设置激活颜色
+		sheet.SetColor(0xF5F5F5)                                    // 设置背景色
+		sheet.SetOnShow(func(sender lcl.IObject) {
+			borderSet()
+		})
+		//sheet.Button().SetBorderDirections(types.NewSet())            // 设置默认无边框
 		//sheet.SetAlign(types.AlClient)
 		//sheet.SetParent(m.tab)
 		compTab.sheet = sheet
@@ -145,7 +155,7 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.Config.ComponentTabs.WebView)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		tab.RecalculatePosition()
-		m.componentTabs[config.Config.ComponentTabs.Standard.En].sheet.Active(true)
+		m.componentTabs[config.Config.ComponentTabs.Standard.En].sheet.SetActive(true)
 	})
 }
 

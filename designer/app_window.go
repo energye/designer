@@ -26,13 +26,14 @@ import (
 
 var (
 	mainWindow       TAppWindow
-	bgDrakColor      = colors.RGBToColor(56, 57, 60)
+	bgDarkColor      = colors.RGBToColor(56, 57, 60)
 	bgLightColor     = colors.ClWhite
 	windowShowEvents []func()
 	imageActions     *tool.ImageList
 	imageComponents  *tool.ImageList
 	imageItem        *tool.ImageList
 	imageMenu        *tool.ImageList
+	themeControls    tool.HashMap[lcl.IWinControl]
 )
 
 // 设计器应用窗口
@@ -42,6 +43,27 @@ type TAppWindow struct {
 	componentProperties lcl.IApplicationProperties //
 	box                 *BottomBox                 // 底部布局盒子
 	bar                 *StatusBar
+}
+
+func SetComponentDefaultColor(control lcl.IWinControl) {
+	control.SetColor(bgLightColor)
+}
+
+// 添加组件到主题控件集合
+func AddComponentTheme(control lcl.IWinControl) {
+	themeControls.Add(tool.IntToString(control.Instance()), control)
+}
+
+// 切换组件主题
+func SwitchAllTheme(dark bool) {
+	themeControls.Iterate(func(key string, control lcl.IWinControl) bool {
+		if dark {
+			control.SetColor(bgDarkColor)
+		} else {
+			control.SetColor(bgLightColor)
+		}
+		return false
+	})
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {

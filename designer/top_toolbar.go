@@ -52,31 +52,36 @@ func (m *TAppWindow) createTopToolbar() {
 	toolbar = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
-	bar.box.SetParent(m)
-	bar.box.SetBevelOuter(types.BvNone)
+	bar.box.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+	bar.box.SetBevelOuter(types.BvLowered)
 	bar.box.SetDoubleBuffered(true)
 	bar.box.SetWidth(m.Width())
 	bar.box.SetHeight(toolbarHeight)
 	bar.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	SetComponentDefaultColor(bar.box)
 	bar.box.SetParentColor(true)
+	bar.box.SetParent(m)
 
 	// 工具栏-左 工具按钮
 	bar.leftTools = lcl.NewPanel(m)
-	bar.leftTools.SetParent(bar.box)
+	//bar.leftTools.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
 	bar.leftTools.SetBevelOuter(types.BvNone)
 	bar.leftTools.SetDoubleBuffered(true)
 	bar.leftTools.SetWidth(180)
 	bar.leftTools.SetHeight(bar.box.Height())
+	SetComponentDefaultColor(bar.leftTools)
 	bar.leftTools.SetAlign(types.AlLeft)
+	bar.leftTools.SetParent(bar.box)
 
 	// 工具栏-右 组件选项卡
 	bar.rightTabs = lcl.NewPanel(m)
-	bar.rightTabs.SetParent(bar.box)
 	bar.rightTabs.SetBevelOuter(types.BvNone)
 	bar.rightTabs.SetDoubleBuffered(true)
 	bar.rightTabs.SetHeight(bar.box.Height())
 	bar.rightTabs.SetWidth(bar.box.Width())
+	SetComponentDefaultColor(bar.rightTabs)
 	bar.rightTabs.SetAlign(types.AlClient)
+	bar.rightTabs.SetParent(bar.box)
 
 	// 创建工具按钮
 	bar.createToolBarBtns()

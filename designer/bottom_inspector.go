@@ -16,6 +16,7 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"widget/wg"
 )
 
 // 对象查看器
@@ -35,19 +36,22 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 
 		tree := new(InspectorComponentTree)
 		tree.treeBox = lcl.NewPanel(m.leftBox)
-		tree.treeBox.SetBevelOuter(types.BvNone)
+		tree.treeBox.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+		tree.treeBox.SetBevelOuter(types.BvLowered)
 		tree.treeBox.SetDoubleBuffered(true)
 		tree.treeBox.SetWidth(m.leftBox.Width())
 		tree.treeBox.SetHeight(componentTreeHeight)
 		tree.treeBox.Constraints().SetMinWidth(50)
 		tree.treeBox.Constraints().SetMinHeight(50)
 		tree.treeBox.SetAlign(types.AlTop)
+		SetComponentDefaultColor(tree.treeBox)
 		tree.treeBox.SetParent(m.leftBox)
 		ins.componentTree = tree
 
 		property := new(InspectorComponentProperty)
 		property.propBox = lcl.NewPanel(m.leftBox)
-		property.propBox.SetBevelOuter(types.BvNone)
+		property.propBox.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+		property.propBox.SetBevelOuter(types.BvLowered)
 		property.propBox.SetDoubleBuffered(true)
 		property.propBox.SetWidth(m.leftBox.Width())
 		property.propBox.Constraints().SetMinWidth(50)

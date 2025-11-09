@@ -51,7 +51,7 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	componentPropertyTitle.SetParent(m.propFilterBox)
 
 	m.filter = lcl.NewTreeFilterEdit(m.propFilterBox)
-	m.filter.SetTop(2)
+	m.filter.SetTop(3)
 	m.filter.SetLeft(30)
 	if tool.IsLinux() {
 		m.filter.SetLeft(40)
@@ -75,6 +75,7 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	tree.SetBorderStyleToBorderStyle(types.BsNone)
 	tree.SetAlign(types.AlClient)
 	tree.SetLineStyle(types.LsSolid)
+	SetComponentDefaultColor(tree)
 	tree.SetDefaultNodeHeight(28)
 	tree.SetIndent(8)
 
@@ -94,7 +95,6 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	header := tree.Header()
 	header.SetOptions(header.Options().Include(types.HoVisible, types.HoAutoSpring)) //types.HoAutoResize
 	header.Font().SetStyle(header.Font().Style().Include(types.FsBold))
-	header.Font().SetColor(colors.ClGray)
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()

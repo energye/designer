@@ -72,10 +72,10 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
 	m.treeFilter.SetParent(m.treeFilterBox)
 
-	m.treeFilterBox = lcl.NewPanel(m.treeBox)
-	m.treeFilterBox.SetBevelOuter(types.BvNone)
-	m.treeFilterBox.SetDoubleBuffered(true)
-	m.treeFilterBox.SetAlign(types.AlClient)
-	m.treeFilterBox.SetParent(m.treeBox)
+	m.treeComponentTree = lcl.NewPanel(m.treeBox)
+	m.treeComponentTree.SetBevelOuter(types.BvNone)
+	m.treeComponentTree.SetDoubleBuffered(true)
+	m.treeComponentTree.SetAlign(types.AlClient)
+	m.treeComponentTree.SetParent(m.treeBox)
 
 }

@@ -20,16 +20,18 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"widget/wg"
 )
 
 // 设计器面板
 
 // 设计表单的 tab
 type FormTab struct {
-	Id            int                  // 索引, 关联 forms key: index
-	Name          string               // 窗体名称
-	isDesigner    bool                 // 当前窗体Form是否正在设计
-	sheet         lcl.ITabSheet        // tab sheet
+	Id         int    // 索引, 关联 forms key: index
+	Name       string // 窗体名称
+	isDesigner bool   // 当前窗体Form是否正在设计
+	//sheet         lcl.ITabSheet        // tab sheet
+	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
 	tree          lcl.ITreeView        // 组件树
 	componentName map[string]int       // 组件分类名, 同类组件ID序号

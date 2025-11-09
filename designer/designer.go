@@ -19,7 +19,6 @@ import (
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/messages"
 	"unsafe"
 )
@@ -134,7 +133,7 @@ func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
 	if message.DC != 0 && isAcceptsControl {
 		m.canvas.SetHandle(message.DC)
 		pen := m.canvas.PenToPen()
-		pen.SetColor(colors.ClGray)
+		pen.SetColor(bgDarkColor)
 		pen.SetWidth(1)
 		pen.SetStyle(types.PsSolid)
 		r := sender.ClientRect()

@@ -27,6 +27,8 @@ func IntToString(value any) string {
 	switch v := value.(type) {
 	case int:
 		return strconv.Itoa(v)
+	case uintptr:
+		return strconv.FormatUint(uint64(v), 10)
 	case int8:
 		return strconv.FormatInt(int64(v), 10)
 	case int16:

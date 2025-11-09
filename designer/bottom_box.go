@@ -16,13 +16,11 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 // 布局下 设计器
 
 var (
-	bottomColor        = colors.RGBToColor(100, 120, 140)
 	leftBoxWidth int32 = 290
 )
 
@@ -43,6 +41,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.box.SetWidth(m.Width())
 	box.box.SetHeight(m.Height() - box.box.Top())
 	box.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
+	SetComponentDefaultColor(box.box)
 	box.box.SetParent(m)
 	//box.box.SetColor(bottomColor)
 	m.box = box
@@ -63,6 +62,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.leftBox.SetHeight(box.box.Height())
 	box.leftBox.Constraints().SetMinWidth(50)
 	box.leftBox.SetAlign(types.AlLeft)
+	SetComponentDefaultColor(box.leftBox)
 	box.leftBox.SetParent(box.box)
 
 	// 右侧-窗体设计器
@@ -70,6 +70,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.rightBox.SetBevelOuter(types.BvNone)
 	box.rightBox.SetDoubleBuffered(true)
 	box.rightBox.SetAlign(types.AlClient)
+	SetComponentDefaultColor(box.rightBox)
 	box.rightBox.SetParent(box.box)
 
 	// 创建对象查看器

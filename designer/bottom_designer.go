@@ -18,6 +18,9 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"widget/assets"
+	"widget/wg"
 )
 
 // 窗体设计功能
@@ -27,11 +30,14 @@ var (
 	margin                      int32 = 0
 	borderWidth                 int32 = 8
 	defaultWidth, defaultHeight int32 = 600, 400
+	closeData                         = assets.Tab("close.png")
+	closeEnterData                    = assets.Tab("close_enter.png")
 )
 
 // 设计器
 type Designer struct {
-	page          lcl.IPageControl // 设计器 tabs
+	//page          lcl.IPageControl // 设计器 tabs
+	tab           *wg.TTab         // 设计器 tabs
 	tabMenu       lcl.IPopupMenu   // tab 菜单
 	designerForms map[int]*FormTab // 设计器窗体列表
 }
@@ -45,17 +51,22 @@ func GetDesignerForms() map[int]*FormTab {
 func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
 	des.designerForms = make(map[int]*FormTab)
-	des.page = lcl.NewPageControl(m.box)
-	des.page.SetAlign(types.AlClient)
-	des.page.SetTabStop(true)
-	des.page.SetParent(m.rightBox)
-
+	//des.page = lcl.NewPageControl(m.box)
+	des.tab = wg.NewTab(m.box)
+	des.tab.SetBounds(0, 0, m.rightBox.Width(), m.rightBox.Height())
+	des.tab.SetAlign(types.AlClient)
+	des.tab.EnableScrollButton(false)
+	//des.page.SetTabStop(true)
+	des.tab.SetParent(m.rightBox)
 	// 右键菜单
-	des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
-
-	})
-	des.page.SetOnClick(func(sender lcl.IObject) {
+	//des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
+	//
+	//})
+	des.tab.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("Designer PageControl click")
+	})
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		des.tab.RecalculatePosition()
 	})
 
 	// 创建tab上的右键菜单
@@ -68,10 +79,10 @@ func (m *Designer) createTabMenu() {
 	if m.tabMenu != nil {
 		return
 	}
-	m.tabMenu = lcl.NewPopupMenu(m.page)
+	m.tabMenu = lcl.NewPopupMenu(m.tab)
 	m.tabMenu.SetImages(imageActions.ImageList100())
 	items := m.tabMenu.Items()
-	closeMenuItem := lcl.NewMenuItem(m.page)
+	closeMenuItem := lcl.NewMenuItem(m.tab)
 	closeMenuItem.SetCaption("关闭窗体")
 	closeMenuItem.SetImageIndex(imageActions.ImageIndex("laz_cancel.png"))
 	items.Add(closeMenuItem)
@@ -90,13 +101,15 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
-	form.tree = lcl.NewTreeView(inspector.componentTree.treeFilterBox)
+	form.tree = lcl.NewTreeView(inspector.componentTree.treeComponentTree)
 	form.tree.SetAutoExpand(true)
 	form.tree.SetReadOnly(true)
 	form.tree.SetDoubleBuffered(true)
 	//m.tree.SetMultiSelect(true) // 多选控制
 	form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(true)
+	SetComponentDefaultColor(form.tree)
+	form.tree.SetBorderStyleToBorderStyle(types.BsNone)
 	form.tree.SetImages(imageComponents.ImageList100())
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
@@ -104,7 +117,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	// 树菜单
 	form.CreateComponentMenu()
 	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
-	form.tree.SetParent(inspector.componentTree.treeFilterBox)
+	form.tree.SetParent(inspector.componentTree.treeComponentTree)
 
 	// 默认名
 	form.Id = len(m.designerForms) + 1
@@ -112,12 +125,27 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	// 窗体ID
 	m.designerForms[form.Id] = form
 
-	form.sheet = lcl.NewTabSheet(m.page)
-	form.sheet.SetCaption(form.Name)
+	//form.sheet = lcl.NewTabSheet(m.page)
+	form.sheet = m.tab.NewPage()
+	form.sheet.Button().SetBorderDirections(0)
+	form.sheet.Button().SetIconCloseFormBytes(closeData)
+	form.sheet.Button().SetIconCloseHighlightFormBytes(closeEnterData)
+	form.sheet.Button().SetCaption(form.Name)
+	form.sheet.Button().Font().SetColor(colors.ClBlack)
+	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
+	form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
+	form.sheet.SetActiveColor(0xF0F0F0)                              // 设置激活颜色
+	form.sheet.SetColor(0xF0F0F0)                                    // 设置背景色
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
+	form.sheet.SetOnClose(func(sender lcl.IObject) {
+		if len(m.tab.Pages()) == 0 {
+			m.tab.EnableScrollButton(false)
+		}
+	})
+	SetComponentDefaultColor(form.sheet) // 设置背景色
 	//form.sheet.SetAlign(types.AlClient)
-	form.sheet.SetParent(m.page)
+	form.sheet.SetParent(m.tab)
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
 	form.scroll.SetAlign(types.AlClient)
@@ -131,12 +159,17 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	// 创建设计窗体
 	form.NewFormDesigner()
 
+	m.tab.EnableScrollButton(true)
+	m.tab.HideAllActivated()
+	form.sheet.SetActive(true)
+	m.tab.RecalculatePosition()
 	return form
 }
 
 // 激活指定的 tab
 func (m *Designer) ActiveFormTab(tab *FormTab) {
-	m.page.SetActivePage(tab.sheet)
+	//m.page.SetActivePage(tab.sheet)
+	tab.sheet.SetActive(true)
 	for _, form := range m.designerForms {
 		form.isDesigner = false
 	}

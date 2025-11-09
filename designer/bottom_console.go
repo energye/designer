@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"widget/wg"
 )
 
 type TConsole struct {
@@ -39,7 +40,8 @@ func (m *BottomBox) createConsole() {
 	console.split.SetParent(m.rightBox)
 
 	console.consoleBox = lcl.NewPanel(m.box)
-	console.consoleBox.SetBevelOuter(types.BvNone)
+	console.consoleBox.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+	console.consoleBox.SetBevelOuter(types.BvLowered)
 	console.consoleBox.SetDoubleBuffered(true)
 	console.consoleBox.SetAlign(types.AlBottom)
 	//console.consoleBox.SetColor(colors.ClBlue)
@@ -52,7 +54,7 @@ func (m *BottomBox) createConsole() {
 	console.console.SetScrollBars(types.SsAutoBoth)
 	console.console.SetDoubleBuffered(true)
 	console.console.SetReadOnly(true)
-	console.console.SetColor(bgDrakColor)
+	SetComponentDefaultColor(console.console)
 	console.console.Font().SetColor(bgLightColor)
 	console.console.SetParent(console.consoleBox)
 }
