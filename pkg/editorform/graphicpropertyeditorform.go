@@ -19,6 +19,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"time"
 )
 
 // 图片加载
@@ -200,6 +201,7 @@ func (m *TGraphicPropertyEditorForm) imagePreviewOnPictureChanged(sender lcl.IOb
 }
 
 func (m *TGraphicPropertyEditorForm) imagePreviewOnPaintBackground(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {
+	start := time.Now()
 	cell := int32(8)
 	bmp := lcl.NewBitmap()
 	bmp.SetPixelFormat(types.Pf24bit)
@@ -219,14 +221,17 @@ func (m *TGraphicPropertyEditorForm) imagePreviewOnPaintBackground(sender lcl.IO
 	sourceRect.SetWidth(bmp.Width())
 	sourceRect.SetHeight(bmp.Height())
 	canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
+	logs.Debug("绘制背景完成-用时:", time.Now().Sub(start).Milliseconds())
 }
 
 func (m *TGraphicPropertyEditorForm) loadImageBtnOnClick(sender lcl.IObject) {
 	logs.Debug("TGraphicPropertyEditorForm loadImageBtnOnClick")
 	if m.openDialog.Execute() {
+		start := time.Now()
 		fileName := m.openDialog.FileName()
 		m.imagePreview.Picture().LoadFromFile(fileName)
 		m.imageFilePath = fileName
+		logs.Debug("图片加载完成-用时:", time.Now().Sub(start).Milliseconds())
 	}
 }
 
