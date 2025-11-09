@@ -55,7 +55,7 @@ func (m *BottomBox) createConsole() {
 	console.console.SetDoubleBuffered(true)
 	console.console.SetReadOnly(true)
 	SetComponentDefaultColor(console.console)
-	console.console.Font().SetColor(bgLightColor)
+	console.console.Font().SetColor(bgDarkColor)
 	console.console.SetParent(console.consoleBox)
 }
 
