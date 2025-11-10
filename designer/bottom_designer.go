@@ -16,10 +16,10 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"widget/assets"
 	"widget/wg"
 )
 
@@ -30,8 +30,6 @@ var (
 	margin                      int32 = 0
 	borderWidth                 int32 = 8
 	defaultWidth, defaultHeight int32 = 600, 400
-	closeData                         = assets.Tab("close.png")
-	closeEnterData                    = assets.Tab("close_enter.png")
 )
 
 // 设计器
@@ -135,9 +133,10 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	//form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet = m.tab.NewPage()
+	form.sheet.Button().SetIconFavoriteFormBytes(resources.Images("components/tform.png"))
+	form.sheet.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
+	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
 	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
-	form.sheet.Button().SetIconCloseFormBytes(closeData)
-	form.sheet.Button().SetIconCloseHighlightFormBytes(closeEnterData)
 	form.sheet.Button().SetCaption(form.Name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
 	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
