@@ -57,26 +57,22 @@ func (m *TopToolbar) createComponentTabs() {
 		m.ResetTabComponentDown()
 	})
 
-	borderSet := func() {
-		pageSize := len(m.tab.Pages())
-		for i, page := range m.tab.Pages() {
-			if page.Active() {
-				if i == pageSize-1 {
-					page.Button().Font().SetColor(colors.ClBlack)
-					page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdRight))
-				} else {
-					page.Button().Font().SetColor(colors.ClBlack)
-					page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft))
-				}
-			} else if i == pageSize-1 {
-				page.Button().Font().SetColor(colors.ClBlack)
-				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom, wg.BbdRight))
-			} else {
-				page.Button().Font().SetColor(colors.ClBlack)
-				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom))
-			}
-		}
-	}
+	//borderSet := func() {
+	//	pageSize := len(m.tab.Pages())
+	//	for i, page := range m.tab.Pages() {
+	//		if page.Active() {
+	//			if i == pageSize-1 {
+	//				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdRight))
+	//			} else {
+	//				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft))
+	//			}
+	//		} else if i == pageSize-1 {
+	//			page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom, wg.BbdRight))
+	//		} else {
+	//			page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom))
+	//		}
+	//	}
+	//}
 
 	inspectorTreeImageIndex := 0 // 查看器组件树图片索引
 	// 创建组件选项卡
@@ -86,15 +82,18 @@ func (m *TopToolbar) createComponentTabs() {
 		//sheet := lcl.NewTabSheet(m.tab)
 		sheet := m.tab.NewPage()
 		//sheet.Button().Font().SetStyle(types.NewSet(types.FsBold))
+		sheet.Button().Font().SetColor(colors.ClBlack)
 		sheet.Button().SetText(tab.Cn) // 设置标签按钮显示文本
+		sheet.Button().SetBorderDirections(0)
+		//sheet.Button().SetBorderColor(0, bgLightColor)
 		tabIconName := strings.ToLower(tab.En) + ".png"
 		sheet.Button().SetIconFavoriteFormBytes(resources.Images("tab-comp/" + tabIconName))
 		sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
 		sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
-		sheet.SetActiveColor(0xF5F5F5)                              // 设置激活颜色
-		sheet.SetColor(0xF5F5F5)                                    // 设置背景色
+		sheet.SetActiveColor(0xE3E3E3)                              // 设置激活颜色
+		sheet.SetColor(0xE3E3E3)                                    // 设置背景色
 		sheet.SetOnShow(func(sender lcl.IObject) {
-			borderSet()
+			//borderSet()
 		})
 		//sheet.Button().SetBorderDirections(types.NewSet())            // 设置默认无边框
 		//sheet.SetAlign(types.AlClient)
@@ -142,9 +141,9 @@ func (m *TopToolbar) createComponentTabs() {
 			compTab.components[name] = comp
 			inspectorTreeImageIndex++
 		}
-		borderSet()
+		//borderSet()
 		sheet.SetOnClose(func(sender lcl.IObject) {
-			borderSet()
+			//borderSet()
 		})
 		go compTab.BindToolBtnEvent()
 	}

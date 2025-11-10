@@ -136,6 +136,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.sheet.Button().SetIconFavoriteFormBytes(resources.Images("components/tform.png"))
 	form.sheet.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
 	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
+	form.sheet.Button().SetCloseHintText("关闭设计窗体")
 	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
 	form.sheet.Button().SetCaption(form.Name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
