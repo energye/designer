@@ -80,7 +80,7 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbarBtn.newFormBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体", 0)
 	toolbarBtn.newFormBtn.SetOnClick(toolbarBtn.onNewForm)
 
-	toolbarBtn.openFormBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开窗体", 1)
+	toolbarBtn.openFormBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开", 1)
 	toolbarBtn.openFormBtn.SetOnClick(toolbarBtn.onOpenForm)
 	newSep()
 
@@ -110,7 +110,7 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 }
 
 func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
-	logs.Debug("工具栏按钮, 打开窗体")
+	logs.Debug("工具栏按钮, 打开")
 }
 
 func (m *TToolbarToolBtn) onSaveForm(sender lcl.IObject) {

@@ -29,6 +29,8 @@ type TConsole struct {
 	closeBtn   lcl.IBitBtn
 }
 
+// createConsole 创建控制台界面组件
+// 该函数初始化控制台相关的UI元素，包括分割器、控制台面板和文本显示区域
 func (m *BottomBox) createConsole() {
 	console := new(TConsole)
 	m.console = console
@@ -59,22 +61,27 @@ func (m *BottomBox) createConsole() {
 	console.console.SetParent(console.consoleBox)
 }
 
-func (m *BottomBox) WriteConsole(text string) {
-	m.console.console.Lines().Add(text)
-}
-
+// 写入控制台
 func WriteConsole(text string) {
 	mainWindow.box.WriteConsole(text)
 }
 
+// 清空控制台
 func ClearConsole() {
 	mainWindow.box.ClearConsole()
 }
 
+// 写入控制台
+func (m *BottomBox) WriteConsole(text string) {
+	m.console.console.Lines().Add(text)
+}
+
+// 清空控制台
 func (m *BottomBox) ClearConsole() {
 	m.console.console.Lines().Clear()
 }
 
+// 初始化消息控制台事件
 func initConsoleEvent() {
 	event.On(event.Console, func(trigger event.TTrigger) {
 		payload, ok := trigger.Payload.(event.TPayload)
