@@ -17,7 +17,7 @@
 
   },
   "ui": [
-    "UI 布局 (*.ui;*.json)|*.ui;*.json|*.egp;*.egp",
+    "UI 布局 (*.ui;*.json;*.egp)|*.ui;*.json;*.egp",
     "UI 项目文件 (*.egp)|*.egp",
     "UI 布局文件 (*.ui)|*.ui",
     "UI 布局文件 (*.json)|*.json"

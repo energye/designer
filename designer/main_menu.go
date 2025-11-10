@@ -111,7 +111,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createWindow.SetCaption("新建窗体")
 	createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
 	createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
-	createWindow.SetOnClick(func(lcl.IObject) {
+	createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
 	})
 	create.Add(createWindow)
@@ -120,15 +120,15 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	openWindow.SetCaption("打开(&O)")
 	openWindow.SetShortCut(api.TextToShortCut("Ctrl+O"))
 	openWindow.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
-	openWindow.SetOnClick(func(lcl.IObject) {
-		logs.Debug("打开")
+	openWindow.SetOnClick(func(sender lcl.IObject) {
+		toolbar.toolbarBtn.onOpenForm(sender)
 	})
 	m.file.Add(openWindow)
 	saveWindow := lcl.NewMenuItem(owner)
 	saveWindow.SetCaption("保存窗体(&S)")
 	saveWindow.SetShortCut(api.TextToShortCut("Ctrl+S"))
 	saveWindow.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
-	saveWindow.SetOnClick(func(lcl.IObject) {
+	saveWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("保存窗体")
 	})
 	m.file.Add(saveWindow)
@@ -136,7 +136,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	saveAllWindow.SetCaption("保存所有窗体(&L)")
 	saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
 	saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
-	saveAllWindow.SetOnClick(func(lcl.IObject) {
+	saveAllWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("保存所有窗体")
 	})
 	m.file.Add(saveAllWindow)
@@ -144,7 +144,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	exitWindow.SetCaption("退出(&Q)")
 	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))
 	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
-	exitWindow.SetOnClick(func(lcl.IObject) {
+	exitWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("退出")
 	})
 	m.file.Add(exitWindow)

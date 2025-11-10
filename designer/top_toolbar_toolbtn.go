@@ -16,6 +16,7 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -111,6 +112,15 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 
 func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 打开")
+	mainWindow.openDialog.SetTitle("打开项目/UI")
+	mainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
+	mainWindow.openDialog.SetFilterIndex(1)
+	if mainWindow.openDialog.Execute() {
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			filePath := mainWindow.openDialog.FileName()
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+		})
+	}
 }
 
 func (m *TToolbarToolBtn) onSaveForm(sender lcl.IObject) {

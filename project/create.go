@@ -13,7 +13,9 @@
 
 package project
 
+import "github.com/energye/designer/pkg/logs"
+
 // 创建项目
 func runCreate(dir string) {
-
+	logs.Debug("运行创建项目 目录:", dir)
 }

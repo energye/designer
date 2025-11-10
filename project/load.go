@@ -13,26 +13,8 @@
 
 package project
 
-import (
-	"github.com/energye/designer/event"
-	"github.com/energye/designer/pkg/logs"
-)
+import "github.com/energye/designer/pkg/logs"
 
-func init() {
-	event.On(event.Project, func(trigger event.TTrigger) {
-		logs.Debug("项目管理事件 Payload:", trigger.Payload)
-		payload, ok := trigger.Payload.(event.TPayload)
-		if ok {
-			switch payload.Type {
-			case event.ProjectCreate:
-				dir := payload.Data.(string)
-				runCreate(dir)
-			case event.ProjectLoad:
-				dir := payload.Data.(string)
-				runLoad(dir)
-			}
-		}
-	}, func() {
-		logs.Info("停止项目配置更新生成器")
-	})
+func runLoad(filePath string) {
+	logs.Debug("运行加载项目/UI 文件目录:", filePath)
 }

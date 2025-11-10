@@ -63,3 +63,14 @@ func (m *dialogFilter) FileFilter() string {
 	}
 	return buf.String()
 }
+
+func (m *dialogFilter) UIFilter() string {
+	buf := bytes.Buffer{}
+	for i, item := range m.UI {
+		if i > 0 {
+			buf.WriteString("|")
+		}
+		buf.WriteString(item)
+	}
+	return buf.String()
+}
