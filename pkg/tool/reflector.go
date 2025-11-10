@@ -14,7 +14,6 @@
 package tool
 
 import (
-	"gen/tool"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
@@ -109,7 +108,7 @@ func FixPropInfo(methods *ArrayMap[*TMethod], prop *lcl.ComponentProperties) {
 	} else {
 		logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
 		// 遍历对象方法列表, 匹配出所有属性名
-		type_ := strings.ToLower(tool.RemoveT(prop.Type))
+		type_ := strings.ToLower(RemoveT(prop.Type))
 		name_ := strings.ToLower(name)
 		methods.Iterate(func(methodName string, value *TMethod) bool {
 			if strings.Contains(methodName, name_) && strings.Contains(methodName, type_) {

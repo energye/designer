@@ -23,7 +23,7 @@ import (
 const (
 	GenUI   = "GenUI"   // 生成UI事件
 	GenCode = "GenCode" // 生成代码事件
-	Project = "Project" // 项目配置事件
+	Project = "Project" // 项目管理事件
 	Preview = "Preview" // 预览事件
 	Console = "Console" // 控制台事件
 )
