@@ -27,7 +27,7 @@ import (
 var (
 	mainWindow       TAppWindow
 	bgDarkColor      = colors.RGBToColor(56, 57, 60)
-	bgLightColor     = colors.ClWhite
+	bgLightColor     = colors.TColor(0xF3F4F6)
 	windowShowEvents []func()
 	imageActions     *tool.ImageList
 	imageComponents  *tool.ImageList

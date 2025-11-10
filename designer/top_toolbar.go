@@ -52,8 +52,9 @@ func (m *TAppWindow) createTopToolbar() {
 	toolbar = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
-	bar.box.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
-	bar.box.SetBevelOuter(types.BvLowered)
+	//bar.box.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+	//bar.box.SetBevelOuter(types.BvLowered)
+	bar.box.SetBevelOuter(types.BvNone)
 	bar.box.SetDoubleBuffered(true)
 	bar.box.SetWidth(m.Width())
 	bar.box.SetHeight(toolbarHeight)

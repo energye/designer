@@ -55,6 +55,14 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.tab = wg.NewTab(m.box)
 	des.tab.SetBounds(0, 0, m.rightBox.Width(), m.rightBox.Height())
 	des.tab.SetAlign(types.AlClient)
+	des.tab.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
+	des.tab.SetBevelOuter(types.BvLowered)
+	des.tab.ScrollLeft().SetTop(2)
+	des.tab.ScrollLeft().SetHeight(20)
+	des.tab.ScrollLeft().SetColor(wg.DarkenColor(bgLightColor, 0.1))
+	des.tab.ScrollRight().SetTop(2)
+	des.tab.ScrollRight().SetHeight(20)
+	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
 	des.tab.EnableScrollButton(false)
 	//des.page.SetTabStop(true)
 	des.tab.SetParent(m.rightBox)
@@ -127,15 +135,15 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	//form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet = m.tab.NewPage()
-	form.sheet.Button().SetBorderDirections(0)
+	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
 	form.sheet.Button().SetIconCloseFormBytes(closeData)
 	form.sheet.Button().SetIconCloseHighlightFormBytes(closeEnterData)
 	form.sheet.Button().SetCaption(form.Name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
 	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
 	form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
-	form.sheet.SetActiveColor(0xF0F0F0)                              // 设置激活颜色
-	form.sheet.SetColor(0xF0F0F0)                                    // 设置背景色
+	form.sheet.SetActiveColor(wg.DarkenColor(bgLightColor, 0.1))     // 设置激活颜色
+	form.sheet.SetColor(wg.DarkenColor(bgLightColor, 0.1))           // 设置背景色
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
 	form.sheet.SetOnClose(func(sender lcl.IObject) {
