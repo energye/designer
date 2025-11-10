@@ -45,23 +45,23 @@ func init() {
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name        string   `json:"name"`        // 项目名称
-	Version     string   `json:"version"`     // 项目版本
-	Description string   `json:"description"` // 项目描述
-	Author      string   `json:"author"`      // 项目作者
-	Main        string   `json:"main"`        // 主程序入口文件或相对文件目录名
-	Forms       []*TForm `json:"forms"`       // 窗体信息
+	Name         string     `json:"name"`           // 项目名
+	Version      string     `json:"version"`        // 项目版本
+	Description  string     `json:"description"`    // 项目描述
+	Author       string     `json:"author"`         // 项目作者
+	Main         string     `json:"main"`           // 主程序入口文件或相对文件目录名
+	UIForms      []*TUIForm `json:"forms"`          // 窗体信息
+	ActiveUIForm string     `json:"active_ui_form"` // 当前激活设计的窗体名称
+
 }
 
-// TForm 窗体信息
-type TForm struct {
-	Name       string `json:"name"`      // 窗体名称
+// TUIForm 窗体信息
+type TUIForm struct {
+	Name       string `json:"name"`      // 窗体名
+	UIFile     string `json:"ui_file"`   // UI文件名
+	GOFile     string `json:"go_file"`   // UI Go 文件名
 	UpdateTime string `json:"date_time"` // 更新时间
-	Active     bool   `json:"active"`    // 是否激活设计, 同一时间只允许一个窗体激活设计
-}
-
-func Create() {
-
+	FilePath   string `json:"file_path"` // 文件路径
 }
 
 // 加载项目
@@ -84,4 +84,12 @@ func Load(egpPath string) {
 		}
 
 	}
+}
+
+// 写入项目配置文件
+func Write(project *TProject) {
+	if project == nil {
+		return
+	}
+
 }
