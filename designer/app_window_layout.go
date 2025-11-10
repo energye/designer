@@ -13,13 +13,24 @@
 
 package designer
 
+import "github.com/energye/lcl/lcl"
+
 // 创建设计器布局
 
 func (m *TAppWindow) createDesignerLayout() {
+	// 初始化主窗口用到的组件
+	m.initWindowComponent()
 	// 顶部菜单
 	m.createMainMenu()
 	// 工具栏
 	m.createTopToolbar()
 	// 底部布局
 	m.createBottomBox()
+}
+
+// 初始化主窗口用到的组件
+func (m *TAppWindow) initWindowComponent() {
+	m.openDialog = lcl.NewOpenDialog(m)
+	m.saveDialog = lcl.NewSaveDialog(m)
+	m.selectDirectoryDialog = lcl.NewSelectDirectoryDialog(m)
 }

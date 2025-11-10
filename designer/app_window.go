@@ -41,10 +41,12 @@ var (
 // 设计器应用窗口
 type TAppWindow struct {
 	lcl.TEngForm
-	mainMenu            *TMainMenu                 // 主菜单
-	componentProperties lcl.IApplicationProperties //
-	box                 *BottomBox                 // 底部布局盒子
-	bar                 *StatusBar
+	mainMenu              *TMainMenu                 // 主菜单
+	componentProperties   lcl.IApplicationProperties //
+	box                   *BottomBox                 // 底部布局盒子
+	openDialog            lcl.IOpenDialog            // 打开对话框
+	saveDialog            lcl.ISaveDialog            // 保存对话框
+	selectDirectoryDialog lcl.ISelectDirectoryDialog // 选择文件夹对话框
 }
 
 func SetComponentDefaultColor(control lcl.IWinControl) {

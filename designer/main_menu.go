@@ -21,6 +21,7 @@ import (
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
+	"github.com/energye/lcl/tool/exec"
 )
 
 // 设计器顶部菜单
@@ -90,7 +91,15 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
 	createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	createProject.SetOnClick(func(lcl.IObject) {
-		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate, Data: ""}})
+		mainWindow.selectDirectoryDialog.SetTitle("新建项目")
+		history := mainWindow.selectDirectoryDialog.HistoryList()
+		if history.Count() == 0 {
+			mainWindow.selectDirectoryDialog.SetInitialDir(exec.Dir)
+		}
+		if mainWindow.selectDirectoryDialog.Execute() {
+			dir := mainWindow.selectDirectoryDialog.FileName()
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate, Data: dir}})
+		}
 	})
 	create.Add(createProject)
 

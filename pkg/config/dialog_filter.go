@@ -26,6 +26,7 @@ var DialogFilter = &dialogFilter{}
 type dialogFilter struct {
 	Image []string `json:"image"`
 	File  []string `json:"file"`
+	UI    []string `json:"ui"`
 }
 
 func init() {
