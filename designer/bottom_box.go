@@ -49,7 +49,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	// 工具栏-分隔线
 	box.splitter = lcl.NewSplitter(box.box)
 	box.splitter.SetAlign(types.AlLeft)
-	box.splitter.SetWidth(5)
+	box.splitter.SetWidth(splitterWidth)
 	box.splitter.SetMinSize(50)
 	box.splitter.SetResizeStyle(types.RsNone)
 	box.splitter.SetParent(box.box)

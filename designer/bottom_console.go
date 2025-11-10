@@ -36,7 +36,7 @@ func (m *BottomBox) createConsole() {
 	console.split = lcl.NewSplitter(m.box)
 	console.split.SetAlign(types.AlBottom)
 	//console.split.SetResizeStyle(types.RsNone)
-	console.split.SetHeight(3)
+	console.split.SetHeight(splitterWidth)
 	console.split.SetParent(m.rightBox)
 
 	console.consoleBox = lcl.NewPanel(m.box)

@@ -30,9 +30,10 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 	// 面板 对象查看器分隔
 	{
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
-		ins.boxSplitter.SetParent(m.leftBox)
 		ins.boxSplitter.SetAlign(types.AlTop)
+		ins.boxSplitter.SetWidth(splitterWidth)
 		ins.boxSplitter.SetResizeStyle(types.RsNone)
+		ins.boxSplitter.SetParent(m.leftBox)
 
 		tree := new(InspectorComponentTree)
 		tree.treeBox = lcl.NewPanel(m.leftBox)
