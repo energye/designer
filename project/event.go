@@ -25,9 +25,11 @@ func init() {
 		if ok {
 			switch payload.Type {
 			case event.ProjectCreate:
+				// 项目创建
 				dir := payload.Data.(string)
 				runCreate(dir)
 			case event.ProjectLoad:
+				// 加载项目或UI
 				dir := payload.Data.(string)
 				runLoad(dir)
 			}
