@@ -85,7 +85,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.showInMonitor()
 	m.initAllImageList()
 	// 设置窗口图标
-	m.setWindowIcon()
+	//m.setWindowIcon()
 	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
