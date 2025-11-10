@@ -13,8 +13,23 @@
 
 package event
 
+// 数据载体类型
+type Type int32
+
+// 项目数据载体类型
+const (
+	ProjectCreate Type = iota
+	ProjectLoad
+)
+
+// 控制台数据载体类型
+const (
+	ConsoleInfo Type = iota
+	ConsoleClear
+)
+
 // TPayload 通用的事件数据载体
 type TPayload struct {
-	Type int
+	Type Type
 	Data any
 }

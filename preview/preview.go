@@ -35,14 +35,14 @@ func build(output string) (err error) {
 	buildCmd.Dir = project.Path
 	buildCmd.Console = func(data string, level command.Level) {
 		logs.Info("Level", level.String(), data)
-		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
+		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
 		if level == command.LError && err == nil {
 			err = errors.New(data)
 		}
 	}
 	// TODO 需要通过配置, 构建参数
 	args := []string{"build", "-v", "-o", output}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "go " + strings.Join(args, " ")}})
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "go " + strings.Join(args, " ")}})
 	buildCmd.Command("go", args...)
 	return
 }
@@ -53,7 +53,7 @@ func runPreview(state chan<- any) {
 	if runCmd != nil {
 		return
 	}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 1}}) //清空控制台消息
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleClear}}) //清空控制台消息
 
 	state <- consts.PsStarting
 	var output string
@@ -63,7 +63,7 @@ func runPreview(state chan<- any) {
 	} else {
 		output = "./build/main"
 	}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "构建程序: " + output}})
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "构建程序: " + output}})
 	// 构建项目二进制
 	if err := build(output); err != nil {
 		msg := fmt.Sprintf("构建程序失败: %v", err.Error())
@@ -77,21 +77,21 @@ func runPreview(state chan<- any) {
 	runCmd.Dir = project.Path
 	runCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)
-		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: data}}) //正常消息
+		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
 		if tool.Equal(data, "exit") {
 			// 退出
 			//state <- 0
 		}
 	}
 	// 开始运行
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "运行预览: " + output}})
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "运行预览: " + output}})
 	state <- consts.PsStarted
 	runCmd.Command(output)
 	state <- consts.PsStop
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: 0, Data: "结束预览"}}) //运行结束消息
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "结束预览"}}) //运行结束消息
 }
 
 func stopPreview() {

@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
@@ -89,7 +90,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
 	createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	createProject.SetOnClick(func(lcl.IObject) {
-		logs.Debug("新建项目")
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate, Data: ""}})
 	})
 	create.Add(createProject)
 

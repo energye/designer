@@ -87,7 +87,7 @@ func initConsoleEvent() {
 		payload, ok := trigger.Payload.(event.TPayload)
 		if ok {
 			call := func() {
-				if payload.Type == 0 {
+				if payload.Type == event.ConsoleInfo {
 					WriteConsole(payload.Data.(string))
 				} else {
 					ClearConsole()
