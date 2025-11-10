@@ -93,6 +93,8 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	createProject.SetOnClick(func(lcl.IObject) {
 		mainWindow.selectDirectoryDialog.SetTitle("新建项目")
 		history := mainWindow.selectDirectoryDialog.HistoryList()
+		//for i := int32(0); i < history.Count(); i++ {
+		//}
 		if history.Count() == 0 {
 			mainWindow.selectDirectoryDialog.SetInitialDir(exec.Dir)
 		}

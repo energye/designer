@@ -70,6 +70,8 @@ func runCreate(dir string) {
 		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 	}
 	if isCreate {
+		// 设置项目目录
+		Path = dir
 		logs.Info("开始创建项目")
 		_, name := filepath.Split(dir)
 		newProject := new(TProject)
