@@ -31,6 +31,7 @@ var (
 	Project TProject
 )
 
+// 项目配置文件扩展名
 const egp = ".egp"
 
 func init() {
