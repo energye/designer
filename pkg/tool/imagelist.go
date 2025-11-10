@@ -63,10 +63,23 @@ func NewImageList(owner lcl.IComponent, dirName string, rect ImageRect) *ImageLi
 		}
 		return resultImageList
 	}
-	m.imageList100 = loadImage(images100, rect.Image100.Cx, rect.Image100.Cy)
-	m.imageList150 = loadImage(images150, rect.Image150.Cx, rect.Image150.Cy)
-	m.imageList200 = loadImage(images200, rect.Image200.Cx, rect.Image200.Cy)
+	if CheckSizeZero(rect.Image100) {
+		m.imageList100 = loadImage(images100, rect.Image100.Cx, rect.Image100.Cy)
+	}
+	if CheckSizeZero(rect.Image150) {
+		m.imageList150 = loadImage(images150, rect.Image150.Cx, rect.Image150.Cy)
+	}
+	if CheckSizeZero(rect.Image200) {
+		m.imageList200 = loadImage(images200, rect.Image200.Cx, rect.Image200.Cy)
+	}
 	return m
+}
+
+func CheckSizeZero(size types.TSize) bool {
+	if size.Cx == 0 || size.Cy == 0 {
+		return false
+	}
+	return true
 }
 
 func (m *ImageList) ImageIndex(name string) int32 {

@@ -16,9 +16,11 @@ package designer
 import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"strings"
 	"widget/wg"
 )
 
@@ -84,7 +86,9 @@ func (m *TopToolbar) createComponentTabs() {
 		//sheet := lcl.NewTabSheet(m.tab)
 		sheet := m.tab.NewPage()
 		//sheet.Button().Font().SetStyle(types.NewSet(types.FsBold))
-		sheet.Button().SetText(tab.Cn)                              // 设置标签按钮显示文本
+		sheet.Button().SetText(tab.Cn) // 设置标签按钮显示文本
+		tabIconName := strings.ToLower(tab.En) + ".png"
+		sheet.Button().SetIconFavoriteFormBytes(resources.Images("tab-comp/" + tabIconName))
 		sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
 		sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
 		sheet.SetActiveColor(0xF5F5F5)                              // 设置激活颜色

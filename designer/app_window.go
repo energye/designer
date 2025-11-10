@@ -33,6 +33,7 @@ var (
 	imageComponents  *tool.ImageList
 	imageItem        *tool.ImageList
 	imageMenu        *tool.ImageList
+	imageTabComp     *tool.ImageList
 	themeControls    tool.HashMap[lcl.IWinControl]
 )
 
@@ -97,6 +98,7 @@ func (m *TAppWindow) initAllImageList() {
 	imageComponents = tool.NewImageList(m, "components", tool.ImageRect{Image100: types.TSize{Cx: 24, Cy: 24}, Image150: types.TSize{Cx: 36, Cy: 36}, Image200: types.TSize{Cx: 48, Cy: 48}})
 	imageItem = tool.NewImageList(m, "item", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 	imageMenu = tool.NewImageList(m, "menu", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
+	imageTabComp = tool.NewImageList(m, "tab-comp", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}})
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
