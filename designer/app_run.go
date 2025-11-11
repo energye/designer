@@ -17,10 +17,13 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/locales"
 )
 
 func Run() {
 	logs.Info("ENERGY Designer RUN")
+	//locales.SwitchLCLLang("de")
+	locales.SwitchLCLLang("zh_CN")
 	lcl.Application.Initialize()
 	lcl.Application.SetTitle(config.Config.Title)
 	lcl.Application.SetMainFormOnTaskBar(true)
