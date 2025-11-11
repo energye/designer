@@ -74,8 +74,8 @@ func runCreate(dir string) {
 		}
 		// 覆盖并创建项目, 删除已存在的 xx.egp 文件
 		existEGPPath := filepath.Join(dir, existEgp)
-		logs.Warn("创建并覆盖, 删除项目配置文件:", existEGPPath)
-		event.ConsoleWriteWarn("创建并覆盖, 删除项目配置文件:", existEGPPath)
+		logs.Warn("创建并覆盖项目配置文件:", existEGPPath)
+		event.ConsoleWriteWarn("创建并覆盖项目配置文件:", existEGPPath)
 		err = os.Remove(existEGPPath)
 		if err != nil {
 			logs.Error("删除项目配置文件错误:", err.Error())

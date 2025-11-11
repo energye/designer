@@ -23,6 +23,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"os"
 )
 
 var (
@@ -125,6 +126,13 @@ func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	consoleText := tool.Buffer{}
 	consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 	WriteConsole(consoleText.String())
+
+	if len(os.Args) > 1 {
+		filePath := os.Args[1]
+		go lcl.RunOnMainThreadAsync(func(id uint32) {
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+		})
+	}
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
