@@ -24,6 +24,8 @@ import (
 // 3. 更新项目信息
 // 4. 更新项目的窗体信息
 // 5. 更新其它配置和选项
+// 6. UI 布局文件加载, 恢复到设计器
+// 6.1 UI 布局同步更新: 新增/修改/删除
 
 var (
 	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
@@ -38,14 +40,21 @@ type TProject struct {
 	Version      string       `json:"version"`        // 项目版本
 	Description  string       `json:"description"`    // 项目描述
 	Author       string       `json:"author"`         // 项目作者
-	Package      string       `json:"package"`        // 项目(应用)包名, app|forms 或其它
+	Package      string       `json:"package"`        // 项目(应用)包名
 	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
 	UIForms      []TUIForm    `json:"forms"`          // 窗体信息
 	ActiveUIForm string       `json:"active_ui_form"` // 当前激活设计的窗体名称
-	Lang         string       `json:"lang"`           // 语言
-	BuildOption  TBuildOption `json:"build_option"`   // 构建选项
+	Lang         string       `json:"lang"`           // 语言 zh_CN
+	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
 	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
+}
 
+// 当前项目的设计器配置
+type TDesignerConfig struct {
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
+	W int32 `json:"w"`
+	H int32 `json:"h"`
 }
 
 // TUIForm 窗体信息
@@ -57,7 +66,7 @@ type TUIForm struct {
 	FilePath   string `json:"file_path"` // 文件路径
 }
 
-// TBuildOption 构建选项
+// TBuildOption 构建配置
 type TBuildOption struct {
 	GoArgument string `json:"go_argument"` // 构建参数
 	Output     string `json:"output"`      // 构建输出目录
@@ -65,6 +74,7 @@ type TBuildOption struct {
 
 // TEnvOption 环境配置
 type TEnvOption struct {
+	GoRoot string `json:"go_root"` // Go 安装目录
 }
 
 // SetGlobalProject 设置全局项目路径和项目对象
