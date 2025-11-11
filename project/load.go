@@ -34,26 +34,22 @@ func Load(egpPath string) {
 		isEgp := strings.ToLower(filepath.Ext(file)) == egp
 		if !isEgp {
 			logs.Warn("文件目录非 .egp 项目配置文件")
-			Path = ""
-			Project = nil
+			SetGlobalProject("", nil)
 			return
 		}
 		data, err := os.ReadFile(egpPath)
 		if err != nil {
 			logs.Error("读取项目配置文件失败:", err)
-			Path = ""
-			Project = nil
+			SetGlobalProject("", nil)
 			return
 		}
 		loadProject := &TProject{}
 		err = json.Unmarshal(data, loadProject)
 		if err != nil {
 			logs.Error("解析项目配置文件失败:", err)
-			Path = ""
-			Project = nil
+			SetGlobalProject("", nil)
 			return
 		}
-		Path = path
-		Project = loadProject
+		SetGlobalProject(path, loadProject)
 	}
 }

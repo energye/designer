@@ -48,7 +48,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		debounceMutex.Unlock()
 
 		formId := strings.ToLower(formName)
-		uiFilePath := filepath.Join(project.Path, "forms", formId+formUI)
+		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formId+formUI)
 
 		// 执行UI生成
 		err := GenerateUIFile(formTab.FormRoot, uiFilePath)

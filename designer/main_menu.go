@@ -33,12 +33,19 @@ type TMainMenu struct {
 	run     lcl.IMenuItem
 	setting lcl.IMenuItem
 	helper  lcl.IMenuItem
-	runItem lcl.IMenuItem
 
 	createProject lcl.IMenuItem
 	createWindow  lcl.IMenuItem
 	open          lcl.IMenuItem
 	save          lcl.IMenuItem
+
+	build      lcl.IMenuItem
+	cleanBuild lcl.IMenuItem
+	runApp     lcl.IMenuItem
+
+	buildOption       lcl.IMenuItem
+	environmentOption lcl.IMenuItem
+	projectOption     lcl.IMenuItem
 }
 
 // 设计器主菜单
@@ -78,6 +85,25 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu.settingMenu(m)
 	mainMenu.helperMenu(m)
 	mainMenu.macOS()
+}
+
+// SetEnableMenuItems 设置菜单项的启用状态
+//
+//	enable: 布尔值，true表示启用菜单项，false表示禁用菜单项
+//	该函数在主线程中异步执行，确保线程安全性。它会同时设置多个菜单项的启用状态，
+//	包括创建窗口、打开、保存、构建、清理构建、运行应用、构建选项、环境选项和项目选项菜单项。
+func (m *TMainMenu) SetEnableMenuItems(enable bool) {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.createWindow.SetEnabled(enable)
+		//m.open.SetEnabled(enable)
+		m.save.SetEnabled(enable)
+		m.build.SetEnabled(enable)
+		m.cleanBuild.SetEnabled(enable)
+		m.runApp.SetEnabled(enable)
+		m.buildOption.SetEnabled(enable)
+		m.environmentOption.SetEnabled(enable)
+		m.projectOption.SetEnabled(enable)
+	})
 }
 
 func (m *TMainMenu) macOS() {
@@ -164,75 +190,75 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 }
 
 func (m *TMainMenu) runMenu(owner lcl.IComponent) {
-	build := lcl.NewMenuItem(owner)
-	build.SetCaption("构建")
-	build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
-	build.SetOnClick(func(lcl.IObject) {
+	m.build = lcl.NewMenuItem(owner)
+	m.build.SetCaption("构建")
+	m.build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
+	m.build.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建")
 	})
-	m.run.Add(build)
+	m.run.Add(m.build)
 
-	cleanBuild := lcl.NewMenuItem(owner)
-	cleanBuild.SetCaption("清理构建")
-	cleanBuild.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
-	cleanBuild.SetOnClick(func(lcl.IObject) {
+	m.cleanBuild = lcl.NewMenuItem(owner)
+	m.cleanBuild.SetCaption("清理构建")
+	m.cleanBuild.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
+	m.cleanBuild.SetOnClick(func(lcl.IObject) {
 		logs.Debug("清理构建")
 	})
-	m.run.Add(cleanBuild)
+	m.run.Add(m.cleanBuild)
 
 	sep := lcl.NewMenuItem(owner)
 	sep.SetCaption("-")
 	m.run.Add(sep)
 
-	m.runItem = lcl.NewMenuItem(owner)
-	m.runItem.SetCaption("运行")
-	m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
-	m.runItem.SetOnClick(func(lcl.IObject) {
+	m.runApp = lcl.NewMenuItem(owner)
+	m.runApp.SetCaption("运行应用")
+	m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
+	m.runApp.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
-		toolbar.toolbarBtn.onRunPreviewForm(m.runItem)
+		toolbar.toolbarBtn.onRunPreviewForm(m.runApp)
 	})
-	m.run.Add(m.runItem)
+	m.run.Add(m.runApp)
 }
 
 func (m *TMainMenu) switchRunMenuItem(status consts.PreviewState) {
-	m.runItem.SetEnabled(true)
+	m.runApp.SetEnabled(true)
 	if status == consts.PsStarted {
-		m.runItem.SetCaption("停止")
-		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
+		m.runApp.SetCaption("停止")
+		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else if status == consts.PsStarting {
-		m.runItem.SetEnabled(false)
-		m.runItem.SetCaption("停止")
-		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
+		m.runApp.SetEnabled(false)
+		m.runApp.SetCaption("停止")
+		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else {
-		m.runItem.SetCaption("运行")
-		m.runItem.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
+		m.runApp.SetCaption("运行")
+		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	}
 }
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
-	buildOption := lcl.NewMenuItem(owner)
-	buildOption.SetCaption("构建选项")
-	buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
-	buildOption.SetOnClick(func(lcl.IObject) {
+	m.buildOption = lcl.NewMenuItem(owner)
+	m.buildOption.SetCaption("构建选项")
+	m.buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
+	m.buildOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建选项")
 	})
-	m.setting.Add(buildOption)
+	m.setting.Add(m.buildOption)
 
-	environmentOption := lcl.NewMenuItem(owner)
-	environmentOption.SetCaption("环境配置")
-	environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
-	environmentOption.SetOnClick(func(lcl.IObject) {
+	m.environmentOption = lcl.NewMenuItem(owner)
+	m.environmentOption.SetCaption("环境配置")
+	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	m.environmentOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("环境配置")
 	})
-	m.setting.Add(environmentOption)
+	m.setting.Add(m.environmentOption)
 
-	projectOption := lcl.NewMenuItem(owner)
-	projectOption.SetCaption("项目配置")
-	projectOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
-	projectOption.SetOnClick(func(lcl.IObject) {
+	m.projectOption = lcl.NewMenuItem(owner)
+	m.projectOption.SetCaption("项目配置")
+	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	m.projectOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("项目配置")
 	})
-	m.setting.Add(projectOption)
+	m.setting.Add(m.projectOption)
 }
 
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {

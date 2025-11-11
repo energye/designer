@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
@@ -93,14 +94,13 @@ func runCreate(dir string) {
 	newProject.Author = "yanghy"
 	newProject.Main = "main.go"
 	newProject.Lang = "zh_CN"
-	if err = Write(Path, newEGPFileName, newProject); err != nil {
+	newProject.Package = consts.AppPackageName
+	if err = Write(dir, newEGPFileName, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
-		Path = ""
-		Project = nil
+		SetGlobalProject("", nil)
 	} else {
 		// 设置项目目录
-		Path = dir
-		Project = newProject
+		SetGlobalProject(dir, newProject)
 		// 创建项目成功
 		logs.Info("创建项目成功")
 		// 创建项目目录结构和文件

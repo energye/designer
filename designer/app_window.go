@@ -115,6 +115,8 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	logs.Info("FormAfterCreate")
+	// 默认禁用组件功能
+	SetEnableFuncComponent(false)
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {

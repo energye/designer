@@ -13,6 +13,8 @@
 
 package consts
 
+const AppPackageName = "app"
+
 // PreviewState 预览状态
 type PreviewState int
 

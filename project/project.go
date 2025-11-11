@@ -13,30 +13,27 @@
 
 package project
 
-import (
-	"github.com/energye/lcl/tool"
-)
-
 // 项目文件 xxx.egp 配置文件
 // 存在于项目根目录
 
 var (
-	// Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
-	Path    string
-	Project *TProject
+	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
+	gPath string
+	// 全局项目配置
+	gProject *TProject
 )
 
 // 项目配置文件扩展名
 const egp = ".egp"
 
-func init() {
-	// TODO 需要通过配置 --test
-	if tool.IsWindows() {
-		Path = "C:\\app\\workspace\\test" // TODO 测试
-	} else if tool.IsLinux() {
-		Path = "/home/yanghy/app/projects/workspace/test"
-	}
-}
+//func init() {
+//	// TODO 需要通过配置 --test
+//	if tool.IsWindows() {
+//		Path = "C:\\app\\workspace\\test" // TODO 测试
+//	} else if tool.IsLinux() {
+//		Path = "/home/yanghy/app/projects/workspace/test"
+//	}
+//}
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
@@ -71,4 +68,23 @@ type TBuildOption struct {
 
 // TEnvOption 环境配置
 type TEnvOption struct {
+}
+
+// SetGlobalProject 设置全局项目路径和项目对象
+// path: 项目路径
+// project: 项目对象指针
+func SetGlobalProject(path string, project *TProject) {
+	gPath = path
+	gProject = project
+	if path == "" || project == nil {
+
+	}
+}
+
+func Path() string {
+	return gPath
+}
+
+func Project() *TProject {
+	return gProject
 }

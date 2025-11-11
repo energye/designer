@@ -32,7 +32,7 @@ var runCmd *command.CMD
 func build(output string) (err error) {
 	buildCmd := command.NewCMD()
 	buildCmd.IsPrint = false
-	buildCmd.Dir = project.Path
+	buildCmd.Dir = project.Path()
 	buildCmd.Console = func(data string, level command.Level) {
 		logs.Info("Level", level.String(), data)
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
@@ -74,7 +74,7 @@ func runPreview(state chan<- any) {
 	// 运行命令
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
-	runCmd.Dir = project.Path
+	runCmd.Dir = project.Path()
 	runCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息

@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/project"
 	"github.com/energye/designer/uigen"
 	"strings"
 )
@@ -191,7 +192,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) str
 
 // 构建自动代码模板数据
 func buildAutoTemplateData(component *uigen.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: packageName, Imports: tool.NewHashSet()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
@@ -205,7 +206,7 @@ func buildAutoTemplateData(component *uigen.TUIComponent) *TFormData {
 
 // 构建用户代码模板数据
 func buildUserTemplateData(component *uigen.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: packageName, Imports: tool.NewHashSet()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,

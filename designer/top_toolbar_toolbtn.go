@@ -25,20 +25,23 @@ import (
 // 工具按钮功能
 
 type TToolbarToolBtn struct {
-	toolBtnBar     lcl.IToolBar
-	newFormBtn     lcl.IToolButton
-	openFormBtn    lcl.IToolButton
-	saveFormBtn    lcl.IToolButton
-	saveAllFormBtn lcl.IToolButton
-	runPreviewBtn  lcl.IToolButton
-	previewState   consts.PreviewState // 预览状态
+	toolBtnBar    lcl.IToolBar
+	newWindowBtn  lcl.IToolButton
+	openBtn       lcl.IToolButton
+	saveBtn       lcl.IToolButton
+	saveAllBtn    lcl.IToolButton
+	runPreviewBtn lcl.IToolButton
+	previewState  consts.PreviewState // 预览状态
 }
 
-func (m *TToolbarToolBtn) SetEnableToolBtn(enable bool) {
+// SetEnableToolButtons 设置工具栏按钮的启用状态
+//
+//	enable: 布尔值，true表示启用按钮，false表示禁用按钮
+func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.newFormBtn.SetEnabled(enable)
-		m.openFormBtn.SetEnabled(enable)
-		//m.saveFormBtn.SetEnabled(enable)
+		m.newWindowBtn.SetEnabled(enable)
+		//m.openBtn.SetEnabled(enable)
+		m.saveBtn.SetEnabled(enable)
 		//m.saveAllFormBtn.SetEnabled(enable)
 		m.runPreviewBtn.SetEnabled(enable)
 	})
@@ -88,15 +91,15 @@ func (m *TopToolbar) createToolBarBtns() {
 		return btn
 	}
 
-	toolbarBtn.newFormBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体(Ctrl+N)", 0)
-	toolbarBtn.newFormBtn.SetOnClick(toolbarBtn.onNewForm)
+	toolbarBtn.newWindowBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体(Ctrl+N)", 0)
+	toolbarBtn.newWindowBtn.SetOnClick(toolbarBtn.onNewForm)
 
-	toolbarBtn.openFormBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开(Ctrl+O)", 1)
-	toolbarBtn.openFormBtn.SetOnClick(toolbarBtn.onOpenForm)
+	toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开(Ctrl+O)", 1)
+	toolbarBtn.openBtn.SetOnClick(toolbarBtn.onOpenForm)
 	newSep()
 
-	toolbarBtn.saveFormBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
-	toolbarBtn.saveFormBtn.SetOnClick(toolbarBtn.onSaveForm)
+	toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
+	toolbarBtn.saveBtn.SetOnClick(toolbarBtn.onSaveForm)
 
 	//toolbarBtn.saveAllFormBtn = newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
 	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)

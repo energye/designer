@@ -287,6 +287,12 @@ func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 	println("onPrepareFreeDesigner")
 }
 
+// 启用或禁用功能组件
+func SetEnableFuncComponent(enable bool) {
+	mainWindow.mainMenu.SetEnableMenuItems(enable)
+	toolbar.toolbarBtn.SetEnableToolButtons(enable)
+}
+
 func init() {
 	// 注册控制台消息处理器事件
 	initConsoleEvent()
