@@ -13,6 +13,8 @@
 
 package project
 
+import "github.com/energye/designer/designer"
+
 // 项目文件 xxx.egp 配置文件
 // 存在于项目根目录
 
@@ -77,7 +79,9 @@ func SetGlobalProject(path string, project *TProject) {
 	gPath = path
 	gProject = project
 	if path == "" || project == nil {
-
+		designer.SetEnableFuncComponent(false)
+	} else {
+		designer.SetEnableFuncComponent(true)
 	}
 }
 

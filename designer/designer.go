@@ -293,6 +293,14 @@ func SetEnableFuncComponent(enable bool) {
 	toolbar.toolbarBtn.SetEnableToolButtons(enable)
 }
 
+// 启用或禁用保存功能
+func SetEnableSaveFunc(enable bool) {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		mainWindow.mainMenu.save.SetEnabled(enable)
+		toolbar.toolbarBtn.saveBtn.SetEnabled(enable)
+	})
+}
+
 func init() {
 	// 注册控制台消息处理器事件
 	initConsoleEvent()
