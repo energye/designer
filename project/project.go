@@ -49,14 +49,6 @@ type TProject struct {
 	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
 }
 
-// 当前项目的设计器配置
-type TDesignerConfig struct {
-	X int32 `json:"x"`
-	Y int32 `json:"y"`
-	W int32 `json:"w"`
-	H int32 `json:"h"`
-}
-
 // TUIForm 窗体信息
 type TUIForm struct {
 	Name       string `json:"name"`      // 窗体名
