@@ -63,21 +63,26 @@ func runCreate(dir string) {
 	}
 	if isCreate {
 		// 覆盖并创建项目
-		logs.Warn("当前目录已存在项目配置", existEgp, "创建并覆盖")
+		logs.Warn(existEgp, "创建并覆盖")
 	} else if isNotEmpty {
 		// 目录非空并且没有项目配置文件 egp, 提示是否在当前目录创建项目
 		logs.Warn("当前目录非空")
 		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 	}
-	if isCreate {
-		// 设置项目目录
-		Path = dir
-		logs.Info("开始创建项目")
-		_, name := filepath.Split(dir)
-		newProject := new(TProject)
-		newProject.Name = name
-
-	} else {
+	if !isCreate {
 		logs.Info("取消创建项目")
+		return
 	}
+	// 设置项目目录
+	Path = dir
+	logs.Info("开始创建项目")
+	_, name := filepath.Split(dir)
+	newProject := new(TProject)
+	newProject.Name = name
+	newProject.Version = "v1.0.0"
+	newProject.Description = "测试项目描述"
+	newProject.Author = "yanghy"
+	newProject.Main = "main.go"
+	newProject.Lang = "zh_CN"
+	Write(Path, newProject)
 }

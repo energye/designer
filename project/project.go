@@ -45,13 +45,16 @@ func init() {
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name         string     `json:"name"`           // 项目名
-	Version      string     `json:"version"`        // 项目版本
-	Description  string     `json:"description"`    // 项目描述
-	Author       string     `json:"author"`         // 项目作者
-	Main         string     `json:"main"`           // 主程序入口文件或相对文件目录名
-	UIForms      []*TUIForm `json:"forms"`          // 窗体信息
-	ActiveUIForm string     `json:"active_ui_form"` // 当前激活设计的窗体名称
+	Name         string       `json:"name"`           // 项目名
+	Version      string       `json:"version"`        // 项目版本
+	Description  string       `json:"description"`    // 项目描述
+	Author       string       `json:"author"`         // 项目作者
+	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
+	UIForms      []*TUIForm   `json:"forms"`          // 窗体信息
+	ActiveUIForm string       `json:"active_ui_form"` // 当前激活设计的窗体名称
+	Lang         string       `json:"lang"`           // 语言
+	BuildOption  TBuildOption `json:"build_option"`   // 构建选项
+	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
 
 }
 
@@ -62,6 +65,16 @@ type TUIForm struct {
 	GOFile     string `json:"go_file"`   // UI Go 文件名
 	UpdateTime string `json:"date_time"` // 更新时间
 	FilePath   string `json:"file_path"` // 文件路径
+}
+
+// TBuildOption 构建选项
+type TBuildOption struct {
+	GoArgument string `json:"go_argument"` // 构建参数
+	Output     string `json:"output"`      // 构建输出目录
+}
+
+// TEnvOption 环境配置
+type TEnvOption struct {
 }
 
 // 加载项目
@@ -87,9 +100,18 @@ func Load(egpPath string) {
 }
 
 // 写入项目配置文件
-func Write(project *TProject) {
+func Write(path string, project *TProject) {
 	if project == nil {
 		return
 	}
-
+	data, err := json.Marshal(project)
+	if err != nil {
+		logs.Error("解析项目配置文件失败:", err.Error())
+		return
+	}
+	err = os.WriteFile(path, data, 0666)
+	if err != nil {
+		logs.Error("写入项目配置文件失败:", err.Error())
+		return
+	}
 }

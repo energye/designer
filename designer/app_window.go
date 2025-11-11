@@ -84,10 +84,10 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
 	// 窗口显示在鼠标所在的窗口
-	m.showInMonitor()
+	//m.showInMonitor()
 	m.initAllImageList()
 	// 设置窗口图标
-	//m.setWindowIcon()
+	m.setWindowIcon()
 	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
