@@ -13,8 +13,47 @@
 
 package project
 
-import "github.com/energye/designer/pkg/logs"
+import (
+	"encoding/json"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 func runLoad(filePath string) {
 	logs.Debug("运行加载项目/UI 文件目录:", filePath)
+	Load(filePath)
+}
+
+// 加载项目
+func Load(egpPath string) {
+	if tool.IsExist(egpPath) {
+		path, file := filepath.Split(egpPath)
+		isEgp := strings.ToLower(filepath.Ext(file)) == egp
+		if !isEgp {
+			logs.Warn("文件目录非 .egp 项目配置文件")
+			Path = ""
+			Project = nil
+			return
+		}
+		data, err := os.ReadFile(egpPath)
+		if err != nil {
+			logs.Error("读取项目配置文件失败:", err)
+			Path = ""
+			Project = nil
+			return
+		}
+		loadProject := &TProject{}
+		err = json.Unmarshal(data, loadProject)
+		if err != nil {
+			logs.Error("解析项目配置文件失败:", err)
+			Path = ""
+			Project = nil
+			return
+		}
+		Path = path
+		Project = loadProject
+	}
 }

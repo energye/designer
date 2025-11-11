@@ -34,6 +34,16 @@ type TToolbarToolBtn struct {
 	previewState   consts.PreviewState // 预览状态
 }
 
+func (m *TToolbarToolBtn) SetEnableToolBtn(enable bool) {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.newFormBtn.SetEnabled(enable)
+		m.openFormBtn.SetEnabled(enable)
+		//m.saveFormBtn.SetEnabled(enable)
+		//m.saveAllFormBtn.SetEnabled(enable)
+		m.runPreviewBtn.SetEnabled(enable)
+	})
+}
+
 // 工具按钮
 func (m *TopToolbar) createToolBarBtns() {
 	if m.toolbarBtn != nil {
@@ -78,19 +88,19 @@ func (m *TopToolbar) createToolBarBtns() {
 		return btn
 	}
 
-	toolbarBtn.newFormBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体", 0)
+	toolbarBtn.newFormBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体(Ctrl+N)", 0)
 	toolbarBtn.newFormBtn.SetOnClick(toolbarBtn.onNewForm)
 
-	toolbarBtn.openFormBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开", 1)
+	toolbarBtn.openFormBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开(Ctrl+O)", 1)
 	toolbarBtn.openFormBtn.SetOnClick(toolbarBtn.onOpenForm)
 	newSep()
 
-	toolbarBtn.saveFormBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存窗体", 1)
+	toolbarBtn.saveFormBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
 	toolbarBtn.saveFormBtn.SetOnClick(toolbarBtn.onSaveForm)
 
-	toolbarBtn.saveAllFormBtn = newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
-	toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
-	newSep()
+	//toolbarBtn.saveAllFormBtn = newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
+	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
+	//newSep()
 
 	toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行(F9)", 3)
 	toolbarBtn.runPreviewBtn.SetOnClick(toolbarBtn.onRunPreviewForm)

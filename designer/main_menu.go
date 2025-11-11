@@ -34,6 +34,11 @@ type TMainMenu struct {
 	setting lcl.IMenuItem
 	helper  lcl.IMenuItem
 	runItem lcl.IMenuItem
+
+	createProject lcl.IMenuItem
+	createWindow  lcl.IMenuItem
+	open          lcl.IMenuItem
+	save          lcl.IMenuItem
 }
 
 // 设计器主菜单
@@ -86,11 +91,11 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	create.SetCaption("新建(&N)")
 	m.file.Add(create)
 
-	createProject := lcl.NewMenuItem(owner)
-	createProject.SetCaption("新建项目")
-	createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
-	createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
-	createProject.SetOnClick(func(lcl.IObject) {
+	m.createProject = lcl.NewMenuItem(owner)
+	m.createProject.SetCaption("新建项目")
+	m.createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
+	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
+	m.createProject.SetOnClick(func(lcl.IObject) {
 		mainWindow.selectDirectoryDialog.SetTitle("新建项目")
 		history := mainWindow.selectDirectoryDialog.HistoryList()
 		//for i := int32(0); i < history.Count(); i++ {
@@ -103,45 +108,48 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate, Data: dir}})
 		}
 	})
-	create.Add(createProject)
+	create.Add(m.createProject)
 
 	sep := lcl.NewMenuItem(owner)
 	sep.SetCaption("-")
 	create.Add(sep)
 
-	createWindow := lcl.NewMenuItem(owner)
-	createWindow.SetCaption("新建窗体")
-	createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
-	createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
-	createWindow.SetOnClick(func(sender lcl.IObject) {
+	m.createWindow = lcl.NewMenuItem(owner)
+	m.createWindow.SetCaption("新建窗体")
+	m.createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
+	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
+	m.createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
 	})
-	create.Add(createWindow)
+	create.Add(m.createWindow)
 
-	openWindow := lcl.NewMenuItem(owner)
-	openWindow.SetCaption("打开(&O)")
-	openWindow.SetShortCut(api.TextToShortCut("Ctrl+O"))
-	openWindow.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
-	openWindow.SetOnClick(func(sender lcl.IObject) {
+	m.open = lcl.NewMenuItem(owner)
+	m.open.SetCaption("打开(&O)")
+	m.open.SetShortCut(api.TextToShortCut("Ctrl+O"))
+	m.open.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
+	m.open.SetOnClick(func(sender lcl.IObject) {
 		toolbar.toolbarBtn.onOpenForm(sender)
 	})
-	m.file.Add(openWindow)
-	saveWindow := lcl.NewMenuItem(owner)
-	saveWindow.SetCaption("保存窗体(&S)")
-	saveWindow.SetShortCut(api.TextToShortCut("Ctrl+S"))
-	saveWindow.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
-	saveWindow.SetOnClick(func(sender lcl.IObject) {
+	m.file.Add(m.open)
+
+	m.save = lcl.NewMenuItem(owner)
+	m.save.SetCaption("保存(&S)")
+	m.save.SetShortCut(api.TextToShortCut("Ctrl+S"))
+	m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
+	m.save.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("保存窗体")
 	})
-	m.file.Add(saveWindow)
-	saveAllWindow := lcl.NewMenuItem(owner)
-	saveAllWindow.SetCaption("保存所有窗体(&L)")
-	saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
-	saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
-	saveAllWindow.SetOnClick(func(sender lcl.IObject) {
-		logs.Debug("保存所有窗体")
-	})
-	m.file.Add(saveAllWindow)
+	m.file.Add(m.save)
+
+	//saveAllWindow := lcl.NewMenuItem(owner)
+	//saveAllWindow.SetCaption("保存所有窗体(&L)")
+	//saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
+	//saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
+	//saveAllWindow.SetOnClick(func(sender lcl.IObject) {
+	//	logs.Debug("保存所有窗体")
+	//})
+	//m.file.Add(saveAllWindow)
+
 	exitWindow := lcl.NewMenuItem(owner)
 	exitWindow.SetCaption("退出(&Q)")
 	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))

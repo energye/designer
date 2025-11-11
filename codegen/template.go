@@ -83,6 +83,7 @@ package {{$Form.PackageName}}
 
 import (
 	{{$Form.GoGetImports}}
+	"github.com/energye/lcl/types"
 )
 
 // OnFormCreate 窗体初始化事件
@@ -108,10 +109,10 @@ func (m *T{{$Form.Form.Name}}) On{{.Name}}Click(sender lcl.IObject) {
 {{end}}
 `
 
-// main 文件代码模板
-// main.go 不存在项目目录时创建
-const mainCodeTemplate = `// ==============================================================================
-// 📚 main 应用启动入口文件
+// app/run 文件代码模板
+// app/run.go 不存在项目目录时创建
+const runCodeTemplate = `// ==============================================================================
+// 📚 应用启动入口文件
 // 📌 该文件不存在时自动创建
 // ✏️ 可在此文件中添加业务逻辑
 // ==============================================================================
@@ -119,7 +120,8 @@ const mainCodeTemplate = `// ===================================================
 package main
 
 import (
-	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/lcl" 
+	{{.WindowsSyso}}
 )
 
 func main() {
@@ -127,7 +129,7 @@ func main() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms(&MainForm, &Form1)
+	lcl.Application.NewForms({{.Forms}})
 	lcl.Application.Run()
 }
 `

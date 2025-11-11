@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	packageName    = "forms"                                          // 包名
+	packageName    = "app"                                            // 包名
 	lcl            = `"github.com/energye/lcl/lcl"`                   // lcl 组件库
 	cef            = `"github.com/energye/cef"`                       // cef 组件库
 	wvWindows      = `"github.com/energye/wv/windows"`                // webview2 组件库

@@ -14,12 +14,7 @@
 package project
 
 import (
-	"encoding/json"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/tool"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // 项目文件 xxx.egp 配置文件
@@ -28,7 +23,7 @@ import (
 var (
 	// Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
 	Path    string
-	Project TProject
+	Project *TProject
 )
 
 // 项目配置文件扩展名
@@ -49,8 +44,9 @@ type TProject struct {
 	Version      string       `json:"version"`        // 项目版本
 	Description  string       `json:"description"`    // 项目描述
 	Author       string       `json:"author"`         // 项目作者
+	Package      string       `json:"package"`        // 项目(应用)包名, app|forms 或其它
 	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
-	UIForms      []*TUIForm   `json:"forms"`          // 窗体信息
+	UIForms      []TUIForm    `json:"forms"`          // 窗体信息
 	ActiveUIForm string       `json:"active_ui_form"` // 当前激活设计的窗体名称
 	Lang         string       `json:"lang"`           // 语言
 	BuildOption  TBuildOption `json:"build_option"`   // 构建选项
@@ -75,43 +71,4 @@ type TBuildOption struct {
 
 // TEnvOption 环境配置
 type TEnvOption struct {
-}
-
-// 加载项目
-func Load(egpPath string) {
-	if tool.IsExist(egpPath) {
-		isEgp := strings.ToLower(filepath.Ext(egpPath)) == egp
-		if !isEgp {
-			logs.Warn("文件目录非 .egp 项目配置文件")
-			return
-		}
-		data, err := os.ReadFile(egpPath)
-		if err != nil {
-			logs.Error("读取项目配置文件失败:", err)
-			return
-		}
-		err = json.Unmarshal(data, &Project)
-		if err != nil {
-			logs.Error("解析项目配置文件失败:", err)
-			return
-		}
-
-	}
-}
-
-// 写入项目配置文件
-func Write(path string, project *TProject) {
-	if project == nil {
-		return
-	}
-	data, err := json.Marshal(project)
-	if err != nil {
-		logs.Error("解析项目配置文件失败:", err.Error())
-		return
-	}
-	err = os.WriteFile(path, data, 0666)
-	if err != nil {
-		logs.Error("写入项目配置文件失败:", err.Error())
-		return
-	}
 }

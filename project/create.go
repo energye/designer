@@ -14,6 +14,8 @@
 package project
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -62,21 +64,28 @@ func runCreate(dir string) {
 		isCreate = api.MessageDlg(msg, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 	}
 	if isCreate {
-		// 覆盖并创建项目
-		logs.Warn(existEgp, "创建并覆盖")
+		// 覆盖并创建项目, 删除已存在的 xx.egp 文件
+		existEGPPath := filepath.Join(dir, existEgp)
+		logs.Warn("创建并覆盖, 删除项目配置文件:", existEGPPath)
+		err = os.Remove(existEGPPath)
+		if err != nil {
+			logs.Error("删除项目配置文件错误:", err.Error())
+		}
 	} else if isNotEmpty {
 		// 目录非空并且没有项目配置文件 egp, 提示是否在当前目录创建项目
 		logs.Warn("当前目录非空")
 		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
+	} else {
+		isCreate = true // 空目录和不存在 xx.egp 文件
 	}
 	if !isCreate {
 		logs.Info("取消创建项目")
 		return
 	}
-	// 设置项目目录
-	Path = dir
-	logs.Info("开始创建项目")
+	// 项目使用目录名, TODO 以后增加配置窗口
 	_, name := filepath.Split(dir)
+	logs.Info("开始创建项目:", name)
+	newEGPFileName := name + ".egp"
 	newProject := new(TProject)
 	newProject.Name = name
 	newProject.Version = "v1.0.0"
@@ -84,5 +93,42 @@ func runCreate(dir string) {
 	newProject.Author = "yanghy"
 	newProject.Main = "main.go"
 	newProject.Lang = "zh_CN"
-	Write(Path, newProject)
+	if err = Write(Path, newEGPFileName, newProject); err != nil {
+		logs.Error("创建项目, 写入项目配置失败:", err.Error())
+		Path = ""
+		Project = nil
+	} else {
+		// 设置项目目录
+		Path = dir
+		Project = newProject
+		// 创建项目成功
+		logs.Info("创建项目成功")
+		// 创建项目目录结构和文件
+		// [app]  	- dir
+		// go.mod 	- go mod
+		// main.go	- main
+		createProjectDir(newProject)
+	}
+}
+
+// 写入项目配置文件
+func Write(path, name string, project *TProject) error {
+	if project == nil {
+		return errors.New("项目配置为空")
+	}
+	data, err := json.MarshalIndent(project, "", "  ")
+	if err != nil {
+		return err
+	}
+	egpFilePath := filepath.Join(path, name)
+	err = os.WriteFile(egpFilePath, data, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// 创建项目目录结构
+func createProjectDir(project *TProject) {
+
 }

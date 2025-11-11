@@ -121,8 +121,7 @@ func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 					if prop.IsModify() {
 						propName := prop.Name()
 						propValue := prop.EditValue()
-						uiComp.Properties = append(uiComp.Properties, TProperty{Name: propName, Value: propValue,
-							Type: prop.Type()})
+						uiComp.Properties = append(uiComp.Properties, TProperty{Name: propName, Value: propValue, Type: prop.Type()})
 					}
 				}
 			}

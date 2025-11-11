@@ -20,7 +20,7 @@ import (
 
 // 设置窗口图标
 func (m *TAppWindow) setWindowIcon() {
-	if iconData := resources.Images("icons/window-icon_256x256.png"); iconData != nil {
+	if iconData := resources.Images("icons/window-icon_64x64.png"); iconData != nil {
 		stream := lcl.NewMemoryStream()
 		lcl.StreamHelper.Write(stream, iconData)
 		stream.SetPosition(0)
