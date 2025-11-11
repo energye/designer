@@ -13,7 +13,9 @@
 
 package project
 
-import "github.com/energye/designer/designer"
+import (
+	"github.com/energye/designer/designer"
+)
 
 // 项目文件 xxx.egp 配置文件
 // 存在于项目根目录
@@ -24,9 +26,6 @@ var (
 	// 全局项目配置
 	gProject *TProject
 )
-
-// 项目配置文件扩展名
-const egp = ".egp"
 
 //func init() {
 //	// TODO 需要通过配置 --test

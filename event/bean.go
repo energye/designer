@@ -24,8 +24,8 @@ const (
 
 // 控制台数据载体类型
 const (
-	ConsoleInfo Type = iota
-	ConsoleClear
+	ConsoleInfo  Type = iota // 普通消息类型
+	ConsoleClear             // 清空消息类型
 )
 
 // TPayload 通用的事件数据载体

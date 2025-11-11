@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -117,6 +118,13 @@ func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	logs.Info("FormAfterCreate")
 	// 默认禁用组件功能
 	SetEnableFuncComponent(false)
+
+	// 向消息输出基本信息
+	cfg := config.Config
+	_, _, _, _, _, v := api.LCLVersion()
+	consoleText := tool.Buffer{}
+	consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
+	WriteConsole(consoleText.String())
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {

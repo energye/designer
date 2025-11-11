@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
@@ -35,11 +36,13 @@ func runCreate(dir string) {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
 		logs.Error("目录不存在:", dir)
+		event.ConsoleWriteError("目录不存在:", dir)
 		return
 	}
 	de, err := os.ReadDir(dir)
 	if err != nil {
 		logs.Error("读取目录失败:", err.Error())
+		event.ConsoleWriteError("读取目录失败:", err.Error())
 		return
 	}
 	var (
@@ -52,7 +55,7 @@ func runCreate(dir string) {
 			continue
 		}
 		name := strings.ToLower(entry.Name())
-		if strings.LastIndex(name, egp) != -1 {
+		if strings.LastIndex(name, consts.EGPExt) != -1 {
 			existEgp = entry.Name()
 			break
 		}
@@ -61,31 +64,39 @@ func runCreate(dir string) {
 	// 已存在项目 egp 文件, 提示覆盖
 	if existEgp != "" {
 		msg := fmt.Sprintf("当前目录已存在项目配置 %s\n是否覆盖？", existEgp)
-		logs.Warn("当前目录已存在项目配置")
+		logs.Warn("当前目录已存在项目配置", existEgp, "是否覆盖？")
+		event.ConsoleWriteWarn("当前目录已存在项目配置", existEgp, "是否覆盖？")
 		isCreate = api.MessageDlg(msg, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
-	}
-	if isCreate {
+		if !isCreate {
+			logs.Info("取消创建项目")
+			event.ConsoleWriteInfo("取消创建项目")
+			return
+		}
 		// 覆盖并创建项目, 删除已存在的 xx.egp 文件
 		existEGPPath := filepath.Join(dir, existEgp)
 		logs.Warn("创建并覆盖, 删除项目配置文件:", existEGPPath)
+		event.ConsoleWriteWarn("创建并覆盖, 删除项目配置文件:", existEGPPath)
 		err = os.Remove(existEGPPath)
 		if err != nil {
 			logs.Error("删除项目配置文件错误:", err.Error())
+			event.ConsoleWriteError("删除项目配置文件错误件:", err.Error())
+			return
 		}
 	} else if isNotEmpty {
 		// 目录非空并且没有项目配置文件 egp, 提示是否在当前目录创建项目
 		logs.Warn("当前目录非空")
+		event.ConsoleWriteWarn("当前目录非空是否创建？")
 		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
-	} else {
-		isCreate = true // 空目录和不存在 xx.egp 文件
-	}
-	if !isCreate {
-		logs.Info("取消创建项目")
-		return
+		if !isCreate {
+			logs.Info("取消创建项目")
+			event.ConsoleWriteInfo("取消创建项目")
+			return
+		}
 	}
 	// 项目使用目录名, TODO 以后增加配置窗口
 	_, name := filepath.Split(dir)
 	logs.Info("开始创建项目:", name)
+	event.ConsoleWriteInfo("开始创建项目", name)
 	newEGPFileName := name + ".egp"
 	newProject := new(TProject)
 	newProject.Name = name
@@ -97,12 +108,14 @@ func runCreate(dir string) {
 	newProject.Package = consts.AppPackageName
 	if err = Write(dir, newEGPFileName, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
+		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
 		SetGlobalProject("", nil)
 	} else {
 		// 设置项目目录
 		SetGlobalProject(dir, newProject)
 		// 创建项目成功
 		logs.Info("创建项目成功")
+		event.ConsoleWriteInfo("创建项目成功")
 		// 创建项目目录结构和文件
 		// [app]  	- dir
 		// go.mod 	- go mod

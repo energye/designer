@@ -15,6 +15,12 @@ package consts
 
 const AppPackageName = "app"
 
+// 项目配置文件扩展名
+const EGPExt = ".egp"
+
+// UI布局文件扩展名
+const UIExt = ".ui"
+
 // PreviewState 预览状态
 type PreviewState int
 

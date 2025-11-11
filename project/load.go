@@ -15,6 +15,8 @@ package project
 
 import (
 	"encoding/json"
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"os"
@@ -28,28 +30,47 @@ func runLoad(filePath string) {
 }
 
 // 加载项目
-func Load(egpPath string) {
-	if tool.IsExist(egpPath) {
-		path, file := filepath.Split(egpPath)
-		isEgp := strings.ToLower(filepath.Ext(file)) == egp
-		if !isEgp {
-			logs.Warn("文件目录非 .egp 项目配置文件")
+func Load(filePath string) {
+	if tool.IsExist(filePath) {
+		path, file := filepath.Split(filePath)
+		isEgp := strings.ToLower(filepath.Ext(file)) == consts.EGPExt
+		isUI := strings.ToLower(filepath.Ext(file)) == consts.UIExt
+		if isEgp {
+			LoadProject(path, filePath)
+		} else if isUI {
+			LoadUI(path, filePath)
+		} else {
+			logs.Warn("文件非项目配置文件(.egp)或UI布局文件(.ui)")
+			event.ConsoleWriteError("文件非项目配置文件(.egp)或UI布局文件(.ui)")
 			SetGlobalProject("", nil)
 			return
 		}
-		data, err := os.ReadFile(egpPath)
-		if err != nil {
-			logs.Error("读取项目配置文件失败:", err)
-			SetGlobalProject("", nil)
-			return
-		}
-		loadProject := &TProject{}
-		err = json.Unmarshal(data, loadProject)
-		if err != nil {
-			logs.Error("解析项目配置文件失败:", err)
-			SetGlobalProject("", nil)
-			return
-		}
-		SetGlobalProject(path, loadProject)
 	}
+}
+
+func LoadProject(path, egpFilePath string) {
+	logs.Info("开始加载项目配置文件:", egpFilePath)
+	event.ConsoleWriteInfo("开始加载项目配置文件:", egpFilePath)
+	data, err := os.ReadFile(egpFilePath)
+	if err != nil {
+		logs.Error("读取项目配置文件失败:", err)
+		event.ConsoleWriteError("读取项目配置文件失败:", err.Error())
+		SetGlobalProject("", nil)
+		return
+	}
+	loadProject := &TProject{}
+	err = json.Unmarshal(data, loadProject)
+	if err != nil {
+		logs.Error("解析项目配置文件失败:", err)
+		event.ConsoleWriteError("解析项目配置文件失败:", err.Error())
+		SetGlobalProject("", nil)
+		return
+	}
+	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
+	SetGlobalProject(path, loadProject)
+}
+
+func LoadUI(path, uiFilePath string) {
+	logs.Info("开始加载UI布局文件:", uiFilePath)
+	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
 }

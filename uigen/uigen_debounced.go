@@ -14,6 +14,7 @@
 package uigen
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
@@ -48,7 +49,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		debounceMutex.Unlock()
 
 		formId := strings.ToLower(formName)
-		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formId+formUI)
+		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formId+consts.UIExt)
 
 		// 执行UI生成
 		err := GenerateUIFile(formTab.FormRoot, uiFilePath)
