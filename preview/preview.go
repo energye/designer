@@ -53,7 +53,7 @@ func runPreview(state chan<- any) {
 	if runCmd != nil {
 		return
 	}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleClear}}) //清空控制台消息
+	event.ConsoleWriteClear() //清空控制台消息
 
 	state <- consts.PsStarting
 	var output string

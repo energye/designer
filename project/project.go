@@ -17,24 +17,20 @@ import (
 	"github.com/energye/designer/designer"
 )
 
-// 项目文件 xxx.egp 配置文件
-// 存在于项目根目录
+// 项目文件 xxx.egp 配置文件, 存在项目根目录
+// 功能说明
+// 1. 创建项目
+// 2. 加载项目
+// 3. 更新项目信息
+// 4. 更新项目的窗体信息
+// 5. 更新其它配置和选项
 
 var (
-	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp
+	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
 	gPath string
-	// 全局项目配置
+	// 全局项目配置, 在创建或加载项目时设置
 	gProject *TProject
 )
-
-//func init() {
-//	// TODO 需要通过配置 --test
-//	if tool.IsWindows() {
-//		Path = "C:\\app\\workspace\\test" // TODO 测试
-//	} else if tool.IsLinux() {
-//		Path = "/home/yanghy/app/projects/workspace/test"
-//	}
-//}
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {

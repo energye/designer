@@ -159,3 +159,7 @@ func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 
 	return nil
 }
+
+func generateMainCode() {
+
+}
