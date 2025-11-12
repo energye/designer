@@ -32,6 +32,8 @@ func init() {
 				// 加载项目或UI
 				dir := payload.Data.(string)
 				runLoad(dir)
+			case event.ProjectUpdateForm:
+				runUpdate()
 			}
 		}
 	}, func() {
