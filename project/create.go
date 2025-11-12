@@ -23,7 +23,6 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/types"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -114,11 +113,11 @@ func runCreate(dir string) {
 	} else {
 		// 设置项目目录
 		SetGlobalProject(dir, newProject)
+		// 创建项目目录结构和文件
+		createProjectDir()
 		// 创建项目成功
 		logs.Info("创建项目成功")
 		event.ConsoleWriteInfo("创建项目成功")
-		// 创建项目目录结构和文件
-		createProjectDir()
 	}
 }
 
@@ -137,49 +136,4 @@ func Write(path, name string, project *TProject) error {
 		return err
 	}
 	return nil
-}
-
-// 创建项目目录结构
-/*
-	[app]	// 应用主目录, 生成代码存放目录 (xxx.go xxx.ui.go xxx.ui)
-	[resources]	// 资源存放目录, 图标等静态资源文件
-		| icon
-			| icon.md
-		| resources.go
-		| windows_[386|amd64].syso ?? 根据设计器功能动态生成, 只适用于 windows
-	go.mod
-	main.go
-*/
-func createProjectDir() {
-	if gProject == nil || gPath == "" {
-		return
-	}
-	appRoot := gPath
-	// 代码存放目录
-	codePath := filepath.Join(appRoot, consts.AppPackageName)
-	// 资源存放目录
-	resourcesPath := filepath.Join(appRoot, "resources")
-	resourcesIconPath := filepath.Join(resourcesPath, "icon")
-	paths := []string{codePath, resourcesPath, resourcesIconPath}
-	for _, path := range paths {
-		if err := os.Mkdir(path, fs.ModePerm); err != nil {
-			logs.Error("创建项目目录失败:", err.Error())
-		}
-	}
-	// 文件创建
-	files := []struct {
-		path string
-		name string
-		data string
-	}{
-		{resourcesPath, "resources.go", resourcesGoTemplate},
-		{resourcesIconPath, "icon.md", ""},
-		{appRoot, "go.mod", goModTemplate},
-		{appRoot, "main.go", runCodeTemplate},
-	}
-	for _, file := range files {
-		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0666); err != nil {
-			logs.Error("创建项目文件失败:", err.Error())
-		}
-	}
 }

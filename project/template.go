@@ -24,7 +24,6 @@ package main
 
 import (
 	"github.com/energye/lcl/lcl" 
-	{{.WindowsSyso}}
 )
 
 func main() {
@@ -32,19 +31,16 @@ func main() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms({{.Forms}})
+	lcl.Application.NewForms(nil)
 	lcl.Application.Run()
 }
 `
 
 // go.mod 模块文件模板
-const goModTemplate = `module {{.Module}}
+const goModTemplate = `module {{.Name}}
 
 go 1.20
 
-require (
-	github.com/energye/lcl/lcl
-)
 `
 
 // resources/resources。go
