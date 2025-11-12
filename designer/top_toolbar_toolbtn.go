@@ -109,6 +109,8 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbarBtn.runPreviewBtn.SetOnClick(toolbarBtn.onRunPreviewForm)
 }
 
+// 新建窗体
+// TODO 功能完善. 延迟并提示保存？窗体存在提示？
 func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 新建窗体")
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -124,8 +126,8 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 }
 
 func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
-	logs.Debug("工具栏按钮, 打开")
-	mainWindow.openDialog.SetTitle("打开项目/UI")
+	logs.Debug("工具栏按钮, 打开项目/打开UI布局")
+	mainWindow.openDialog.SetTitle("打开项目/打开UI布局")
 	mainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
 	mainWindow.openDialog.SetFilterIndex(1)
 	if mainWindow.openDialog.Execute() {

@@ -146,6 +146,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	m.createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
+		toolbar.toolbarBtn.onNewForm(sender)
 	})
 	create.Add(m.createWindow)
 
