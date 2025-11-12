@@ -29,13 +29,15 @@ import (
 
 func main() {
 	logs.Level = logs.LevelDebug
-	// 通过参数加载项目, 打开方试为 Designer 程
-	libname.LibName = func() string {
-		wd, _ := os.Getwd()
-		return filepath.Join(wd, "../", "gen", "gout", lib.Name)
-	}()
-	if !tool.IsExist(libname.LibName) {
-		libname.LibName = lib.Path
+	{
+		// 这是一段测试时用的代码
+		libname.LibName = func() string {
+			wd, _ := os.Getwd()
+			return filepath.Join(wd, "../", "gen", "gout", lib.Name)
+		}()
+		if !tool.IsExist(libname.LibName) {
+			libname.LibName = lib.Path
+		}
 	}
 	logs.Debug(strings.Join(os.Args, " "))
 	lcl.Init(nil, nil)
