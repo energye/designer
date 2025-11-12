@@ -1,0 +1,52 @@
+// Copyright © yanghy. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+
+package codegen
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/energye/designer/uigen"
+	"os"
+)
+
+// 根据UI文件生成Go代码
+func runGenerateCode(uiFilePath string) error {
+	// 读取并解析UI文件
+	data, err := os.ReadFile(uiFilePath)
+	if err != nil {
+		return fmt.Errorf("读取UI文件失败: %w", err)
+	}
+
+	var uiComponent uigen.TUIComponent
+	if err := json.Unmarshal(data, &uiComponent); err != nil {
+		return fmt.Errorf("解析UI文件失败: %w", err)
+	}
+
+	// 生成自动代码文件 (form[n].ui.go)
+	if err := generateAutoCode(uiFilePath, &uiComponent); err != nil {
+		return fmt.Errorf("生成自动代码失败: %w", err)
+	}
+
+	// 生成用户代码文件 (form[n].go) - 仅当文件不存在时
+	if err := generateUserCode(uiFilePath, &uiComponent); err != nil {
+		return fmt.Errorf("生成用户代码失败: %w", err)
+	}
+
+	return nil
+}
+
+// 运行生成主函数代码
+func runGenerateMainCode() {
+
+}

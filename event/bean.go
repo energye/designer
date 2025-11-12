@@ -16,13 +16,19 @@ package event
 // 数据载体类型
 type Type int32
 
-// 项目数据载体类型
+// 项目管理模块, 数据载体类型
 const (
 	ProjectCreate Type = iota
 	ProjectLoad
 )
 
-// 控制台数据载体类型
+// 代码生成模块, 数据载体类型
+const (
+	CodeGenUI Type = iota
+	CodeGenMain
+)
+
+// 控制台, 数据载体类型
 const (
 	ConsoleInfo  Type = iota // 普通消息类型
 	ConsoleClear             // 清空消息类型

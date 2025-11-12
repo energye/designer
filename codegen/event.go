@@ -22,11 +22,19 @@ import (
 
 func init() {
 	event.On(event.GenCode, func(trigger event.TTrigger) {
-		// 触发代码生成事件
-		if uiFilePath, ok := trigger.Payload.(string); ok {
-			err := runGenerateCode(uiFilePath)
-			if err != nil {
-				logs.Error("代码生成错误:", err.Error())
+		if payload, ok := trigger.Payload.(event.TPayload); ok {
+			switch payload.Type {
+			case event.CodeGenUI:
+				// 根据UI布局文件生成代码
+				if uiFilePath, ok := payload.Data.(string); ok {
+					err := runGenerateCode(uiFilePath)
+					if err != nil {
+						logs.Error("代码生成错误:", err.Error())
+					}
+				}
+			case event.CodeGenMain:
+				// 生成/更新 main 函数
+				runGenerateMainCode()
 			}
 		}
 	}, func() {
