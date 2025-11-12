@@ -47,6 +47,7 @@ func runUpdate(formTab *designer.FormTab) {
 			UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
 		})
 	}
+	gProject.ActiveUIForm = formTab.Name
 	gProject.UIForms = uiForms
 	// 1. 更新 TUIForm 配置
 	if err := Write(gPath, gProject); err != nil {

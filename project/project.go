@@ -44,7 +44,7 @@ type TProject struct {
 	Author       string       `json:"author"`         // 项目作者
 	Package      string       `json:"package"`        // 项目(应用)包名
 	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
-	UIForms      []TUIForm    `json:"forms"`          // 窗体信息
+	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
 	ActiveUIForm string       `json:"active_ui_form"` // 当前激活设计的窗体名称
 	Lang         string       `json:"lang"`           // 语言 zh_CN
 	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
@@ -97,7 +97,7 @@ func Project() *TProject {
 func (m *TProject) GoFormNames() string {
 	buf := tool.Buffer{}
 	for _, form := range m.UIForms {
-		buf.WriteString("&", form.Name, ",")
+		buf.WriteString("&", form.Name, ", ")
 	}
 	return buf.String()
 }

@@ -29,7 +29,7 @@ import (
 	[resources]	// 资源存放目录, 图标等静态资源文件
 		| icon
 			| icon.md
-		| resources.go
+		| icon.go
 		| windows_[386|amd64].syso ?? 根据设计器功能动态生成, 只适用于 windows
 	go.mod
 	main.go

@@ -17,10 +17,9 @@
 
   },
   "ui": [
-    "UI 布局 (*.ui;*.json;*.egp)|*.ui;*.json;*.egp",
-    "UI 项目文件 (*.egp)|*.egp",
-    "UI 布局文件 (*.ui)|*.ui",
-    "UI 布局文件 (*.json)|*.json"
+    "项目文件/布局文件 (*.egp;*.ui)|*.egp;*.ui",
+    "项目配置文件 (*.egp)|*.egp",
+    "UI 布局文件 (*.ui)|*.ui"
   ],
   "project": [
     "ENERGY 项目 (*.egp)|*.egp",
