@@ -48,7 +48,7 @@ type TProperty struct {
 }
 
 // 生成UI文件
-func GenerateUIFile(formComponent *designer.TDesigningComponent, filePath string) error {
+func generateUIFile(formComponent *designer.TDesigningComponent, filePath string) error {
 	// 构建UI树结构
 	uiTree := buildUITree(formComponent)
 

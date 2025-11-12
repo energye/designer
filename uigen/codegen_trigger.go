@@ -24,3 +24,10 @@ func triggerCodeGeneration(uiFilePath string) {
 		Data: uiFilePath,
 	}})
 }
+
+// 触发项目更新, 更新 Form 信息
+func triggerProjectUpdate() {
+	event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{
+		Type: event.ProjectUpdateForm,
+	}})
+}

@@ -52,12 +52,14 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formId+consts.UIExt)
 
 		// 执行UI生成
-		err := GenerateUIFile(formTab.FormRoot, uiFilePath)
+		err := generateUIFile(formTab.FormRoot, uiFilePath)
 		if err != nil {
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
 			// 触发代码生成
 			triggerCodeGeneration(uiFilePath)
+			// 更新项目管理的窗体信息
+			triggerProjectUpdate()
 		}
 	})
 
