@@ -56,6 +56,7 @@ func createProjectDir() {
 		name string
 		data string
 	}{
+		{codePath, "app.go", buildTemplateData(appCodeTemplate)},
 		{resourcesPath, "resources.go", buildTemplateData(resourcesGoTemplate)},
 		{resourcesIconPath, "icon.md", ""},
 		{appRoot, "go.mod", buildTemplateData(goModTemplate)},
@@ -71,7 +72,7 @@ func createProjectDir() {
 // 构建填充模板数据
 func buildTemplateData(templateData string) string {
 	// 解析模板
-	tmpl, err := template.New("auto").Parse(templateData)
+	tmpl, err := template.New("project").Parse(templateData)
 	if err != nil {
 		logs.Error("解析自动代码模板失败:", err.Error())
 		return ""

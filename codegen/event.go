@@ -32,9 +32,6 @@ func init() {
 						logs.Error("代码生成错误:", err.Error())
 					}
 				}
-			case event.CodeGenMain:
-				// 生成/更新 main 函数
-				runGenerateMainCode()
 			}
 		}
 	}, func() {

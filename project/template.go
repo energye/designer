@@ -16,7 +16,7 @@ package project
 // main.go 文件代码模板
 const runCodeTemplate = `// ==============================================================================
 // 📚 应用启动入口文件
-// 📌 该文件不存在时自动创建
+// 📌 该文件在创建项目时创建
 // ✏️ 可在此文件中添加业务逻辑
 // ==============================================================================
 
@@ -24,6 +24,8 @@ package main
 
 import (
 	"github.com/energye/lcl/lcl" 
+	"{{.Name}}/app"
+	_ "{{.Name}}/resources"
 )
 
 func main() {
@@ -31,9 +33,23 @@ func main() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms(nil)
+	lcl.Application.NewForms(app.Forms...)
 	lcl.Application.Run()
 }
+`
+
+// app.go 文件代码模板
+// 用于提供 main.go NewForms 参数使用
+const appCodeTemplate = `// ==============================================================================
+// 📚 窗体维护列表
+// 🔥 ENERGY GUI 设计器自动生成代码. 不能编辑
+// ==============================================================================
+
+package {{.Package}}
+
+import "github.com/energye/lcl/lcl"
+
+var Forms = []lcl.IEngForm{}
 `
 
 // go.mod 模块文件模板
@@ -43,7 +59,7 @@ go 1.20
 
 `
 
-// resources/resources。go
+// resources/resources.go
 // 资源代码模板
 const resourcesGoTemplate = `// ==============================================================================
 // 📚 项目资源文件
