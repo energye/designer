@@ -50,6 +50,7 @@ package {{.Package}}
 
 import "github.com/energye/lcl/lcl"
 
+// Forms 应用使用的窗体列表
 var Forms = []lcl.IEngForm{
 	{{.GoFormNames}}
 }
@@ -59,14 +60,13 @@ var Forms = []lcl.IEngForm{
 const goModTemplate = `module {{.Name}}
 
 go 1.20
-
 `
 
 // resources/resources.go
 // 资源代码模板
 const resourcesGoTemplate = `// ==============================================================================
-// 📚 项目资源文件
-// 📌 该文件不存在时自动创建
+// 📚 内嵌资源
+// 📌 不存在时自动创建
 // ✏️ 可在此文件中添加业务逻辑
 // ==============================================================================
 
@@ -74,12 +74,13 @@ package resources
 
 import "embed"
 
-//go:embed icon
+//go:embed embed
 var icon embed.FS
 
-// Icon 获取图片数据
-func Icon(fileName string) []byte {
-	data, _ := icon.ReadFile("icon/" + fileName)
+// Embed 获取内嵌资源
+// 函数签名不能修改
+func Embed(fileName string) []byte {
+	data, _ := icon.ReadFile("embed/" + fileName)
 	return data
 }
 `
