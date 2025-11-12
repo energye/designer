@@ -14,6 +14,7 @@
 package project
 
 import (
+	"gen/tool"
 	"github.com/energye/designer/designer"
 )
 
@@ -82,10 +83,21 @@ func SetGlobalProject(path string, project *TProject) {
 	}
 }
 
+// 返回当前项目路径
 func Path() string {
 	return gPath
 }
 
+// 返回当前项目对象
 func Project() *TProject {
 	return gProject
+}
+
+// 模板调用 返回当前项目的所有窗体名称
+func (m *TProject) GoFormNames() string {
+	buf := tool.Buffer{}
+	for _, form := range m.UIForms {
+		buf.WriteString("&", form.Name, ",")
+	}
+	return buf.String()
 }

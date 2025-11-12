@@ -40,6 +40,7 @@ func main() {
 
 // app.go 文件代码模板
 // 用于提供 main.go NewForms 参数使用
+// 在项目窗体创建/更新时同步修改
 const appCodeTemplate = `// ==============================================================================
 // 📚 窗体维护列表
 // 🔥 ENERGY GUI 设计器自动生成代码. 不能编辑
@@ -49,7 +50,9 @@ package {{.Package}}
 
 import "github.com/energye/lcl/lcl"
 
-var Forms = []lcl.IEngForm{}
+var Forms = []lcl.IEngForm{
+	{{.GoFormNames}}
+}
 `
 
 // go.mod 模块文件模板

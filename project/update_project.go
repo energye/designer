@@ -16,6 +16,8 @@ package project
 import "github.com/energye/designer/pkg/logs"
 
 // 项目配置更新
+// 更新 TUIForm 配置
+// 更新 app/app.go 代码文件
 func runUpdate() {
 	logs.Debug("运行项目更新")
 }
