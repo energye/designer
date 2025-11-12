@@ -20,6 +20,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"strings"
 	"widget/wg"
 )
 
@@ -38,6 +39,14 @@ type FormTab struct {
 	formDesigner  *TEngFormDesigner    // 设计器处理器
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	componentMenu *TComponentMenu      // 组件菜单
+}
+
+func (m *FormTab) UIFile() string {
+	return strings.ToLower(m.Name) + consts.UIExt
+}
+
+func (m *FormTab) GOFile() string {
+	return strings.ToLower(m.Name) + consts.UIGoExt
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {

@@ -21,6 +21,12 @@ const EGPExt = ".egp"
 // UI布局文件扩展名
 const UIExt = ".ui"
 
+// UI而已Go文件扩展名
+const UIGoExt = ".ui.go"
+
+// 应用代码目录的窗体列表文件名
+const FormListFileName = "app.go"
+
 // PreviewState 预览状态
 type PreviewState int
 

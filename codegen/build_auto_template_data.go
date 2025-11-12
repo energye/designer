@@ -15,6 +15,7 @@ package codegen
 
 import (
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -41,7 +42,8 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	data := buildAutoTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UIFile: baseName + ".ui", UserFile: baseName + ".go",
+		UIFile:   baseName + ".ui",
+		UserFile: baseName + ".go",
 	}
 	data.Imports.Add(lcl)
 	data.IncludePackage()
@@ -67,7 +69,7 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	}
 
 	// 写入文件
-	autoFileName := baseName + ".ui.go"
+	autoFileName := baseName + consts.UIGoExt
 	autoFilePath := filepath.Join(filepath.Dir(uiFilePath), autoFileName)
 
 	if err := os.WriteFile(autoFilePath, formatted, 0644); err != nil {

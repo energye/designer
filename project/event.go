@@ -14,6 +14,7 @@
 package project
 
 import (
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 )
@@ -33,7 +34,8 @@ func init() {
 				dir := payload.Data.(string)
 				runLoad(dir)
 			case event.ProjectUpdateForm:
-				runUpdate()
+				formTab := payload.Data.(*designer.FormTab)
+				runUpdate(formTab)
 			}
 		}
 	}, func() {

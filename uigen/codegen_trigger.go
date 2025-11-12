@@ -13,7 +13,10 @@
 
 package uigen
 
-import "github.com/energye/designer/event"
+import (
+	"github.com/energye/designer/designer"
+	"github.com/energye/designer/event"
+)
 
 // 生成回调事件
 
@@ -26,8 +29,9 @@ func triggerCodeGeneration(uiFilePath string) {
 }
 
 // 触发项目更新, 更新 Form 信息
-func triggerProjectUpdate() {
+func triggerProjectUpdate(formTab *designer.FormTab) {
 	event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{
 		Type: event.ProjectUpdateForm,
+		Data: formTab,
 	}})
 }

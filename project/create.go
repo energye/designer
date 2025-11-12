@@ -100,13 +100,14 @@ func runCreate(dir string) {
 	newEGPFileName := name + ".egp"
 	newProject := new(TProject)
 	newProject.Name = name
+	newProject.EGPName = newEGPFileName
 	newProject.Version = "v1.0.0"
 	newProject.Description = "测试项目描述"
 	newProject.Author = "yanghy"
 	newProject.Main = "main.go"
 	newProject.Lang = "zh_CN"
 	newProject.Package = consts.AppPackageName
-	if err = Write(dir, newEGPFileName, newProject); err != nil {
+	if err = Write(dir, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
 		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
 		SetGlobalProject("", nil)
@@ -122,7 +123,7 @@ func runCreate(dir string) {
 }
 
 // 写入项目配置文件
-func Write(path, name string, project *TProject) error {
+func Write(path string, project *TProject) error {
 	if project == nil {
 		return errors.New("项目配置为空")
 	}
@@ -130,7 +131,7 @@ func Write(path, name string, project *TProject) error {
 	if err != nil {
 		return err
 	}
-	egpFilePath := filepath.Join(path, name)
+	egpFilePath := filepath.Join(path, project.EGPName)
 	err = os.WriteFile(egpFilePath, data, 0666)
 	if err != nil {
 		return err

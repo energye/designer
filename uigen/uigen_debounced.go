@@ -14,12 +14,10 @@
 package uigen
 
 import (
-	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 )
@@ -44,22 +42,22 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 
 	// 创建新的定时器
 	timer := time.AfterFunc(debounceDelay, func() {
+		tempFormTab := formTab
 		debounceMutex.Lock()
 		delete(debounceTimers, formName)
 		debounceMutex.Unlock()
 
-		formId := strings.ToLower(formName)
-		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formId+consts.UIExt)
+		uiFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.UIFile())
 
 		// 执行UI生成
-		err := generateUIFile(formTab.FormRoot, uiFilePath)
+		err := generateUIFile(tempFormTab.FormRoot, uiFilePath)
 		if err != nil {
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
-			// 触发代码生成
+			// 触发代码生成事件
 			triggerCodeGeneration(uiFilePath)
-			// 更新项目管理的窗体信息
-			triggerProjectUpdate()
+			// 触发更新项目管理的窗体信息事件
+			triggerProjectUpdate(tempFormTab)
 		}
 	})
 

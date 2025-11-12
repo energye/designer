@@ -40,11 +40,11 @@ func createProjectDir() {
 	}
 	appRoot := gPath
 	// 代码存放目录
-	codePath := filepath.Join(appRoot, consts.AppPackageName)
+	appCodePath := filepath.Join(appRoot, consts.AppPackageName)
 	// 资源存放目录
 	resourcesPath := filepath.Join(appRoot, "resources")
 	resourcesIconPath := filepath.Join(resourcesPath, "icon")
-	paths := []string{codePath, resourcesPath, resourcesIconPath}
+	paths := []string{appCodePath, resourcesPath, resourcesIconPath}
 	for _, path := range paths {
 		if err := os.Mkdir(path, fs.ModePerm); err != nil {
 			logs.Error("创建项目目录失败:", err.Error())
@@ -56,7 +56,7 @@ func createProjectDir() {
 		name string
 		data string
 	}{
-		{codePath, "app.go", buildTemplateData(appCodeTemplate)},
+		{appCodePath, consts.FormListFileName, buildTemplateData(appCodeTemplate)},
 		{resourcesPath, "resources.go", buildTemplateData(resourcesGoTemplate)},
 		{resourcesIconPath, "icon.md", ""},
 		{appRoot, "go.mod", buildTemplateData(goModTemplate)},

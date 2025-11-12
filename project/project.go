@@ -38,6 +38,7 @@ var (
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
 	Name         string       `json:"name"`           // 项目名
+	EGPName      string       `json:"egp_name"`       // 项目配置文件名
 	Version      string       `json:"version"`        // 项目版本
 	Description  string       `json:"description"`    // 项目描述
 	Author       string       `json:"author"`         // 项目作者
@@ -56,7 +57,6 @@ type TUIForm struct {
 	UIFile     string `json:"ui_file"`   // UI文件名
 	GOFile     string `json:"go_file"`   // UI Go 文件名
 	UpdateTime string `json:"date_time"` // 更新时间
-	FilePath   string `json:"file_path"` // 文件路径
 }
 
 // TBuildOption 构建配置
