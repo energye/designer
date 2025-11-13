@@ -35,6 +35,8 @@ ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架打造、且基于该框架
 
 ## 截图
 
+![ENERGY-designer-run.png](docs%2Fimage%2FENERGY-designer-run.png)
+
 ![ENERGY-designer.png](docs%2Fimage%2FENERGY-designer.png)
 
 ![ENERGY-designer-preview.png](docs%2Fimage%2FENERGY-designer-preview.png)
