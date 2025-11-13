@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/project/bean"
 	"os"
 	"path/filepath"
 	"time"
@@ -46,7 +47,7 @@ func runUpdate(formTab *designer.FormTab) {
 	}
 	if !isExist {
 		// 不存在添加
-		uiForms = append(uiForms, TUIForm{
+		uiForms = append(uiForms, bean.TUIForm{
 			Id:         formTab.Id,
 			Name:       formTab.FormRoot.Name(),
 			UIFile:     formTab.UIFile(),

@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/project/bean"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/types"
 	"os"
@@ -98,7 +99,7 @@ func runCreate(dir string) {
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
 	newEGPFileName := name + ".egp"
-	newProject := new(TProject)
+	newProject := new(bean.TProject)
 	newProject.Name = name
 	newProject.EGPName = newEGPFileName
 	newProject.Version = "v1.0.0"
@@ -123,7 +124,7 @@ func runCreate(dir string) {
 }
 
 // 写入项目配置文件
-func Write(path string, project *TProject) error {
+func Write(path string, project *bean.TProject) error {
 	if project == nil {
 		return errors.New("项目配置为空")
 	}

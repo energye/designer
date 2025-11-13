@@ -29,7 +29,7 @@ import (
 // 设计表单的 tab
 type FormTab struct {
 	Id         int    // 唯一索引, 关联 forms key: index
-	name       string // 窗体名称, 当和 FormRoot 的 Name() 不一至时需要同步
+	name       string // 窗体名称, 实际是一个临时名称
 	isDesigner bool   // 当前窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet

@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/project/bean"
 	"os"
 	"path/filepath"
 	"strings"
@@ -62,7 +63,7 @@ func LoadProject(path, egpFilePath string) {
 		SetGlobalProject("", nil)
 		return
 	}
-	loadProject := &TProject{}
+	loadProject := &bean.TProject{}
 	err = json.Unmarshal(data, loadProject)
 	if err != nil {
 		logs.Error("解析项目配置文件失败:", err)
@@ -73,12 +74,7 @@ func LoadProject(path, egpFilePath string) {
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
 	// 恢复设计器窗体
-	var uiFilePaths []string
-	for _, form := range loadProject.UIForms {
-		uiFilePath := filepath.Join(path, loadProject.Package, form.UIFile)
-		uiFilePaths = append(uiFilePaths, uiFilePath)
-	}
-	designer.RecoverDesignerFormTab(uiFilePaths...)
+	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 }
 
 func LoadUI(uiFilePath string) {
@@ -89,8 +85,26 @@ func LoadUI(uiFilePath string) {
 		event.ConsoleWriteError("不允许加载的UI布局, 当前项目未创建")
 		return
 	}
-
+	path, uiFileName := filepath.Split(uiFilePath)
+	// 匹配 ui 文件是否属于当前项目
+	if !strings.HasPrefix(gPath, path) {
+		logs.Error("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
+		event.ConsoleWriteError("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
+		return
+	}
+	var loadUIForm *bean.TUIForm
+	for _, uiForm := range gProject.UIForms {
+		if uiForm.UIFile == uiFileName {
+			loadUIForm = &uiForm
+			break
+		}
+	}
+	if loadUIForm == nil {
+		logs.Error("UI布局, 在当前项目未匹配到, 无法加载:", uiFilePath)
+		event.ConsoleWriteError("UI布局, 在当前项目未匹配到, 无法加载:", uiFilePath)
+		return
+	}
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
 	// 恢复设计器窗体
-	designer.RecoverDesignerFormTab(uiFilePath)
+	designer.RecoverDesignerFormTab(gPath, gProject, loadUIForm)
 }

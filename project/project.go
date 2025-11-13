@@ -14,8 +14,8 @@
 package project
 
 import (
-	"gen/tool"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/project/bean"
 )
 
 // 项目文件 xxx.egp 配置文件, 存在项目根目录
@@ -32,50 +32,13 @@ var (
 	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
 	gPath string
 	// 全局项目配置, 在创建或加载项目时设置
-	gProject *TProject
+	gProject *bean.TProject
 )
-
-// TProject 项目信息 xxx.egp 配置文件
-type TProject struct {
-	Name         string       `json:"name"`           // 项目名
-	EGPName      string       `json:"egp_name"`       // 项目配置文件名
-	Version      string       `json:"version"`        // 项目版本
-	Description  string       `json:"description"`    // 项目描述
-	Author       string       `json:"author"`         // 项目作者
-	Package      string       `json:"package"`        // 项目(应用)包名
-	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
-	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
-	ActiveUIForm int          `json:"active_ui_form"` // 当前激活设计的窗体Id
-	Lang         string       `json:"lang"`           // 语言 zh_CN
-	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
-	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
-}
-
-// TUIForm 窗体信息
-type TUIForm struct {
-	Id         int    `json:"id"`           // 设计窗体Id
-	Name       string `json:"name"`         // 窗体名
-	UIFile     string `json:"ui_file"`      // UI文件名
-	GOFile     string `json:"go_file"`      // UI Go 文件名
-	GOUserFile string `json:"go_user_file"` // UI Go 用户文件名
-	UpdateTime string `json:"date_time"`    // 更新时间
-}
-
-// TBuildOption 构建配置
-type TBuildOption struct {
-	GoArgument string `json:"go_argument"` // 构建参数
-	Output     string `json:"output"`      // 构建输出目录
-}
-
-// TEnvOption 环境配置
-type TEnvOption struct {
-	GoRoot string `json:"go_root"` // Go 安装目录
-}
 
 // SetGlobalProject 设置全局项目路径和项目对象
 // path: 项目路径
 // project: 项目对象指针
-func SetGlobalProject(path string, project *TProject) {
+func SetGlobalProject(path string, project *bean.TProject) {
 	gPath = path
 	gProject = project
 	if path == "" || project == nil {
@@ -91,15 +54,6 @@ func Path() string {
 }
 
 // 返回当前项目对象
-func Project() *TProject {
+func Project() *bean.TProject {
 	return gProject
-}
-
-// 模板调用 返回当前项目的所有窗体名称
-func (m *TProject) GoFormNames() string {
-	buf := tool.Buffer{}
-	for _, form := range m.UIForms {
-		buf.WriteString("&", form.Name, ", ")
-	}
-	return buf.String()
 }

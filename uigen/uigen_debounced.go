@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
+	projBean "github.com/energye/designer/project/bean"
 	"os"
 	"path/filepath"
 	"sync"
@@ -52,7 +53,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		uiFileName := tempFormTab.UIFile()
 
 		// 验证UI布局文件名
-		var uiForm *project.TUIForm
+		var uiForm *projBean.TUIForm
 		for _, form := range project.Project().UIForms {
 			if form.Id == tempFormTab.Id {
 				uiForm = &form

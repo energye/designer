@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
+	projBean "github.com/energye/designer/project/bean"
 	"github.com/energye/designer/uigen/bean"
 	"os"
 	"path/filepath"
@@ -30,7 +31,7 @@ func runGenerateCode(formTab *designer.FormTab) error {
 	goUIFileName := formTab.GOFile()
 
 	// 验证UI布局文件名
-	var uiForm *project.TUIForm
+	var uiForm *projBean.TUIForm
 	for _, form := range project.Project().UIForms {
 		if form.Id == formTab.Id {
 			uiForm = &form
