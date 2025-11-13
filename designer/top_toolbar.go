@@ -41,14 +41,14 @@ type TopToolbar struct {
 	tab             *wg.TTab
 	box             lcl.IPanel
 	leftTools       lcl.IPanel
-	rightTabs       lcl.IPanel               // 组件面板选项卡
-	toolbarBtn      *TToolbarToolBtn         // 工具栏按钮
-	componentTabs   map[string]*ComponentTab // 组件选项卡： 标准，附加，通用等等
-	selectComponent *ComponentTabItem        // 选中的组件
+	rightTabs       lcl.IPanel                // 组件面板选项卡
+	toolbarBtn      *TToolbarToolBtn          // 工具栏按钮
+	componentTabs   map[string]*TComponentTab // 组件选项卡： 标准，附加，通用等等
+	selectComponent *TComponentTabItem        // 选中的组件
 }
 
 func (m *TAppWindow) createTopToolbar() {
-	bar := &TopToolbar{componentTabs: make(map[string]*ComponentTab)}
+	bar := &TopToolbar{componentTabs: make(map[string]*TComponentTab)}
 	toolbar = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
@@ -101,6 +101,6 @@ func (m *TopToolbar) ResetTabComponentDown() {
 
 // 设置当前工具按钮选中
 // 之后在设计器里使用
-func (m *TopToolbar) SetSelectComponentItem(item *ComponentTabItem) {
+func (m *TopToolbar) SetSelectComponentItem(item *TComponentTabItem) {
 	m.selectComponent = item
 }

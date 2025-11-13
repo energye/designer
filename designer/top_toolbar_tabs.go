@@ -25,17 +25,17 @@ import (
 )
 
 // 组件选项卡
-type ComponentTab struct {
+type TComponentTab struct {
 	//sheet         lcl.ITabSheet
 	sheet         *wg.TPage
 	toolbar       lcl.IToolBar
 	selectToolBtn lcl.IToolButton
-	components    map[string]*ComponentTabItem
+	components    map[string]*TComponentTabItem
 }
 
 // 组件选项卡 组件项
-type ComponentTabItem struct {
-	owner                   *ComponentTab
+type TComponentTabItem struct {
+	owner                   *TComponentTab
 	index                   int // tab 面板组件图标索引
 	inspectorTreeImageIndex int // 查看器组件树图标索引
 	name                    string
@@ -77,7 +77,7 @@ func (m *TopToolbar) createComponentTabs() {
 	inspectorTreeImageIndex := 0 // 查看器组件树图片索引
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
-		compTab := &ComponentTab{components: make(map[string]*ComponentTabItem)}
+		compTab := &TComponentTab{components: make(map[string]*TComponentTabItem)}
 		m.componentTabs[tab.En] = compTab
 		//sheet := lcl.NewTabSheet(m.tab)
 		sheet := m.tab.NewPage()
@@ -122,7 +122,7 @@ func (m *TopToolbar) createComponentTabs() {
 		selectToolBtn.SetShowHint(true)
 		selectToolBtn.SetDown(true)
 		selectToolBtn.SetParent(componentToolbar)
-		comp := &ComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
+		comp := &TComponentTabItem{owner: compTab, index: 0, name: "SelectTool", btn: selectToolBtn}
 		compTab.components[comp.name] = comp
 		compTab.selectToolBtn = selectToolBtn
 
@@ -137,7 +137,7 @@ func (m *TopToolbar) createComponentTabs() {
 			btn.SetImageIndex(imageComponents.ImageIndex(name + "_150.png")) // 36px
 			btn.SetShowHint(true)
 			btn.SetParent(componentToolbar)
-			comp = &ComponentTabItem{owner: compTab, index: i, inspectorTreeImageIndex: inspectorTreeImageIndex, name: name, btn: btn}
+			comp = &TComponentTabItem{owner: compTab, index: i, inspectorTreeImageIndex: inspectorTreeImageIndex, name: name, btn: btn}
 			compTab.components[name] = comp
 			inspectorTreeImageIndex++
 		}
@@ -163,7 +163,7 @@ func (m *TopToolbar) createComponentTabs() {
 }
 
 // 绑定事件
-func (m *ComponentTab) BindToolBtnEvent() {
+func (m *TComponentTab) BindToolBtnEvent() {
 	m.selectToolBtn.SetOnClick(m.SelectToolBtnOnClick)
 	for _, comp := range m.components {
 		comp.btn.SetOnClick(comp.ComponentBtnOnClick)
@@ -171,7 +171,7 @@ func (m *ComponentTab) BindToolBtnEvent() {
 }
 
 // 工具栏上的按钮 取消按下
-func (m *ComponentTab) UnDownComponents() {
+func (m *TComponentTab) UnDownComponents() {
 	for _, com := range m.components {
 		com.btn.SetDown(false)
 	}
@@ -179,19 +179,19 @@ func (m *ComponentTab) UnDownComponents() {
 }
 
 // 取消选择工具按下
-func (m *ComponentTab) UnDownSelectTool() {
+func (m *TComponentTab) UnDownSelectTool() {
 	m.selectToolBtn.SetDown(false)
 	toolbar.SetSelectComponentItem(nil)
 }
 
 // 设置选择工具按下
-func (m *ComponentTab) DownSelectTool() {
+func (m *TComponentTab) DownSelectTool() {
 	m.selectToolBtn.SetDown(true)
 	toolbar.SetSelectComponentItem(nil)
 }
 
 // 选择工具按钮事件
-func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
+func (m *TComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 	logs.Debug("SelectToolBtnOnClick")
 	m.UnDownComponents()
 	m.DownSelectTool()
@@ -199,7 +199,7 @@ func (m *ComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 }
 
 // 组件按钮事件
-func (m *ComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
+func (m *TComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
 	logs.Debug("ToolBtnOnClick", m.index, m.name)
 	m.owner.UnDownComponents()
 	m.owner.UnDownSelectTool()
