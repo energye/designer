@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
-	"github.com/energye/designer/uigen"
+	"github.com/energye/designer/uigen/bean"
 	"os"
 	"path/filepath"
 )
@@ -62,7 +62,7 @@ func runGenerateCode(formTab *designer.FormTab) error {
 		return fmt.Errorf("读取UI文件失败: %w", err)
 	}
 	// 解析UI文件
-	var uiComponent uigen.TUIComponent
+	var uiComponent bean.TUIComponent
 	if err := json.Unmarshal(data, &uiComponent); err != nil {
 		return fmt.Errorf("解析UI文件失败: %w", err)
 	}

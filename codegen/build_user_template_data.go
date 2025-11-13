@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
-	"github.com/energye/designer/uigen"
+	"github.com/energye/designer/uigen/bean"
 	"go/format"
 	"os"
 	"path/filepath"
@@ -29,7 +29,7 @@ import (
 )
 
 // 生成用户代码文件
-func generateUserCode(formTab *designer.FormTab, component *uigen.TUIComponent) error {
+func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
 	goUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
 	// 检查文件是否已存在
 	// 如果文件已存在，不覆盖
@@ -74,7 +74,7 @@ func generateUserCode(formTab *designer.FormTab, component *uigen.TUIComponent) 
 }
 
 // 构建用户代码模板数据
-func buildUserTemplateData(component *uigen.TUIComponent) *TFormData {
+func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
 	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,

@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/designer/uigen/bean"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,22 +31,6 @@ import (
 // 只存放被修改的组件属性
 // xxx.ui 文件内容是 tree JSON 结构, 数据格式为组件[变更的属性列表]
 // 生成触发条件: 即时触发 防抖
-
-// 表示UI组件的结构
-type TUIComponent struct {
-	Name       string               `json:"name"`            // 组件名称
-	ClassName  string               `json:"class_name"`      // 组件类名
-	Type       consts.ComponentType `json:"type"`            // 组件类型
-	Properties []TProperty          `json:"properties"`      // 组件属性列表
-	Child      []TUIComponent       `json:"child,omitempty"` // 组件子组件列表
-}
-
-// 组件属性
-type TProperty struct {
-	Name  string                  `json:"name"`  // 属性名称
-	Value any                     `json:"value"` // 属性值
-	Type  consts.PropertyDataType `json:"type"`  // 属性类型
-}
 
 // 生成UI文件
 func generateUIFile(formComponent *designer.TDesigningComponent, filePath string) error {
@@ -69,12 +54,12 @@ func generateUIFile(formComponent *designer.TDesigningComponent, filePath string
 }
 
 // buildUITree 构建UI树结构
-func buildUITree(component *designer.TDesigningComponent) TUIComponent {
-	uiComp := TUIComponent{
+func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
+	uiComp := bean.TUIComponent{
 		Name:       component.Name(),
 		ClassName:  component.ClassName(),
-		Properties: make([]TProperty, 0),
-		Child:      make([]TUIComponent, 0),
+		Properties: make([]bean.TProperty, 0),
+		Child:      make([]bean.TUIComponent, 0),
 		Type:       component.ComponentType,
 	}
 
@@ -85,7 +70,7 @@ func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height", "Caption") {
 				propName := prop.Name()
 				propValue := prop.EditValue()
-				uiComp.Properties = append(uiComp.Properties, TProperty{Name: propName, Value: propValue,
+				uiComp.Properties = append(uiComp.Properties, bean.TProperty{Name: propName, Value: propValue,
 					Type: prop.Type()})
 			} else {
 				// 只保存修改过的属性
@@ -104,7 +89,7 @@ func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 										paths = append(paths, data.Name())
 										propName := strings.Join(paths, ".")
 										propValue := data.EditValue()
-										uiComp.Properties = append(uiComp.Properties, TProperty{Name: propName, Value: propValue,
+										uiComp.Properties = append(uiComp.Properties, bean.TProperty{Name: propName, Value: propValue,
 											Type: data.Type()})
 									} else {
 										logs.Error("错误, 生成UI布局文件, 属性是 class 获取子节点路径错误 nil. 属性名: ", prop.Name(), "子节点属性名:", data.Name())
@@ -118,7 +103,7 @@ func buildUITree(component *designer.TDesigningComponent) TUIComponent {
 					if prop.IsModify() {
 						propName := prop.Name()
 						propValue := prop.EditValue()
-						uiComp.Properties = append(uiComp.Properties, TProperty{Name: propName, Value: propValue, Type: prop.Type()})
+						uiComp.Properties = append(uiComp.Properties, bean.TProperty{Name: propName, Value: propValue, Type: prop.Type()})
 					}
 				}
 			}

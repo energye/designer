@@ -20,7 +20,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
-	"github.com/energye/designer/uigen"
+	"github.com/energye/designer/uigen/bean"
 	"go/format"
 	"os"
 	"path/filepath"
@@ -36,7 +36,7 @@ import (
 // 生成触发条件: UI 布局文件修改后
 
 // 生成自动代码文件
-func generateAutoCode(formTab *designer.FormTab, component *uigen.TUIComponent) error {
+func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
@@ -77,7 +77,7 @@ func generateAutoCode(formTab *designer.FormTab, component *uigen.TUIComponent) 
 }
 
 // 构建自动代码模板数据
-func buildAutoTemplateData(component *uigen.TUIComponent) *TFormData {
+func buildAutoTemplateData(component *bean.TUIComponent) *TFormData {
 	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,

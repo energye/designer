@@ -84,6 +84,13 @@ func LoadProject(path, egpFilePath string) {
 func LoadUI(uiFilePath string) {
 	logs.Info("开始加载UI布局文件:", uiFilePath)
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
+	if gPath == "" || gProject == nil {
+		logs.Error("不允许加载的UI布局, 当前项目未创建")
+		event.ConsoleWriteError("不允许加载的UI布局, 当前项目未创建")
+		return
+	}
+
+	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(uiFilePath)
 }

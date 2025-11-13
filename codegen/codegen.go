@@ -17,7 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/uigen"
+	"github.com/energye/designer/uigen/bean"
 	"strings"
 )
 
@@ -201,7 +201,7 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) str
 }
 
 // 构建组件列表
-func (m *TComponentData) buildComponents(component *uigen.TUIComponent) []*TComponentData {
+func (m *TComponentData) buildComponents(component *bean.TUIComponent) []*TComponentData {
 	var components []*TComponentData
 	// 创建根组件（窗体）的模板数据
 	rootComponent := &TComponentData{
@@ -217,7 +217,7 @@ func (m *TComponentData) buildComponents(component *uigen.TUIComponent) []*TComp
 }
 
 // 递归构建子组件
-func (m *TComponentData) buildChildComponents(uiParent *uigen.TUIComponent, templateParent *TComponentData, result *[]*TComponentData) {
+func (m *TComponentData) buildChildComponents(uiParent *bean.TUIComponent, templateParent *TComponentData, result *[]*TComponentData) {
 	for _, child := range uiParent.Child {
 		// 为每个子组件创建模板数据
 		childTemplate := &TComponentData{
@@ -240,7 +240,7 @@ func (m *TComponentData) buildChildComponents(uiParent *uigen.TUIComponent, temp
 }
 
 // UI 而已属性列表转模板数据列表
-func uiPropertiesToTemplateProperties(uiProperties []uigen.TProperty) []TPropertyData {
+func uiPropertiesToTemplateProperties(uiProperties []bean.TProperty) []TPropertyData {
 	var templateProperties []TPropertyData
 	for _, uiProperty := range uiProperties {
 		templateProperty := uiPropertyToTemplateProperty(uiProperty)
@@ -250,7 +250,7 @@ func uiPropertiesToTemplateProperties(uiProperties []uigen.TProperty) []TPropert
 }
 
 // UI 而已属性转列表模板数据列表
-func uiPropertyToTemplateProperty(uiProperty uigen.TProperty) TPropertyData {
+func uiPropertyToTemplateProperty(uiProperty bean.TProperty) TPropertyData {
 	return TPropertyData{
 		Name:  uiProperty.Name,
 		Value: uiProperty.Value,

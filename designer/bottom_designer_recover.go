@@ -13,6 +13,14 @@
 
 package designer
 
+import (
+	"encoding/json"
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/uigen/bean"
+	"os"
+)
+
 // 恢复 FormTab
 // 从 UI 布局文件恢复
 // 触发功能:
@@ -23,5 +31,20 @@ package designer
 
 // RecoverDesignerFormTab 恢复设计窗体
 func RecoverDesignerFormTab(uiFilePaths ...string) {
+	for _, uiFilePath := range uiFilePaths {
+		data, err := os.ReadFile(uiFilePath)
+		if err != nil {
+			logs.Error("恢复设计窗体, 读取UI布局文件错误:", err.Error())
+			event.ConsoleWriteError("恢复设计窗体, 读取UI布局文件错误:", err.Error())
+			continue
+		}
+		uiComponent := bean.TUIComponent{}
+		err = json.Unmarshal(data, &uiComponent)
+		if err != nil {
+			logs.Error("恢复设计窗体, 解析窗体布局错误:", err.Error())
+			event.ConsoleWriteError("恢复设计窗体, 解析窗体布局错误:", err.Error())
+			continue
+		}
 
+	}
 }
