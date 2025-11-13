@@ -77,8 +77,3 @@ func runGenerateCode(formTab *designer.FormTab) error {
 
 	return nil
 }
-
-// 运行生成主函数代码
-func runGenerateMainCode() {
-
-}
