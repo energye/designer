@@ -97,7 +97,7 @@ func (m *Designer) hideFormTabs() {
 }
 
 // 添加一个窗体设计器 tab
-func (m *Designer) addDesignerFormTab() *FormTab {
+func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	m.hideFormTabs()
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
@@ -108,20 +108,24 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.tree.SetDoubleBuffered(true)
 	//m.tree.SetMultiSelect(true) // 多选控制
 	form.tree.SetAlign(types.AlClient)
-	form.tree.SetVisible(true)
+	form.tree.SetVisible(false)
 	SetComponentDefaultColor(form.tree)
 	form.tree.SetBorderStyleToBorderStyle(types.BsNone)
 	form.tree.SetImages(imageComponents.ImageList100())
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
 	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
-	// 树菜单
+	// 组件树右键菜单
 	form.CreateComponentMenu()
 	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
 	form.tree.SetParent(inspector.componentTree.treeComponentTree)
 
 	// 默认名
-	form.Id = len(m.designerForms) + 1
+	if len(defaultId) > 0 {
+		form.Id = defaultId[0]
+	} else {
+		form.Id = len(m.designerForms) + 1
+	}
 	form.name = fmt.Sprintf("Form%v", form.Id)
 	// 窗体ID
 	m.designerForms[form.Id] = form
@@ -163,15 +167,11 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.NewFormDesigner()
 
 	m.tab.EnableScrollButton(true)
-	m.tab.HideAllActivated()
-	form.sheet.SetActive(true)
-	m.tab.RecalculatePosition()
 	return form
 }
 
 // 激活指定的 tab
 func (m *Designer) ActiveFormTab(tab *FormTab) {
-	//m.page.SetActivePage(tab.sheet)
 	tab.sheet.SetActive(true)
 	for _, form := range m.designerForms {
 		form.isDesigner = false

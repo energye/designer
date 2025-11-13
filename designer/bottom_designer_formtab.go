@@ -39,6 +39,7 @@ type FormTab struct {
 	formDesigner  *TEngFormDesigner    // 设计器处理器
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	componentMenu *TComponentMenu      // 组件菜单
+	recover       *TRecoverForm        // 恢复模式
 }
 
 func (m *FormTab) UIFile() string {
@@ -178,40 +179,54 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	m.isDesigner = false
 	m.tree.SetVisible(false)
 	// 隐藏属性列表 page
-	var iterable func(comp *TDesigningComponent)
+	var (
+		iterable    func(comp *TDesigningComponent)
+		defaultComp = m.FormRoot
+	)
 	iterable = func(comp *TDesigningComponent) {
 		if comp == nil {
 			return
 		}
 		if comp.isDesigner {
-			comp.page.Hide()
+			defaultComp = comp
 		}
 		for _, comp := range comp.Child {
 			iterable(comp)
 		}
 	}
 	iterable(m.FormRoot)
+	defaultComp.page.SetVisible(false)
 }
 
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Show")
-	// 设计状态 开户
+	triggerUIGeneration(m.FormRoot)
+	// 设计状态 开启
 	m.isDesigner = true
 	m.tree.SetVisible(true)
 	// 显示属性列表 page
-	var iterable func(comp *TDesigningComponent)
+	var (
+		iterable    func(comp *TDesigningComponent)
+		defaultComp = m.FormRoot
+	)
 	iterable = func(comp *TDesigningComponent) {
 		if comp == nil {
 			return
 		}
 		if comp.isDesigner {
-			comp.page.Show()
+			defaultComp = comp
 		}
 		for _, comp := range comp.Child {
 			iterable(comp)
 		}
 	}
 	iterable(m.FormRoot)
+	defaultComp.page.SetVisible(true)
+	if m.recover != nil {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.Recover()
+		})
+	}
 }
 
 // 获取组件名 Caption

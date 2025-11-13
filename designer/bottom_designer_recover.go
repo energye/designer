@@ -22,6 +22,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 // 恢复 FormTab
@@ -31,6 +32,57 @@ import (
 //	1.1 恢复成功后, 提示更新到项目配置？？TODO 不同目录是否可以？还是复制到此项目目录？
 //  2. 打开项目配置文件 xxx.egp, 根据 ui_forms 字段恢复所有窗体
 //	2.1 恢复所有窗体对象到设计器
+
+type TRecoverForm struct {
+	components []uiBean.TUIComponent
+	property   []uiBean.TProperty
+}
+
+func (m *FormTab) Recover() {
+	recover := m.recover
+	// 只恢复一次, 置空
+	m.recover = nil
+	designer.ActiveFormTab(m)
+	// 1. 加载属性到设计器
+	// 此步骤会初始化并填充设计组件实例
+	m.FormRoot.LoadPropertyToInspector()
+	// 添加到组件树
+	m.AddFormNode()
+	// 恢复属性
+	recoverDesignerComponentProperty(recover.property, m.FormRoot)
+	// 恢复子组件
+	recoverDesignerChildComponent(recover.components, m.FormRoot)
+	// 激活当前 tab page
+	//designer.tab.HideAllActivated()
+	//m.sheet.SetActive(true)
+	//designer.tab.RecalculatePosition()
+	recover.components = nil
+	recover.property = nil
+}
+
+// 恢复设计的子组件
+func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
+	for _, child := range childList {
+		if create := GetRegisterComponent(child.ClassName); create != nil {
+			newComp := create(parent.formTab, 0, 0)
+			newComp.SetParent(parent)
+			// 1. 加载属性到设计器
+			// 此步骤会初始化并填充设计组件实例
+			newComp.LoadPropertyToInspector()
+			// 恢复组件属性
+			recoverDesignerComponentProperty(child.Properties, newComp)
+			// 2. 添加到组件树
+			parent.AddChild(newComp)
+			// 恢复子组件
+			recoverDesignerChildComponent(child.Child, newComp)
+		}
+	}
+}
+
+// 恢复设计的组件属性
+func recoverDesignerComponentProperty(property []uiBean.TProperty, component *TDesigningComponent) {
+
+}
 
 // RecoverDesignerFormTab 恢复设计窗体
 // 只恢复当前项目下的窗体
@@ -42,9 +94,12 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 		// 只加载这个窗体
 	} else {
 		// 加载所有
-		uiForms := project.UIForms
-		for _, uiForm := range uiForms {
-			uiFilePath := filepath.Join(path, project.Package, uiForm.UIFile)
+		wg := sync.WaitGroup{}
+		wg.Add(len(project.UIForms))
+		var activeForm *FormTab
+		for _, uiForm := range project.UIForms {
+			tempUIForm := uiForm
+			uiFilePath := filepath.Join(path, project.Package, tempUIForm.UIFile)
 			data, err := os.ReadFile(uiFilePath)
 			if err != nil {
 				logs.Error("恢复设计窗体, 读取UI布局文件错误:", err.Error())
@@ -58,19 +113,30 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 				event.ConsoleWriteError("恢复设计窗体, 解析窗体布局错误:", err.Error())
 				continue
 			}
+			// 在UI线程操作
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				formTab := designer.addDesignerFormTab()
-				formTab.Id = uiForm.Id
-				designer.ActiveFormTab(formTab)
-				// 1. 加载属性到设计器
-				// 此步骤会初始化并填充设计组件实例
-				formTab.FormRoot.LoadPropertyToInspector()
-				// 2. 添加到组件树
-				formTab.AddFormNode()
-				// 3. 放置设计组件
-				//formTab.placeComponent()
+				// 创建一个设计窗体
+				formTab := designer.addDesignerFormTab(tempUIForm.Id)
+				formTab.recover = &TRecoverForm{
+					components: uiComponent.Child,
+					property:   uiComponent.Properties,
+				}
+				// 设置属性
+				formTab.sheet.Button().SetCaption(tempUIForm.Name)
+
+				// 默认激活
+				if project.ActiveUIForm == formTab.Id {
+					activeForm = formTab
+				}
+				wg.Done()
 			})
 		}
-
+		wg.Wait()
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			designer.tab.RecalculatePosition()
+			if activeForm != nil {
+				activeForm.Recover()
+			}
+		})
 	}
 }

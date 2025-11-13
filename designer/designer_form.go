@@ -46,6 +46,7 @@ func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
 func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc := new(TDesigningComponent)
 	dc.ComponentType = consts.CtForm
+	// 创建组件属性树
 	dc.createComponentPropertyPage()
 	m.FormRoot = dc
 
