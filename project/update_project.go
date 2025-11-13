@@ -31,9 +31,15 @@ func runUpdate(formTab *designer.FormTab) {
 	isExist := false            // 是否存在
 	for i := range uiForms {
 		// 更新
-		// TODO 删除和其它待增加
-		if uiForms[i].Name == formTab.Name {
+		// TODO 删除和其它功能待增加
+		if uiForms[i].Id == formTab.Id {
+			// 更新
+			uiForms[i].Name = formTab.FormRoot.Name()
+			uiForms[i].UIFile = formTab.UIFile()
+			uiForms[i].GOFile = formTab.GOFile()
+			uiForms[i].GOUserFile = formTab.GOUserFile()
 			uiForms[i].UpdateTime = time.Now().Format("2006-01-02 15:04:05")
+			// TODO 删除... 其它？？
 			isExist = true
 			break
 		}
@@ -41,13 +47,15 @@ func runUpdate(formTab *designer.FormTab) {
 	if !isExist {
 		// 不存在添加
 		uiForms = append(uiForms, TUIForm{
-			Name:       formTab.Name,
+			Id:         formTab.Id,
+			Name:       formTab.FormRoot.Name(),
 			UIFile:     formTab.UIFile(),
 			GOFile:     formTab.GOFile(),
+			GOUserFile: formTab.GOUserFile(),
 			UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
 		})
 	}
-	gProject.ActiveUIForm = formTab.Name
+	gProject.ActiveUIForm = formTab.Id
 	gProject.UIForms = uiForms
 	// 1. 更新 TUIForm 配置
 	if err := Write(gPath, gProject); err != nil {

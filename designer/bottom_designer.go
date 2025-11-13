@@ -40,11 +40,6 @@ type Designer struct {
 	designerForms map[int]*FormTab // 设计器窗体列表
 }
 
-// 获取所有设计窗体
-func GetDesignerForms() map[int]*FormTab {
-	return designer.designerForms
-}
-
 // 创建设计器的布局
 func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des := new(Designer)
@@ -127,7 +122,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 
 	// 默认名
 	form.Id = len(m.designerForms) + 1
-	form.Name = fmt.Sprintf("Form%v", form.Id)
+	form.name = fmt.Sprintf("Form%v", form.Id)
 	// 窗体ID
 	m.designerForms[form.Id] = form
 
@@ -138,7 +133,7 @@ func (m *Designer) addDesignerFormTab() *FormTab {
 	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
 	form.sheet.Button().SetCloseHintText("关闭设计窗体")
 	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
-	form.sheet.Button().SetCaption(form.Name)
+	form.sheet.Button().SetCaption(form.name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
 	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
 	form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色

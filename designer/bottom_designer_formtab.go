@@ -28,8 +28,8 @@ import (
 
 // 设计表单的 tab
 type FormTab struct {
-	Id         int    // 索引, 关联 forms key: index
-	Name       string // 窗体名称, 当和 FormRoot 的 Name() 不一至时需要同步
+	Id         int    // 唯一索引, 关联 forms key: index
+	name       string // 窗体名称, 当和 FormRoot 的 Name() 不一至时需要同步
 	isDesigner bool   // 当前窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
@@ -42,11 +42,15 @@ type FormTab struct {
 }
 
 func (m *FormTab) UIFile() string {
-	return strings.ToLower(m.Name) + consts.UIExt
+	return strings.ToLower(m.FormRoot.Name()) + consts.UIExt
 }
 
 func (m *FormTab) GOFile() string {
-	return strings.ToLower(m.Name) + consts.UIGoExt
+	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoExt
+}
+
+func (m *FormTab) GOUserFile() string {
+	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoUserExt
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {

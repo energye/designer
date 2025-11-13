@@ -14,6 +14,7 @@
 package codegen
 
 import (
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 )
@@ -26,8 +27,8 @@ func init() {
 			switch payload.Type {
 			case event.CodeGenUI:
 				// 根据UI布局文件生成代码
-				if uiFilePath, ok := payload.Data.(string); ok {
-					err := runGenerateCode(uiFilePath)
+				if formTab, ok := payload.Data.(*designer.FormTab); ok {
+					err := runGenerateCode(formTab)
 					if err != nil {
 						logs.Error("代码生成错误:", err.Error())
 					}

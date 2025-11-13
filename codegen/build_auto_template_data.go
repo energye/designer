@@ -15,7 +15,7 @@ package codegen
 
 import (
 	"fmt"
-	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -36,14 +36,13 @@ import (
 // 生成触发条件: UI 布局文件修改后
 
 // 生成自动代码文件
-func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
-	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
+func generateAutoCode(formTab *designer.FormTab, component *uigen.TUIComponent) error {
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UIFile:   baseName + ".ui",
-		UserFile: baseName + ".go",
+		UIFile:   formTab.UIFile(),
+		UserFile: formTab.GOUserFile(),
 	}
 	data.Imports.Add(lcl)
 	data.IncludePackage()
@@ -69,10 +68,8 @@ func generateAutoCode(uiFilePath string, component *uigen.TUIComponent) error {
 	}
 
 	// 写入文件
-	autoFileName := baseName + consts.UIGoExt
-	autoFilePath := filepath.Join(filepath.Dir(uiFilePath), autoFileName)
-
-	if err := os.WriteFile(autoFilePath, formatted, 0644); err != nil {
+	goUIFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOFile())
+	if err := os.WriteFile(goUIFilePath, formatted, 0644); err != nil {
 		return fmt.Errorf("写入自动代码文件失败: %w", err)
 	}
 

@@ -45,7 +45,7 @@ type TProject struct {
 	Package      string       `json:"package"`        // 项目(应用)包名
 	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
 	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
-	ActiveUIForm string       `json:"active_ui_form"` // 当前激活设计的窗体名称
+	ActiveUIForm int          `json:"active_ui_form"` // 当前激活设计的窗体Id
 	Lang         string       `json:"lang"`           // 语言 zh_CN
 	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
 	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
@@ -53,10 +53,12 @@ type TProject struct {
 
 // TUIForm 窗体信息
 type TUIForm struct {
-	Name       string `json:"name"`      // 窗体名
-	UIFile     string `json:"ui_file"`   // UI文件名
-	GOFile     string `json:"go_file"`   // UI Go 文件名
-	UpdateTime string `json:"date_time"` // 更新时间
+	Id         int    `json:"id"`           // 设计窗体Id
+	Name       string `json:"name"`         // 窗体名
+	UIFile     string `json:"ui_file"`      // UI文件名
+	GOFile     string `json:"go_file"`      // UI Go 文件名
+	GOUserFile string `json:"go_user_file"` // UI Go 用户文件名
+	UpdateTime string `json:"date_time"`    // 更新时间
 }
 
 // TBuildOption 构建配置

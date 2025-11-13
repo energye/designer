@@ -21,8 +21,11 @@ const EGPExt = ".egp"
 // UI布局文件扩展名
 const UIExt = ".ui"
 
-// UI而已Go文件扩展名
+// UI布局Go文件扩展名
 const UIGoExt = ".ui.go"
+
+// UI布局用户Go文件扩展名
+const UIGoUserExt = ".go"
 
 // 应用代码目录的窗体列表文件名
 const FormListFileName = "app.go"

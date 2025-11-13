@@ -15,6 +15,7 @@ package codegen
 
 import (
 	"fmt"
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
@@ -28,14 +29,11 @@ import (
 )
 
 // 生成用户代码文件
-func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
+func generateUserCode(formTab *designer.FormTab, component *uigen.TUIComponent) error {
+	goUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
 	// 检查文件是否已存在
-	baseName := strings.TrimSuffix(filepath.Base(uiFilePath), filepath.Ext(uiFilePath))
-	userFileName := baseName + ".go"
-	userFilePath := filepath.Join(filepath.Dir(uiFilePath), userFileName)
-
 	// 如果文件已存在，不覆盖
-	if _, err := os.Stat(userFilePath); err == nil {
+	if _, err := os.Stat(goUIUserFilePath); err == nil {
 		return nil // 文件已存在，直接返回
 	}
 
@@ -43,7 +41,8 @@ func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 	data := buildUserTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
 		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UIFile: baseName + ".ui", UserFile: baseName + ".go",
+		UIFile:   formTab.UIFile(),
+		UserFile: formTab.GOUserFile(),
 	}
 	data.Imports.Add(lcl)
 	data.IncludePackage()
@@ -67,7 +66,7 @@ func generateUserCode(uiFilePath string, component *uigen.TUIComponent) error {
 	}
 
 	// 写入文件
-	if err := os.WriteFile(userFilePath, formatted, 0644); err != nil {
+	if err := os.WriteFile(goUIUserFilePath, formatted, 0644); err != nil {
 		return fmt.Errorf("写入用户代码文件失败: %w", err)
 	}
 

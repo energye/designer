@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -25,7 +26,7 @@ import (
 // UI 布局文件生成
 
 var (
-	debounceTimers = make(map[string]*time.Timer)
+	debounceTimers = make(map[int]*time.Timer)
 	debounceMutex  sync.Mutex
 	debounceDelay  = 500 * time.Millisecond
 )
@@ -34,7 +35,7 @@ var (
 func runDebouncedGenerate(formTab *designer.FormTab) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
-	formName := formTab.Name
+	formName := formTab.Id
 	// 取消之前的定时器
 	if timer, exists := debounceTimers[formName]; exists {
 		timer.Stop()
@@ -47,11 +48,29 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		delete(debounceTimers, formName)
 		debounceMutex.Unlock()
 
-		if tempFormTab.IsRename {
-			// 被重命名
+		// ui 布局文件名
+		uiFileName := tempFormTab.UIFile()
+
+		// 验证UI布局文件名
+		var uiForm *project.TUIForm
+		for _, form := range project.Project().UIForms {
+			if form.Id == tempFormTab.Id {
+				uiForm = &form
+				break
+			}
+		}
+		if uiForm != nil && uiForm.UIFile != uiFileName {
+			// 修改 xxx.ui 布局文件名
+			oldUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.UIFile)
+			newUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiFileName)
+			if err := os.Rename(oldUIFilePath, newUIFilePath); err != nil {
+				logs.Error("UI布局文件重命名错误:", err.Error())
+				return
+			}
+			uiForm.UIFile = uiFileName
 		}
 
-		uiFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.UIFile())
+		uiFilePath := filepath.Join(project.Path(), project.Project().Package, uiFileName)
 
 		// 执行UI生成
 		err := generateUIFile(tempFormTab.FormRoot, uiFilePath)
@@ -59,7 +78,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
 			// 触发代码生成事件
-			triggerCodeGeneration(uiFilePath)
+			triggerCodeGeneration(tempFormTab)
 			// 触发更新项目管理的窗体信息事件
 			triggerProjectUpdate(tempFormTab)
 		}

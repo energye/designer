@@ -53,8 +53,9 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	//designerForm := lcl.NewForm(nil)
 	designerForm := &TDesignerForm{}
 	lcl.Application.NewForm(designerForm)
-	designerForm.SetName(m.Name)
-	designerForm.SetCaption(m.Name)
+
+	designerForm.SetName(m.name)
+	designerForm.SetCaption(m.name)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
@@ -72,7 +73,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formRoot.SetDoubleBuffered(true)
 	formRoot.SetParentColor(false)
 	formRoot.SetColor(colors.ClBtnFace)
-	formRoot.SetName(m.Name)
+	formRoot.SetName(m.name)
 	formRoot.SetCaption("")
 	formRoot.SetAlign(types.AlClient)
 	formRoot.SetShowHint(true)
