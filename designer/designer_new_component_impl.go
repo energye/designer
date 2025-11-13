@@ -245,7 +245,8 @@ func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 		}
 	}
 	if top != nil && left != nil {
-		go triggerUIGeneration(m)
+		// 更新坐标
+		triggerUIGeneration(m)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			top.SetEditValue(x)
 			m.propertyTree.InvalidateNode(top.AffiliatedNode)
@@ -273,7 +274,8 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 		}
 	}
 	if width != nil && height != nil {
-		go triggerUIGeneration(m)
+		// 更新宽高
+		triggerUIGeneration(m)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			width.SetEditValue(w)
 			m.propertyTree.InvalidateNode(width.AffiliatedNode)

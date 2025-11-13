@@ -108,5 +108,5 @@ func (m *TDesigningComponent) Order(changeLevel consts.ChangeLevel) {
 	//		println("ControlIndex:", parent.GetControlIndex(child), child.Name())
 	//	}
 	//}
-	go triggerUIGeneration(m)
+	triggerUIGeneration(m)
 }

@@ -121,7 +121,7 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		newForm.FormRoot.LoadPropertyToInspector()
 		// 2. 添加到组件树
 		newForm.AddFormNode()
-		go triggerUIGeneration(newForm.FormRoot)
+		triggerUIGeneration(newForm.FormRoot)
 	})
 }
 

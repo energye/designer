@@ -90,7 +90,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 		//// 2.2. 添加到组件树
 		//defaultForm.AddFormNode()
 		//
-		//go triggerUIGeneration(defaultForm.FormRoot)
+		//triggerUIGeneration(defaultForm.FormRoot)
 	})
 
 	return box

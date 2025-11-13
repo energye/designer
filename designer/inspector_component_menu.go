@@ -139,7 +139,8 @@ func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 			logs.Debug("组件菜单-删除 组件名:", comp.Name())
 			comp.Remove() // 删除当前组件
 		})
-		go triggerUIGeneration(parent) // 更新布局文件
+		// 删除控件
+		triggerUIGeneration(parent) // 更新布局文件
 	}
 }
 

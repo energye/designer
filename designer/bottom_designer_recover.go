@@ -19,6 +19,7 @@ package designer
 //  1. 打开 xxx.ui 布局文件
 //	1.1 恢复成功后, 提示更新到项目配置？？TODO 不同目录是否可以？还是复制到此项目目录？
 //  2. 打开项目配置文件 xxx.egp, 根据 ui_forms 字段恢复所有窗体
+//	2.1 恢复所有窗体对象到设计器
 
 // RecoverDesignerFormTab 恢复设计窗体
 func RecoverDesignerFormTab() {

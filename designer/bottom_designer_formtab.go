@@ -29,7 +29,7 @@ import (
 // 设计表单的 tab
 type FormTab struct {
 	Id         int    // 索引, 关联 forms key: index
-	Name       string // 窗体名称
+	Name       string // 窗体名称, 当和 FormRoot 的 Name() 不一至时需要同步
 	isDesigner bool   // 当前窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
@@ -129,7 +129,8 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
 				owner.AddChild(newComp)
 			})
-			go triggerUIGeneration(newComp)
+			// 放置对象
+			triggerUIGeneration(newComp)
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}

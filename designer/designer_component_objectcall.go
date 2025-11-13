@@ -59,13 +59,15 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 		} else {
 			// 成功
 			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
-			go triggerUIGeneration(m)
 			m.UpdateTreeNode(updateNodeData)
+			// 属性修改
+			triggerUIGeneration(m)
 		}
-	} else if rs == err.RsIgnoreProp { // 成功的一种
+	} else if rs == err.RsIgnoreProp { // 忽略的属性, 成功的一种
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
-		go triggerUIGeneration(m)
 		m.UpdateTreeNode(updateNodeData)
+		// 属性修改
+		triggerUIGeneration(m)
 	} else {
 		// 更新失败
 		switch rs {
@@ -114,9 +116,13 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 	logs.Debug("更新组件树, 尝试更新属性:", data.Name)
 	switch propName {
 	case "name":
+		// 更新组件树名
 		m.node.SetText(m.TreeName())
+		// 窗体组件
 		if m.ComponentType == consts.CtForm {
-			m.formTab.sheet.SetCaption(m.Name())
+			m.formTab.Name = m.Name()
+			// 更新设计窗体标签名
+			m.formTab.sheet.Button().SetCaption(m.Name())
 		}
 	}
 	return nil

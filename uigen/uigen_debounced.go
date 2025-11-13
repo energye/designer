@@ -47,6 +47,10 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		delete(debounceTimers, formName)
 		debounceMutex.Unlock()
 
+		if tempFormTab.IsRename {
+			// 被重命名
+		}
+
 		uiFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.UIFile())
 
 		// 执行UI生成
