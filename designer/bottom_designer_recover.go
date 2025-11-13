@@ -22,6 +22,6 @@ package designer
 //	2.1 恢复所有窗体对象到设计器
 
 // RecoverDesignerFormTab 恢复设计窗体
-func RecoverDesignerFormTab() {
+func RecoverDesignerFormTab(uiFilePaths ...string) {
 
 }

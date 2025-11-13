@@ -16,6 +16,7 @@ package project
 import (
 	"encoding/json"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -33,12 +34,15 @@ func runLoad(filePath string) {
 func Load(filePath string) {
 	if tool.IsExist(filePath) {
 		path, file := filepath.Split(filePath)
+		// 加载文件
+		// 项目配置文件
 		isEgp := strings.ToLower(filepath.Ext(file)) == consts.EGPExt
+		// UI 布局文件
 		isUI := strings.ToLower(filepath.Ext(file)) == consts.UIExt
 		if isEgp {
 			LoadProject(path, filePath)
 		} else if isUI {
-			LoadUI(path, filePath)
+			LoadUI(filePath)
 		} else {
 			logs.Warn("文件非项目配置文件(.egp)或UI布局文件(.ui)")
 			event.ConsoleWriteError("文件非项目配置文件(.egp)或UI布局文件(.ui)")
@@ -68,9 +72,18 @@ func LoadProject(path, egpFilePath string) {
 	}
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
+	// 恢复设计器窗体
+	var uiFilePaths []string
+	for _, form := range loadProject.UIForms {
+		uiFilePath := filepath.Join(path, loadProject.Package, form.UIFile)
+		uiFilePaths = append(uiFilePaths, uiFilePath)
+	}
+	designer.RecoverDesignerFormTab(uiFilePaths...)
 }
 
-func LoadUI(path, uiFilePath string) {
+func LoadUI(uiFilePath string) {
 	logs.Info("开始加载UI布局文件:", uiFilePath)
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
+	// 恢复设计器窗体
+	designer.RecoverDesignerFormTab(uiFilePath)
 }
