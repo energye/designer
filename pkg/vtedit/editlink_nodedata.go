@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"strconv"
@@ -100,7 +101,7 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 	case consts.PdtText, consts.PdtUint16:
 		m.StringValue = value.(string)
 	case consts.PdtInt, consts.PdtInt64:
-		m.IntValue = int(value.(int32))
+		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
 	case consts.PdtFloat:
 		m.FloatValue = value.(float64)
 	case consts.PdtCheckBox:
@@ -110,7 +111,7 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 	case consts.PdtComboBox:
 		m.StringValue = value.(string)
 	case consts.PdtColorSelect:
-		m.IntValue = int(value.(uint32))
+		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
 	}
 }
 

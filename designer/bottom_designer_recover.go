@@ -66,10 +66,11 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 		if create := GetRegisterComponent(child.ClassName); create != nil {
 			newComp := create(parent.formTab, 0, 0)
 			newComp.SetParent(parent)
-			// 恢复组件属性
-			recoverDesignerComponentProperty(child.Properties, newComp)
 			// 2. 添加到组件树
 			parent.AddChild(newComp)
+			newComp.LoadPropertyToInspector()
+			// 恢复组件属性
+			recoverDesignerComponentProperty(child.Properties, newComp)
 			// 恢复子组件
 			recoverDesignerChildComponent(child.Child, newComp)
 		}
@@ -77,8 +78,21 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 }
 
 // 恢复设计的组件属性
-func recoverDesignerComponentProperty(property []uiBean.TProperty, component *TDesigningComponent) {
-
+// 1. 调用 api 设置属性
+// 2. 组件属性列表对应的属性Edit值
+func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component *TDesigningComponent) {
+	for _, property := range propertyList {
+		for _, prop := range component.PropertyList {
+			if prop.Name() == property.Name {
+				// 1. 调用 api 设置属性
+				prop.SetEditValue(property.Value)
+				//component.propertyTree.InvalidateNode(prop.AffiliatedNode)
+				//prop.FormInspectorPropertyToComponentProperty()
+				component.doUpdateComponentPropertyToObject(prop)
+				break
+			}
+		}
+	}
 }
 
 // RecoverDesignerFormTab 恢复设计窗体
