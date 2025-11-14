@@ -202,8 +202,7 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 
 // 当前tab显示事件
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
-	logs.Debug("Designer PageControl FormTab Show")
-	triggerUIGeneration(m.FormRoot)
+	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 开启
 	m.isDesigner = true
 	// 显示组件树
@@ -236,11 +235,18 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 }
 
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
-	delete(designer.designerForms, m.Id)
+	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	if len(designer.tab.Pages()) == 0 {
 		designer.tab.EnableScrollButton(false)
 	}
-
+	m.componentName = nil
+	m.recover = nil
+	m.scroll.Free()
+	m.tree.Free()
+	//m.formDesigner.Free() // TODO 需要优化, 所有窗体使用同一个 Designer
+	m.FormRoot.Free()
+	m.componentMenu.Free()
+	delete(designer.designerForms, m.Id)
 }
 
 // 获取组件名 Caption

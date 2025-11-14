@@ -36,6 +36,19 @@ type TComponentMenu struct {
 	delete           lcl.IMenuItem // 删除
 }
 
+func (m *TComponentMenu) Free() {
+	m.form = nil
+	m.zLevelFront.SetOnClick(nil)
+	m.zLevelBack.SetOnClick(nil)
+	m.zLevelForwardOne.SetOnClick(nil)
+	m.zLevelBackOne.SetOnClick(nil)
+	m.cut.SetOnClick(nil)
+	m.copy.SetOnClick(nil)
+	m.paste.SetOnClick(nil)
+	m.delete.SetOnClick(nil)
+	m.treePopupMenu.Free()
+}
+
 // 返回当前选中组件树节点
 func (m *TComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
 	return m.form.tree.Selected()

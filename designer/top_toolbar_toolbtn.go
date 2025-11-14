@@ -114,7 +114,11 @@ func (m *TopToolbar) createToolBarBtns() {
 func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 新建窗体")
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
+		// 隐藏所有组件树
+		designer.hideAllComponentTrees()
+		// 创建新的 form tab
 		newForm := designer.addDesignerFormTab()
+		// 激活显示 新的 form tab
 		designer.ActiveFormTab(newForm)
 		// 1. 加载属性到设计器
 		// 此步骤会初始化并填充设计组件实例

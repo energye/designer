@@ -49,6 +49,22 @@ func NewEngFormDesigner(form *FormTab) *TEngFormDesigner {
 	return m
 }
 
+func (m *TEngFormDesigner) Free() {
+	m.designer.SetOnIsDesignMsg(nil)
+	m.designer.SetOnUTF8KeyPress(nil)
+	m.designer.SetOnModified(nil)
+	m.designer.SetOnNotification(nil)
+	m.designer.SetOnPaintGrid(nil)
+	m.designer.SetOnValidateRename(nil)
+	m.designer.SetOnGetShiftState(nil)
+	m.designer.SetOnSelectOnlyThisComponent(nil)
+	m.designer.SetOnUniqueName(nil)
+	m.designer.SetOnPrepareFreeDesigner(nil)
+	m.designer.Free()
+	m.componentList = nil
+	m.canvas.Free()
+}
+
 // 返回设计器实例接口
 func (m *TEngFormDesigner) Designer() lcl.IDesigner {
 	return m.designer

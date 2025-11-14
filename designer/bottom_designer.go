@@ -90,15 +90,15 @@ func (m *Designer) createTabMenu() {
 	//m.page.SetPopupMenu(m.tabMenu)
 }
 
-func (m *Designer) hideFormTabs() {
+// 隐藏所有组件树
+func (m *Designer) hideAllComponentTrees() {
 	for _, formTab := range m.designerForms {
 		formTab.tree.SetVisible(false)
 	}
 }
 
-// 添加一个窗体设计器 tab
+// 添加一个窗体设计器 form tab
 func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
-	m.hideFormTabs()
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
@@ -156,8 +156,6 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetDoubleBuffered(true)
 	form.scroll.SetParent(form.sheet)
-
-	//newStatusBar(form.scroll)
 
 	// 创建设计窗体
 	form.NewFormDesigner()
