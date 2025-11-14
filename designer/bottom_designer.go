@@ -93,6 +93,9 @@ func (m *Designer) createTabMenu() {
 // 隐藏所有组件树
 func (m *Designer) hideAllComponentTrees() {
 	for _, formTab := range m.designerForms {
+		if formTab == nil {
+			continue
+		}
 		formTab.tree.SetVisible(false)
 	}
 }
@@ -169,6 +172,9 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 func (m *Designer) ActiveFormTab(tab *FormTab) {
 	tab.sheet.SetActive(true)
 	for _, form := range m.designerForms {
+		if form == nil {
+			continue
+		}
 		form.isDesigner = false
 	}
 	tab.isDesigner = true

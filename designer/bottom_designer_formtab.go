@@ -254,7 +254,8 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	//m.formDesigner.Free() // TODO 需要优化, 所有窗体使用同一个 Designer
 	m.FormRoot.Free()
 	m.componentMenu.Free()
-	delete(designer.designerForms, m.Id)
+	// 标记为 nil, 创建新窗体时序号根据长度自动增加
+	designer.designerForms[m.Id] = nil
 }
 
 // 获取组件名 Caption
