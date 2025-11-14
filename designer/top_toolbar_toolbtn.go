@@ -25,11 +25,11 @@ import (
 // 工具按钮功能
 
 type TToolbarToolBtn struct {
-	toolBtnBar    lcl.IToolBar
-	newWindowBtn  lcl.IToolButton
-	openBtn       lcl.IToolButton
-	saveBtn       lcl.IToolButton
-	saveAllBtn    lcl.IToolButton
+	toolBtnBar   lcl.IToolBar
+	newWindowBtn lcl.IToolButton
+	openBtn      lcl.IToolButton
+	//saveBtn       lcl.IToolButton
+	//saveAllBtn    lcl.IToolButton
 	runPreviewBtn lcl.IToolButton
 	previewState  consts.PreviewState // 预览状态
 }
@@ -41,7 +41,7 @@ func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.newWindowBtn.SetEnabled(enable)
 		//m.openBtn.SetEnabled(enable)
-		m.saveBtn.SetEnabled(enable)
+		//m.saveBtn.SetEnabled(enable)
 		//m.saveAllFormBtn.SetEnabled(enable)
 		m.runPreviewBtn.SetEnabled(enable)
 	})
@@ -98,8 +98,8 @@ func (m *TopToolbar) createToolBarBtns() {
 	toolbarBtn.openBtn.SetOnClick(toolbarBtn.onOpenForm)
 	newSep()
 
-	toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
-	toolbarBtn.saveBtn.SetOnClick(toolbarBtn.onSaveForm)
+	//toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
+	//toolbarBtn.saveBtn.SetOnClick(toolbarBtn.onSaveForm)
 
 	//toolbarBtn.saveAllFormBtn = newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
 	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)

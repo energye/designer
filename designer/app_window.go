@@ -38,6 +38,7 @@ var (
 	imageTabComp     *tool.ImageList
 	themeControls    tool.HashMap[lcl.IWinControl]
 	splitterWidth    = int32(5)
+	leftToolsWidth   = int32(110)
 )
 
 // 设计器应用窗口

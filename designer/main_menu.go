@@ -37,7 +37,7 @@ type TMainMenu struct {
 	createProject lcl.IMenuItem
 	createWindow  lcl.IMenuItem
 	open          lcl.IMenuItem
-	save          lcl.IMenuItem
+	//save          lcl.IMenuItem
 
 	build      lcl.IMenuItem
 	cleanBuild lcl.IMenuItem
@@ -96,7 +96,7 @@ func (m *TMainMenu) SetEnableMenuItems(enable bool) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.createWindow.SetEnabled(enable)
 		//m.open.SetEnabled(enable)
-		m.save.SetEnabled(enable)
+		//m.save.SetEnabled(enable)
 		m.build.SetEnabled(enable)
 		m.cleanBuild.SetEnabled(enable)
 		m.runApp.SetEnabled(enable)
@@ -159,14 +159,14 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	})
 	m.file.Add(m.open)
 
-	m.save = lcl.NewMenuItem(owner)
-	m.save.SetCaption("保存(&S)")
-	m.save.SetShortCut(api.TextToShortCut("Ctrl+S"))
-	m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
-	m.save.SetOnClick(func(sender lcl.IObject) {
-		logs.Debug("保存窗体")
-	})
-	m.file.Add(m.save)
+	//m.save = lcl.NewMenuItem(owner)
+	//m.save.SetCaption("保存(&S)")
+	//m.save.SetShortCut(api.TextToShortCut("Ctrl+S"))
+	//m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
+	//m.save.SetOnClick(func(sender lcl.IObject) {
+	//	logs.Debug("保存窗体")
+	//})
+	//m.file.Add(m.save)
 
 	//saveAllWindow := lcl.NewMenuItem(owner)
 	//saveAllWindow.SetCaption("保存所有窗体(&L)")

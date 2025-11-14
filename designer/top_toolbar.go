@@ -68,7 +68,7 @@ func (m *TAppWindow) createTopToolbar() {
 	//bar.leftTools.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
 	bar.leftTools.SetBevelOuter(types.BvNone)
 	bar.leftTools.SetDoubleBuffered(true)
-	bar.leftTools.SetWidth(180)
+	bar.leftTools.SetWidth(leftToolsWidth)
 	bar.leftTools.SetHeight(bar.box.Height())
 	SetComponentDefaultColor(bar.leftTools)
 	bar.leftTools.SetAlign(types.AlLeft)
