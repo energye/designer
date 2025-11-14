@@ -108,6 +108,8 @@ func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
 	targetComp.drag.Show()
 	// 显示当前设计组件的属性和事件列表
 	targetComp.page.Show()
+	// 加载属性到属性列表
+	targetComp.LoadPropertyToInspector()
 }
 
 // 放置设计组件到设计面板或父组件容器
@@ -198,16 +200,18 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	defaultComp.page.SetVisible(false)
 }
 
+// 当前tab显示事件
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Show")
 	triggerUIGeneration(m.FormRoot)
 	// 设计状态 开启
 	m.isDesigner = true
+	// 显示组件树
 	m.tree.SetVisible(true)
-	// 显示属性列表 page
+
 	var (
-		iterable    func(comp *TDesigningComponent)
-		defaultComp = m.FormRoot
+		iterable    func(comp *TDesigningComponent) // 遍历当前正在设计的组件
+		defaultComp = m.FormRoot                    // 默认选中的组件
 	)
 	iterable = func(comp *TDesigningComponent) {
 		if comp == nil {
@@ -221,8 +225,10 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		}
 	}
 	iterable(m.FormRoot)
+	// 显示选中设计的组件属性列表
 	defaultComp.page.SetVisible(true)
 	if m.recover != nil {
+		// 恢复模式, 恢复所有设计的子组件
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.Recover()
 		})

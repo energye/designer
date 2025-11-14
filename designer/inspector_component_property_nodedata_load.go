@@ -23,6 +23,10 @@ import (
 
 // 加载组件属性列表
 func (m *TDesigningComponent) loadPropertyList() {
+	if m.isLoadProperty {
+		return
+	}
+	m.isLoadProperty = true
 	configCompProp := config.ComponentProperty
 	for i, nodeData := range m.PropertyList {
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {

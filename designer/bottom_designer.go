@@ -171,6 +171,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 }
 
 // 激活指定的 tab
+// 触发 tab 的 onshow 事件
 func (m *Designer) ActiveFormTab(tab *FormTab) {
 	tab.sheet.SetActive(true)
 	for _, form := range m.designerForms {

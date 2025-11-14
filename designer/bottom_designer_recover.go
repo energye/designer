@@ -42,7 +42,7 @@ func (m *FormTab) Recover() {
 	recover := m.recover
 	// 只恢复一次, 置空
 	m.recover = nil
-	designer.ActiveFormTab(m)
+	//designer.ActiveFormTab(m)
 	// 1. 加载属性到设计器
 	// 此步骤会初始化并填充设计组件实例
 	m.FormRoot.LoadPropertyToInspector()
@@ -66,9 +66,6 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 		if create := GetRegisterComponent(child.ClassName); create != nil {
 			newComp := create(parent.formTab, 0, 0)
 			newComp.SetParent(parent)
-			// 1. 加载属性到设计器
-			// 此步骤会初始化并填充设计组件实例
-			newComp.LoadPropertyToInspector()
 			// 恢复组件属性
 			recoverDesignerComponentProperty(child.Properties, newComp)
 			// 2. 添加到组件树
@@ -136,6 +133,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			designer.tab.RecalculatePosition()
 			if activeForm != nil {
 				activeForm.Recover()
+				designer.ActiveFormTab(activeForm)
 			}
 		})
 	}
