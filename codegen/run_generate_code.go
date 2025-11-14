@@ -17,9 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
-	projBean "github.com/energye/designer/project/bean"
 	"github.com/energye/designer/uigen/bean"
 	"os"
 	"path/filepath"
@@ -27,35 +25,6 @@ import (
 
 // 根据UI文件生成Go代码
 func runGenerateCode(formTab *designer.FormTab) error {
-	// ui 布局文件名
-	goUIFileName := formTab.GOFile()
-
-	// 验证UI布局文件名
-	var uiForm *projBean.TUIForm
-	for _, form := range project.Project().UIForms {
-		if form.Id == formTab.Id {
-			uiForm = &form
-			break
-		}
-	}
-	if uiForm != nil && uiForm.GOFile != goUIFileName {
-		// 修改 xxx.ui.go 布局文件名
-		oldGoUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.GOFile)
-		newGoUIFilePath := filepath.Join(project.Path(), project.Project().Package, goUIFileName)
-		if err := os.Rename(oldGoUIFilePath, newGoUIFilePath); err != nil {
-			logs.Error("UI布局文件重命名错误:", err.Error())
-			return err
-		}
-		uiForm.GOFile = formTab.GOFile()
-		// 修改 xxx.go 用户代码文件名
-		oldGoUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.GOUserFile)
-		newGoUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-		if err := os.Rename(oldGoUIUserFilePath, newGoUIUserFilePath); err != nil {
-			logs.Error("UI布局文件重命名错误:", err.Error())
-			return err
-		}
-		uiForm.GOUserFile = formTab.GOUserFile()
-	}
 	uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
