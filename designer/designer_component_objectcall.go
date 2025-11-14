@@ -44,9 +44,8 @@ func methodNameToSet(name string) string {
 	return "Set" + name
 }
 
+// 执行更新组件属性到对象 api
 func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
-	m.drag.Hide()
-	defer m.drag.Show()
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name())
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
@@ -97,6 +96,9 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 		delete(updateComponentTimers, compName)
 		updateComponentMutex.Unlock()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 更改属性之前隐藏和重新显示
+			m.drag.Hide()
+			defer m.drag.Show()
 			m.doUpdateComponentPropertyToObject(updateNodeData)
 		})
 	})

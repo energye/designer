@@ -306,8 +306,8 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		child.node = node
 		node.SetImageIndex(child.IconIndex())    // 显示图标索引
 		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
-		node.SetSelected(true)
-		node.SetData(child.instance())
+		node.SetSelected(true)                   // 选中
+		node.SetData(child.instance())           // 设置数据为当前实例
 		// 添加到设计组件列表
 		m.AddComponentToList(child)
 	} else {

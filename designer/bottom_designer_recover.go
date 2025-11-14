@@ -38,26 +38,30 @@ type TRecoverForm struct {
 	property   []uiBean.TProperty
 }
 
+// 恢复窗体组件信息
+// 只恢复一次
 func (m *FormTab) Recover() {
-	recover := m.recover
-	// 只恢复一次, 置空
+	if m.recover == nil {
+		return
+	}
+	tempRecover := m.recover
+	// 置空
 	m.recover = nil
-	//designer.ActiveFormTab(m)
-	// 1. 加载属性到设计器
+	// 加载属性到设计器
 	// 此步骤会初始化并填充设计组件实例
 	m.FormRoot.LoadPropertyToInspector()
 	// 添加到组件树
 	m.AddFormNode()
 	// 恢复属性
-	recoverDesignerComponentProperty(recover.property, m.FormRoot)
+	recoverDesignerComponentProperty(tempRecover.property, m.FormRoot)
 	// 恢复子组件
-	recoverDesignerChildComponent(recover.components, m.FormRoot)
-	// 激活当前 tab page
-	//designer.tab.HideAllActivated()
-	//m.sheet.SetActive(true)
-	//designer.tab.RecalculatePosition()
-	recover.components = nil
-	recover.property = nil
+	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
+	// 恢复的默认切换至当前Form编辑状态
+	m.FormRoot.node.SetSelected(true)
+	//m.switchComponentEditing(m.FormRoot)
+	// 释放掉
+	tempRecover.components = nil
+	tempRecover.property = nil
 }
 
 // 恢复设计的子组件
@@ -68,6 +72,8 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 			newComp.SetParent(parent)
 			// 2. 添加到组件树
 			parent.AddChild(newComp)
+			// 加载属性到设计器
+			// 此步骤会初始化并填充设计组件实例
 			newComp.LoadPropertyToInspector()
 			// 恢复组件属性
 			recoverDesignerComponentProperty(child.Properties, newComp)
@@ -84,10 +90,11 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 	for _, property := range propertyList {
 		for _, prop := range component.PropertyList {
 			if prop.Name() == property.Name {
-				// 1. 调用 api 设置属性
+				// 设置属性值
 				prop.SetEditValue(property.Value)
+				// 重新渲染该属性单元格, 这里应该不需要
 				//component.propertyTree.InvalidateNode(prop.AffiliatedNode)
-				//prop.FormInspectorPropertyToComponentProperty()
+				// 更新 api
 				component.doUpdateComponentPropertyToObject(prop)
 				break
 			}
@@ -135,13 +142,14 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 				// 设置属性
 				formTab.sheet.Button().SetCaption(tempUIForm.Name)
 
-				// 默认激活
+				// 默认激活的窗体
 				if project.ActiveUIForm == formTab.Id {
 					activeForm = formTab
 				}
 				wg.Done()
 			})
 		}
+		// 等待所有设计窗体创建完
 		wg.Wait()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			designer.tab.RecalculatePosition()
