@@ -176,7 +176,11 @@ func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButto
 }
 
 func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
-	logs.Debug("Designer PageControl FormTab Hide")
+	if m.sheet.IsEnterClose() {
+		// 关闭状态不处理任何逻辑
+		return
+	}
+	logs.Debug("Designer PageControl FormTab Show Hide:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 关闭
 	m.isDesigner = false
 	m.tree.SetVisible(false)
@@ -202,6 +206,10 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 
 // 当前tab显示事件
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
+	if m.sheet.IsEnterClose() {
+		// 关闭状态不处理任何逻辑
+		return
+	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 开启
 	m.isDesigner = true
