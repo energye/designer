@@ -145,11 +145,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.sheet.SetColor(wg.DarkenColor(bgLightColor, 0.1))           // 设置背景色
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
-	form.sheet.SetOnClose(func(sender lcl.IObject) {
-		if len(m.tab.Pages()) == 0 {
-			m.tab.EnableScrollButton(false)
-		}
-	})
+	form.sheet.SetOnClose(form.tabSheetOnClose)
 	SetComponentDefaultColor(form.sheet) // 设置背景色
 	//form.sheet.SetAlign(types.AlClient)
 	form.sheet.SetParent(m.tab)
@@ -178,6 +174,13 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 		form.isDesigner = false
 	}
 	tab.isDesigner = true
+}
+
+// GetFormTab 获取指定窗体
+//
+//	formId - 窗体ID
+func (m *Designer) GetFormTab(formId int) *FormTab {
+	return m.designerForms[formId]
 }
 
 // 绘制刻度尺, 在外层 scroll 上

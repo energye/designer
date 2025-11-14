@@ -235,6 +235,14 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	}
 }
 
+func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
+	delete(designer.designerForms, m.Id)
+	if len(designer.tab.Pages()) == 0 {
+		designer.tab.EnableScrollButton(false)
+	}
+
+}
+
 // 获取组件名 Caption
 func (m *FormTab) GetComponentCaptionName(component string) string {
 	if c, ok := m.componentName[component]; ok {

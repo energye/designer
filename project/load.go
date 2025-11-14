@@ -87,7 +87,7 @@ func LoadUI(uiFilePath string) {
 	}
 	path, uiFileName := filepath.Split(uiFilePath)
 	// 匹配 ui 文件是否属于当前项目
-	if !strings.HasPrefix(gPath, path) {
+	if !strings.HasPrefix(path, gPath) {
 		logs.Error("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
 		event.ConsoleWriteError("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
 		return

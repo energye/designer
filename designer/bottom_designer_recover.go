@@ -102,7 +102,7 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 	}
 }
 
-// RecoverDesignerFormTab 恢复设计窗体
+// RecoverDesignerFormTab 恢复设计窗体, 非线程安全
 // 只恢复当前项目下的窗体
 // path: 当前项目路径
 // project: 项目对象
@@ -117,9 +117,18 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 		var activeForm *FormTab
 		for _, uiForm := range project.UIForms {
 			tempUIForm := uiForm
+			// 判断窗体是整已存在
+			if tab := designer.GetFormTab(tempUIForm.Id); tab != nil {
+				wg.Done()
+				if project.ActiveUIForm == tab.Id {
+					activeForm = tab
+				}
+				continue
+			}
 			uiFilePath := filepath.Join(path, project.Package, tempUIForm.UIFile)
 			data, err := os.ReadFile(uiFilePath)
 			if err != nil {
+				wg.Done()
 				logs.Error("恢复设计窗体, 读取UI布局文件错误:", err.Error())
 				event.ConsoleWriteError("恢复设计窗体, 读取UI布局文件错误:", err.Error())
 				continue
@@ -127,6 +136,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			uiComponent := &uiBean.TUIComponent{}
 			err = json.Unmarshal(data, uiComponent)
 			if err != nil {
+				wg.Done()
 				logs.Error("恢复设计窗体, 解析窗体布局错误:", err.Error())
 				event.ConsoleWriteError("恢复设计窗体, 解析窗体布局错误:", err.Error())
 				continue
