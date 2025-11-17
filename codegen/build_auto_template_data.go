@@ -62,8 +62,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	// 格式化代码
 	formatted, err := format.Source([]byte(buf.String()))
 	if err != nil {
-		//return fmt.Errorf("格式化代码失败: %w", err)
-		logs.Error("格式化代码失败:", err.Error())
+		logs.Error("AutoCode 格式化代码失败:", err.Error())
 		formatted = []byte(buf.String())
 	}
 

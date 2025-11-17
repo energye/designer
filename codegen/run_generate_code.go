@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
 	"github.com/energye/designer/uigen/bean"
 	"os"
@@ -25,6 +26,7 @@ import (
 
 // 根据UI文件生成Go代码
 func runGenerateCode(formTab *designer.FormTab) error {
+	logs.Debug("运行代码生成")
 	uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)

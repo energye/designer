@@ -30,7 +30,7 @@ import (
 type FormTab struct {
 	Id         int    // 唯一索引, 关联 forms key: index
 	name       string // 窗体名称, 实际是一个临时名称
-	isDesigner bool   // 当前窗体Form是否正在设计
+	IsDesigner bool   // 当前窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
@@ -182,7 +182,7 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	}
 	logs.Debug("Designer PageControl FormTab Show Hide:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 关闭
-	m.isDesigner = false
+	m.IsDesigner = false
 	m.tree.SetVisible(false)
 	// 隐藏属性列表 page
 	var (
@@ -212,7 +212,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 开启
-	m.isDesigner = true
+	m.IsDesigner = true
 	// 显示组件树
 	m.tree.SetVisible(true)
 

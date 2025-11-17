@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
 	"github.com/energye/designer/uigen/bean"
@@ -62,7 +63,8 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	// 格式化代码
 	formatted, err := format.Source([]byte(buf.String()))
 	if err != nil {
-		return fmt.Errorf("格式化代码失败: %w", err)
+		logs.Error("UserCode 格式化代码失败:", err.Error())
+		formatted = []byte(buf.String())
 	}
 
 	// 写入文件

@@ -175,9 +175,9 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 		if form == nil {
 			continue
 		}
-		form.isDesigner = false
+		form.IsDesigner = false
 	}
-	tab.isDesigner = true
+	tab.IsDesigner = true
 }
 
 // GetFormTab 获取指定窗体
