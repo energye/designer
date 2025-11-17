@@ -15,8 +15,10 @@ package designer
 
 import (
 	"encoding/json"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	projBean "github.com/energye/designer/project/bean"
 	uiBean "github.com/energye/designer/uigen/bean"
 	"github.com/energye/lcl/lcl"
@@ -91,8 +93,16 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 			if prop.Name() == property.Name {
 				// 设置属性值
 				prop.SetEditValue(property.Value)
-				// 重新渲染该属性单元格, 这里应该不需要
-				//component.propertyTree.InvalidateNode(prop.AffiliatedNode)
+				// 根据类型
+				switch prop.Type() {
+				case consts.PdtCheckBoxList:
+					set := tool.SetToHashSet(property.Value)
+					for _, checkBox := range prop.EditNodeData.CheckBoxValue {
+						checkBox.Checked = set.Contains(checkBox.Name)
+					}
+				case consts.PdtClass:
+
+				}
 				// 更新 api
 				component.doUpdateComponentPropertyToObject(prop)
 				break
