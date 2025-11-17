@@ -73,6 +73,7 @@ func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
 		for _, prop := range component.PropertyList {
 			// 默认生成的属性 Left Top Width Height
 			if _, defGenOk := defaultGenerateProperty[prop.Name()]; defGenOk {
+				// 忽略非可视化控件 Left Top, 不生成代码
 				noCode := component.ComponentType == consts.CtNonVisual && tool.Equal(prop.Name(), "Left", "Top")
 				propName := prop.Name()
 				propValue := prop.EditValue()
