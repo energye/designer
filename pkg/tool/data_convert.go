@@ -93,6 +93,19 @@ func SetToString(value any) string {
 	return strings.Trim(val, "[]")
 }
 
+// SetToHashSet
+// 该函数将Set类型转换为HashSet
+func SetToHashSet(value any) *HashSet {
+	hashSet := NewHashSet()
+	set := strings.Split(SetToString(value), ",")
+	for _, v := range set {
+		if v != "" {
+			hashSet.Add(v)
+		}
+	}
+	return hashSet
+}
+
 // StrToBool 字符串转 bool "true"/"false"
 func StrToBool(s string) (bool, error) {
 	val, err := strconv.ParseBool(s)
