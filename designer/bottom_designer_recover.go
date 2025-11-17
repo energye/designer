@@ -58,7 +58,6 @@ func (m *FormTab) Recover() {
 	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
 	// 恢复的默认切换至当前Form编辑状态
 	m.FormRoot.node.SetSelected(true)
-	//m.switchComponentEditing(m.FormRoot)
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil

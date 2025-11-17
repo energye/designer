@@ -30,7 +30,7 @@ import (
 type FormTab struct {
 	Id         int    // 唯一索引, 关联 forms key: index
 	name       string // 窗体名称, 实际是一个临时名称
-	IsDesigner bool   // 当前窗体Form是否正在设计
+	IsDesigner bool   // 当前设计窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
@@ -180,7 +180,7 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 		// 关闭状态不处理任何逻辑
 		return
 	}
-	logs.Debug("Designer PageControl FormTab Show Hide:", m.Id, "name:", m.FormRoot.Name())
+	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
 	// 设计状态 关闭
 	m.IsDesigner = false
 	m.tree.SetVisible(false)
@@ -244,10 +244,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
-	if len(designer.tab.Pages()) == 0 {
-		designer.tab.EnableScrollButton(false)
-	}
-	m.componentName = nil
+	m.componentName = make(map[string]int)
 	m.recover = nil
 	m.scroll.Free()
 	m.tree.Free()
@@ -256,6 +253,9 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	m.componentMenu.Free()
 	// 标记为 nil, 创建新窗体时序号根据长度自动增加
 	designer.designerForms[m.Id] = nil
+	if len(designer.tab.Pages()) == 0 {
+		designer.tab.EnableScrollButton(false)
+	}
 }
 
 // 获取组件名 Caption
@@ -315,7 +315,8 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 	if parent == nil {
 		logs.Error("添加组件节点失败, 父节点为空")
 		return
-	} else if child == nil {
+	}
+	if child == nil {
 		logs.Error("添加组件节点失败, 子节点为空")
 		return
 	}

@@ -63,7 +63,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	// 格式化代码
 	formatted, err := format.Source([]byte(buf.String()))
 	if err != nil {
-		logs.Error("UserCode 格式化代码失败:", err.Error())
+		logs.Error("UserCode 格式化代码失败:", err.Error(), "id:", formTab.Id, "name:", formTab.FormRoot.Name())
 		formatted = []byte(buf.String())
 	}
 
