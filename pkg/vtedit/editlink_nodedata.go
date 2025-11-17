@@ -42,6 +42,7 @@ type TEditLinkNodeData struct {
 	Type          consts.PropertyDataType  // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
 }
 
+// 属性值 class
 type TPropClass struct {
 	Instance uintptr // 属性值 class 实例
 	Count    int32   // 属性值 class 属性数量

@@ -250,6 +250,7 @@ func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 		// 更新坐标
 		triggerUIGeneration(m)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 同步更新属性列表
 			top.SetEditValue(x)
 			m.propertyTree.InvalidateNode(top.AffiliatedNode)
 			left.SetEditValue(y)

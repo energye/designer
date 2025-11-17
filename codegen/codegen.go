@@ -63,9 +63,10 @@ type TBaseInfo struct {
 
 // 属性数组
 type TPropertyData struct {
-	Name  string                  // 属性名称
-	Value any                     // 属性值
-	Type  consts.PropertyDataType // 属性类型
+	Name   string                  // 属性名称
+	Value  any                     // 属性值
+	Type   consts.PropertyDataType // 属性类型
+	NoCode bool                    // 是否生成代码, true: 不生成, false 生成
 }
 
 // 模板调用函数 - 返回组件在Go定义的接口名
@@ -139,6 +140,9 @@ func (m *TFormData) IncludePackage() {
 
 // 模板调用函数 - 设置对象属性
 func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) string {
+	if m.NoCode {
+		return ""
+	}
 	prop := tool.Buffer{}
 	object := ""
 	switch comp.Type {
@@ -252,8 +256,9 @@ func uiPropertiesToTemplateProperties(uiProperties []bean.TProperty) []TProperty
 // UI 而已属性转列表模板数据列表
 func uiPropertyToTemplateProperty(uiProperty bean.TProperty) TPropertyData {
 	return TPropertyData{
-		Name:  uiProperty.Name,
-		Value: uiProperty.Value,
-		Type:  uiProperty.Type,
+		Name:   uiProperty.Name,
+		Value:  uiProperty.Value,
+		Type:   uiProperty.Type,
+		NoCode: uiProperty.NoCode,
 	}
 }

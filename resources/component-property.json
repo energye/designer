@@ -14,10 +14,17 @@
     ],
     "include": [
       {
-        "name": "",
-        "value": "",
-        "kind": "",
-        "type": "",
+        "name": "Left",
+        "value": "0",
+        "kind": "tkInteger",
+        "type": "LongInt",
+        "options": ""
+      },
+      {
+        "name": "Top",
+        "value": "0",
+        "kind": "tkInteger",
+        "type": "LongInt",
         "options": ""
       }
     ]

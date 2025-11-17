@@ -24,15 +24,19 @@ import (
 // 加载组件属性列表
 func (m *TDesigningComponent) loadPropertyList() {
 	if m.isLoadProperty {
+		// 加载完 不在继续加载
 		return
 	}
 	m.isLoadProperty = true
+	tempPropertyMap := make(map[string]struct{}) // 用于下面判断
 	configCompProp := config.ComponentProperty
 	for i, nodeData := range m.PropertyList {
+		// 通用属性, 排除的属性
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
+		tempPropertyMap[nodeData.Name()] = struct{}{}
 		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
 		if !nodeData.IsFinal {
 			// 自定义属性, 使用会覆蓋掉
@@ -62,6 +66,18 @@ func (m *TDesigningComponent) loadPropertyList() {
 		}
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
+	}
+	// 通用属性 包含属性, 如果重复忽略配置的
+	for _, prop := range configCompProp.Include() {
+		if _, ok := tempPropertyMap[prop.Name]; ok {
+			// 忽略配置属性
+			continue
+		}
+		customProperty := vtedit.NewEditLinkNodeData(&prop)
+		newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
+			OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
+		m.PropertyList = append(m.PropertyList, newEditNodeData) // 添加到组件属性
+		newEditNodeData.Build()
 	}
 }
 

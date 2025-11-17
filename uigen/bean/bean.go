@@ -26,7 +26,8 @@ type TUIComponent struct {
 
 // 组件属性
 type TProperty struct {
-	Name  string                  `json:"name"`  // 属性名称
-	Value any                     `json:"value"` // 属性值
-	Type  consts.PropertyDataType `json:"type"`  // 属性类型
+	Name   string                  `json:"name"`              // 属性名称
+	Value  any                     `json:"value"`             // 属性值
+	Type   consts.PropertyDataType `json:"type"`              // 属性类型
+	NoCode bool                    `json:"no_code,omitempty"` // 是否生成代码, true: 不生成, false 生成
 }

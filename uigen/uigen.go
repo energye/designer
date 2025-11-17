@@ -53,6 +53,11 @@ func generateUIFile(formComponent *designer.TDesigningComponent, filePath string
 	return os.WriteFile(filePath, data, 0644)
 }
 
+// 默认生成属性
+var defaultGenerateProperty = map[string]struct{}{
+	"Left": {}, "Top": {}, "Width": {}, "Height": {}, "Caption": {},
+}
+
 // buildUITree 构建UI树结构
 func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
 	uiComp := bean.TUIComponent{
@@ -67,11 +72,12 @@ func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
 	if component.PropertyList != nil {
 		for _, prop := range component.PropertyList {
 			// 默认生成的属性 Left Top Width Height
-			if tool.Equal(prop.Name(), "Left", "Top", "Width", "Height", "Caption") {
+			if _, defGenOk := defaultGenerateProperty[prop.Name()]; defGenOk {
+				noCode := component.ComponentType == consts.CtNonVisual && tool.Equal(prop.Name(), "Left", "Top")
 				propName := prop.Name()
 				propValue := prop.EditValue()
 				uiComp.Properties = append(uiComp.Properties, bean.TProperty{Name: propName, Value: propValue,
-					Type: prop.Type()})
+					Type: prop.Type(), NoCode: noCode})
 			} else {
 				// 只保存修改过的属性
 				switch prop.Type() {

@@ -50,7 +50,7 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
-		ref := &reflector{object: m.originObject, data: updateNodeData}
+		ref := &reflector{object: m.originObject, data: updateNodeData, objectNonWrap: m.objectNonWrap}
 		result, err := ref.callMethod()
 		_ = result
 		if err != nil {
@@ -162,8 +162,9 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 
 // 反射调用函数
 type reflector struct {
-	object any
-	data   *vtedit.TEditNodeData
+	object        any                      // 真实对象
+	data          *vtedit.TEditNodeData    // 对象绑定数据
+	objectNonWrap *TNonVisualComponentWrap // 非可视化对象, 只当前对象为非可视化对象时使用
 }
 
 // 查找方法（包含匿名嵌套字段的方法）
@@ -343,8 +344,17 @@ func (m *reflector) findObject() (object reflect.Value) {
 
 // 调用方法
 func (m *reflector) callMethod() ([]any, error) {
-	object := m.findObject()
-	methodName := m.findMethodName()
+	var (
+		object     reflect.Value
+		methodName string
+	)
+	if m.objectNonWrap != nil && tool.Equal(m.data.Name(), "Left", "Top") {
+		// 非可视化组件, 在修改位置时 Left, Top 使用包裹对象
+		object = reflect.ValueOf(m.objectNonWrap.wrap)
+	} else {
+		object = m.findObject()
+	}
+	methodName = m.findMethodName()
 
 	method := m.findMethod(object, methodName)
 	if !method.IsValid() {
