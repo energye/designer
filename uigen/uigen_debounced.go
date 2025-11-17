@@ -44,24 +44,26 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 
 	// 创建新的定时器
 	timer := time.AfterFunc(debounceDelay, func() {
-		tempFormTab := formTab
 		debounceMutex.Lock()
 		delete(debounceTimers, formName)
 		debounceMutex.Unlock()
-
+		if formTab.FormRoot.Name() == "" {
+			// 如果正在加载设计时, 同时点击关闭设计窗口, 获取Name为空, 跳过生成
+			return
+		}
 		// 尝试更新文件名
-		tryRenameFileName(tempFormTab)
+		tryRenameFileName(formTab)
 
-		uiFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.UIFile())
+		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 		// 执行UI生成
-		err := generateUIFile(tempFormTab.FormRoot, uiFilePath)
+		err := generateUIFile(formTab.FormRoot, uiFilePath)
 		if err != nil {
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
 			// 触发代码生成事件
-			triggerCodeGeneration(tempFormTab)
+			triggerCodeGeneration(formTab)
 			// 触发更新项目管理的窗体信息事件
-			triggerProjectUpdate(tempFormTab)
+			triggerProjectUpdate(formTab)
 		}
 	})
 
