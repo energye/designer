@@ -33,6 +33,12 @@ ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架打造、且基于该框架
 - `test.egp`: ENERGY GUI 项目配置文件
 - `go.mod`: Go 模块依赖文件
 
+## 安装
+
+当前正处于开发阶段, 很多实用功能未完善, 请耐心等待.
+
+如果有需求，请提 issue, 或加入 QQ 群进行交流（541258627）
+
 ## 截图
 
 ![ENERGY-designer-run.png](docs%2Fimage%2FENERGY-designer-run.png)
