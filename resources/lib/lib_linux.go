@@ -18,10 +18,9 @@ package lib
 
 import "embed"
 
-//go:embed linux/liblcl.so
+//go:embed linux/liblcl.zip
 var lib embed.FS
 
 const (
-	Name = "liblcl.so"
-	path = "linux/liblcl.so"
+	path = "linux/liblcl.zip"
 )

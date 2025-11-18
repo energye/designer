@@ -18,10 +18,9 @@ package lib
 
 import "embed"
 
-//go:embed windows/liblcl.dll
+//go:embed windows/liblcl.zip
 var lib embed.FS
 
 const (
-	Name = "liblcl.dll"
-	path = "windows/liblcl.dll"
+	path = "windows/liblcl.zip"
 )

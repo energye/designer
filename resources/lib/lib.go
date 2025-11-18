@@ -14,11 +14,16 @@
 package lib
 
 import (
+	"archive/zip"
+	"bytes"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/logs"
-	"io/fs"
+	"github.com/energye/lcl/api/libname"
+	"io"
 	"os"
 	"path/filepath"
+	"runtime"
+	"syscall"
 )
 
 var (
@@ -27,10 +32,40 @@ var (
 
 func init() {
 	tempDir := os.TempDir()
-	outPath := filepath.Join(tempDir, Name)
+	outPath := filepath.Join(tempDir, libname.GetDLLName())
 	libByte, e := lib.ReadFile(path)
 	err.CheckErr(e)
-	os.WriteFile(outPath, libByte, fs.ModePerm)
+	zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
+	err.CheckErr(e)
+
+	for _, file := range zipReader.File {
+		e := extractFile(file, outPath)
+		err.CheckErr(e)
+		break // 只有一个文件
+	}
 	Path = outPath
 	logs.Info("Lib Path:", outPath)
+}
+
+func extractFile(zipFile *zip.File, targetFile string) error {
+	srcFile, err := zipFile.Open()
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+	dstFile, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
+	if err != nil {
+		if runtime.GOOS == "windows" {
+			if pathErr, ok := err.(*os.PathError); ok {
+				if errno, ok := pathErr.Err.(syscall.Errno); ok && errno == 32 {
+					logs.Error("File is busy, skipping extraction:", targetFile)
+					return nil
+				}
+			}
+		}
+		return err
+	}
+	defer dstFile.Close()
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
