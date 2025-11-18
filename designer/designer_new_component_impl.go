@@ -365,6 +365,15 @@ func (m *TDesigningComponent) Object() lcl.IObject {
 	}
 	return m.object
 }
+
+func (m *TDesigningComponent) SetVisible(v bool) {
+	if m.ComponentType == consts.CtNonVisual {
+		m.objectNonWrap.wrap.SetVisible(v)
+	} else {
+		m.object.SetVisible(v)
+	}
+}
+
 func (m *TDesigningComponent) WinControl() lcl.IWinControl {
 	if m.ComponentType == consts.CtNonVisual {
 		return m.objectNonWrap.wrap
@@ -573,12 +582,9 @@ func (m *TDesigningComponent) FindNodeDataByNamePaths(namePaths []string) (resul
 		var iterator func(node *vtedit.TEditNodeData)
 		iterator = func(node *vtedit.TEditNodeData) {
 			for _, data := range node.Child {
-				if data.Name() == namePaths[namePathsIndex] {
+				if namePathsIndex < len(namePaths) && data.Name() == namePaths[namePathsIndex] {
 					result = data
 					namePathsIndex++
-					if namePathsIndex >= len(namePaths) {
-						return
-					}
 				}
 				if data.Type() == consts.PdtClass {
 					iterator(data)
