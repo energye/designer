@@ -78,7 +78,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formRoot.SetCaption("")
 	formRoot.SetAlign(types.AlClient)
 	formRoot.SetShowHint(true)
-	//m.designerOnPaint(FormRoot)
+	//m.designerOnPaint(formRoot)
 	formRoot.SetOnMouseMove(m.designerOnMouseMove)
 	formRoot.SetOnMouseDown(m.designerOnMouseDown)
 	formRoot.SetOnMouseUp(m.designerOnMouseUp)

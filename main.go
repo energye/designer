@@ -29,12 +29,12 @@ import (
 
 func main() {
 	logs.Level = logs.LevelDebug
-	//logs.Level = logs.LevelError
+	logs.Level = logs.LevelError
 	{
 		// 这是一段测试时用的代码
 		libname.LibName = func() string {
 			wd, _ := os.Getwd()
-			return filepath.Join(wd, "../", "gen", "gout", lib.Name)
+			return filepath.Join(wd, "../", "gen", "gout", libname.GetDLLName())
 		}()
 		if !tool.IsExist(libname.LibName) {
 			libname.LibName = lib.Path
