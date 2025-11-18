@@ -89,24 +89,19 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 // 2. 组件属性列表对应的属性Edit值
 func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component *TDesigningComponent) {
 	for _, property := range propertyList {
-		for _, prop := range component.PropertyList {
-			if prop.Name() == property.Name {
-				// 设置属性值
-				prop.SetEditValue(property.Value)
-				// 根据类型
-				switch prop.Type() {
-				case consts.PdtCheckBoxList:
-					set := tool.SetToHashSet(property.Value)
-					for _, checkBox := range prop.EditNodeData.CheckBoxValue {
-						checkBox.Checked = set.Contains(checkBox.Name)
-					}
-				case consts.PdtClass:
-
+		namePaths := tool.Split(property.Name, ".") // 属性名路径 Font.Style
+		propNodeData := component.FindNodeDataByNamePaths(namePaths)
+		if propNodeData != nil {
+			if propNodeData.Type() == consts.PdtCheckBoxList {
+				set := tool.SetToHashSet(property.Value)
+				for _, checkBox := range propNodeData.EditNodeData.CheckBoxValue {
+					checkBox.Checked = set.Contains(checkBox.Name)
 				}
-				// 更新 api
-				component.doUpdateComponentPropertyToObject(prop)
-				break
 			}
+			// 设置属性值
+			propNodeData.SetEditValue(property.Value)
+			// 更新 api
+			component.doUpdateComponentPropertyToObject(propNodeData)
 		}
 	}
 }

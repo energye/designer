@@ -553,3 +553,39 @@ func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
 	}
 	return nil
 }
+
+// 查找属性节点, 根据属性名路径查找属性节点数据
+// namePaths: 属性名路径, [Font, Style] [Header, Font, Style]
+func (m *TDesigningComponent) FindNodeDataByNamePaths(namePaths []string) (result *vtedit.TEditNodeData) {
+	if len(namePaths) == 0 || m.PropertyList == nil {
+		return nil
+	}
+	propName := namePaths[0]
+	// 查找当前属性节点数据
+	for _, data := range m.PropertyList {
+		if data.Name() == propName {
+			result = data
+			break
+		}
+	}
+	if result != nil && len(namePaths) > 1 {
+		var namePathsIndex = 1
+		var iterator func(node *vtedit.TEditNodeData)
+		iterator = func(node *vtedit.TEditNodeData) {
+			for _, data := range node.Child {
+				if data.Name() == namePaths[namePathsIndex] {
+					result = data
+					namePathsIndex++
+					if namePathsIndex >= len(namePaths) {
+						return
+					}
+				}
+				if data.Type() == consts.PdtClass {
+					iterator(data)
+				}
+			}
+		}
+		iterator(result)
+	}
+	return
+}
