@@ -240,7 +240,11 @@ func (m *reflector) convertArgsValue() (args []any) {
 						logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
 						return nil
 					} else {
-						vals = append(vals, v.(int32))
+						if val, err := tool.StrToInt32(tool.IntToString(v)); err != nil {
+							logs.Error("[更新组件属性失败] TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
+						} else {
+							vals = append(vals, val)
+						}
 					}
 				}
 			}
@@ -259,7 +263,11 @@ func (m *reflector) convertArgsValue() (args []any) {
 					logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
 					return nil
 				} else {
-					set = set.Include(v.(int32))
+					if val, err := tool.StrToInt32(tool.IntToString(v)); err != nil {
+						logs.Error("[更新组件属性失败] TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
+					} else {
+						set = set.Include(val)
+					}
 				}
 			}
 		}
@@ -421,53 +429,4 @@ func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect
 	} else {
 		return reflect.Value{}, err
 	}
-	//if v, ok := value.(string); ok {
-	//	switch targetType.Kind() {
-	//	case reflect.Bool:
-	//		r, err := tool.StrToBool(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Int:
-	//		r, err := tool.StrToInt(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Int8:
-	//		r, err := tool.StrToInt8(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Int16:
-	//		r, err := tool.StrToInt16(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Int32:
-	//		r, err := tool.StrToInt32(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Int64:
-	//		r, err := tool.StrToInt64(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uint:
-	//		r, err := tool.StrToUint(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uint8:
-	//		r, err := tool.StrToUint8(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uint16:
-	//		r, err := tool.StrToUint16(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uint32:
-	//		r, err := tool.StrToUint32(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uint64:
-	//		r, err := tool.StrToUint64(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Uintptr:
-	//		r, err := tool.StrToUintptr(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Float32:
-	//		r, err := tool.StrToFloat32(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.Float64:
-	//		r, err := tool.StrToFloat64(v)
-	//		return reflect.ValueOf(r), err
-	//	case reflect.String:
-	//		return reflect.ValueOf(v), nil
-	//	}
-	//}
-	//return reflect.Value{}, errors.New("参数类型转换失败")
 }
