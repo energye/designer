@@ -102,6 +102,6 @@ func initConsoleEvent() {
 			}
 		}
 	}, func() {
-		logs.Info("停止控制台消息处理器")
+		logs.Println("停止控制台消息处理器")
 	})
 }

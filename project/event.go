@@ -39,6 +39,6 @@ func init() {
 			}
 		}
 	}, func() {
-		logs.Info("停止项目配置更新生成器")
+		logs.Println("停止项目配置更新生成器")
 	})
 }

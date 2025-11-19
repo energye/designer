@@ -36,6 +36,6 @@ func init() {
 			}
 		}
 	}, func() {
-		logs.Info("停止代码生成器")
+		logs.Println("停止代码生成器")
 	})
 }

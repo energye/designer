@@ -82,7 +82,7 @@ func (m *TEvent) run() {
 				go callback.trigger(trigger)
 			}
 		case <-m.cancel:
-			logs.Info("停止所有事件监听服务")
+			logs.Println("停止所有事件监听服务")
 			for _, callback := range m.list {
 				go callback.cancel()
 			}

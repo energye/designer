@@ -38,7 +38,8 @@ func generateUIFile(formComponent *designer.TDesigningComponent, filePath string
 	uiTree := buildUITree(formComponent)
 
 	// 序列化为JSON
-	data, err := json.MarshalIndent(uiTree, "", "  ")
+	//data, err := json.MarshalIndent(uiTree, "", "  ")
+	data, err := json.Marshal(uiTree)
 	if err != nil {
 		return err
 	}

@@ -25,6 +25,6 @@ func init() {
 			runDebouncedGenerate(formTab)
 		}
 	}, func() {
-		logs.Info("停止UI生成器")
+		logs.Println("停止UI生成器")
 	})
 }

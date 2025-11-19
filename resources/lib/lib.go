@@ -44,7 +44,7 @@ func init() {
 		break // 只有一个文件
 	}
 	Path = outPath
-	logs.Info("Lib Path:", outPath)
+	logs.Println("Lib Path:", outPath)
 }
 
 func extractFile(zipFile *zip.File, targetFile string) error {
