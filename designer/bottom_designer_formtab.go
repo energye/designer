@@ -294,7 +294,7 @@ func (m *FormTab) drawGrid(control lcl.ICustomControl) {
 }
 
 // 添加窗体表单根节点
-func (m *FormTab) AddFormNode() {
+func (m *FormTab) AddFormNode() lcl.ITreeNode {
 	// 窗体 根节点
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
@@ -303,11 +303,11 @@ func (m *FormTab) AddFormNode() {
 	newNode := items.AddChild(nil, m.FormRoot.TreeName())
 	newNode.SetImageIndex(m.FormRoot.IconIndex())    // 显示图标索引
 	newNode.SetSelectedIndex(m.FormRoot.IconIndex()) // 选中图标索引
-	newNode.SetSelected(true)
 	newNode.SetData(m.FormRoot.instance())
 	m.FormRoot.node = newNode
 	// 添加到设计组件列表
 	m.AddComponentToList(m.FormRoot)
+	return newNode
 }
 
 // 添加组件节点

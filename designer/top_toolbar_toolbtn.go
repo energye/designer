@@ -124,7 +124,8 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		// 此步骤会初始化并填充设计组件实例
 		newForm.FormRoot.LoadPropertyToInspector()
 		// 2. 添加到组件树
-		newForm.AddFormNode()
+		newNode := newForm.AddFormNode()
+		newNode.SetSelected(true)
 		triggerUIGeneration(newForm.FormRoot)
 		// 显示
 		designer.tab.HideAllActivated()

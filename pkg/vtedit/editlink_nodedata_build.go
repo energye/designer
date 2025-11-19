@@ -113,7 +113,7 @@ func (m *TEditLinkNodeData) Build() {
 // 构建节点数据
 func (m *TEditNodeData) Build() {
 	// 构建类字段属性, 做为子节点
-	if m.EditNodeData.Type == consts.PdtClass {
+	if m.Type() == consts.PdtClass {
 		if m.EditNodeData.Class.Instance != 0 {
 			object := lcl.AsObject(m.EditNodeData.Class.Instance)
 			methods := tool.GetObjectMethodNames(object)

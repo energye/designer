@@ -53,13 +53,13 @@ func (m *FormTab) Recover() {
 	// 此步骤会初始化并填充设计组件实例
 	m.FormRoot.LoadPropertyToInspector()
 	// 添加到组件树
-	m.AddFormNode()
+	node := m.AddFormNode()
 	// 恢复属性
 	recoverDesignerComponentProperty(tempRecover.property, m.FormRoot)
 	// 恢复子组件
 	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
 	// 恢复的默认切换至当前Form编辑状态
-	m.FormRoot.node.SetSelected(true)
+	node.SetSelected(true)
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
@@ -73,9 +73,10 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 			newComp.SetParent(parent)
 			// 2. 添加到组件树
 			parent.AddChild(newComp)
-			// 加载属性到设计器
+			// 加载属性
+			newComp.GetProps()
 			// 此步骤会初始化并填充设计组件实例
-			newComp.LoadPropertyToInspector()
+			//newComp.LoadPropertyToInspector()
 			// 恢复组件属性
 			recoverDesignerComponentProperty(child.Properties, newComp)
 			// 恢复子组件
@@ -101,9 +102,25 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 			// 设置属性值
 			propNodeData.SetEditValue(property.Value)
 			// 更新 api
-			component.doUpdateComponentPropertyToObject(propNodeData)
+			component.recoverCallAPI(property.Name, propNodeData)
 		}
 	}
+	//for _, property := range propertyList {
+	//	namePaths := tool.Split(property.Name, ".") // 属性名路径 Font.Style
+	//	propNodeData := component.FindNodeDataByNamePaths(namePaths)
+	//	if propNodeData != nil {
+	//		if propNodeData.Type() == consts.PdtCheckBoxList {
+	//			set := tool.SetToHashSet(property.Value)
+	//			for _, checkBox := range propNodeData.EditNodeData.CheckBoxValue {
+	//				checkBox.Checked = set.Contains(checkBox.Name)
+	//			}
+	//		}
+	//		// 设置属性值
+	//		propNodeData.SetEditValue(property.Value)
+	//		// 更新 api
+	//		component.doUpdateComponentPropertyToObject(propNodeData)
+	//	}
+	//}
 }
 
 // RecoverDesignerFormTab 恢复设计窗体, 非线程安全

@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
@@ -396,8 +397,10 @@ func (m *TDesigningComponent) GetProps() {
 		logs.Debug("LoadComponent Count:", len(properties))
 		// 拆分 属性和事件
 		var (
-			eventList    []*vtedit.TEditNodeData
-			propertyList []*vtedit.TEditNodeData
+			eventList       []*vtedit.TEditNodeData
+			propertyList    []*vtedit.TEditNodeData
+			configCompProp  = config.ComponentProperty
+			tempPropertyMap = make(map[string]struct{}) // 用于下面判断
 		)
 		for _, prop := range properties {
 			newProp := prop
@@ -412,7 +415,22 @@ func (m *TDesigningComponent) GetProps() {
 				propertyList = append(propertyList, newEditNodeData)
 			}
 			newEditNodeData.Build()
+			tempPropertyMap[newEditNodeData.Name()] = struct{}{}
 		}
+
+		// 通用属性 包含属性, 如果重复忽略配置的
+		for _, prop := range configCompProp.Include() {
+			if _, ok := tempPropertyMap[prop.Name]; ok {
+				// 忽略配置属性
+				continue
+			}
+			customProperty := vtedit.NewEditLinkNodeData(&prop)
+			newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
+				OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
+			propertyList = append(propertyList, newEditNodeData) // 添加到组件属性
+			newEditNodeData.Build()
+		}
+
 		// 排序
 		sort.Slice(eventList, func(i, j int) bool {
 			return strings.ToLower(eventList[i].EditNodeData.Name) < strings.ToLower(eventList[j].EditNodeData.Name)

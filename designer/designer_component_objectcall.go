@@ -44,6 +44,20 @@ func methodNameToSet(name string) string {
 	return "Set" + name
 }
 
+// 恢复调用 api
+// property 当前恢复的属性
+func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vtedit.TEditNodeData) {
+	if property == nil {
+		logs.Error("恢复属性-属性名节点数据不存在:", propertyName)
+	} else {
+		ref := &reflector{object: m.originObject, data: property, objectNonWrap: m.objectNonWrap}
+		_, err := ref.callMethod()
+		if err != nil {
+			logs.Error("恢复属性-调用 API 更新组件属性失败", err.Error())
+		}
+	}
+}
+
 // 执行更新组件属性到对象 api
 func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name())
