@@ -49,6 +49,13 @@ func (m *FormTab) Recover() {
 	tempRecover := m.recover
 	// 置空
 	m.recover = nil
+
+	m.FormRoot.SetVisible(false)
+	defer m.FormRoot.SetVisible(true)
+
+	m.tree.BeginUpdate()
+	defer m.tree.EndUpdate()
+
 	// 加载属性到设计器
 	// 此步骤会初始化并填充设计组件实例
 	m.FormRoot.LoadPropertyToInspector()
