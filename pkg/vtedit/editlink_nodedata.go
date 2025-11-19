@@ -68,6 +68,8 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 		return fmt.Sprintf("0x%X", m.IntValue)
 	case consts.PdtClass:
 		return m.StringValue
+	case consts.PdtMethod:
+		return m.StringValue
 	default:
 		return ""
 	}

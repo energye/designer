@@ -227,25 +227,13 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 			tree.EditNode(node, 1)
 		}
 	})
-	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, allowed *bool) {
-		logs.Debug("[object inspector-property] OnEditing column:", column)
-		if column == 1 {
-			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				switch data.EditNodeData.Type {
-				case consts.PdtText, consts.PdtUint16:
-					*allowed = true
-				}
-				return
-			}
-		}
-	})
-
 	tree.SetOnCreateEditor(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, outEditLink *lcl.IVTEditLink) {
 		logs.Debug("[object inspector-property] OnCreateEditor column:", column)
 		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type() {
 				case consts.PdtMethod:
+					println("Form:", m.formTab.FormRoot.Name(), "prop-name:", data.Name(), "prop-type:", data.EditStringValue())
 					link := vtedit.NewEventComboBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				}

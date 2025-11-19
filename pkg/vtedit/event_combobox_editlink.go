@@ -55,10 +55,10 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 			m.combobox.SetItemIndex(-1)
 			return
 		}
-		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
-		m.BindData.EditNodeData.StringValue = text
-		logs.Debug("TEventComboBoxEditLink OnChange index:", m.BindData.EditNodeData.Index, "text:", m.BindData.EditNodeData.StringValue)
-		m.BindData.FormInspectorPropertyToComponentProperty()
+		//m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
+		//m.BindData.EditNodeData.StringValue = text
+		//logs.Debug("TEventComboBoxEditLink OnChange index:", m.BindData.EditNodeData.Index, "text:", m.BindData.EditNodeData.StringValue)
+		//m.BindData.FormInspectorPropertyToComponentProperty()
 	})
 
 	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
