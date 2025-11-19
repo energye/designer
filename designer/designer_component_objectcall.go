@@ -228,7 +228,7 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 }
 
 func (m *reflector) convertArgsValue() (args []any) {
-	switch m.data.EditNodeData.Type {
+	switch m.data.Type() {
 	case consts.PdtText, consts.PdtUint16:
 		// string
 		args = append(args, m.data.EditNodeData.StringValue)
