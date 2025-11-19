@@ -39,6 +39,7 @@ type drag struct {
 	dx, dy      int32                 // 拖拽控制
 	dcl, dct    int32                 // 拖拽控制
 	isDown      bool                  // 拖拽控制
+	owner       lcl.IWinControl       // 拖拽控制所属组件, 非空表示未创建 ds(拖拽控制)空表示创建过
 	left        lcl.IPanel
 	top         lcl.IPanel
 	right       lcl.IPanel
@@ -51,6 +52,9 @@ type drag struct {
 
 func (m *drag) Free() {
 	m.relation = nil
+	if m.owner != nil {
+		return
+	}
 	if m.ds == consts.DsAll {
 		m.left.Free()
 		m.top.Free()
@@ -66,6 +70,7 @@ func (m *drag) Free() {
 		m.rightBottom.Free()
 	}
 }
+
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
 	pnl := lcl.NewPanel(owner)
 	pnl.SetWidth(dragBorder)
@@ -173,21 +178,31 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 func newDrag(owner lcl.IWinControl, ds consts.DragShowStatus) *drag {
 	m := new(drag)
 	m.ds = ds
-	if m.ds == consts.DsAll {
-		m.left = m.newDragPanel(owner, types.CrSizeWE, consts.DLeft)
-		m.top = m.newDragPanel(owner, types.CrSizeNS, consts.DTop)
-		m.right = m.newDragPanel(owner, types.CrSizeWE, consts.DRight)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS, consts.DBottom)
-		m.leftTop = m.newDragPanel(owner, types.CrSizeNWSE, consts.DLeftTop)
-		m.rightTop = m.newDragPanel(owner, types.CrSizeNESW, consts.DRightTop)
-		m.leftBottom = m.newDragPanel(owner, types.CrSizeNESW, consts.DLeftBottom)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, consts.DRightBottom)
-	} else {
-		m.right = m.newDragPanel(owner, types.CrSizeWE, consts.DRight)
-		m.bottom = m.newDragPanel(owner, types.CrSizeNS, consts.DBottom)
-		m.rightBottom = m.newDragPanel(owner, types.CrSizeNWSE, consts.DRightBottom)
-	}
+	m.owner = owner
 	return m
+}
+
+// mustDS 初始化拖拽面板控件
+// 根据拖拽敏感度设置为 drag 结构创建拖拽面板，用于不同方向的调整大小操作
+func (m *drag) mustDS() {
+	if m.owner == nil {
+		return
+	}
+	if m.ds == consts.DsAll {
+		m.left = m.newDragPanel(m.owner, types.CrSizeWE, consts.DLeft)
+		m.top = m.newDragPanel(m.owner, types.CrSizeNS, consts.DTop)
+		m.right = m.newDragPanel(m.owner, types.CrSizeWE, consts.DRight)
+		m.bottom = m.newDragPanel(m.owner, types.CrSizeNS, consts.DBottom)
+		m.leftTop = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DLeftTop)
+		m.rightTop = m.newDragPanel(m.owner, types.CrSizeNESW, consts.DRightTop)
+		m.leftBottom = m.newDragPanel(m.owner, types.CrSizeNESW, consts.DLeftBottom)
+		m.rightBottom = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DRightBottom)
+	} else {
+		m.right = m.newDragPanel(m.owner, types.CrSizeWE, consts.DRight)
+		m.bottom = m.newDragPanel(m.owner, types.CrSizeNS, consts.DBottom)
+		m.rightBottom = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DRightBottom)
+	}
+	m.owner = nil
 }
 
 // 设置关联组件
@@ -197,7 +212,7 @@ func (m *drag) SetRelation(relation *TDesigningComponent) {
 
 // 隐藏所有
 func (m *drag) Hide() {
-	if !m.isShow {
+	if !m.isShow || m.owner != nil {
 		return
 	}
 	m.relation.isDesigner = false
@@ -220,7 +235,7 @@ func (m *drag) Hide() {
 
 // 显示
 func (m *drag) Show() {
-	if m.isShow {
+	if m.isShow || m.owner != nil {
 		return
 	}
 	m.relation.isDesigner = true
@@ -244,6 +259,9 @@ func (m *drag) Show() {
 }
 
 func (m *drag) BringToFront() {
+	if m.owner != nil {
+		return
+	}
 	if m.ds == consts.DsAll {
 		m.left.BringToFront()
 		m.top.BringToFront()
@@ -261,6 +279,9 @@ func (m *drag) BringToFront() {
 }
 
 func (m *drag) SetParent(value lcl.IWinControl) {
+	if m.owner != nil {
+		return
+	}
 	if m.ds == consts.DsAll {
 		m.left.SetParent(value)
 		m.top.SetParent(value)
@@ -279,6 +300,9 @@ func (m *drag) SetParent(value lcl.IWinControl) {
 
 // 跟随关联组件
 func (m *drag) Follow() {
+	if m.owner != nil {
+		return
+	}
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
 		// 转换为 form tab 的坐标
@@ -325,6 +349,8 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 // 设计组件鼠标按下事件
 func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
+	m.relation.mustComponentPropertyPage()
+	m.mustDS()
 	if !sender.formTab.placeComponent(sender, X, Y) {
 		m.isDown = true
 		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.FormRoot.object)

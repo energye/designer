@@ -104,6 +104,8 @@ func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
 	}
 	iterable(m.FormRoot)
 
+	targetComp.mustComponentPropertyPage()
+	targetComp.drag.mustDS()
 	// 显示当前设计组件 drag
 	targetComp.drag.Show()
 	// 显示当前设计组件的属性和事件列表

@@ -47,7 +47,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc := new(TDesigningComponent)
 	dc.ComponentType = consts.CtForm
 	// 创建组件属性树
-	dc.createComponentPropertyPage()
+	dc.mustComponentPropertyPage()
 	m.FormRoot = dc
 
 	//designerForm := lcl.NewEngForm(nil)
@@ -92,6 +92,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 
 	// 窗体拖拽大小
 	dc.drag = newDrag(m.scroll, consts.DsRightBottom)
+	dc.drag.mustDS()
 	//m.FormRoot.drag.SetParent(m.scroll)
 	dc.drag.SetRelation(dc)
 	dc.drag.Show()

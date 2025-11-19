@@ -45,6 +45,10 @@ func Info(v ...any) {
 	}
 }
 
+func Println(v ...any) {
+	log.Println(v...)
+}
+
 func Warn(v ...any) {
 	if Level <= LevelWarn {
 		s := []any{"[WARN]"}

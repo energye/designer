@@ -89,13 +89,17 @@ func (m *TDesigningComponent) Free() {
 	}
 	m.PropertyList = nil
 	m.EventList = nil
-	if m.page.IsValid() {
+	if m.page != nil && m.page.IsValid() {
 		m.page.Free()
 	}
 }
 
-// 创建组件属性页
-func (m *TDesigningComponent) createComponentPropertyPage() {
+// 初始化组件属性页控件
+// 该函数确保组件属性页只被初始化一次，创建属性页、事件页以及对应的树形控件
+func (m *TDesigningComponent) mustComponentPropertyPage() {
+	if m.page != nil {
+		return
+	}
 	m.page = lcl.NewPageControl(inspector.componentProperty.propComponentProp)
 	m.page.SetTabStop(true)
 	m.page.SetAlign(types.AlClient)
@@ -134,8 +138,6 @@ func newVisualComponent(designerForm *FormTab) *TDesigningComponent {
 	m := new(TDesigningComponent)
 	m.ComponentType = consts.CtVisual
 	m.formTab = designerForm
-
-	m.createComponentPropertyPage()
 	return m
 }
 
@@ -147,19 +149,20 @@ func newNonVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
 	objectWrap := NewNonVisualComponentWrap(formTab.FormRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
-
-	m.createComponentPropertyPage()
 	return m
 }
 
 // 设置基础通用属性
 func setBaseProp(comp lcl.IControl, x, y int32) {
-	comp.SetLeft(x)
-	comp.SetTop(y)
-	comp.SetCursor(types.CrSize)
-	comp.SetCaption(comp.Name())
-	comp.SetShowHint(true)
-	comp.SetVisible(true)
+	if x != 0 {
+		comp.SetLeft(x)
+	}
+	if y != 0 {
+		comp.SetTop(y)
+	}
+	//comp.SetCursor(types.CrSize)
+	//comp.SetCaption(comp.Name())
+	//comp.SetShowHint(true)
 }
 
 // 返回当前组件实例指针
@@ -235,6 +238,9 @@ func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseB
 
 // 更新节点数据, Left Top
 func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
+	if m.page == nil {
+		return
+	}
 	var (
 		top  *vtedit.TEditNodeData
 		left *vtedit.TEditNodeData
