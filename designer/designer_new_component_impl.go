@@ -49,6 +49,7 @@ type TDesigningComponent struct {
 	propertyTree   lcl.ILazVirtualStringTree // 查看器 组件属性树
 	eventTree      lcl.ILazVirtualStringTree // 查看器 组件事件树
 	isLoadProperty bool                      // 是否加载完成属性到属性列表
+	isLoadEvent    bool                      // 是否加载完成属性到事件列表
 }
 
 // 组件属性树状态
@@ -123,6 +124,8 @@ func (m *TDesigningComponent) createComponentPropertyPage() {
 	m.eventTree.SetParent(m.pageEvent)
 	// 初始化组件属性树事件
 	m.initComponentPropertyTreeEvent()
+	// 初始化组件事件树事件
+	m.initComponentEventTreeEvent()
 }
 
 // 创建可视组件

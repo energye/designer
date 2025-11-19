@@ -29,7 +29,7 @@ import (
 
 func main() {
 	logs.Level = logs.LevelDebug
-	logs.Level = logs.LevelError
+	//logs.Level = logs.LevelError
 	{
 		// 这是一段测试时用的代码
 		libname.LibName = func() string {

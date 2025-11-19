@@ -91,6 +91,7 @@ const (
 	PdtClassDialog
 	PdtColorSelect
 	PdtClass
+	PdtMethod
 )
 
 type PropertyKind = string
