@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 )
 
 // 恢复 FormTab
@@ -46,6 +47,7 @@ func (m *FormTab) Recover() {
 	if m.recover == nil {
 		return
 	}
+	beginTime := time.Now()
 	tempRecover := m.recover
 	// 置空
 	m.recover = nil
@@ -70,6 +72,7 @@ func (m *FormTab) Recover() {
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
+	logs.Info("恢复窗体, 耗时:", time.Now().Sub(beginTime).Seconds(), "秒")
 }
 
 // 恢复设计的子组件
