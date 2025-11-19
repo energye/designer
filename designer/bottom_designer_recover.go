@@ -52,9 +52,6 @@ func (m *FormTab) Recover() {
 	// 置空
 	m.recover = nil
 
-	m.FormRoot.SetVisible(false)
-	defer m.FormRoot.SetVisible(true)
-
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
 
@@ -65,6 +62,10 @@ func (m *FormTab) Recover() {
 	node := m.AddFormNode()
 	// 恢复属性
 	recoverDesignerComponentProperty(tempRecover.property, m.FormRoot)
+	// 在恢复窗体属性后，所有组件加载完统一渲染
+	m.FormRoot.SetVisible(false)
+	defer m.FormRoot.SetVisible(true)
+
 	// 恢复子组件
 	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
 	// 恢复的默认切换至当前Form编辑状态
