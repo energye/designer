@@ -203,26 +203,17 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 	})
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
-		//logs.Debug("object inspector-property OnPaintText column:", column)
-		if column == 1 {
+		if column == 0 {
+			font := targetCanvas.FontToFont()
+			font.SetStyle(font.Style().Include(types.FsBold))
+			font.SetColor(colors.RGBToColor(0, 32, 96))
+		} else if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
-				//logs.Debug("object inspector-property OnPaintText column:", column, "IsModify:", data.IsModify())
-				font := targetCanvas.FontToFont()
-				// 编辑列 需要动态控制时
-				switch data.EditNodeData.Type {
-				case consts.PdtColorSelect:
+				if data.IsModify() {
+					font := targetCanvas.FontToFont()
+					// 值被修改样式
 					font.SetStyle(font.Style().Include(types.FsBold))
-					font.SetColor(colors.TColor(data.EditNodeData.IntValue))
-				case consts.PdtClass:
-					// class 样式
-					font.SetStyle(font.Style().Include(types.FsBold))
-					font.SetColor(0x2D5BC4)
-				default:
-					if data.IsModify() {
-						// 值被修改样式
-						font.SetStyle(font.Style().Include(types.FsBold))
-						font.SetColor(0x007DFF)
-					}
+					font.SetColor(0x007DFF)
 				}
 			}
 		}
@@ -233,19 +224,7 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 		node := sender.FocusedNode()
 		data := vtedit.GetPropertyNodeData(node)
 		if data != nil {
-			if data.Type() == consts.PdtClass {
-				switch data.EditNodeData.Name {
-				case "Icon":
-					//m.compPropTreeState.selectPropName = data.EditNodeData.Name
-					tree.EditNode(node, 1)
-				default:
-
-				}
-			} else if data.EditNodeData.Type == consts.PdtCheckBoxList {
-			} else {
-				//m.compPropTreeState.selectPropName = data.EditNodeData.Name
-				tree.EditNode(node, 1)
-			}
+			tree.EditNode(node, 1)
 		}
 	})
 	tree.SetOnEditing(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, column int32, allowed *bool) {
@@ -267,7 +246,8 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type() {
 				case consts.PdtMethod:
-					println("method")
+					link := vtedit.NewEventComboBoxEditLink(data)
+					*outEditLink = link.AsIVTEditLink()
 				}
 			}
 		}
