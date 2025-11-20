@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -122,6 +123,9 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
 	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	m.createProject.SetOnClick(func(lcl.IObject) {
+		helperform.NewCreateProjectForm().ShowModal()
+		return
+
 		mainWindow.selectDirectoryDialog.SetTitle("新建项目")
 		history := mainWindow.selectDirectoryDialog.HistoryList()
 		//for i := int32(0); i < history.Count(); i++ {

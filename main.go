@@ -22,20 +22,16 @@ import (
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 )
-import (
-	_ "net/http/pprof"
-)
 
 func main() {
 	// go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
-	go http.ListenAndServe(":8080", nil)
+	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
-	logs.Level = logs.LevelError
+	//logs.Level = logs.LevelError
 	{
 		// 这是一段测试时用的代码
 		libname.LibName = func() string {
