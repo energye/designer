@@ -143,15 +143,15 @@ type DependencyModule = string
 
 const (
 	// DmLCL LCL 模块
-	DmLCL DependencyModule = "github.com/energye/lcl/lcl"
+	DmLCL DependencyModule = "github.com/energye/lcl"
 	// DmCEF CEF 模块
-	DmCEF DependencyModule = "github.com/energye/cef/cef"
+	DmCEF DependencyModule = "github.com/energye/cef"
 	// DmWVWindows Webview windows 模块
-	DmWVWindows DependencyModule = "github.com/energye/wv/windows"
+	DmWVWindows DependencyModule = "github.com/energye/wv"
 	// DmWVMacOS Webview MacOS 模块
-	DmWVMacOS DependencyModule = "github.com/energye/wv/darwin"
+	DmWVMacOS DependencyModule = "github.com/energye/wv"
 	// DmWVLinux Webview Linux 模块
-	DmWVLinux DependencyModule = "github.com/energye/wv/linux"
-	// DmWidget 自定义 组件 模块
-	DmWidget DependencyModule = "github.com/energye/widget/wg"
+	DmWVLinux DependencyModule = "github.com/energye/wv"
+	// DmWidget 自定义组件 模块
+	DmWidget DependencyModule = "github.com/energye/widget"
 )
