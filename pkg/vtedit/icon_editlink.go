@@ -14,7 +14,7 @@
 package vtedit
 
 import (
-	"github.com/energye/designer/pkg/editorform"
+	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
@@ -49,7 +49,7 @@ func (m *TIconEditLink) Create() {
 	m.btn.SetImageIndex(0)
 	m.btn.SetCaption(m.BindData.EditStringValue())
 	m.btn.SetOnClick(func(sender lcl.IObject) {
-		editorform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
+		helperform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
 			logs.Debug("TIconEditLink callback 图片目录:", filePath, ok)
 		}).ShowModal()
 	})
