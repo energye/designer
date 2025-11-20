@@ -41,7 +41,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	// 构建模板数据
 	data := buildUserTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
-		DesignerVersion: config.Config.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
+		DesignerVersion: config.FormConfig.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		UIFile:   formTab.UIFile(),
 		UserFile: formTab.GOUserFile(),
 	}

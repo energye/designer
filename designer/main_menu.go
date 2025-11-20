@@ -271,7 +271,7 @@ func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 	about := lcl.NewMenuItem(owner)
 	about.SetCaption("关于")
 	about.SetOnClick(func(sender lcl.IObject) {
-		versionInfo := api.PasStr("ENERGY Designer " + config.Config.Version + "\nLCL " + v)
+		versionInfo := api.PasStr("ENERGY Designer " + config.FormConfig.Version + "\nLCL " + v)
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
 	})
 	m.helper.Add(about)

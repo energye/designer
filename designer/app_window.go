@@ -78,18 +78,26 @@ func SwitchAllTheme(dark bool) {
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	vtedit.MainForm = m
 	logs.Info("FormCreate")
-	cfg := config.Config
+	cfg := config.FormConfig
 	// 属性
 	m.SetCaption(cfg.Title)
 	m.SetDoubleBuffered(true)
-	m.SetWidth(int32(cfg.Window.Width))
-	m.SetHeight(int32(cfg.Window.Height))
+	m.SetLeft(cfg.Window.X)
+	m.SetTop(cfg.Window.Y)
+	m.SetWidth(cfg.Window.Width)
+	m.SetHeight(cfg.Window.Height)
 	m.SetColor(bgLightColor)
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
-	// 窗口显示在鼠标所在的窗口
-	m.showInMonitor()
+	if cfg.Window.X == 0 && cfg.Window.Y == 0 {
+		// 窗口显示在鼠标所在的窗口
+		m.showInMonitor()
+	}
+	if cfg.Window.WindowState != 0 {
+		m.SetWindowState(cfg.Window.WindowState)
+	}
+
 	m.initAllImageList()
 	// 设置窗口图标
 	m.setWindowIcon()
@@ -115,16 +123,17 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		// 默认禁用组件功能
 		SetEnableFuncComponent(false)
 		// 窗口显示在鼠标所在的窗口
-		m.showInMonitor()
+		//m.showInMonitor()
 		for _, fn := range windowShowEvents {
 			fn()
 		}
 		// 向消息输出基本信息
-		cfg := config.Config
+		cfg := config.FormConfig
 		_, _, _, _, _, v := api.LCLVersion()
 		consoleText := tool.Buffer{}
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 		WriteConsole(consoleText.String())
+		// 自动打开 energy 项目
 		if len(os.Args) > 1 {
 			filePath := os.Args[1]
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -136,7 +145,6 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	logs.Info("FormAfterCreate")
-	initGlobal()
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
@@ -149,6 +157,8 @@ func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 
 func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	logs.Info("OnClose")
+	br := m.BoundsRect()
+	config.UpdateWindow(br.Left, br.Top, br.Width(), br.Height(), m.WindowState())
 	// 取消所有生成事件
 	event.CancelAll()
 }

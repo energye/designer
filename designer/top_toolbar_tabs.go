@@ -133,17 +133,17 @@ func (m *TopToolbar) createComponentTabs() {
 		go compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡
-	newComponentTab(config.Config.ComponentTabs.Standard)
-	newComponentTab(config.Config.ComponentTabs.Additional)
-	newComponentTab(config.Config.ComponentTabs.Common)
-	newComponentTab(config.Config.ComponentTabs.Dialogs)
-	newComponentTab(config.Config.ComponentTabs.Misc)
-	newComponentTab(config.Config.ComponentTabs.System)
-	newComponentTab(config.Config.ComponentTabs.LazControl)
-	newComponentTab(config.Config.ComponentTabs.WebView)
+	newComponentTab(config.FormConfig.ComponentTabs.Standard)
+	newComponentTab(config.FormConfig.ComponentTabs.Additional)
+	newComponentTab(config.FormConfig.ComponentTabs.Common)
+	newComponentTab(config.FormConfig.ComponentTabs.Dialogs)
+	newComponentTab(config.FormConfig.ComponentTabs.Misc)
+	newComponentTab(config.FormConfig.ComponentTabs.System)
+	newComponentTab(config.FormConfig.ComponentTabs.LazControl)
+	newComponentTab(config.FormConfig.ComponentTabs.WebView)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		tab.RecalculatePosition()
-		m.componentTabs[config.Config.ComponentTabs.Standard.En].sheet.SetActive(true)
+		m.componentTabs[config.FormConfig.ComponentTabs.Standard.En].sheet.SetActive(true)
 	})
 }
 

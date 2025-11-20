@@ -111,6 +111,18 @@ func IsExist(path string) bool {
 	return true
 }
 
+// 判断文件是否目录
+func IsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	if s.IsDir() {
+		return true
+	}
+	return false
+}
+
 // 字符串数组元素反转
 func StringArrayReverse(array []string) {
 	n := len(array)
