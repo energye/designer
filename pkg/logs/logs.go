@@ -14,6 +14,7 @@
 package logs
 
 import (
+	"github.com/energye/lcl/api"
 	"log"
 )
 
@@ -31,7 +32,7 @@ var Level = LevelInfo // 例如：设置为 INFO，只输出 INFO 及以上级�
 
 func Debug(v ...any) {
 	if Level <= LevelDebug {
-		s := []any{"[DEBUG]"}
+		s := []any{"TID:", GetTID(), "[DEBUG]"}
 		s = append(s, v...)
 		log.Println(s...)
 	}
@@ -39,7 +40,7 @@ func Debug(v ...any) {
 
 func Info(v ...any) {
 	if Level <= LevelInfo {
-		s := []any{"[INFO]"}
+		s := []any{"TID:", GetTID(), "[INFO]"}
 		s = append(s, v...)
 		log.Println(s...)
 	}
@@ -51,7 +52,7 @@ func Println(v ...any) {
 
 func Warn(v ...any) {
 	if Level <= LevelWarn {
-		s := []any{"[WARN]"}
+		s := []any{"TID:", GetTID(), "[WARN]"}
 		s = append(s, v...)
 		log.Println(s...)
 	}
@@ -59,8 +60,12 @@ func Warn(v ...any) {
 
 func Error(v ...any) {
 	if Level <= LevelError {
-		s := []any{"[ERROR]"}
+		s := []any{"TID:", GetTID(), "[ERROR]"}
 		s = append(s, v...)
 		log.Println(s...)
 	}
+}
+
+func GetTID() uintptr {
+	return api.CurrentThreadId()
 }
