@@ -83,6 +83,7 @@ func (m *BottomBox) ClearConsole() {
 
 // 初始化消息控制台事件
 func initConsoleEvent() {
+	logs.Println("初始化消息控制台事件")
 	event.On(event.Console, func(trigger event.TTrigger) {
 		payload, ok := trigger.Payload.(event.TPayload)
 		if ok {

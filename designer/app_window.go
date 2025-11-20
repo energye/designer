@@ -24,6 +24,7 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
+	"sync"
 )
 
 var (
@@ -39,6 +40,7 @@ var (
 	themeControls    tool.HashMap[lcl.IWinControl]
 	splitterWidth    = int32(5)
 	leftToolsWidth   = int32(110)
+	gOnShow          = sync.Once{}
 )
 
 // 设计器应用窗口
@@ -87,7 +89,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
 	// 窗口显示在鼠标所在的窗口
-	//m.showInMonitor()
+	m.showInMonitor()
 	m.initAllImageList()
 	// 设置窗口图标
 	m.setWindowIcon()
@@ -109,31 +111,32 @@ func (m *TAppWindow) initAllImageList() {
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {
 	logs.Info("OnShow")
-	// 窗口显示在鼠标所在的窗口
-	m.showInMonitor()
-	for _, fn := range windowShowEvents {
-		fn()
-	}
+	gOnShow.Do(func() {
+		// 默认禁用组件功能
+		SetEnableFuncComponent(false)
+		// 窗口显示在鼠标所在的窗口
+		m.showInMonitor()
+		for _, fn := range windowShowEvents {
+			fn()
+		}
+		// 向消息输出基本信息
+		cfg := config.Config
+		_, _, _, _, _, v := api.LCLVersion()
+		consoleText := tool.Buffer{}
+		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
+		WriteConsole(consoleText.String())
+		if len(os.Args) > 1 {
+			filePath := os.Args[1]
+			go lcl.RunOnMainThreadAsync(func(id uint32) {
+				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+			})
+		}
+	})
 }
 
 func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
 	logs.Info("FormAfterCreate")
-	// 默认禁用组件功能
-	SetEnableFuncComponent(false)
-
-	// 向消息输出基本信息
-	cfg := config.Config
-	_, _, _, _, _, v := api.LCLVersion()
-	consoleText := tool.Buffer{}
-	consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
-	WriteConsole(consoleText.String())
-
-	if len(os.Args) > 1 {
-		filePath := os.Args[1]
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
-		})
-	}
+	initGlobal()
 }
 
 func (m *TAppWindow) CreateParams(params *types.TCreateParams) {

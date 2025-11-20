@@ -13,6 +13,8 @@
 
 package designer
 
+import "github.com/energye/designer/pkg/logs"
+
 // 组件设计注册
 // 所有要实现设计的组件都在此处注册
 
@@ -24,6 +26,7 @@ type TNewComponent func(designerForm *FormTab, x, y int32) *TDesigningComponent
 var registerComponents = make(map[string]TNewComponent)
 
 func initRegisterComponent() {
+	logs.Println("初始化注册组件")
 	registerComponents["TButton"] = NewButtonDesigner
 	registerComponents["TEdit"] = NewEditDesigner
 	registerComponents["TCheckBox"] = NewCheckBoxDesigner

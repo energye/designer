@@ -44,6 +44,7 @@ type TComponentTabItem struct {
 
 // 组件选项卡
 func (m *TopToolbar) createComponentTabs() {
+	logs.Debug("创建组件选项卡面板")
 	//page := lcl.NewPageControl(m.box)
 	tab := wg.NewTab(m.box)
 	m.tab = tab
@@ -57,26 +58,10 @@ func (m *TopToolbar) createComponentTabs() {
 		m.ResetTabComponentDown()
 	})
 
-	//borderSet := func() {
-	//	pageSize := len(m.tab.Pages())
-	//	for i, page := range m.tab.Pages() {
-	//		if page.Active() {
-	//			if i == pageSize-1 {
-	//				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdRight))
-	//			} else {
-	//				page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft))
-	//			}
-	//		} else if i == pageSize-1 {
-	//			page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom, wg.BbdRight))
-	//		} else {
-	//			page.Button().SetBorderDirections(types.NewSet(wg.BbdLeft, wg.BbdBottom))
-	//		}
-	//	}
-	//}
-
 	inspectorTreeImageIndex := 0 // 查看器组件树图片索引
 	// 创建组件选项卡
 	newComponentTab := func(tab config.Tab) {
+		logs.Debug("创建组件选项卡:", tab.Cn)
 		compTab := &TComponentTab{components: make(map[string]*TComponentTabItem)}
 		m.componentTabs[tab.En] = compTab
 		//sheet := lcl.NewTabSheet(m.tab)
