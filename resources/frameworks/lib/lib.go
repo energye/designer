@@ -17,30 +17,24 @@ import (
 	"archive/zip"
 	"bytes"
 	"github.com/energye/designer/pkg/err"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
-	"os"
 	"path/filepath"
 )
 
-var (
-	Path string
-)
-
-func init() {
-	tempDir := os.TempDir()
-	outPath := filepath.Join(tempDir, libname.GetDLLName())
+func ExtractLibrary(outputPath string) (libPath string) {
+	libPath = filepath.Join(outputPath, libname.GetDLLName())
+	if tool.IsExist(libPath) {
+		return
+	}
 	libByte, e := lib.ReadFile(path)
 	err.CheckErr(e)
 	zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
 	err.CheckErr(e)
-
 	for _, file := range zipReader.File {
-		e := tool.ExtractFile(file, outPath)
+		_, e := tool.ExtractFile(file, outputPath)
 		err.CheckErr(e)
 		break // 只有一个文件
 	}
-	Path = outPath
-	logs.Println("Lib Path:", outPath)
+	return
 }

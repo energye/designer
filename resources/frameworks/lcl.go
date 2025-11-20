@@ -19,7 +19,6 @@ import (
 	"embed"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/lcl/tool/exec"
 	"path/filepath"
 )
 
@@ -27,13 +26,15 @@ import (
 var lcl embed.FS
 
 func extractLCL() {
+	if tool.IsExist(filepath.Join(Path, "lcl")) {
+		return
+	}
 	data, e := lcl.ReadFile("lcl/lcl.zip")
 	err.CheckErr(e)
 	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	err.CheckErr(e)
-	outPath := filepath.Join(exec.Dir, "frameworks")
 	for _, file := range zipReader.File {
-		e := tool.ExtractFile(file, outPath)
+		_, e := tool.ExtractFile(file, Path)
 		err.CheckErr(e)
 	}
 }

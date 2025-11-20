@@ -21,6 +21,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"io"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
@@ -151,14 +152,15 @@ func IsMainThread() bool {
 //	zipFile: 要提取的zip文件对象
 //	targetFile: 目标文件路径
 //	error: 提取过程中发生的错误，如果成功则返回nil
-func ExtractFile(zipFile *zip.File, targetFile string) error {
+func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 	srcFile, err := zipFile.Open()
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer srcFile.Close()
+	targetFile = filepath.Join(targetFile, zipFile.Name)
 	if zipFile.Mode().IsDir() {
-		return os.MkdirAll(targetFile, zipFile.Mode())
+		return targetFile, os.MkdirAll(targetFile, zipFile.Mode())
 	}
 	dstFile, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
 	if err != nil {
@@ -166,13 +168,13 @@ func ExtractFile(zipFile *zip.File, targetFile string) error {
 			if pathErr, ok := err.(*os.PathError); ok {
 				if errno, ok := pathErr.Err.(syscall.Errno); ok && errno == 32 {
 					logs.Error("File is busy, skipping extraction:", targetFile)
-					return nil
+					return targetFile, nil
 				}
 			}
 		}
-		return err
+		return targetFile, err
 	}
 	defer dstFile.Close()
 	_, err = io.Copy(dstFile, srcFile)
-	return err
+	return targetFile, err
 }

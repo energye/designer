@@ -12,3 +12,18 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 package frameworks
+
+import (
+	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/tool/exec"
+	"path/filepath"
+)
+
+var Path = filepath.Join(exec.Dir, "frameworks")
+
+// Extract 调用 extractLCL 函数来解压LCL框架文件
+// 这个函数作为解压过程的入口点
+func Extract() {
+	lib.ExtractLibrary(Path)
+	extractLCL()
+}

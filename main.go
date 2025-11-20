@@ -18,7 +18,7 @@ import (
 	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
-	"github.com/energye/designer/resources/lib"
+	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -33,13 +33,14 @@ func main() {
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelError
 	{
+		frameworks.Extract()
 		// 这是一段测试时用的代码
 		libname.LibName = func() string {
 			wd, _ := os.Getwd()
 			return filepath.Join(wd, "../", "gen", "gout", libname.GetDLLName())
 		}()
 		if !tool.IsExist(libname.LibName) {
-			libname.LibName = lib.Path
+			libname.LibName = filepath.Join(frameworks.Path, libname.GetDLLName())
 		}
 	}
 	logs.Debug(strings.Join(os.Args, " "))
