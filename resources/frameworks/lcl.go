@@ -12,3 +12,28 @@
 // See the License for the specific language governing permissions and limitations under the License.
 
 package frameworks
+
+import (
+	"archive/zip"
+	"bytes"
+	"embed"
+	"github.com/energye/designer/pkg/err"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/exec"
+	"path/filepath"
+)
+
+//go:embed lcl/lcl.zip
+var lcl embed.FS
+
+func extractLCL() {
+	data, e := lcl.ReadFile("lcl/lcl.zip")
+	err.CheckErr(e)
+	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	err.CheckErr(e)
+	outPath := filepath.Join(exec.Dir, "frameworks")
+	for _, file := range zipReader.File {
+		e := tool.ExtractFile(file, outPath)
+		err.CheckErr(e)
+	}
+}
