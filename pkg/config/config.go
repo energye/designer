@@ -43,7 +43,7 @@ type formConfig struct {
 	ComponentTabs ComponentTabs `json:"componentTabs"`
 }
 
-// 设计器窗口大小
+// 设计器窗口配置
 type Window struct {
 	X           int32              `json:"x"`
 	Y           int32              `json:"y"`
@@ -80,10 +80,27 @@ type TConfig struct {
 // UpdateWindow 更新窗体配置
 // 在窗体改变大小时调用, 窗体关闭时
 func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
-	Config.Window.X = x
-	Config.Window.Y = y
-	Config.Window.Width = w
-	Config.Window.Height = h
+	if windowState == types.WsNormal {
+		Config.Window.X = x
+		Config.Window.Y = y
+		Config.Window.Width = w
+		Config.Window.Height = h
+	}
+	Config.Window.WindowState = windowState
+	energyDir := filepath.Join(homeDir, ".energy")
+	configPath := filepath.Join(energyDir, "config.json")
+	data, e := json.MarshalIndent(Config, "", "\t")
+	err.CheckErr(e)
+	e = os.WriteFile(configPath, data, os.ModePerm)
+	err.CheckErr(e)
+}
+
+// UpdateFrameworkDir 更新设计器的框架存放目录配置
+func UpdateFrameworkDir(frameworkDir string) {
+	if !tool.IsExist(frameworkDir) {
+		return
+	}
+	Config.FrameworkDir = frameworkDir
 	energyDir := filepath.Join(homeDir, ".energy")
 	configPath := filepath.Join(energyDir, "config.json")
 	data, e := json.MarshalIndent(Config, "", "\t")
