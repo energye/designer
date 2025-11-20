@@ -16,7 +16,7 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"widget/wg"
+	"github.com/energye/widget/wg"
 )
 
 // 对象查看器

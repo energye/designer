@@ -137,3 +137,21 @@ const (
 	CmWVMacOS                          // Webkit2 MacOS
 	CmWVLinux                          // Webkit2 Linux
 )
+
+// DependencyModule 依赖模块
+type DependencyModule = string
+
+const (
+	// DmLCL LCL 模块
+	DmLCL DependencyModule = "github.com/energye/lcl/lcl"
+	// DmCEF CEF 模块
+	DmCEF DependencyModule = "github.com/energye/cef/cef"
+	// DmWVWindows Webview windows 模块
+	DmWVWindows DependencyModule = "github.com/energye/wv/windows"
+	// DmWVMacOS Webview MacOS 模块
+	DmWVMacOS DependencyModule = "github.com/energye/wv/darwin"
+	// DmWVLinux Webview Linux 模块
+	DmWVLinux DependencyModule = "github.com/energye/wv/linux"
+	// DmWidget 自定义 组件 模块
+	DmWidget DependencyModule = "github.com/energye/widget/wg"
+)

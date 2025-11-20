@@ -20,7 +20,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"widget/wg"
+	"github.com/energye/widget/wg"
 )
 
 // 窗体设计功能

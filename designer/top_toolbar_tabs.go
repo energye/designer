@@ -20,8 +20,8 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"github.com/energye/widget/wg"
 	"strings"
-	"widget/wg"
 )
 
 // 组件选项卡

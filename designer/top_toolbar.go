@@ -17,7 +17,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
-	"widget/wg"
+	"github.com/energye/widget/wg"
 )
 
 // 顶部工具栏

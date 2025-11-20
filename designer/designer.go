@@ -318,6 +318,8 @@ func SetEnableFuncComponent(enable bool) {
 //}
 
 func init() {
+	// 初始化依赖模块
+	initDependencyModule()
 	// 注册控制台消息处理器事件
 	initConsoleEvent()
 	// 初始化工具栏相关配置

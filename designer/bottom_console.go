@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"widget/wg"
+	"github.com/energye/widget/wg"
 )
 
 type TConsole struct {
