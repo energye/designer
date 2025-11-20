@@ -15,7 +15,6 @@ package resources
 
 import (
 	"embed"
-	_ "github.com/energye/designer/resources/lib"
 )
 
 var (

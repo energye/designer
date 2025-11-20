@@ -14,11 +14,16 @@
 package tool
 
 import (
+	"archive/zip"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
+	"io"
 	"os"
+	"runtime"
 	"strings"
+	"syscall"
 )
 
 // 加载图像到列表
@@ -139,4 +144,35 @@ func Replace(s, old, new string) string {
 // 判断当前是否为主线程
 func IsMainThread() bool {
 	return api.MainThreadId() == api.CurrentThreadId()
+}
+
+// ExtractFile 从zip文件中提取指定文件到目标路径
+//
+//	zipFile: 要提取的zip文件对象
+//	targetFile: 目标文件路径
+//	error: 提取过程中发生的错误，如果成功则返回nil
+func ExtractFile(zipFile *zip.File, targetFile string) error {
+	srcFile, err := zipFile.Open()
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+	if zipFile.Mode().IsDir() {
+		return os.MkdirAll(targetFile, zipFile.Mode())
+	}
+	dstFile, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
+	if err != nil {
+		if runtime.GOOS == "windows" {
+			if pathErr, ok := err.(*os.PathError); ok {
+				if errno, ok := pathErr.Err.(syscall.Errno); ok && errno == 32 {
+					logs.Error("File is busy, skipping extraction:", targetFile)
+					return nil
+				}
+			}
+		}
+		return err
+	}
+	defer dstFile.Close()
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }
