@@ -243,7 +243,7 @@ func (m *TComponentData) buildChildComponents(uiParent *bean.TUIComponent, templ
 	}
 }
 
-// UI 而已属性列表转模板数据列表
+// UI 布局属性列表转模板数据列表
 func uiPropertiesToTemplateProperties(uiProperties []bean.TProperty) []TPropertyData {
 	var templateProperties []TPropertyData
 	for _, uiProperty := range uiProperties {
@@ -253,7 +253,7 @@ func uiPropertiesToTemplateProperties(uiProperties []bean.TProperty) []TProperty
 	return templateProperties
 }
 
-// UI 而已属性转列表模板数据列表
+// UI 布局属性转列表模板数据列表
 func uiPropertyToTemplateProperty(uiProperty bean.TProperty) TPropertyData {
 	return TPropertyData{
 		Name:   uiProperty.Name,

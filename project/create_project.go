@@ -27,9 +27,9 @@ import (
 /*
 	[app]	// 应用主目录, 生成代码存放目录 (xxx.go xxx.ui.go xxx.ui)
 	[resources]	// 资源存放目录, 图标等静态资源文件
-		| icon
-			| icon.md
-		| icon.go
+		| embed
+			| embed.md
+		| resources.go
 		| windows_[386|amd64].syso ?? 根据设计器功能动态生成, 只适用于 windows
 	go.mod
 	main.go

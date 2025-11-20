@@ -94,6 +94,7 @@ func runPreview(state chan<- any) {
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "结束预览"}}) //运行结束消息
 }
 
+// 停止预览
 func stopPreview() {
 	// 停止运行
 	if runCmd != nil {
