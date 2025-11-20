@@ -227,6 +227,7 @@ func (m *reflector) findMethodInEmbeddedFields(val reflect.Value, methodName str
 	return reflect.Value{}
 }
 
+// 根据当前数据节点的类型，将编辑数据转换为对应类型的参数值并返回。
 func (m *reflector) convertArgsValue() (args []any) {
 	switch m.data.Type() {
 	case consts.PdtText, consts.PdtUint16:
@@ -422,6 +423,10 @@ func (m *reflector) callMethod() ([]any, error) {
 	return out, nil
 }
 
+// 将给定的值转换为目标类型
+//
+//	value: 需要转换的源值
+//	targetType: 目标类型
 func (m *reflector) convertArgsType(value any, targetType reflect.Type) (reflect.Value, error) {
 	sourceValue := reflect.ValueOf(value)
 	sourceType := sourceValue.Type()

@@ -26,12 +26,15 @@ import (
 	"strings"
 )
 
+// runLoad 运行加载项目/UI文件目录
+// filePath: 要加载的文件路径
 func runLoad(filePath string) {
 	logs.Debug("运行加载项目/UI 文件目录:", filePath)
 	Load(filePath)
 }
 
-// 加载项目
+// Load 加载指定路径的文件，根据文件扩展名判断文件类型并调用相应的加载函数
+// filePath: 要加载的文件路径
 func Load(filePath string) {
 	if tool.IsExist(filePath) {
 		path, file := filepath.Split(filePath)
@@ -53,6 +56,9 @@ func Load(filePath string) {
 	}
 }
 
+// LoadProject 加载项目配置文件并初始化项目
+// path: 项目路径
+// egpFilePath: 项目配置文件路径
 func LoadProject(path, egpFilePath string) {
 	logs.Info("开始加载项目配置文件:", egpFilePath)
 	event.ConsoleWriteInfo("开始加载项目配置文件:", egpFilePath)
@@ -77,6 +83,8 @@ func LoadProject(path, egpFilePath string) {
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 }
 
+// LoadUI 加载UI布局文件
+// uiFilePath: UI布局文件的完整路径
 func LoadUI(uiFilePath string) {
 	logs.Info("开始加载UI布局文件:", uiFilePath)
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
