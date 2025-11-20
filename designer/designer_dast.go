@@ -14,7 +14,10 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/tool/command"
+	"github.com/energye/lcl/tool/exec"
 )
 
 // 初始化依赖模块的一些数据信息
@@ -24,6 +27,15 @@ func initDependencyModule() {
 
 // 初始化模块类型信息
 func initModuleTypeInfo() {
-	// go list -f '{{.Dir}}' github.com/energye/lcl/lcl
-	command.NewCMD()
+	// go list -m -f '{{.Dir}}' github.com/energye/widget
+	// go list -f '{{.Path}}  {{.Dir}}' -m all
+	cmd := command.NewCMD()
+	cmd.Dir = exec.Dir
+	cmd.HideWindow = true
+	cmd.IsPrint = false
+	cmd.Console = func(data string, level command.Level) {
+		logs.Info(level, data)
+	}
+	cmd.Command("go", "list", "-m", "-f", "{{.Dir}}", consts.DmLCL)
+
 }
