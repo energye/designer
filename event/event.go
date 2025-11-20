@@ -74,7 +74,7 @@ func Emit(trigger TTrigger) {
 
 // 运行事件监听
 func (m *TEvent) run() {
-	logs.Info("运行事件监听服务")
+	logs.Println("运行事件监听服务")
 	for {
 		select {
 		case trigger := <-m.trigger:
