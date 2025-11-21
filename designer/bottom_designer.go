@@ -100,7 +100,8 @@ func (m *Designer) hideAllComponentTrees() {
 	}
 }
 
-// 重置设计器, 重新打开项目时调用
+// ResetDesigner 重置设计器
+// 重新打开项目时调用
 // 打开设计窗体不调用
 func ResetDesigner() {
 	// 关闭所有已打开的设计窗体

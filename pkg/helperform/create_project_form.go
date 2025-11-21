@@ -15,8 +15,12 @@ package helperform
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"github.com/energye/lcl/types/font"
+	"github.com/energye/widget/wg"
 )
 
 // 在设计器中创建项目
@@ -42,7 +46,7 @@ EnergyDesigner/
 
 module my-app  // 项目自身的模块路径
 
-go 1.21  // 项目使用的 Go 版本
+go 1.20  // 项目使用的 Go 版本
 
 // 声明框架依赖（版本需与内置框架的 go.mod 一致）
 require github.com/your-org/energy v1.2.3
@@ -77,9 +81,10 @@ replace github.com/your-org/energy v1.2.3 => %s`, frameworkBuiltInPath)
 }
 */
 
-type TCreateProjectForm struct {
-	lcl.TEngForm
-}
+var (
+	bgColor     = colors.RGBToColor(56, 57, 60)
+	bgTextColor = colors.ClGray
+)
 
 func NewCreateProjectForm() *TCreateProjectForm {
 	designerForm := &TCreateProjectForm{}
@@ -87,15 +92,271 @@ func NewCreateProjectForm() *TCreateProjectForm {
 	return designerForm
 }
 
+type TCreateProjectForm struct {
+	lcl.TEngForm
+	baseGroupBox    lcl.IGroupBox
+	projNameText    lcl.ILabel
+	projNameEdit    lcl.IEdit
+	projPathText    lcl.ILabel
+	projPathEdit    lcl.IEdit
+	projPathBtn     *wg.TButton
+	projTempText    lcl.ILabel
+	projTempBox     lcl.IComboBox
+	goVersionText   lcl.ILabel
+	goVersionStatus *wg.TButton
+	modGroupBox     lcl.IGroupBox
+	modText         lcl.ILabel
+	modBox          lcl.IComboBox
+	cancelBtn       *wg.TButton
+	createBtn       *wg.TButton
+}
+
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Info("TCreateProjectForm FormCreate")
+	m.SetCaption("新建项目")
 	m.SetWidth(555)
 	m.SetHeight(555)
+	//m.SetColor(bgColor)
 	constr := m.Constraints()
 	constr.SetMaxWidth(555)
 	constr.SetMaxHeight(555)
 	constr.SetMinWidth(555)
 	constr.SetMinHeight(555)
-	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
+	m.SetBorderIcons(types.NewSet())
 	m.WorkAreaCenter()
+	m.initComponents()
 }
+
+func (m *TCreateProjectForm) initComponents() {
+	fontLabel := lcl.NewFont()
+	fontLabel.SetName("微软雅黑 Light")
+	fontLabel.SetStyle(types.NewSet(types.FsBold))
+	fontLabel.SetSize(12)
+	fontLabel.SetCharSet(font.CHINESEBIG5_CHARSET)
+	//fontLabel.SetColor(colors.ClGreen)
+	fontText := lcl.NewFont()
+	fontText.SetName("微软雅黑 Light")
+	fontText.SetSize(12)
+
+	left := int32(35)
+
+	m.modGroupBox = lcl.NewGroupBox(m)
+	m.modGroupBox.SetAlign(types.AlTop)
+	//m.modGroupBox.SetTop(m.baseGroupBox.Height() + 25)
+	m.modGroupBox.SetHeight(240)
+	m.modGroupBox.BorderSpacing().SetAround(6)
+	m.modGroupBox.SetCaption("模块依赖")
+	m.modGroupBox.SetFont(fontLabel)
+	m.modGroupBox.SetParent(m)
+
+	m.baseGroupBox = lcl.NewGroupBox(m)
+	m.baseGroupBox.SetAlign(types.AlTop)
+	m.baseGroupBox.SetHeight(245)
+	m.baseGroupBox.BorderSpacing().SetAround(6)
+	m.baseGroupBox.SetCaption("基础信息")
+	m.baseGroupBox.SetFont(fontLabel)
+	m.baseGroupBox.SetParent(m)
+
+	{
+		m.projNameText = lcl.NewLabel(m)
+		m.projNameText.SetLeft(left)
+		m.projNameText.SetTop(20)
+		m.projNameText.SetWidth(80)
+		m.projNameText.SetCaption("项目名称")
+		m.projNameText.SetFont(fontLabel)
+		m.projNameText.SetParent(m.baseGroupBox)
+
+		m.projNameEdit = lcl.NewEdit(m)
+		m.projNameEdit.SetLeft(120)
+		m.projNameEdit.SetTop(15)
+		m.projNameEdit.SetWidth(355)
+		m.projNameEdit.SetFont(fontText)
+		m.projNameEdit.SetParent(m.baseGroupBox)
+	}
+	{
+		m.projPathText = lcl.NewLabel(m)
+		m.projPathText.SetLeft(left)
+		m.projPathText.SetTop(70)
+		m.projPathText.SetWidth(80)
+		m.projPathText.SetCaption("项目路径")
+		m.projPathText.SetFont(fontLabel)
+		m.projPathText.SetParent(m.baseGroupBox)
+
+		m.projPathEdit = lcl.NewEdit(m)
+		m.projPathEdit.SetLeft(120)
+		m.projPathEdit.SetTop(65)
+		m.projPathEdit.SetWidth(290)
+		m.projPathEdit.SetFont(fontText)
+		m.projPathEdit.SetReadOnly(true)
+		m.projPathEdit.SetParent(m.baseGroupBox)
+
+		m.projPathBtn = wg.NewButton(m)
+		m.projPathBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+		m.projPathBtn.SetRadius(3)
+		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: 65}
+		cusRect.SetWidth(60)
+		cusRect.SetHeight(30)
+		m.projPathBtn.SetBoundsRect(cusRect)
+		m.projPathBtn.SetParent(m.baseGroupBox)
+		m.projPathBtn.SetOnClick(m.projPathClick)
+	}
+	{
+		m.projTempText = lcl.NewLabel(m)
+		m.projTempText.SetLeft(left)
+		m.projTempText.SetTop(120)
+		m.projTempText.SetWidth(80)
+		m.projTempText.SetCaption("项目模板")
+		m.projTempText.SetFont(fontLabel)
+		m.projTempText.SetParent(m.baseGroupBox)
+
+		m.projTempBox = lcl.NewComboBox(m)
+		m.projTempBox.SetBounds(120, 115, 355, 36)
+		m.projTempBox.SetFont(fontText)
+		m.projTempBox.SetReadOnly(true)
+		m.projTempBox.SetStyle(types.CsDropDownList)
+		m.projTempBox.SetBorderStyle(types.BsSingle)
+		m.projTempBox.Items().Add("默认预设模板")
+		m.projTempBox.SetItemIndex(0)
+		m.projTempBox.SetParent(m.baseGroupBox)
+	}
+	{
+		m.goVersionText = lcl.NewLabel(m)
+		m.goVersionText.SetLeft(left)
+		m.goVersionText.SetTop(170)
+		m.goVersionText.SetWidth(80)
+		m.goVersionText.SetCaption(" Go 版本")
+		m.goVersionText.SetFont(fontLabel)
+		m.goVersionText.SetParent(m.baseGroupBox)
+
+		m.goVersionStatus = wg.NewButton(m)
+		m.goVersionStatus.SetText("检测本地")
+		m.goVersionStatus.SetFont(fontText)
+		m.goVersionStatus.Font().SetColor(colors.ClWhite)
+		m.goVersionStatus.SetRadius(3)
+		goVersionRect := types.TRect{Left: m.goVersionText.Left() + m.goVersionText.Width() + 5, Top: 165}
+		goVersionRect.SetWidth(200)
+		goVersionRect.SetHeight(30)
+		m.goVersionStatus.SetBoundsRect(goVersionRect)
+		m.goVersionStatus.SetColor(colors.ClGray)
+		m.goVersionStatus.SetParent(m.baseGroupBox)
+	}
+	{
+		m.modText = lcl.NewLabel(m)
+		m.modText.SetLeft(left)
+		m.modText.SetTop(20)
+		m.modText.SetWidth(80)
+		m.modText.SetCaption("依赖来源")
+		m.modText.SetFont(fontLabel)
+		m.modText.SetParent(m.modGroupBox)
+
+		m.modBox = lcl.NewComboBox(m)
+		m.modBox.SetBounds(120, 15, 290, 36)
+		m.modBox.SetFont(fontText)
+		m.modBox.SetReadOnly(true)
+		m.modBox.SetStyle(types.CsDropDownList)
+		m.modBox.SetBorderStyle(types.BsSingle)
+		m.modBox.Items().Add("远程仓库 (从远程拉取)")
+		m.modBox.Items().Add("本地路径 (离线/手动指定)")
+		m.modBox.SetItemIndex(0)
+		m.modBox.SetParent(m.modGroupBox)
+	}
+	{
+		m.cancelBtn = wg.NewButton(m)
+		m.cancelBtn.SetText("关 闭")
+		m.cancelBtn.SetFont(fontText)
+		m.cancelBtn.Font().SetColor(colors.ClWhite)
+		m.cancelBtn.SetRadius(3)
+		cancelBtnRect := types.TRect{Left: 310, Top: 505}
+		cancelBtnRect.SetWidth(100)
+		cancelBtnRect.SetHeight(40)
+		m.cancelBtn.SetBoundsRect(cancelBtnRect)
+		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.cancelBtn.SetParent(m)
+		m.cancelBtn.SetOnClick(m.closeClick)
+
+		m.createBtn = wg.NewButton(m)
+		m.createBtn.SetText("创 建")
+		m.createBtn.SetFont(fontText)
+		m.createBtn.Font().SetColor(colors.ClWhite)
+		m.createBtn.SetRadius(3)
+		createBtnRect := types.TRect{Left: 430, Top: 505}
+		createBtnRect.SetWidth(100)
+		createBtnRect.SetHeight(40)
+		m.createBtn.SetBoundsRect(createBtnRect)
+		m.createBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.createBtn.SetParent(m)
+		m.createBtn.SetOnClick(m.createClick)
+	}
+}
+
+func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
+
+}
+
+func (m *TCreateProjectForm) closeClick(sender lcl.IObject) {
+	m.Close()
+}
+
+func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
+}
+
+//func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
+//	switch message {
+//	case messages.WM_DPICHANGED:
+//		if !lcl.Application.Scaled() {
+//			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
+//			win.SetWindowPos(m.Handle(), uintptr(0),
+//				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
+//				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
+//		}
+//	}
+//	switch message {
+//	case messages.WM_ACTIVATE:
+//		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
+//		// This Option is not affected by returning 0 in WM_NCCALCSIZE.
+//		// As a result we have hidden the titlebar but still have the default window frame styling.
+//		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
+//		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
+//	case messages.WM_NCCALCSIZE:
+//		// Trigger condition: Change the window size
+//		// Disable the standard frame by allowing the client area to take the full window size.
+//		// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
+//		// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
+//		// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
+//		if wParam != 0 {
+//			// Content overflow screen issue when maximizing borderless windows
+//			// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+//			//isMinimize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MINIMIZE != 0
+//			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
+//			if isMaximize {
+//				rect := (*types.TRect)(unsafe.Pointer(lParam))
+//				// m.Monitor().WorkareaRect(): When minimizing windows and restoring windows on multiple monitors, the main monitor is obtained.
+//				// Need to obtain correct monitor information to prevent error freezing message loops from occurring
+//				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
+//				if monitor != 0 {
+//					var monitorInfo types.TMonitorInfo
+//					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
+//					if win.GetMonitorInfo(monitor, &monitorInfo) {
+//						*rect = monitorInfo.RcWork
+//					}
+//				}
+//			}
+//			return 0
+//		}
+//	}
+//
+//	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
+//}
+//
+//// 该函数调用可能会影响窗口的一些默认行为，需要知道在合适的时机调用它
+//func (m *TCreateProjectForm) _HookWndProcMessage() {
+//	wndProcCallback := syscall.NewCallback(m.wndProc)
+//	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
+//}
+//
+//func (m *LCLBrowserWindow) _RestoreWndProc() {
+//	if m.oldWndPrc != 0 {
+//		win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, m.oldWndPrc)
+//		m.oldWndPrc = 0
+//	}
+//}
