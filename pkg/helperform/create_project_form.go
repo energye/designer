@@ -17,10 +17,14 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/pkgs/win"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
+	"github.com/energye/lcl/types/messages"
 	"github.com/energye/widget/wg"
+	"syscall"
+	"unsafe"
 )
 
 // 在设计器中创建项目
@@ -94,12 +98,15 @@ func NewCreateProjectForm() *TCreateProjectForm {
 
 type TCreateProjectForm struct {
 	lcl.TEngForm
+	oldWndPrc       uintptr
+	box             lcl.IPanel
 	baseGroupBox    lcl.IGroupBox
 	projNameText    lcl.ILabel
 	projNameEdit    lcl.IEdit
 	projPathText    lcl.ILabel
 	projPathEdit    lcl.IEdit
 	projPathBtn     *wg.TButton
+	projPathDir     lcl.ISelectDirectoryDialog
 	projTempText    lcl.ILabel
 	projTempBox     lcl.IComboBox
 	goVersionText   lcl.ILabel
@@ -113,18 +120,32 @@ type TCreateProjectForm struct {
 
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Info("TCreateProjectForm FormCreate")
+	//defaultSize := int32(510)
 	m.SetCaption("新建项目")
 	m.SetWidth(555)
 	m.SetHeight(555)
-	//m.SetColor(bgColor)
 	constr := m.Constraints()
 	constr.SetMaxWidth(555)
 	constr.SetMaxHeight(555)
 	constr.SetMinWidth(555)
 	constr.SetMinHeight(555)
+	//m.SetColor(bgColor)
 	m.SetBorderIcons(types.NewSet())
 	m.WorkAreaCenter()
+	m.box = lcl.NewPanel(m)
+	m.box.SetBevelOuter(types.BvNone)
+	m.box.SetAlign(types.AlClient)
+	m.box.SetParent(m)
 	m.initComponents()
+	//width := int32(555)
+	//height := int32(515)
+	//m.SetOnShow(func(sender lcl.IObject) {
+	//	m.SetWidth(width)
+	//	m.SetHeight(height)
+	//	m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
+	//	m.WorkAreaCenter()
+	//})
+	//m._HookWndProcMessage()
 }
 
 func (m *TCreateProjectForm) initComponents() {
@@ -139,6 +160,7 @@ func (m *TCreateProjectForm) initComponents() {
 	fontText.SetSize(12)
 
 	left := int32(35)
+	textWidth := int32(355)
 
 	m.modGroupBox = lcl.NewGroupBox(m)
 	m.modGroupBox.SetAlign(types.AlTop)
@@ -147,7 +169,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.modGroupBox.BorderSpacing().SetAround(6)
 	m.modGroupBox.SetCaption("模块依赖")
 	m.modGroupBox.SetFont(fontLabel)
-	m.modGroupBox.SetParent(m)
+	m.modGroupBox.SetParent(m.box)
 
 	m.baseGroupBox = lcl.NewGroupBox(m)
 	m.baseGroupBox.SetAlign(types.AlTop)
@@ -155,7 +177,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.baseGroupBox.BorderSpacing().SetAround(6)
 	m.baseGroupBox.SetCaption("基础信息")
 	m.baseGroupBox.SetFont(fontLabel)
-	m.baseGroupBox.SetParent(m)
+	m.baseGroupBox.SetParent(m.box)
 
 	{
 		m.projNameText = lcl.NewLabel(m)
@@ -169,7 +191,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit = lcl.NewEdit(m)
 		m.projNameEdit.SetLeft(120)
 		m.projNameEdit.SetTop(15)
-		m.projNameEdit.SetWidth(355)
+		m.projNameEdit.SetWidth(textWidth)
 		m.projNameEdit.SetFont(fontText)
 		m.projNameEdit.SetParent(m.baseGroupBox)
 	}
@@ -199,6 +221,8 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathBtn.SetBoundsRect(cusRect)
 		m.projPathBtn.SetParent(m.baseGroupBox)
 		m.projPathBtn.SetOnClick(m.projPathClick)
+
+		m.projPathDir = lcl.NewSelectDirectoryDialog(m)
 	}
 	{
 		m.projTempText = lcl.NewLabel(m)
@@ -210,7 +234,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projTempText.SetParent(m.baseGroupBox)
 
 		m.projTempBox = lcl.NewComboBox(m)
-		m.projTempBox.SetBounds(120, 115, 355, 36)
+		m.projTempBox.SetBounds(120, 115, textWidth, 36)
 		m.projTempBox.SetFont(fontText)
 		m.projTempBox.SetReadOnly(true)
 		m.projTempBox.SetStyle(types.CsDropDownList)
@@ -250,7 +274,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modText.SetParent(m.modGroupBox)
 
 		m.modBox = lcl.NewComboBox(m)
-		m.modBox.SetBounds(120, 15, 290, 36)
+		m.modBox.SetBounds(120, 15, textWidth, 36)
 		m.modBox.SetFont(fontText)
 		m.modBox.SetReadOnly(true)
 		m.modBox.SetStyle(types.CsDropDownList)
@@ -271,7 +295,7 @@ func (m *TCreateProjectForm) initComponents() {
 		cancelBtnRect.SetHeight(40)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
 		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
-		m.cancelBtn.SetParent(m)
+		m.cancelBtn.SetParent(m.box)
 		m.cancelBtn.SetOnClick(m.closeClick)
 
 		m.createBtn = wg.NewButton(m)
@@ -284,13 +308,17 @@ func (m *TCreateProjectForm) initComponents() {
 		createBtnRect.SetHeight(40)
 		m.createBtn.SetBoundsRect(createBtnRect)
 		m.createBtn.SetColor(colors.RGBToColor(46, 204, 113))
-		m.createBtn.SetParent(m)
+		m.createBtn.SetParent(m.box)
 		m.createBtn.SetOnClick(m.createClick)
 	}
 }
 
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
-
+	m.projPathDir.SetTitle("选择目录")
+	if m.projPathDir.Execute() {
+		dir := m.projPathDir.FileName()
+		m.projPathEdit.SetText(dir)
+	}
 }
 
 func (m *TCreateProjectForm) closeClick(sender lcl.IObject) {
@@ -300,61 +328,61 @@ func (m *TCreateProjectForm) closeClick(sender lcl.IObject) {
 func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 }
 
-//func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
-//	switch message {
-//	case messages.WM_DPICHANGED:
-//		if !lcl.Application.Scaled() {
-//			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
-//			win.SetWindowPos(m.Handle(), uintptr(0),
-//				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
-//				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
-//		}
-//	}
-//	switch message {
-//	case messages.WM_ACTIVATE:
-//		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
-//		// This Option is not affected by returning 0 in WM_NCCALCSIZE.
-//		// As a result we have hidden the titlebar but still have the default window frame styling.
-//		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-//		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
-//	case messages.WM_NCCALCSIZE:
-//		// Trigger condition: Change the window size
-//		// Disable the standard frame by allowing the client area to take the full window size.
-//		// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
-//		// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
-//		// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
-//		if wParam != 0 {
-//			// Content overflow screen issue when maximizing borderless windows
-//			// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
-//			//isMinimize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MINIMIZE != 0
-//			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
-//			if isMaximize {
-//				rect := (*types.TRect)(unsafe.Pointer(lParam))
-//				// m.Monitor().WorkareaRect(): When minimizing windows and restoring windows on multiple monitors, the main monitor is obtained.
-//				// Need to obtain correct monitor information to prevent error freezing message loops from occurring
-//				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
-//				if monitor != 0 {
-//					var monitorInfo types.TMonitorInfo
-//					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
-//					if win.GetMonitorInfo(monitor, &monitorInfo) {
-//						*rect = monitorInfo.RcWork
-//					}
-//				}
-//			}
-//			return 0
-//		}
-//	}
-//
-//	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
-//}
-//
-//// 该函数调用可能会影响窗口的一些默认行为，需要知道在合适的时机调用它
-//func (m *TCreateProjectForm) _HookWndProcMessage() {
-//	wndProcCallback := syscall.NewCallback(m.wndProc)
-//	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
-//}
-//
-//func (m *LCLBrowserWindow) _RestoreWndProc() {
+func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
+	switch message {
+	case messages.WM_DPICHANGED:
+		if !lcl.Application.Scaled() {
+			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
+			win.SetWindowPos(m.Handle(), uintptr(0),
+				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
+				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
+		}
+	}
+	switch message {
+	case messages.WM_ACTIVATE:
+		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
+		// This Option is not affected by returning 0 in WM_NCCALCSIZE.
+		// As a result we have hidden the titlebar but still have the default window frame styling.
+		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
+		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
+	case messages.WM_NCCALCSIZE:
+		// Trigger condition: Change the window size
+		// Disable the standard frame by allowing the client area to take the full window size.
+		// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
+		// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
+		// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
+		if wParam != 0 {
+			// Content overflow screen issue when maximizing borderless windows
+			// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+			//isMinimize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MINIMIZE != 0
+			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
+			if isMaximize {
+				rect := (*types.TRect)(unsafe.Pointer(lParam))
+				// m.Monitor().WorkareaRect(): When minimizing windows and restoring windows on multiple monitors, the main monitor is obtained.
+				// Need to obtain correct monitor information to prevent error freezing message loops from occurring
+				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
+				if monitor != 0 {
+					var monitorInfo types.TMonitorInfo
+					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
+					if win.GetMonitorInfo(monitor, &monitorInfo) {
+						*rect = monitorInfo.RcWork
+					}
+				}
+			}
+			return 0
+		}
+	}
+
+	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
+}
+
+// 该函数调用可能会影响窗口的一些默认行为，需要知道在合适的时机调用它
+func (m *TCreateProjectForm) _HookWndProcMessage() {
+	wndProcCallback := syscall.NewCallback(m.wndProc)
+	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
+}
+
+//func (m *TCreateProjectForm) _RestoreWndProc() {
 //	if m.oldWndPrc != 0 {
 //		win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, m.oldWndPrc)
 //		m.oldWndPrc = 0
