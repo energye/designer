@@ -87,6 +87,12 @@ func (m *TDesigningComponent) Free() {
 	if m.drag != nil {
 		m.drag.Free()
 	}
+	for _, data := range m.PropertyList {
+		data.Free()
+	}
+	for _, data := range m.EventList {
+		data.Free()
+	}
 	m.PropertyList = nil
 	m.EventList = nil
 	if m.page != nil && m.page.IsValid() {

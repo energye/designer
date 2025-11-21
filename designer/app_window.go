@@ -18,7 +18,6 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/pkg/vtedit"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -52,6 +51,7 @@ type TAppWindow struct {
 	openDialog            lcl.IOpenDialog            // 打开对话框
 	saveDialog            lcl.ISaveDialog            // 保存对话框
 	selectDirectoryDialog lcl.ISelectDirectoryDialog // 选择文件夹对话框
+	closing               bool                       // 关闭中
 }
 
 func SetComponentDefaultColor(control lcl.IWinControl) {
@@ -76,7 +76,6 @@ func SwitchAllTheme(dark bool) {
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
-	vtedit.MainForm = m
 	logs.Info("FormCreate")
 	cfg := config.FormConfig
 	// 属性
@@ -136,9 +135,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		// 自动打开 energy 项目
 		if len(os.Args) > 1 {
 			filePath := os.Args[1]
-			go lcl.RunOnMainThreadAsync(func(id uint32) {
-				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
-			})
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 		}
 	})
 }
@@ -152,15 +149,29 @@ func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
 }
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
-	logs.Info("OnCloseQuery")
+	logs.Info("OnCloseQuery closing:", m.closing)
+	*canClose = m.closing
+	if !m.closing {
+		go m.handleClose()
+	}
 }
 
-func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
-	logs.Info("OnClose")
+// 处理设计器窗口关闭
+func (m *TAppWindow) handleClose() {
+	logs.Info("closeHandle")
+	m.closing = true
 	br := m.BoundsRect()
 	config.UpdateWindow(br.Left, br.Top, br.Width(), br.Height(), m.WindowState())
 	// 取消所有生成事件
 	event.CancelAll()
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		// 最后在UI线程关闭
+		m.Close()
+	})
+}
+
+func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+	logs.Info("OnClose")
 }
 
 func AddOnShow(fn func()) {

@@ -184,10 +184,6 @@ func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 	return m
 }
 
-//func ResetPropertyNodeData() {
-//	//propertyTreeDataList = make(map[types.PVirtualNode]*TEditNodeData)
-//}
-
 // 添加数据到指定节点
 func AddPropertyNodeData(tree lcl.ILazVirtualStringTree, parent types.PVirtualNode, data *TEditNodeData) types.PVirtualNode {
 	node := tree.AddChild(parent, 0)
@@ -242,6 +238,17 @@ func IsExistNodeData(node types.PVirtualNode) bool {
 // 删除节点属性数据
 func DelPropertyNodeData(node types.PVirtualNode) {
 	delete(propertyTreeDataList, node)
+}
+
+func (m *TEditNodeData) Free() {
+	m.Parent = nil
+	m.EditNodeData = nil
+	m.OriginNodeData = nil
+	m.AffiliatedComponent = nil
+	DelPropertyNodeData(m.AffiliatedNode)
+	for _, child := range m.Child {
+		child.Free()
+	}
 }
 
 func (m *TEditNodeData) Type() consts.PropertyDataType {
