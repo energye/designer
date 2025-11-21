@@ -15,16 +15,17 @@ package helperform
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/pkgs/win"
+	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
-	"github.com/energye/lcl/types/messages"
 	"github.com/energye/widget/wg"
-	"syscall"
-	"unsafe"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // 在设计器中创建项目
@@ -99,6 +100,7 @@ func NewCreateProjectForm() *TCreateProjectForm {
 type TCreateProjectForm struct {
 	lcl.TEngForm
 	oldWndPrc       uintptr
+	goVersionOK     bool
 	box             lcl.IPanel
 	baseGroupBox    lcl.IGroupBox
 	projNameText    lcl.ILabel
@@ -137,14 +139,7 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetAlign(types.AlClient)
 	m.box.SetParent(m)
 	m.initComponents()
-	//width := int32(555)
-	//height := int32(515)
-	//m.SetOnShow(func(sender lcl.IObject) {
-	//	m.SetWidth(width)
-	//	m.SetHeight(height)
-	//	m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
-	//	m.WorkAreaCenter()
-	//})
+	m.SetOnShow(m.onShow)
 	//m._HookWndProcMessage()
 }
 
@@ -256,9 +251,10 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.SetText("检测本地")
 		m.goVersionStatus.SetFont(fontText)
 		m.goVersionStatus.Font().SetColor(colors.ClWhite)
+		m.goVersionStatus.Font().SetStyle(types.NewSet(types.FsBold))
 		m.goVersionStatus.SetRadius(3)
 		goVersionRect := types.TRect{Left: m.goVersionText.Left() + m.goVersionText.Width() + 5, Top: 165}
-		goVersionRect.SetWidth(200)
+		goVersionRect.SetWidth(textWidth)
 		goVersionRect.SetHeight(30)
 		m.goVersionStatus.SetBoundsRect(goVersionRect)
 		m.goVersionStatus.SetColor(colors.ClGray)
@@ -313,6 +309,58 @@ func (m *TCreateProjectForm) initComponents() {
 	}
 }
 
+func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
+	//width := int32(555)
+	//height := int32(515)
+	//m.SetWidth(width)
+	//m.SetHeight(height)
+	//m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
+	//m.WorkAreaCenter()
+
+	go m.checkGoVersion()
+}
+
+func (m *TCreateProjectForm) checkGoVersion() {
+	time.Sleep(time.Second / 2)
+	result := false
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.Console = func(data string, level command.Level) {
+		if !result {
+			logs.Debug(level, data)
+			parts := strings.Fields(data)
+			buf := tool.Buffer{}
+			version := ""
+			for i, part := range parts {
+				if tool.Equal(part, "go", "version") {
+					continue
+				}
+				if i == 2 {
+					version = part[2:]
+				}
+				buf.WriteString(part, " ")
+			}
+			// 支持的最低Go版本
+			m.goVersionOK = compareVersions(version, "1.20") == 1
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.goVersionStatus.SetText(buf.String())
+				if m.goVersionOK {
+					m.goVersionStatus.SetColor(colors.ClGreen)
+					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/laugh.png"))
+				} else {
+					m.goVersionStatus.SetColor(colors.ClRed)
+					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/weep.png"))
+				}
+				m.goVersionStatus.ForcePaint(func() {
+					m.goVersionStatus.Invalidate()
+				})
+			})
+		}
+		result = true
+	}
+	cmd.Command("go", "version")
+}
+
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
 	m.projPathDir.SetTitle("选择目录")
 	if m.projPathDir.Execute() {
@@ -328,59 +376,80 @@ func (m *TCreateProjectForm) closeClick(sender lcl.IObject) {
 func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 }
 
-func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
-	switch message {
-	case messages.WM_DPICHANGED:
-		if !lcl.Application.Scaled() {
-			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
-			win.SetWindowPos(m.Handle(), uintptr(0),
-				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
-				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
+// compareVersions 比较两个版本号字符串的大小
+//
+// v1 - 第一个版本号字符串，格式如 "1.2.3"
+// v2 - 第二个版本号字符串，格式如 "1.2.3"
+// int - 比较结果：1表示v1大于v2，-1表示v1小于v2，0表示两者相等
+func compareVersions(v1, v2 string) int {
+	v1Parts := strings.Split(v1, ".")
+	v2Parts := strings.Split(v2, ".")
+	maxLen := len(v1Parts)
+	if len(v2Parts) > maxLen {
+		maxLen = len(v2Parts)
+	}
+	for i := 0; i < maxLen; i++ {
+		part1 := getVersionPart(v1Parts, i)
+		part2 := getVersionPart(v2Parts, i)
+
+		if part1 > part2 {
+			return 1
+		} else if part1 < part2 {
+			return -1
 		}
 	}
-	switch message {
-	case messages.WM_ACTIVATE:
-		// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
-		// This Option is not affected by returning 0 in WM_NCCALCSIZE.
-		// As a result we have hidden the titlebar but still have the default window frame styling.
-		// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
-	case messages.WM_NCCALCSIZE:
-		// Trigger condition: Change the window size
-		// Disable the standard frame by allowing the client area to take the full window size.
-		// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
-		// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
-		// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
-		if wParam != 0 {
-			// Content overflow screen issue when maximizing borderless windows
-			// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
-			//isMinimize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MINIMIZE != 0
-			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
-			if isMaximize {
-				rect := (*types.TRect)(unsafe.Pointer(lParam))
-				// m.Monitor().WorkareaRect(): When minimizing windows and restoring windows on multiple monitors, the main monitor is obtained.
-				// Need to obtain correct monitor information to prevent error freezing message loops from occurring
-				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
-				if monitor != 0 {
-					var monitorInfo types.TMonitorInfo
-					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
-					if win.GetMonitorInfo(monitor, &monitorInfo) {
-						*rect = monitorInfo.RcWork
-					}
-				}
-			}
-			return 0
-		}
+	return 0
+}
+
+func getVersionPart(parts []string, index int) int {
+	if index >= len(parts) {
+		return 0
 	}
-
-	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
+	num, err := strconv.Atoi(parts[index])
+	if err != nil {
+		return 0
+	}
+	return num
 }
 
-// 该函数调用可能会影响窗口的一些默认行为，需要知道在合适的时机调用它
-func (m *TCreateProjectForm) _HookWndProcMessage() {
-	wndProcCallback := syscall.NewCallback(m.wndProc)
-	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
-}
+//func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
+//	switch message {
+//	case messages.WM_DPICHANGED:
+//		if !lcl.Application.Scaled() {
+//			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
+//			win.SetWindowPos(m.Handle(), uintptr(0),
+//				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
+//				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
+//		}
+//	}
+//	switch message {
+//	case messages.WM_ACTIVATE:
+//		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
+//	case messages.WM_NCCALCSIZE:
+//		if wParam != 0 {
+//			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
+//			if isMaximize {
+//				rect := (*types.TRect)(unsafe.Pointer(lParam))
+//				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
+//				if monitor != 0 {
+//					var monitorInfo types.TMonitorInfo
+//					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
+//					if win.GetMonitorInfo(monitor, &monitorInfo) {
+//						*rect = monitorInfo.RcWork
+//					}
+//				}
+//			}
+//			return 0
+//		}
+//	}
+//
+//	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
+//}
+//
+//func (m *TCreateProjectForm) _HookWndProcMessage() {
+//	wndProcCallback := syscall.NewCallback(m.wndProc)
+//	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
+//}
 
 //func (m *TCreateProjectForm) _RestoreWndProc() {
 //	if m.oldWndPrc != 0 {
