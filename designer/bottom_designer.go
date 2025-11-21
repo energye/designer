@@ -105,7 +105,8 @@ func (m *Designer) hideAllComponentTrees() {
 func ResetDesigner() {
 	// 关闭所有已打开的设计窗体
 	tempForms := designer.designerForms
-	designer.designerForms = make(map[int]*FormTab)
+	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
+	// 关闭之前打开的所有设计窗体
 	for _, form := range tempForms {
 		if form == nil {
 			continue
