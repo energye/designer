@@ -54,6 +54,11 @@ func (m *FormTab) GOUserFile() string {
 	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoUserExt
 }
 
+// 强制关闭当前tab
+func (m *FormTab) Close() {
+	m.sheet.Close()
+}
+
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {
 	if m.FormRoot != currComp && m.FormRoot.Name() == name {
 		return true

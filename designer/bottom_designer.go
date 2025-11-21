@@ -100,6 +100,20 @@ func (m *Designer) hideAllComponentTrees() {
 	}
 }
 
+// 重置设计器, 重新打开项目时调用
+// 打开设计窗体不调用
+func ResetDesigner() {
+	// 关闭所有已打开的设计窗体
+	tempForms := designer.designerForms
+	designer.designerForms = make(map[int]*FormTab)
+	for _, form := range tempForms {
+		if form == nil {
+			continue
+		}
+		form.Close()
+	}
+}
+
 // 添加一个窗体设计器 form tab
 func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form := new(FormTab)

@@ -127,9 +127,9 @@ func (m *TopToolbar) createComponentTabs() {
 			inspectorTreeImageIndex++
 		}
 		//borderSet()
-		sheet.SetOnClose(func(sender lcl.IObject) {
-			//borderSet()
-		})
+		//sheet.SetOnClose(func(sender lcl.IObject) {
+		//	//borderSet()
+		//})
 		go compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡

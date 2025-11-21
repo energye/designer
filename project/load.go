@@ -79,6 +79,8 @@ func LoadProject(path, egpFilePath string) {
 	}
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
+	// 重置设计器
+	designer.ResetDesigner()
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 }
