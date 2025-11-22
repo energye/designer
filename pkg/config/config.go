@@ -18,7 +18,7 @@ import (
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/lcl/tool/homedir"
+	"github.com/energye/lcl/tool/exec"
 	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
@@ -32,7 +32,7 @@ var (
 	// Config energy 配置文件
 	Config *TConfig
 	// 用户目录
-	homeDir string
+	homeDir = exec.HomeDir
 )
 
 // 设计器窗体配置
@@ -115,8 +115,6 @@ func init() {
 	e := json.Unmarshal(resources.Config(), FormConfig)
 	err.CheckErr(e)
 	// 从 energy 配置文件读取
-	homeDir, e = homedir.Dir()
-	err.CheckErr(e)
 	energyDir := filepath.Join(homeDir, ".energy")
 	if !tool.IsDir(energyDir) {
 		// 非目录删除文件

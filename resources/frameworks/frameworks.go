@@ -35,18 +35,19 @@ var (
 )
 
 var (
-	// LCLLocalPath LCL 本地框架库路径
-	LCLLocalPath = filepath.Join(Path, "lcl")
-	// CEFLocalPath CEF 本地框架库路径
-	CEFLocalPath = filepath.Join(Path, "cef")
-	// WVLocalPath WebView 本地框架库路径, darwin/linux/windows
-	WVLocalPath = filepath.Join(Path, "wv")
+	src = filepath.Join(Path, "src")
+	// LCLLocalPath LCL 框架源码路径
+	LCLLocalPath = filepath.Join(src, "lcl")
+	// CEFLocalPath CEF 框架源码路径
+	CEFLocalPath = filepath.Join(src, "cef")
+	// WVLocalPath WebView 框架源码路径, darwin/linux/windows
+	WVLocalPath = filepath.Join(src, "wv")
 )
 
 // ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
 func ExtractLibrary() {
-	os.MkdirAll(RuntimePath, os.ModePerm)
+	_ = os.MkdirAll(RuntimePath, os.ModePerm)
 	// 释放LCL框架文件
 	lib.ExtractLibrary(RuntimePath)
 }
@@ -54,6 +55,7 @@ func ExtractLibrary() {
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
 func ExtractLCL(enable bool) {
 	if enable {
+		_ = os.MkdirAll(src, os.ModePerm)
 		extractLCL(LCLLocalPath)
 	}
 }
@@ -61,13 +63,13 @@ func ExtractLCL(enable bool) {
 // ExtractCEF 根据enable参数决定是否执行 CEF 库提取操作
 func ExtractCEF(enable bool) {
 	if enable {
-
+		_ = os.MkdirAll(src, os.ModePerm)
 	}
 }
 
 // ExtractWV 根据enable参数决定是否执行 WebView 库提取操作
 func ExtractWV(enable bool) {
 	if enable {
-
+		_ = os.MkdirAll(src, os.ModePerm)
 	}
 }

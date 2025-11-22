@@ -19,6 +19,7 @@ import (
 	"embed"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
+	"path/filepath"
 )
 
 //go:embed lcl/lcl.zip
@@ -26,15 +27,18 @@ var lcl embed.FS
 
 // 释放 LCL 框架库
 func extractLCL(outputPath string) {
-	if tool.IsExist(outputPath) {
+	// 存在 go.mod 文件则不进行解压
+	if tool.IsExist(filepath.Join(outputPath, "go.mod")) {
 		return
 	}
+	// 提到父目录, 因为解压时包含 lcl 目录
+	outputPath = filepath.Join(outputPath, "../")
 	data, e := lcl.ReadFile("lcl/lcl.zip")
 	err.CheckErr(e)
 	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	err.CheckErr(e)
 	for _, file := range zipReader.File {
-		_, e := tool.ExtractFile(file, Path)
+		_, e := tool.ExtractFile(file, outputPath)
 		err.CheckErr(e)
 	}
 }

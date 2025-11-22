@@ -62,6 +62,7 @@ func NewCreateProjectForm() *TCreateProjectForm {
 type TCreateProjectForm struct {
 	lcl.TEngForm
 	oldWndPrc   uintptr
+	closing     bool
 	goVersionOK bool
 	box         lcl.IPanel
 	selectDir   lcl.ISelectDirectoryDialog
@@ -121,6 +122,10 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.initComponents()
 	m.SetOnShow(m.onShow)
 	//m._HookWndProcMessage()
+}
+
+func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+	m.closing = true
 }
 
 func (m *TCreateProjectForm) initComponents() {
@@ -470,36 +475,38 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if !m.validateInputs() {
 		return
 	}
+	// 禁用按钮
+	m.cancelBtn.SetDisable(true)
+	m.createBtn.SetDisable(true)
 	// 框架安装目录
 	frameworkDir := m.modLocalDirEdit.Text()
 	enableLCL := m.modLCLCheckBox.Checked()
 	enableCEF := m.modCEFCheckBox.Checked()
 	enableWV := m.modWebviewCheckBox.Checked()
-
-	// 更新设计器配置框架目录
-	if config.UpdateFrameworkDir(frameworkDir) {
-		// 更新框架目录
-		frameworks.Path = config.Config.FrameworkDir
-	}
-	// 释放 LCL 库
-	frameworks.ExtractLCL(enableLCL)
-	// 释放 CEF 库
-	frameworks.ExtractCEF(enableCEF)
-	// 释放 WebView 库
-	frameworks.ExtractWV(enableWV)
-
-	// 创建项目
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 
-	m.cancelBtn.SetDisable(true)
-	m.createBtn.SetDisable(true)
 	go func() {
+		// 更新设计器配置框架目录
+		if config.UpdateFrameworkDir(frameworkDir) {
+			// 更新框架目录
+			frameworks.Path = config.Config.FrameworkDir
+		}
+		// 释放 LCL 库
+		frameworks.ExtractLCL(enableLCL)
+		// 释放 CEF 库
+		frameworks.ExtractCEF(enableCEF)
+		// 释放 WebView 库
+		frameworks.ExtractWV(enableWV)
+		// 创建项目
 		doRunCreate(projectName, projectDir)
-		// 重置设计器
-		designer.ResetDesigner()
-		m.cancelBtn.SetDisable(false)
-		m.createBtn.SetDisable(false)
+		if !m.closing {
+			// 重置设计器
+			designer.ResetDesigner()
+			// 恢复按钮
+			m.cancelBtn.SetDisable(false)
+			m.createBtn.SetDisable(false)
+		}
 	}()
 }
 
