@@ -16,6 +16,7 @@ package frameworks
 import (
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/exec"
+	"os"
 	"path/filepath"
 )
 
@@ -27,12 +28,16 @@ const (
 )
 
 var (
+	// Path 框架目录
 	Path = filepath.Join(exec.Dir, "frameworks")
+	// RuntimePath 运行时库目录
+	RuntimePath = filepath.Join(Path, "runtime")
 )
 
-// Extract 调用 extractLCL 函数来解压LCL框架文件
+// ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
-func Extract() {
-	lib.ExtractLibrary(Path)
-	extractLCL()
+func ExtractLibrary() {
+	os.MkdirAll(RuntimePath, os.ModePerm)
+	// 释放LCL框架文件
+	lib.ExtractLibrary(RuntimePath)
 }

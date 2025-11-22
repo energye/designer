@@ -516,7 +516,14 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if !m.validateInputs() {
 		return
 	}
-
+	//frameworkDir := m.modLocalDirEdit.Text()
+	//isLCL := m.modLCLCheckBox.Checked()
+	//isCEF := m.modCEFCheckBox.Checked()
+	//isWV := m.modWebviewCheckBox.Checked()
+	//
+	//projectName := m.projNameEdit.Text()
+	//projectDir := m.projPathEdit.Text()
+	//doRunCreate()
 }
 
 // 模块选择

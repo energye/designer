@@ -37,11 +37,11 @@ import (
 func runCreate() {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewCreateProjectForm()
-		form.Show()
+		form.ShowModal()
 	})
 }
 
-func doRunCreate(dir string) {
+func doRunCreate(name, dir string) {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
 		logs.Error("目录不存在:", dir)
@@ -103,7 +103,6 @@ func doRunCreate(dir string) {
 		}
 	}
 	// 项目使用目录名, TODO 以后增加配置窗口
-	_, name := filepath.Split(dir)
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
 	newEGPFileName := name + ".egp"

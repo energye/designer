@@ -31,16 +31,16 @@ func main() {
 	// go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
-	logs.Level = logs.LevelError
+	//logs.Level = logs.LevelError
 	{
-		frameworks.Extract()
+		frameworks.ExtractLibrary()
 		// 这是一段测试时用的代码
 		libname.LibName = func() string {
 			wd, _ := os.Getwd()
 			return filepath.Join(wd, "../", "gen", "gout", libname.GetDLLName())
 		}()
 		if !tool.IsExist(libname.LibName) {
-			libname.LibName = filepath.Join(frameworks.Path, libname.GetDLLName())
+			libname.LibName = filepath.Join(frameworks.RuntimePath, libname.GetDLLName())
 		}
 	}
 	logs.Debug(strings.Join(os.Args, " "))

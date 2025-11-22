@@ -18,9 +18,9 @@ package lib
 
 import "embed"
 
-//go:embed windows/liblcl.zip
+//go:embed windows/libenergy.zip
 var lib embed.FS
 
 const (
-	path = "windows/liblcl.zip"
+	path = "windows/libenergy.zip"
 )

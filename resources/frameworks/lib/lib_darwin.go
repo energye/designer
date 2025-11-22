@@ -18,9 +18,9 @@ package lib
 
 import "embed"
 
-//go:embed darwin/liblcl.zip
+//go:embed darwin/libenergy.zip
 var lib embed.FS
 
 const (
-	path = "darwin/liblcl.zip"
+	path = "darwin/libenergy.zip"
 )
