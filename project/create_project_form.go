@@ -14,6 +14,7 @@
 package project
 
 import (
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -495,6 +496,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	m.createBtn.SetDisable(true)
 	go func() {
 		doRunCreate(projectName, projectDir)
+		// 重置设计器
+		designer.ResetDesigner()
 		m.cancelBtn.SetDisable(false)
 		m.createBtn.SetDisable(false)
 	}()
