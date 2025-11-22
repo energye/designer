@@ -14,6 +14,7 @@
 package project
 
 import (
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -202,7 +203,7 @@ func (m *TCreateProjectForm) initComponents() {
 
 	{
 		errorFont := lcl.NewFont()
-		errorFont.SetColor(colors.ClRed)
+		errorFont.SetColor(colors.RGBToColor(255, 127, 127))
 		errorFont.SetName("微软雅黑 Light")
 		errorFont.SetCharSet(font.CHINESEBIG5_CHARSET)
 		errorFont.SetSize(8)
@@ -516,14 +517,28 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if !m.validateInputs() {
 		return
 	}
-	//frameworkDir := m.modLocalDirEdit.Text()
-	//isLCL := m.modLCLCheckBox.Checked()
-	//isCEF := m.modCEFCheckBox.Checked()
-	//isWV := m.modWebviewCheckBox.Checked()
-	//
-	//projectName := m.projNameEdit.Text()
-	//projectDir := m.projPathEdit.Text()
-	//doRunCreate()
+	// 框架安装目录
+	frameworkDir := m.modLocalDirEdit.Text()
+	enableLCL := m.modLCLCheckBox.Checked()
+	enableCEF := m.modCEFCheckBox.Checked()
+	enableWV := m.modWebviewCheckBox.Checked()
+
+	// 更新设计器配置框架目录
+	if config.UpdateFrameworkDir(frameworkDir) {
+		// 更新框架目录
+		frameworks.Path = config.Config.FrameworkDir
+	}
+	// 释放 LCL 库
+	frameworks.ExtractLCL(enableLCL)
+	// 释放 CEF 库
+	frameworks.ExtractCEF(enableCEF)
+	// 释放 WebView 库
+	frameworks.ExtractWV(enableWV)
+
+	// 创建项目
+	projectName := m.projNameEdit.Text()
+	projectDir := m.projPathEdit.Text()
+	doRunCreate(projectName, projectDir)
 }
 
 // 模块选择
@@ -544,6 +559,7 @@ func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message
 	label.Show()
 }
 
+// 验证输入
 func (m *TCreateProjectForm) validateInputs() bool {
 	if strings.TrimSpace(m.projNameEdit.Text()) == "" {
 		m.showError(m.baseErrorLabel, m.projNameEdit.BoundsRect(), "＊项目名为空")

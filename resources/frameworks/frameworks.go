@@ -41,3 +41,24 @@ func ExtractLibrary() {
 	// 释放LCL框架文件
 	lib.ExtractLibrary(RuntimePath)
 }
+
+// ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
+func ExtractLCL(enable bool) {
+	if enable {
+		extractLCL()
+	}
+}
+
+// ExtractCEF 根据enable参数决定是否执行 CEF 库提取操作
+func ExtractCEF(enable bool) {
+	if enable {
+
+	}
+}
+
+// ExtractWV 根据enable参数决定是否执行 WebView 库提取操作
+func ExtractWV(enable bool) {
+	if enable {
+
+	}
+}

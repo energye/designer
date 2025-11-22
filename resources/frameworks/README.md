@@ -6,16 +6,16 @@
 ```text
 frameworks  包
 └── cef
-    └── cef.zip             CEF 源码
+    └── cef.zip             CEF 源码库
 └── lcl
-    └── lcl.zip             LCL 源码
+    └── lcl.zip             LCL 源码库
 └── wv
     └── darwin
-        └── wv.zip          MacOS WebView 源码
+        └── wv.zip          MacOS WebView 源码库
     └── linux
-        └── wv.zip          Linux WebView 源码 
+        └── wv.zip          Linux WebView 源码库
     └── windows
-        └── wv.zip          Windows WebView 源码    
+        └── wv.zip          Windows WebView 源码库
 └── lib
     └── darwin
         └── libenergy.zip   libenergy.dylib   动态链接库

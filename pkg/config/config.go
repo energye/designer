@@ -96,9 +96,9 @@ func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
 }
 
 // UpdateFrameworkDir 更新设计器的框架存放目录配置
-func UpdateFrameworkDir(frameworkDir string) {
+func UpdateFrameworkDir(frameworkDir string) bool {
 	if !tool.IsExist(frameworkDir) {
-		return
+		return false
 	}
 	Config.FrameworkDir = frameworkDir
 	energyDir := filepath.Join(homeDir, ".energy")
@@ -107,6 +107,7 @@ func UpdateFrameworkDir(frameworkDir string) {
 	err.CheckErr(e)
 	e = os.WriteFile(configPath, data, os.ModePerm)
 	err.CheckErr(e)
+	return true
 }
 
 func init() {

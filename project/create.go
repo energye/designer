@@ -35,12 +35,14 @@ import (
 
 // 创建项目
 func runCreate() {
+	// 显示创建项目窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewCreateProjectForm()
 		form.ShowModal()
 	})
 }
 
+// 执行创建项目
 func doRunCreate(name, dir string) {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
@@ -105,13 +107,13 @@ func doRunCreate(name, dir string) {
 	// 项目使用目录名, TODO 以后增加配置窗口
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
-	newEGPFileName := name + ".egp"
+	newEGPFileName := name + consts.EGPExt
 	newProject := new(bean.TProject)
 	newProject.Name = name
 	newProject.EGPName = newEGPFileName
-	newProject.Version = "v1.0.0"
-	newProject.Description = "测试项目描述"
-	newProject.Author = "yanghy"
+	newProject.Version = "v0.0.0"
+	newProject.Description = "Project Description"
+	newProject.Author = "Author"
 	newProject.Main = "main.go"
 	newProject.Lang = "zh_CN"
 	newProject.Package = consts.AppPackageName
