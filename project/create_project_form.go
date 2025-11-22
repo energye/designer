@@ -50,6 +50,8 @@ var (
 	modSelectOptions = []string{"本地路径 (内置框架)", "远程仓库 (远程拉取)"}
 )
 
+// NewCreateProjectForm 创建一个新的项目创建表单实例
+// 该函数初始化一个 TCreateProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewCreateProjectForm() *TCreateProjectForm {
 	designerForm := &TCreateProjectForm{}
 	lcl.Application.NewForm(designerForm)
@@ -99,6 +101,8 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.SetCaption("新建项目")
 	m.SetWidth(formWidth)
 	m.SetHeight(formHeight)
+	m.SetVisible(false)
+	m.SetDoubleBuffered(true)
 	constr := m.Constraints()
 	constr.SetMaxWidth(formWidth)
 	constr.SetMaxHeight(formHeight)
@@ -139,6 +143,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.modGroupBox.BorderSpacing().SetAround(6)
 	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
 	m.modGroupBox.SetFont(fontLabel)
+	m.modGroupBox.SetDoubleBuffered(true)
 	m.modGroupBox.SetParent(m.box)
 
 	m.baseGroupBox = lcl.NewGroupBox(m)
@@ -147,6 +152,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.baseGroupBox.BorderSpacing().SetAround(6)
 	m.baseGroupBox.SetCaption("新建项目-基础信息")
 	m.baseGroupBox.SetFont(fontLabel)
+	m.baseGroupBox.SetDoubleBuffered(true)
 	m.baseGroupBox.SetParent(m.box)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
@@ -180,6 +186,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit.SetTop(15)
 		m.projNameEdit.SetWidth(textWidth)
 		m.projNameEdit.SetFont(fontText)
+		m.projNameEdit.SetDoubleBuffered(true)
 		m.projNameEdit.SetParent(m.baseGroupBox)
 		m.projNameEdit.SetTextHint("新建的项目名称")
 	}
@@ -197,6 +204,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathEdit.SetTop(65)
 		m.projPathEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
 		m.projPathEdit.SetFont(fontText)
+		m.projPathEdit.SetDoubleBuffered(true)
 		//m.projPathEdit.SetReadOnly(true)
 		m.projPathEdit.SetTextHint("项目的存放目录")
 		m.projPathEdit.SetParent(m.baseGroupBox)
@@ -226,6 +234,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projTempBox.SetReadOnly(true)
 		m.projTempBox.SetStyle(types.CsDropDownList)
 		m.projTempBox.SetBorderStyle(types.BsSingle)
+		m.projTempBox.SetDoubleBuffered(true)
 		m.projTempBox.Items().Add("默认预设模板")
 		m.projTempBox.SetItemIndex(0)
 		m.projTempBox.SetParent(m.baseGroupBox)
@@ -303,6 +312,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modLocalDirEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
 		m.modLocalDirEdit.SetFont(fontText)
 		m.modLocalDirEdit.SetReadOnly(true)
+		m.modLocalDirEdit.SetDoubleBuffered(true)
 		m.modLocalDirEdit.SetText(frameworks.Path)
 		m.modLocalDirEdit.SetParent(m.modLocalBox)
 
