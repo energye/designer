@@ -39,8 +39,8 @@ import (
 // 4. 模块模式： go.mod (✔️), go.work
 
 const (
-	formWidth    = int32(555)
-	formHeight   = int32(555)
+	formWidth    = int32(525)
+	formHeight   = int32(535)
 	minGoVersion = "1.20"
 )
 
@@ -65,7 +65,7 @@ type TCreateProjectForm struct {
 	box         lcl.IPanel
 	selectDir   lcl.ISelectDirectoryDialog
 	// 基础信息部分
-	baseGroupBox    lcl.IGroupBox
+	baseGroupBox    lcl.ILabel
 	baseErrorLabel  lcl.ILabel
 	projNameText    lcl.ILabel
 	projNameEdit    lcl.IEdit
@@ -77,7 +77,7 @@ type TCreateProjectForm struct {
 	goVersionText   lcl.ILabel
 	goVersionStatus *wg.TButton
 	// 模块部分
-	modGroupBox   lcl.IGroupBox
+	modGroupBox   lcl.ILabel
 	modErrorLabel lcl.ILabel
 	modText       lcl.ILabel
 	modBox        lcl.IComboBox
@@ -136,27 +136,21 @@ func (m *TCreateProjectForm) initComponents() {
 	left := int32(35)
 	textWidth := int32(355)
 
-	m.modGroupBox = lcl.NewGroupBox(m)
-	m.modGroupBox.SetAlign(types.AlTop)
-	//m.modGroupBox.SetTop(m.baseGroupBox.Height() + 25)
-	m.modGroupBox.SetHeight(240)
-	m.modGroupBox.BorderSpacing().SetAround(6)
-	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
-	m.modGroupBox.SetFont(fontLabel)
-	m.modGroupBox.SetDoubleBuffered(true)
-	m.modGroupBox.SetParent(m.box)
-
-	m.baseGroupBox = lcl.NewGroupBox(m)
-	m.baseGroupBox.SetAlign(types.AlTop)
-	m.baseGroupBox.SetHeight(245)
-	m.baseGroupBox.BorderSpacing().SetAround(6)
+	m.baseGroupBox = lcl.NewLabel(m)
+	m.baseGroupBox.SetLeft(10)
+	m.baseGroupBox.SetTop(10)
 	m.baseGroupBox.SetCaption("新建项目-基础信息")
 	m.baseGroupBox.SetFont(fontLabel)
-	m.baseGroupBox.SetDoubleBuffered(true)
 	m.baseGroupBox.SetParent(m.box)
 
-	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+	m.modGroupBox = lcl.NewLabel(m)
+	m.modGroupBox.SetTop(260)
+	m.modGroupBox.SetLeft(10)
+	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
+	m.modGroupBox.SetFont(fontLabel)
+	m.modGroupBox.SetParent(m.box)
 
+	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	{
 		errorFont := lcl.NewFont()
 		errorFont.SetColor(colors.RGBToColor(255, 127, 127))
@@ -166,70 +160,69 @@ func (m *TCreateProjectForm) initComponents() {
 		m.baseErrorLabel = lcl.NewLabel(m)
 		m.baseErrorLabel.SetFont(errorFont)
 		m.baseErrorLabel.SetVisible(false)
-		m.baseErrorLabel.SetParent(m.baseGroupBox)
+		m.baseErrorLabel.SetParent(m.box)
 		m.modErrorLabel = lcl.NewLabel(m)
 		m.modErrorLabel.SetFont(errorFont)
 		m.modErrorLabel.SetVisible(false)
-		m.modErrorLabel.SetParent(m.modGroupBox)
+		m.modErrorLabel.SetParent(m.box)
 	}
+	baseTop := int32(50)
 	{
 		m.projNameText = lcl.NewLabel(m)
 		m.projNameText.SetLeft(left)
-		m.projNameText.SetTop(20)
-		m.projNameText.SetWidth(80)
+		m.projNameText.SetTop(baseTop)
 		m.projNameText.SetCaption("项目名称")
 		m.projNameText.SetFont(fontLabel)
-		m.projNameText.SetParent(m.baseGroupBox)
+		m.projNameText.SetParent(m.box)
 
 		m.projNameEdit = lcl.NewEdit(m)
 		m.projNameEdit.SetLeft(120)
-		m.projNameEdit.SetTop(15)
+		m.projNameEdit.SetTop(baseTop - 5)
 		m.projNameEdit.SetWidth(textWidth)
 		m.projNameEdit.SetFont(fontText)
 		m.projNameEdit.SetDoubleBuffered(true)
-		m.projNameEdit.SetParent(m.baseGroupBox)
+		m.projNameEdit.SetParentColor(false)
+		m.projNameEdit.SetParent(m.box)
 		m.projNameEdit.SetTextHint("新建的项目名称")
 	}
 	{
 		m.projPathText = lcl.NewLabel(m)
 		m.projPathText.SetLeft(left)
-		m.projPathText.SetTop(70)
-		m.projPathText.SetWidth(80)
+		m.projPathText.SetTop(baseTop + 50)
 		m.projPathText.SetCaption("项目路径")
 		m.projPathText.SetFont(fontLabel)
-		m.projPathText.SetParent(m.baseGroupBox)
+		m.projPathText.SetParent(m.box)
 
 		m.projPathEdit = lcl.NewEdit(m)
 		m.projPathEdit.SetLeft(120)
-		m.projPathEdit.SetTop(65)
+		m.projPathEdit.SetTop(baseTop + 45)
 		m.projPathEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
 		m.projPathEdit.SetFont(fontText)
 		m.projPathEdit.SetDoubleBuffered(true)
 		//m.projPathEdit.SetReadOnly(true)
 		m.projPathEdit.SetTextHint("项目的存放目录")
-		m.projPathEdit.SetParent(m.baseGroupBox)
+		m.projPathEdit.SetParent(m.box)
 
 		m.projPathBtn = wg.NewButton(m)
 		m.projPathBtn.SetIconFormBytes(resources.Images("actions/add.png"))
 		m.projPathBtn.SetRadius(3)
-		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: 65}
+		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: baseTop + 45}
 		cusRect.SetWidth(60)
 		cusRect.SetHeight(30)
 		m.projPathBtn.SetBoundsRect(cusRect)
-		m.projPathBtn.SetParent(m.baseGroupBox)
+		m.projPathBtn.SetParent(m.box)
 		m.projPathBtn.SetOnClick(m.projPathClick)
 	}
 	{
 		m.projTempText = lcl.NewLabel(m)
 		m.projTempText.SetLeft(left)
-		m.projTempText.SetTop(120)
-		m.projTempText.SetWidth(80)
+		m.projTempText.SetTop(baseTop + 100)
 		m.projTempText.SetCaption("项目模板")
 		m.projTempText.SetFont(fontLabel)
-		m.projTempText.SetParent(m.baseGroupBox)
+		m.projTempText.SetParent(m.box)
 
 		m.projTempBox = lcl.NewComboBox(m)
-		m.projTempBox.SetBounds(120, 115, textWidth, 36)
+		m.projTempBox.SetBounds(120, baseTop+95, textWidth, 35)
 		m.projTempBox.SetFont(fontText)
 		m.projTempBox.SetReadOnly(true)
 		m.projTempBox.SetStyle(types.CsDropDownList)
@@ -237,16 +230,15 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projTempBox.SetDoubleBuffered(true)
 		m.projTempBox.Items().Add("默认预设模板")
 		m.projTempBox.SetItemIndex(0)
-		m.projTempBox.SetParent(m.baseGroupBox)
+		m.projTempBox.SetParent(m.box)
 	}
 	{
 		m.goVersionText = lcl.NewLabel(m)
 		m.goVersionText.SetLeft(left)
-		m.goVersionText.SetTop(170)
-		m.goVersionText.SetWidth(80)
+		m.goVersionText.SetTop(baseTop + 150)
 		m.goVersionText.SetCaption(" Go 版本")
 		m.goVersionText.SetFont(fontLabel)
-		m.goVersionText.SetParent(m.baseGroupBox)
+		m.goVersionText.SetParent(m.box)
 
 		m.goVersionStatus = wg.NewButton(m)
 		m.goVersionStatus.SetText("检测本地")
@@ -254,24 +246,24 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.Font().SetColor(colors.ClWhite)
 		m.goVersionStatus.Font().SetStyle(types.NewSet(types.FsBold))
 		m.goVersionStatus.SetRadius(3)
-		goVersionRect := types.TRect{Left: m.goVersionText.Left() + m.goVersionText.Width() + 5, Top: 165}
+		goVersionRect := types.TRect{Left: 120, Top: baseTop + 145}
 		goVersionRect.SetWidth(textWidth)
 		goVersionRect.SetHeight(30)
 		m.goVersionStatus.SetBoundsRect(goVersionRect)
 		m.goVersionStatus.SetColor(colors.ClGray)
-		m.goVersionStatus.SetParent(m.baseGroupBox)
+		m.goVersionStatus.SetParent(m.box)
 	}
+	baseTop = 260
 	{
 		m.modText = lcl.NewLabel(m)
 		m.modText.SetLeft(left)
-		m.modText.SetTop(20)
-		m.modText.SetWidth(80)
+		m.modText.SetTop(baseTop + 50)
 		m.modText.SetCaption("模块来源")
 		m.modText.SetFont(fontLabel)
-		m.modText.SetParent(m.modGroupBox)
+		m.modText.SetParent(m.box)
 
 		m.modBox = lcl.NewComboBox(m)
-		m.modBox.SetBounds(120, 15, textWidth, 36)
+		m.modBox.SetBounds(120, baseTop+45, textWidth, 36)
 		m.modBox.SetFont(fontText)
 		m.modBox.SetReadOnly(true)
 		m.modBox.SetStyle(types.CsDropDownList)
@@ -280,28 +272,28 @@ func (m *TCreateProjectForm) initComponents() {
 			m.modBox.Items().Add(option)
 		}
 		m.modBox.SetItemIndex(0)
-		m.modBox.SetParent(m.modGroupBox)
+		m.modBox.SetParent(m.box)
 		m.modBox.SetOnChange(m.modBoxChange)
 
 		m.modLocalBox = lcl.NewPanel(m)
 		m.modLocalBox.SetBevelOuter(types.BvNone)
-		m.modLocalBox.SetAlign(types.AlBottom)
-		m.modLocalBox.SetHeight(150)
+		m.modLocalBox.SetTop(baseTop + 95)
+		m.modLocalBox.SetHeight(100)
+		m.modLocalBox.SetWidth(formWidth)
 		m.modLocalBox.SetVisible(true)
-		m.modLocalBox.SetParent(m.modGroupBox)
+		m.modLocalBox.SetParent(m.box)
 
 		m.modRemoteBox = lcl.NewPanel(m)
 		m.modRemoteBox.SetBevelOuter(types.BvNone)
-		m.modRemoteBox.SetAlign(types.AlBottom)
-		m.modRemoteBox.SetHeight(150)
-		m.modRemoteBox.SetColor(colors.ClGray)
+		m.modRemoteBox.SetTop(baseTop + 95)
+		m.modRemoteBox.SetHeight(100)
+		m.modRemoteBox.SetWidth(formWidth)
 		m.modRemoteBox.SetVisible(false)
-		m.modRemoteBox.SetParent(m.modGroupBox)
+		m.modRemoteBox.SetParent(m.box)
 
 		m.modLocalDirText = lcl.NewLabel(m)
 		m.modLocalDirText.SetLeft(left)
 		m.modLocalDirText.SetTop(5)
-		m.modLocalDirText.SetWidth(80)
 		m.modLocalDirText.SetCaption("框架目录")
 		m.modLocalDirText.SetFont(fontLabel)
 		m.modLocalDirText.SetParent(m.modLocalBox)
@@ -365,7 +357,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.cancelBtn.SetFont(fontText)
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 310, Top: 505}
+		cancelBtnRect := types.TRect{Left: 250, Top: 475}
 		cancelBtnRect.SetWidth(100)
 		cancelBtnRect.SetHeight(40)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -378,7 +370,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.createBtn.SetFont(fontText)
 		m.createBtn.Font().SetColor(colors.ClWhite)
 		m.createBtn.SetRadius(3)
-		createBtnRect := types.TRect{Left: 430, Top: 505}
+		createBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
 		createBtnRect.SetWidth(100)
 		createBtnRect.SetHeight(40)
 		m.createBtn.SetBoundsRect(createBtnRect)
