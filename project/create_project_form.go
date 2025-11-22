@@ -489,7 +489,13 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 
-	doRunCreate(projectName, projectDir)
+	m.cancelBtn.SetDisable(true)
+	m.createBtn.SetDisable(true)
+	go func() {
+		doRunCreate(projectName, projectDir)
+		m.cancelBtn.SetDisable(false)
+		m.createBtn.SetDisable(false)
+	}()
 }
 
 // 模块选择
