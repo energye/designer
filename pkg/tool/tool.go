@@ -190,3 +190,73 @@ func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 	_, err = io.Copy(dstFile, srcFile)
 	return targetFile, err
 }
+
+//// DirPermissions 结构体用于存储目录权限检查结果
+//type DirPermissions struct {
+//	Exists     bool
+//	Readable   bool
+//	Writable   bool
+//	Executable bool // 在Windows上始终为false
+//}
+//
+//// CheckDirPermissions 检查指定目录的存在性及读写执行权限
+//func CheckDirPermissions(dirPath string) (DirPermissions, error) {
+//	var perm DirPermissions
+//	// 1. 检查目录是否存在
+//	info, err := os.Stat(dirPath)
+//	if err != nil {
+//		if os.IsNotExist(err) {
+//			perm.Exists = false
+//			// 即使目录不存在，也要检查父目录是否可写（用于创建目录）
+//			parentDir := filepath.Dir(dirPath)
+//			_, parentErr := os.Stat(parentDir)
+//			if parentErr != nil {
+//				return perm, nil // 父目录也不存在或无法访问
+//			}
+//			// 检查父目录写权限
+//			tempFile, createErr := os.CreateTemp(parentDir, ".perm-check-")
+//			if createErr != nil {
+//				perm.Writable = false
+//			} else {
+//				perm.Writable = true
+//				defer tempFile.Close()
+//				defer os.Remove(tempFile.Name())
+//			}
+//			return perm, nil
+//		}
+//		// 如果是因为权限不足导致无法stat，Exists仍为true，但其他权限会是false
+//		perm.Exists = true
+//		return perm, fmt.Errorf("failed to stat directory: %w", err)
+//	}
+//	perm.Exists = true
+//	// 确认路径是一个目录
+//	if !info.IsDir() {
+//		return perm, errors.New("path is not a directory")
+//	}
+//	// 2. 检查读权限 (尝试打开目录)
+//	dir, err := os.Open(dirPath)
+//	if err != nil {
+//		perm.Readable = false
+//	} else {
+//		perm.Readable = true
+//		defer dir.Close()
+//	}
+//	// 3. 检查写权限 (尝试创建一个临时文件)
+//	tempFile, err := os.CreateTemp(dirPath, ".perm-check-")
+//	if err != nil {
+//		perm.Writable = false
+//	} else {
+//		perm.Writable = true
+//		defer tempFile.Close()
+//		defer os.Remove(tempFile.Name()) // 清理临时文件
+//	}
+//	// 4. 检查执行权限 (仅在非Windows系统上有效)
+//	if runtime.GOOS != "windows" {
+//		// 目录的执行权限位
+//		// 对于所有者、组、其他用户，只要有一个有执行权限，就认为可执行
+//		perm.Executable = info.Mode()&0111 != 0
+//	} else {
+//		perm.Executable = false
+//	}
+//	return perm, nil
+//}

@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/types"
@@ -93,8 +94,9 @@ const (
 )
 
 var (
-	bgColor     = colors.RGBToColor(56, 57, 60)
-	bgTextColor = colors.ClGray
+	bgColor          = colors.RGBToColor(56, 57, 60)
+	bgTextColor      = colors.ClGray
+	modSelectOptions = []string{"本地路径 (内置框架)", "远程仓库 (远程拉取)"}
 )
 
 func NewCreateProjectForm() *TCreateProjectForm {
@@ -105,27 +107,40 @@ func NewCreateProjectForm() *TCreateProjectForm {
 
 type TCreateProjectForm struct {
 	lcl.TEngForm
-	oldWndPrc          uintptr
-	goVersionOK        bool
-	box                lcl.IPanel
-	baseGroupBox       lcl.IGroupBox
-	projNameText       lcl.ILabel
-	projNameEdit       lcl.IEdit
-	projNameErrorLabel lcl.ILabel
-	projPathText       lcl.ILabel
-	projPathEdit       lcl.IEdit
-	projPathBtn        *wg.TButton
-	projPathDir        lcl.ISelectDirectoryDialog
-	projPathErrorLabel lcl.ILabel
-	projTempText       lcl.ILabel
-	projTempBox        lcl.IComboBox
-	goVersionText      lcl.ILabel
-	goVersionStatus    *wg.TButton
-	modGroupBox        lcl.IGroupBox
-	modText            lcl.ILabel
-	modBox             lcl.IComboBox
-	cancelBtn          *wg.TButton
-	createBtn          *wg.TButton
+	oldWndPrc   uintptr
+	goVersionOK bool
+	box         lcl.IPanel
+	selectDir   lcl.ISelectDirectoryDialog
+	// 基础信息部分
+	baseGroupBox    lcl.IGroupBox
+	baseErrorLabel  lcl.ILabel
+	projNameText    lcl.ILabel
+	projNameEdit    lcl.IEdit
+	projPathText    lcl.ILabel
+	projPathEdit    lcl.IEdit
+	projPathBtn     *wg.TButton
+	projTempText    lcl.ILabel
+	projTempBox     lcl.IComboBox
+	goVersionText   lcl.ILabel
+	goVersionStatus *wg.TButton
+	// 模块部分
+	modGroupBox   lcl.IGroupBox
+	modErrorLabel lcl.ILabel
+	modText       lcl.ILabel
+	modBox        lcl.IComboBox
+	modLocalBox   lcl.IPanel
+	modRemoteBox  lcl.IPanel
+
+	modLocalDirText    lcl.ILabel
+	modLocalDirEdit    lcl.IEdit
+	modLocalDirBtn     *wg.TButton
+	modLCLCheckBox     lcl.ICheckBox
+	modCEFCheckBox     lcl.ICheckBox
+	modWebviewCheckBox lcl.ICheckBox
+
+	// 操作按钮
+	cancelBtn *wg.TButton
+	createBtn *wg.TButton
 }
 
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
@@ -164,14 +179,14 @@ func (m *TCreateProjectForm) initComponents() {
 	fontText.SetSize(12)
 
 	left := int32(35)
-	textWidth := int32(335)
+	textWidth := int32(355)
 
 	m.modGroupBox = lcl.NewGroupBox(m)
 	m.modGroupBox.SetAlign(types.AlTop)
 	//m.modGroupBox.SetTop(m.baseGroupBox.Height() + 25)
 	m.modGroupBox.SetHeight(240)
 	m.modGroupBox.BorderSpacing().SetAround(6)
-	m.modGroupBox.SetCaption("模块依赖")
+	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
 	m.modGroupBox.SetFont(fontLabel)
 	m.modGroupBox.SetParent(m.box)
 
@@ -179,10 +194,27 @@ func (m *TCreateProjectForm) initComponents() {
 	m.baseGroupBox.SetAlign(types.AlTop)
 	m.baseGroupBox.SetHeight(245)
 	m.baseGroupBox.BorderSpacing().SetAround(6)
-	m.baseGroupBox.SetCaption("基础信息")
+	m.baseGroupBox.SetCaption("新建项目-基础信息")
 	m.baseGroupBox.SetFont(fontLabel)
 	m.baseGroupBox.SetParent(m.box)
 
+	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+
+	{
+		errorFont := lcl.NewFont()
+		errorFont.SetColor(colors.ClRed)
+		errorFont.SetName("微软雅黑 Light")
+		errorFont.SetCharSet(font.CHINESEBIG5_CHARSET)
+		errorFont.SetSize(8)
+		m.baseErrorLabel = lcl.NewLabel(m)
+		m.baseErrorLabel.SetFont(errorFont)
+		m.baseErrorLabel.SetVisible(false)
+		m.baseErrorLabel.SetParent(m.baseGroupBox)
+		m.modErrorLabel = lcl.NewLabel(m)
+		m.modErrorLabel.SetFont(errorFont)
+		m.modErrorLabel.SetVisible(false)
+		m.modErrorLabel.SetParent(m.modGroupBox)
+	}
 	{
 		m.projNameText = lcl.NewLabel(m)
 		m.projNameText.SetLeft(left)
@@ -215,8 +247,8 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
 		m.projPathEdit.SetFont(fontText)
 		//m.projPathEdit.SetReadOnly(true)
-		m.projPathEdit.SetParent(m.baseGroupBox)
 		m.projPathEdit.SetTextHint("项目的存放目录")
+		m.projPathEdit.SetParent(m.baseGroupBox)
 
 		m.projPathBtn = wg.NewButton(m)
 		m.projPathBtn.SetIconFormBytes(resources.Images("actions/add.png"))
@@ -227,8 +259,6 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathBtn.SetBoundsRect(cusRect)
 		m.projPathBtn.SetParent(m.baseGroupBox)
 		m.projPathBtn.SetOnClick(m.projPathClick)
-
-		m.projPathDir = lcl.NewSelectDirectoryDialog(m)
 	}
 	{
 		m.projTempText = lcl.NewLabel(m)
@@ -276,7 +306,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modText.SetLeft(left)
 		m.modText.SetTop(20)
 		m.modText.SetWidth(80)
-		m.modText.SetCaption("依赖来源")
+		m.modText.SetCaption("模块来源")
 		m.modText.SetFont(fontLabel)
 		m.modText.SetParent(m.modGroupBox)
 
@@ -286,10 +316,84 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modBox.SetReadOnly(true)
 		m.modBox.SetStyle(types.CsDropDownList)
 		m.modBox.SetBorderStyle(types.BsSingle)
-		m.modBox.Items().Add("本地路径 (内置框架)")
-		m.modBox.Items().Add("远程仓库 (远程拉取)")
+		for _, option := range modSelectOptions {
+			m.modBox.Items().Add(option)
+		}
 		m.modBox.SetItemIndex(0)
 		m.modBox.SetParent(m.modGroupBox)
+		m.modBox.SetOnChange(m.modBoxChange)
+
+		m.modLocalBox = lcl.NewPanel(m)
+		m.modLocalBox.SetBevelOuter(types.BvNone)
+		m.modLocalBox.SetAlign(types.AlBottom)
+		m.modLocalBox.SetHeight(150)
+		m.modLocalBox.SetVisible(true)
+		m.modLocalBox.SetParent(m.modGroupBox)
+
+		m.modRemoteBox = lcl.NewPanel(m)
+		m.modRemoteBox.SetBevelOuter(types.BvNone)
+		m.modRemoteBox.SetAlign(types.AlBottom)
+		m.modRemoteBox.SetHeight(150)
+		m.modRemoteBox.SetColor(colors.ClGray)
+		m.modRemoteBox.SetVisible(false)
+		m.modRemoteBox.SetParent(m.modGroupBox)
+
+		m.modLocalDirText = lcl.NewLabel(m)
+		m.modLocalDirText.SetLeft(left)
+		m.modLocalDirText.SetTop(5)
+		m.modLocalDirText.SetWidth(80)
+		m.modLocalDirText.SetCaption("框架目录")
+		m.modLocalDirText.SetFont(fontLabel)
+		m.modLocalDirText.SetParent(m.modLocalBox)
+
+		m.modLocalDirEdit = lcl.NewEdit(m)
+		m.modLocalDirEdit.SetLeft(120)
+		m.modLocalDirEdit.SetTop(0)
+		m.modLocalDirEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
+		m.modLocalDirEdit.SetFont(fontText)
+		m.modLocalDirEdit.SetReadOnly(true)
+		m.modLocalDirEdit.SetText(frameworks.Path)
+		m.modLocalDirEdit.SetParent(m.modLocalBox)
+
+		m.modLocalDirBtn = wg.NewButton(m)
+		m.modLocalDirBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+		m.modLocalDirBtn.SetRadius(3)
+		modLocalDirRect := types.TRect{Left: m.modLocalDirEdit.Left() + m.modLocalDirEdit.Width() + 5, Top: 0}
+		modLocalDirRect.SetWidth(60)
+		modLocalDirRect.SetHeight(30)
+		m.modLocalDirBtn.SetBoundsRect(modLocalDirRect)
+		m.modLocalDirBtn.SetParent(m.modLocalBox)
+		m.modLocalDirBtn.SetOnClick(m.modLocalDirBtnClick)
+
+		m.modLCLCheckBox = lcl.NewCheckBox(m)
+		m.modLCLCheckBox.SetFont(fontText)
+		m.modLCLCheckBox.SetLeft(left)
+		m.modLCLCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		m.modLCLCheckBox.SetCaption("LCL (Native UI)")
+		m.modLCLCheckBox.SetHint("Lazarus Component Library")
+		m.modLCLCheckBox.SetShowHint(true)
+		m.modLCLCheckBox.SetChecked(true)
+		m.modLCLCheckBox.SetParent(m.modLocalBox)
+
+		m.modCEFCheckBox = lcl.NewCheckBox(m)
+		m.modCEFCheckBox.SetFont(fontText)
+		m.modCEFCheckBox.SetLeft(left + 150)
+		m.modCEFCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		m.modCEFCheckBox.SetCaption("CEF (Web UI)")
+		m.modCEFCheckBox.SetHint("Chromium Embedded Framework")
+		m.modCEFCheckBox.SetShowHint(true)
+		//m.modCEFCheckBox.SetChecked(true)
+		m.modCEFCheckBox.SetParent(m.modLocalBox)
+
+		m.modWebviewCheckBox = lcl.NewCheckBox(m)
+		m.modWebviewCheckBox.SetFont(fontText)
+		m.modWebviewCheckBox.SetLeft(left + 285)
+		m.modWebviewCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		m.modWebviewCheckBox.SetCaption("WebView (Web UI)")
+		m.modWebviewCheckBox.SetHint("System Runtime Framework")
+		m.modWebviewCheckBox.SetShowHint(true)
+		//m.modWebviewCheckBox.SetChecked(true)
+		m.modWebviewCheckBox.SetParent(m.modLocalBox)
 	}
 	{
 		m.cancelBtn = wg.NewButton(m)
@@ -355,14 +459,16 @@ func (m *TCreateProjectForm) checkGoVersion() {
 			// 支持的最低Go版本
 			m.goVersionOK = compareVersions(version, minGoVersion) == 1
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.goVersionStatus.SetText(buf.String())
 				if m.goVersionOK {
+					buf.WriteString(" 支持")
 					m.goVersionStatus.SetColor(colors.ClGreen)
 					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/laugh.png"))
 				} else {
+					buf.WriteString(" 不支持")
 					m.goVersionStatus.SetColor(colors.ClRed)
 					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/weep.png"))
 				}
+				m.goVersionStatus.SetText(buf.String())
 				m.goVersionStatus.ForcePaint(func() {
 					m.goVersionStatus.Invalidate()
 				})
@@ -374,15 +480,25 @@ func (m *TCreateProjectForm) checkGoVersion() {
 }
 
 // 项目存放目录选择
+func (m *TCreateProjectForm) modLocalDirBtnClick(sender lcl.IObject) {
+	m.selectDir.SetTitle("框架安装目录")
+	m.selectDir.SetInitialDir(m.modLocalDirEdit.Text())
+	if m.selectDir.Execute() {
+		dir := m.selectDir.FileName()
+		m.modLocalDirEdit.SetText(dir)
+	}
+}
+
+// 项目存放目录选择
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
-	m.projPathDir.SetTitle("选择目录")
+	m.selectDir.SetTitle("新建项目")
 	if m.projPathEdit.Text() == "" {
 		//m.projPathDir.SetFileName(exec.Dir)
 	} else {
-		m.projPathDir.SetInitialDir(m.projPathEdit.Text())
+		m.selectDir.SetInitialDir(m.projPathEdit.Text())
 	}
-	if m.projPathDir.Execute() {
-		dir := m.projPathDir.FileName()
+	if m.selectDir.Execute() {
+		dir := m.selectDir.FileName()
 		m.projPathEdit.SetText(dir)
 	}
 }
@@ -397,14 +513,48 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if !m.validateInputs() {
 		return
 	}
+
 }
 
-func (m *TCreateProjectForm) showError(message string) {
-	// 统一错误显示方法
+// 模块选择
+func (m *TCreateProjectForm) modBoxChange(sender lcl.IObject) {
+	if m.modBox.ItemIndex() == 1 {
+		m.showError(m.modErrorLabel, m.modBox.BoundsRect(), "＊暂不支持从远程下载")
+		return
+	}
+	m.baseErrorLabel.Hide()
+	m.modErrorLabel.Hide()
+}
+
+// 统一错误显示方法
+func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message string) {
+	label.SetLeft(br.Left)
+	label.SetTop(br.Top + br.Height() + 5)
+	label.SetCaption(message)
+	label.Show()
 }
 
 func (m *TCreateProjectForm) validateInputs() bool {
+	if strings.TrimSpace(m.projNameEdit.Text()) == "" {
+		m.showError(m.baseErrorLabel, m.projNameEdit.BoundsRect(), "＊项目名为空")
+		return false
+	}
+	selectProjectPath := strings.TrimSpace(m.projPathEdit.Text())
+	if selectProjectPath == "" {
+		m.showError(m.baseErrorLabel, m.projPathEdit.BoundsRect(), "＊项目目录为空")
+		return false
+	}
+	//if !tool.IsExist(selectProjectPath) {
+	//	m.showError(m.baseErrorLabel, m.projPathEdit.BoundsRect(), "＊目录不存在")
+	//	return false
+	//}
+	if m.modBox.ItemIndex() == 1 {
+		m.showError(m.modErrorLabel, m.modBox.BoundsRect(), "＊暂不支持从远程下载")
+		return false
+	}
 
+	m.baseErrorLabel.Hide()
+	m.modErrorLabel.Hide()
 	return true
 }
 
