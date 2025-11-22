@@ -31,7 +31,7 @@ func main() {
 	// go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
-	//logs.Level = logs.LevelError
+	logs.Level = logs.LevelError
 	{
 		frameworks.Extract()
 		// 这是一段测试时用的代码

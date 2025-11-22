@@ -373,6 +373,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modLCLCheckBox.SetHint("Lazarus Component Library")
 		m.modLCLCheckBox.SetShowHint(true)
 		m.modLCLCheckBox.SetChecked(true)
+		m.modLCLCheckBox.SetEnabled(frameworks.EnableLCL)
 		m.modLCLCheckBox.SetParent(m.modLocalBox)
 
 		m.modCEFCheckBox = lcl.NewCheckBox(m)
@@ -383,6 +384,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modCEFCheckBox.SetHint("Chromium Embedded Framework")
 		m.modCEFCheckBox.SetShowHint(true)
 		//m.modCEFCheckBox.SetChecked(true)
+		m.modCEFCheckBox.SetEnabled(frameworks.EnableCEF)
 		m.modCEFCheckBox.SetParent(m.modLocalBox)
 
 		m.modWebviewCheckBox = lcl.NewCheckBox(m)
@@ -393,6 +395,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modWebviewCheckBox.SetHint("System Runtime Framework")
 		m.modWebviewCheckBox.SetShowHint(true)
 		//m.modWebviewCheckBox.SetChecked(true)
+		m.modWebviewCheckBox.SetEnabled(frameworks.EnableWV)
 		m.modWebviewCheckBox.SetParent(m.modLocalBox)
 	}
 	{

@@ -19,7 +19,15 @@ import (
 	"path/filepath"
 )
 
-var Path = filepath.Join(exec.Dir, "frameworks")
+const (
+	EnableLCL = true
+	EnableCEF = true
+	EnableWV  = true
+)
+
+var (
+	Path = filepath.Join(exec.Dir, "frameworks")
+)
 
 // Extract 调用 extractLCL 函数来解压LCL框架文件
 // 这个函数作为解压过程的入口点
