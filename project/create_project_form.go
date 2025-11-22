@@ -78,6 +78,9 @@ type TCreateProjectForm struct {
 	projTempBox     lcl.IComboBox
 	goVersionText   lcl.ILabel
 	goVersionStatus *wg.TButton
+	projIcon        lcl.ILabel
+	projIconPreview lcl.IImage
+	projIconBtn     *wg.TButton
 	// 模块部分
 	modGroupBox   lcl.ILabel
 	modErrorLabel lcl.ILabel
@@ -147,13 +150,15 @@ func (m *TCreateProjectForm) initComponents() {
 	m.baseGroupBox.SetTop(10)
 	m.baseGroupBox.SetCaption("新建项目-基础信息")
 	m.baseGroupBox.SetFont(fontLabel)
+	m.baseGroupBox.Font().SetSize(10)
 	m.baseGroupBox.SetParent(m.box)
 
 	m.modGroupBox = lcl.NewLabel(m)
-	m.modGroupBox.SetTop(260)
+	m.modGroupBox.SetTop(290)
 	m.modGroupBox.SetLeft(10)
 	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
 	m.modGroupBox.SetFont(fontLabel)
+	m.modGroupBox.Font().SetSize(10)
 	m.modGroupBox.SetParent(m.box)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
@@ -172,7 +177,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modErrorLabel.SetVisible(false)
 		m.modErrorLabel.SetParent(m.box)
 	}
-	baseTop := int32(50)
+	baseTop := int32(40)
 	{
 		m.projNameText = lcl.NewLabel(m)
 		m.projNameText.SetLeft(left)
@@ -242,7 +247,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionText = lcl.NewLabel(m)
 		m.goVersionText.SetLeft(left)
 		m.goVersionText.SetTop(baseTop + 150)
-		m.goVersionText.SetCaption(" Go 版本")
+		m.goVersionText.SetCaption("　Go 版本")
 		m.goVersionText.SetFont(fontLabel)
 		m.goVersionText.SetParent(m.box)
 
@@ -259,7 +264,59 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.SetColor(colors.ClGray)
 		m.goVersionStatus.SetParent(m.box)
 	}
-	baseTop = 260
+	{
+		m.projIcon = lcl.NewLabel(m)
+		m.projIcon.SetLeft(left)
+		m.projIcon.SetTop(baseTop + 200)
+		m.projIcon.SetCaption("　　图标")
+		m.projIcon.SetFont(fontLabel)
+		m.projIcon.SetParent(m.box)
+
+		m.projIconPreview = lcl.NewImage(m)
+		m.projIconPreview.SetLeft(120)
+		m.projIconPreview.SetTop(baseTop + 180)
+		m.projIconPreview.SetWidth(64)
+		m.projIconPreview.SetHeight(64)
+		m.projIconPreview.SetAutoSize(true)
+		m.projIconPreview.SetCenter(true)
+		m.projIconPreview.SetParent(m.box)
+		m.projIconPreview.SetOnPaintBackground(func(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {
+			cell := int32(8)
+			bmp := lcl.NewBitmap()
+			bmp.SetPixelFormat(types.Pf24bit)
+			bmp.SetSize(rect.Width(), rect.Height())
+			bmpCanvas := bmp.Canvas()
+			bmpCanvas.BrushToBrush().SetColor(colors.ClWhite)
+			bmpCanvas.FillRectWithIntX4(0, 0, bmp.Width(), bmp.Height())
+			bmpCanvas.BrushToBrush().SetColor(colors.ClLtGray)
+			for i := 0; i < int(bmp.Width()/cell); i++ {
+				for j := 0; j < int(bmp.Height()/cell); j++ {
+					if (i%2 != 0) == (j%2 != 0) {
+						bmpCanvas.FillRectWithIntX4(int32(i)*cell, int32(j)*cell, int32(i+1)*cell, int32(j+1)*cell)
+					}
+				}
+			}
+			sourceRect := types.TRect{Left: 0, Top: 0}
+			sourceRect.SetWidth(bmp.Width())
+			sourceRect.SetHeight(bmp.Height())
+			canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
+		})
+		m.projIconPreview.Picture().LoadFromFile("C:\\app\\energy_designer\\designer\\resources\\images\\icons\\window-icon_64x64.png")
+
+		m.projIconBtn = wg.NewButton(m)
+		m.projIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
+		m.projIconBtn.SetRadius(3)
+		projIconRect := types.TRect{Left: m.projIconPreview.Left() + m.projIconPreview.Width() + 15, Top: baseTop + 186}
+		projIconRect.SetWidth(48)
+		projIconRect.SetHeight(48)
+		m.projIconBtn.SetBoundsRect(projIconRect)
+		m.projIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
+		m.projIconBtn.SetBorderWidth(wg.BbdNone, 1)
+		m.projIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
+		m.projIconBtn.SetParent(m.box)
+
+	}
+	baseTop = 280
 	{
 		m.modText = lcl.NewLabel(m)
 		m.modText.SetLeft(left)
