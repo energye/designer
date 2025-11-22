@@ -47,7 +47,7 @@ ENERGY GUI 跨平台框架库
 
 `git clone https://gitee.com/energye/lcl.git` 注意: 切换分枝`3.0-beta`
 
-### 2. 克隆 designer
+### 2. 克隆 Designer
 基于 ENERGY GUI 框架实现的自举设计器库
 
 `git clone https://gitee.com/energye/designer.git`
