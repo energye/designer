@@ -23,6 +23,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project/bean"
 	"github.com/energye/lcl/api"
+	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
@@ -33,7 +34,14 @@ import (
 // 检查目录是否为空
 
 // 创建项目
-func runCreate(dir string) {
+func runCreate() {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		form := NewCreateProjectForm()
+		form.Show()
+	})
+}
+
+func doRunCreate(dir string) {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
 		logs.Error("目录不存在:", dir)

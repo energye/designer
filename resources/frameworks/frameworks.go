@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 )
 
+// 启用的模块依赖配置
 const (
 	EnableLCL = true
 	EnableCEF = true

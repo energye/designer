@@ -17,12 +17,10 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
-	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
-	"github.com/energye/lcl/tool/exec"
 )
 
 // 设计器顶部菜单
@@ -123,23 +121,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
 	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	m.createProject.SetOnClick(func(lcl.IObject) {
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			newForm := helperform.NewCreateProjectForm()
-			newForm.Show()
-		})
-		return
-
-		mainWindow.selectDirectoryDialog.SetTitle("新建项目")
-		history := mainWindow.selectDirectoryDialog.HistoryList()
-		//for i := int32(0); i < history.Count(); i++ {
-		//}
-		if history.Count() == 0 {
-			mainWindow.selectDirectoryDialog.SetInitialDir(exec.Dir)
-		}
-		if mainWindow.selectDirectoryDialog.Execute() {
-			dir := mainWindow.selectDirectoryDialog.FileName()
-			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate, Data: dir}})
-		}
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate}})
 	})
 	create.Add(m.createProject)
 
