@@ -538,6 +538,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	// 创建项目
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
+
 	doRunCreate(projectName, projectDir)
 }
 

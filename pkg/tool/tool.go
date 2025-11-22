@@ -179,6 +179,7 @@ func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 		if runtime.GOOS == "windows" {
 			if pathErr, ok := err.(*os.PathError); ok {
 				if errno, ok := pathErr.Err.(syscall.Errno); ok && errno == 32 {
+					// 文件正在使用中, 路过提取
 					logs.Error("File is busy, skipping extraction:", targetFile)
 					return targetFile, nil
 				}

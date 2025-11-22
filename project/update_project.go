@@ -66,7 +66,7 @@ func runUpdate(formTab *designer.FormTab) {
 	// 2. 更新 app/app.go 代码文件
 	appRoot := gPath
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName, consts.FormListFileName)
-	code := buildTemplateData(appCodeTemplate)
+	code := buildTemplateData(appCodeTemplate, gProject)
 	if err := os.WriteFile(appCodePath, []byte(code), 0666); err != nil {
 		logs.Error("创建项目文件失败:", err.Error())
 	}

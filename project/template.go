@@ -60,6 +60,8 @@ var Forms = []lcl.IEngForm{
 const goModTemplate = `module {{.Name}}
 
 go 1.20
+
+{{.Data}}
 `
 
 // resources/resources.go

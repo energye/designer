@@ -15,7 +15,11 @@ package project
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/frameworks"
+	"github.com/energye/lcl/tool/command"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -50,27 +54,45 @@ func createProjectDir() {
 			logs.Error("创建项目目录失败:", err.Error())
 		}
 	}
+	// 模板数据
+	data := *gProject
+	// 本地模式
+	localModule := tool.Buffer{}
+	localModule.WriteString("replace github.com/energye/lcl", " => ", frameworks.LCLLocalPath, "\n")
+	data.Data = localModule.String()
+
 	// 文件创建
 	files := []struct {
-		path string
-		name string
-		data string
+		path string // 文件目录
+		name string // 文件名
+		data string // 文件内容
 	}{
-		{appCodePath, consts.FormListFileName, buildTemplateData(appCodeTemplate)},
-		{resourcesPath, "resources.go", buildTemplateData(resourcesGoTemplate)},
+		{appCodePath, consts.FormListFileName, buildTemplateData(appCodeTemplate, &data)},
+		{resourcesPath, "resources.go", buildTemplateData(resourcesGoTemplate, &data)},
 		{resourcesEmbedPath, "embed.md", "## "},
-		{appRoot, "go.mod", buildTemplateData(goModTemplate)},
-		{appRoot, "main.go", buildTemplateData(runCodeTemplate)},
+		{appRoot, "go.mod", buildTemplateData(goModTemplate, &data)},
+		{appRoot, "main.go", buildTemplateData(runCodeTemplate, &data)},
 	}
 	for _, file := range files {
-		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0666); err != nil {
+		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0644); err != nil {
 			logs.Error("创建项目文件失败:", err.Error())
+			event.ConsoleWriteError("创建项目文件失败:", err.Error())
 		}
 	}
+	// go.mod
+	event.ConsoleWriteInfo("go mod tidy")
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = appRoot
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	cmd.Command("go", "mod", "tidy")
 }
 
 // 构建填充模板数据
-func buildTemplateData(templateData string) string {
+func buildTemplateData(templateData string, data any) string {
 	// 解析模板
 	tmpl, err := template.New("project").Parse(templateData)
 	if err != nil {
@@ -80,7 +102,7 @@ func buildTemplateData(templateData string) string {
 
 	// 生成代码
 	var buf strings.Builder
-	if err := tmpl.Execute(&buf, gProject); err != nil {
+	if err := tmpl.Execute(&buf, data); err != nil {
 		logs.Error("执行自动代码模板失败:", err.Error())
 		return ""
 	}

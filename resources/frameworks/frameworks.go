@@ -34,6 +34,15 @@ var (
 	RuntimePath = filepath.Join(Path, "runtime")
 )
 
+var (
+	// LCLLocalPath LCL 本地框架库路径
+	LCLLocalPath = filepath.Join(Path, "lcl")
+	// CEFLocalPath CEF 本地框架库路径
+	CEFLocalPath = filepath.Join(Path, "cef")
+	// WVLocalPath WebView 本地框架库路径, darwin/linux/windows
+	WVLocalPath = filepath.Join(Path, "wv")
+)
+
 // ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
 func ExtractLibrary() {
@@ -45,7 +54,7 @@ func ExtractLibrary() {
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
 func ExtractLCL(enable bool) {
 	if enable {
-		extractLCL()
+		extractLCL(LCLLocalPath)
 	}
 }
 

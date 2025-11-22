@@ -19,14 +19,14 @@ import (
 	"embed"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
-	"path/filepath"
 )
 
 //go:embed lcl/lcl.zip
 var lcl embed.FS
 
-func extractLCL() {
-	if tool.IsExist(filepath.Join(Path, "lcl")) {
+// 释放 LCL 框架库
+func extractLCL(outputPath string) {
+	if tool.IsExist(outputPath) {
 		return
 	}
 	data, e := lcl.ReadFile("lcl/lcl.zip")

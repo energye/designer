@@ -29,6 +29,7 @@ type TProject struct {
 	Lang         string       `json:"lang"`           // 语言 zh_CN
 	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
 	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
+	Data         any          `json:"-"`              // 其它数据
 }
 
 // TUIForm 窗体信息
