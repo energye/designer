@@ -33,6 +33,10 @@ var (
 	Config *TConfig
 	// 用户目录
 	homeDir = exec.HomeDir
+	// energy 配置目录
+	energyDir = filepath.Join(homeDir, ".energy")
+	// energy 配置文件路径
+	configPath = filepath.Join(energyDir, "config.json")
 )
 
 // 设计器窗体配置
@@ -75,6 +79,8 @@ type Tab struct {
 type TConfig struct {
 	Window       Window `json:"window"`    // 窗口配置
 	FrameworkDir string `json:"framework"` // 框架目录
+	Registry     string `json:"registry"`  // 远程服务配置地址
+	Proxy        string `json:"proxy"`     // 代理地址
 }
 
 // UpdateWindow 更新窗体配置
@@ -87,8 +93,6 @@ func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
 		Config.Window.Height = h
 	}
 	Config.Window.WindowState = windowState
-	energyDir := filepath.Join(homeDir, ".energy")
-	configPath := filepath.Join(energyDir, "config.json")
 	data, e := json.MarshalIndent(Config, "", "\t")
 	err.CheckErr(e)
 	e = os.WriteFile(configPath, data, os.ModePerm)
@@ -101,8 +105,6 @@ func UpdateFrameworkDir(frameworkDir string) bool {
 		return false
 	}
 	Config.FrameworkDir = frameworkDir
-	energyDir := filepath.Join(homeDir, ".energy")
-	configPath := filepath.Join(energyDir, "config.json")
 	data, e := json.MarshalIndent(Config, "", "\t")
 	err.CheckErr(e)
 	e = os.WriteFile(configPath, data, os.ModePerm)
@@ -115,7 +117,6 @@ func init() {
 	e := json.Unmarshal(resources.Config(), FormConfig)
 	err.CheckErr(e)
 	// 从 energy 配置文件读取
-	energyDir := filepath.Join(homeDir, ".energy")
 	if !tool.IsDir(energyDir) {
 		// 非目录删除文件
 		e = os.Remove(energyDir)
@@ -126,7 +127,6 @@ func init() {
 
 	// config.json
 	Config = &TConfig{}
-	configPath := filepath.Join(energyDir, "config.json")
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.Window = FormConfig.Window
