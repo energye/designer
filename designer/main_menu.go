@@ -123,7 +123,10 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
 	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	m.createProject.SetOnClick(func(lcl.IObject) {
-		helperform.NewCreateProjectForm().ShowModal()
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			newForm := helperform.NewCreateProjectForm()
+			newForm.Show()
+		})
 		return
 
 		mainWindow.selectDirectoryDialog.SetTitle("新建项目")

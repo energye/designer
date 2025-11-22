@@ -86,6 +86,12 @@ replace github.com/your-org/energy v1.2.3 => %s`, frameworkBuiltInPath)
 }
 */
 
+const (
+	formWidth    = int32(555)
+	formHeight   = int32(555)
+	minGoVersion = "1.20"
+)
+
 var (
 	bgColor     = colors.RGBToColor(56, 57, 60)
 	bgTextColor = colors.ClGray
@@ -99,40 +105,43 @@ func NewCreateProjectForm() *TCreateProjectForm {
 
 type TCreateProjectForm struct {
 	lcl.TEngForm
-	oldWndPrc       uintptr
-	goVersionOK     bool
-	box             lcl.IPanel
-	baseGroupBox    lcl.IGroupBox
-	projNameText    lcl.ILabel
-	projNameEdit    lcl.IEdit
-	projPathText    lcl.ILabel
-	projPathEdit    lcl.IEdit
-	projPathBtn     *wg.TButton
-	projPathDir     lcl.ISelectDirectoryDialog
-	projTempText    lcl.ILabel
-	projTempBox     lcl.IComboBox
-	goVersionText   lcl.ILabel
-	goVersionStatus *wg.TButton
-	modGroupBox     lcl.IGroupBox
-	modText         lcl.ILabel
-	modBox          lcl.IComboBox
-	cancelBtn       *wg.TButton
-	createBtn       *wg.TButton
+	oldWndPrc          uintptr
+	goVersionOK        bool
+	box                lcl.IPanel
+	baseGroupBox       lcl.IGroupBox
+	projNameText       lcl.ILabel
+	projNameEdit       lcl.IEdit
+	projNameErrorLabel lcl.ILabel
+	projPathText       lcl.ILabel
+	projPathEdit       lcl.IEdit
+	projPathBtn        *wg.TButton
+	projPathDir        lcl.ISelectDirectoryDialog
+	projPathErrorLabel lcl.ILabel
+	projTempText       lcl.ILabel
+	projTempBox        lcl.IComboBox
+	goVersionText      lcl.ILabel
+	goVersionStatus    *wg.TButton
+	modGroupBox        lcl.IGroupBox
+	modText            lcl.ILabel
+	modBox             lcl.IComboBox
+	cancelBtn          *wg.TButton
+	createBtn          *wg.TButton
 }
 
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Info("TCreateProjectForm FormCreate")
-	//defaultSize := int32(510)
 	m.SetCaption("新建项目")
-	m.SetWidth(555)
-	m.SetHeight(555)
+	m.SetWidth(formWidth)
+	m.SetHeight(formHeight)
 	constr := m.Constraints()
-	constr.SetMaxWidth(555)
-	constr.SetMaxHeight(555)
-	constr.SetMinWidth(555)
-	constr.SetMinHeight(555)
+	constr.SetMaxWidth(formWidth)
+	constr.SetMaxHeight(formHeight)
+	constr.SetMinWidth(formWidth)
+	constr.SetMinHeight(formHeight)
+	m.SetFormStyle(types.FsStayOnTop)
+	m.SetShowInTaskBar(types.StNever)
 	//m.SetColor(bgColor)
-	m.SetBorderIcons(types.NewSet())
+	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
 	m.box = lcl.NewPanel(m)
 	m.box.SetBevelOuter(types.BvNone)
@@ -155,7 +164,7 @@ func (m *TCreateProjectForm) initComponents() {
 	fontText.SetSize(12)
 
 	left := int32(35)
-	textWidth := int32(355)
+	textWidth := int32(335)
 
 	m.modGroupBox = lcl.NewGroupBox(m)
 	m.modGroupBox.SetAlign(types.AlTop)
@@ -189,6 +198,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit.SetWidth(textWidth)
 		m.projNameEdit.SetFont(fontText)
 		m.projNameEdit.SetParent(m.baseGroupBox)
+		m.projNameEdit.SetTextHint("新建的项目名称")
 	}
 	{
 		m.projPathText = lcl.NewLabel(m)
@@ -202,10 +212,11 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathEdit = lcl.NewEdit(m)
 		m.projPathEdit.SetLeft(120)
 		m.projPathEdit.SetTop(65)
-		m.projPathEdit.SetWidth(290)
+		m.projPathEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
 		m.projPathEdit.SetFont(fontText)
-		m.projPathEdit.SetReadOnly(true)
+		//m.projPathEdit.SetReadOnly(true)
 		m.projPathEdit.SetParent(m.baseGroupBox)
+		m.projPathEdit.SetTextHint("项目的存放目录")
 
 		m.projPathBtn = wg.NewButton(m)
 		m.projPathBtn.SetIconFormBytes(resources.Images("actions/add.png"))
@@ -275,8 +286,8 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modBox.SetReadOnly(true)
 		m.modBox.SetStyle(types.CsDropDownList)
 		m.modBox.SetBorderStyle(types.BsSingle)
-		m.modBox.Items().Add("远程仓库 (从远程拉取)")
-		m.modBox.Items().Add("本地路径 (离线/手动指定)")
+		m.modBox.Items().Add("本地路径 (内置框架)")
+		m.modBox.Items().Add("远程仓库 (远程拉取)")
 		m.modBox.SetItemIndex(0)
 		m.modBox.SetParent(m.modGroupBox)
 	}
@@ -309,6 +320,7 @@ func (m *TCreateProjectForm) initComponents() {
 	}
 }
 
+// 窗口显示事件
 func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	//width := int32(555)
 	//height := int32(515)
@@ -341,7 +353,7 @@ func (m *TCreateProjectForm) checkGoVersion() {
 				buf.WriteString(part, " ")
 			}
 			// 支持的最低Go版本
-			m.goVersionOK = compareVersions(version, "1.20") == 1
+			m.goVersionOK = compareVersions(version, minGoVersion) == 1
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.goVersionStatus.SetText(buf.String())
 				if m.goVersionOK {
@@ -361,19 +373,39 @@ func (m *TCreateProjectForm) checkGoVersion() {
 	cmd.Command("go", "version")
 }
 
+// 项目存放目录选择
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
 	m.projPathDir.SetTitle("选择目录")
+	if m.projPathEdit.Text() == "" {
+		//m.projPathDir.SetFileName(exec.Dir)
+	} else {
+		m.projPathDir.SetInitialDir(m.projPathEdit.Text())
+	}
 	if m.projPathDir.Execute() {
 		dir := m.projPathDir.FileName()
 		m.projPathEdit.SetText(dir)
 	}
 }
 
+// 关闭
 func (m *TCreateProjectForm) closeClick(sender lcl.IObject) {
 	m.Close()
 }
 
+// 创建
 func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
+	if !m.validateInputs() {
+		return
+	}
+}
+
+func (m *TCreateProjectForm) showError(message string) {
+	// 统一错误显示方法
+}
+
+func (m *TCreateProjectForm) validateInputs() bool {
+
+	return true
 }
 
 // compareVersions 比较两个版本号字符串的大小
