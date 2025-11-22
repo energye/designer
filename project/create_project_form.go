@@ -362,6 +362,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.cancelBtn.SetText("关 闭")
 		m.cancelBtn.SetFont(fontText)
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
+		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.cancelBtn.SetRadius(3)
 		cancelBtnRect := types.TRect{Left: 250, Top: 475}
 		cancelBtnRect.SetWidth(100)
@@ -374,6 +375,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.createBtn = wg.NewButton(m)
 		m.createBtn.SetText("创 建")
 		m.createBtn.SetFont(fontText)
+		m.createBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.createBtn.Font().SetColor(colors.ClWhite)
 		m.createBtn.SetRadius(3)
 		createBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
