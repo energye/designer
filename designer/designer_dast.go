@@ -34,7 +34,7 @@ func initModuleTypeInfo() {
 	cmd.HideWindow = true
 	cmd.IsPrint = false
 	cmd.Console = func(data string, level command.Level) {
-		logs.Info(level, data)
+		logs.Info("initModuleTypeInfo:", level, data)
 	}
 	cmd.Command("go", "list", "-m", "-f", "{{.Dir}}", consts.DmLCL)
 

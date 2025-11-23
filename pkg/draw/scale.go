@@ -7,12 +7,11 @@
 package draw
 
 import (
+	"github.com/energye/designer/pkg/math/f64"
 	"image"
 	"image/color"
 	"math"
 	"sync"
-
-	"github.com/energye/examples/cef/utils/math/f64"
 )
 
 // Copy copies the part of the source image defined by src and sr and writes

@@ -3,11 +3,10 @@
 package draw
 
 import (
+	"github.com/energye/designer/pkg/math/f64"
 	"image"
 	"image/color"
 	"math"
-
-	"github.com/energye/examples/cef/utils/math/f64"
 )
 
 func (z nnInterpolator) Scale(dst Image, dr image.Rectangle, src image.Image, sr image.Rectangle, op Op, opts *Options) {

@@ -14,9 +14,11 @@
 package project
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/draw"
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -28,8 +30,12 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
+	"image"
+	"image/png"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -66,6 +72,7 @@ type TCreateProjectForm struct {
 	oldWndPrc   uintptr
 	closing     bool
 	goVersionOK bool
+	one         sync.Once
 	box         lcl.IPanel
 	selectDir   lcl.ISelectDirectoryDialog
 
@@ -133,13 +140,16 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetAlign(types.AlClient)
 	m.box.SetParent(m)
-	m.initComponents()
 	m.SetOnShow(m.onShow)
+	m.initComponents()
 	//m._HookWndProcMessage()
 }
 
 func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	m.closing = true
+}
+
+func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 }
 
 func (m *TCreateProjectForm) initComponents() {
@@ -457,17 +467,22 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	//m.SetHeight(height)
 	//m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
 	//m.WorkAreaCenter()
-
-	mem := lcl.NewMemoryStream()
-	defer mem.Free()
-	lcl.StreamHelper.WriteBuffer(mem, resources.Images("icons/window-icon_64x64.png"))
-	mem.SetPosition(0)
-	m.projIconPreview.Picture().LoadFromStream(mem)
-
-	go m.checkGoVersion()
+	m.one.Do(func() {
+		if m.projIconPreview != nil {
+			mem := lcl.NewMemoryStream()
+			defer mem.Free()
+			lcl.StreamHelper.WriteBuffer(mem, resources.Images("icons/window-icon_64x64.png"))
+			mem.SetPosition(0)
+			m.projIconPreview.Picture().LoadFromStream(mem)
+		}
+		go m.checkGoVersion()
+	})
 }
 
 func (m *TCreateProjectForm) checkGoVersion() {
+	if m.goVersionStatus == nil {
+		return
+	}
 	time.Sleep(time.Second / 2)
 	result := false
 	cmd := command.NewCMD()
@@ -601,28 +616,42 @@ func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, 
 	canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
 }
 
+// 应用程序图标
 func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
-	priceForm := helperform.NewGraphicPropertyEditor(func(image helperform.ImageInfo) {
-		//pngBuf := &bytes.Buffer{}
-		//pngBuf.Write(data)
-		//// 解码 png 到 image
-		//pngImg, err := png.Decode(pngBuf)
-		//if err != nil {
-		//	println("[ERROR] OnFavIconUrlChange PNG Decode:", err.Error())
-		//	return
-		//}
-		//pngBounds := pngImg.Bounds()
-		//// 存放缩放后的图像
-		//scaledImg := image.NewRGBA(image.Rect(0, 0, 64, 64))
-		//draw.CatmullRom.Scale(scaledImg, scaledImg.Bounds(), pngImg, pngBounds, draw.Over, nil)
-		//// 最后保存缩放 png
-		//scalePngBuf := &bytes.Buffer{}
-		//if err := png.Encode(scalePngBuf, scaledImg); err != nil {
-		//	println("[ERROR] OnFavIconUrlChange PNG Encode Save Buffer:", err.Error())
-		//	return
-		//}
-		//data := scalePngBuf.Bytes()
-		fmt.Println(image)
+	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
+		if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
+			data, err := os.ReadFile(imageInfo.FilePath)
+			if err != nil {
+				logs.Error("图标加载 PNG Decode:", err.Error())
+				return
+			}
+			pngBuf := &bytes.Buffer{}
+			pngBuf.Write(data)
+			// 解码 png 到 image
+			pngImg, err := png.Decode(pngBuf)
+			if err != nil {
+				logs.Error("图标加载 PNG Decode:", err.Error())
+				return
+			}
+			pngBounds := pngImg.Bounds()
+			// 存放缩放后的图像
+			scaledImg := image.NewRGBA(image.Rect(0, 0, 64, 64))
+			draw.CatmullRom.Scale(scaledImg, scaledImg.Bounds(), pngImg, pngBounds, draw.Over, nil)
+			// 最后保存缩放 png
+			scalePngBuf := &bytes.Buffer{}
+			if err := png.Encode(scalePngBuf, scaledImg); err != nil {
+				logs.Error("图标加载 PNG Encode Save Buffer:", err.Error())
+				return
+			}
+
+			data = scalePngBuf.Bytes()
+			mem := lcl.NewMemoryStream()
+			defer mem.Free()
+			lcl.StreamHelper.WriteBuffer(mem, data)
+			mem.SetPosition(0)
+			m.projIconPreview.Picture().LoadFromStream(mem)
+		}
+		fmt.Println(imageInfo)
 	})
 	priceForm.SetWidth(450)
 	priceForm.SetHeight(325)

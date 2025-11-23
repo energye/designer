@@ -38,6 +38,7 @@ func runCreate() {
 	// 显示创建项目窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewCreateProjectForm()
+		// 为什么 debug 时显示不出来呢？
 		form.ShowModal()
 	})
 }
