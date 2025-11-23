@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/energye/designer/pkg/winres/version"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/tc-hib/winres/version"
 )
 
 func TestMain(m *testing.M) {

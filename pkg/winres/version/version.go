@@ -50,7 +50,6 @@ type Info struct {
 	Type           fileType
 	Timestamp      time.Time
 	lt             LangTable
-
 	// temporary state
 	pos int
 	w   io.Writer
