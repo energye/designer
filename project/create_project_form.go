@@ -154,8 +154,8 @@ func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TClo
 
 func (m *TCreateProjectForm) initComponents() {
 	fontLabel := lcl.NewFont()
-	fontLabel.SetName("微软雅黑 Light")
-	fontLabel.SetStyle(types.NewSet(types.FsBold))
+	fontLabel.SetName("微软雅黑")
+	//fontLabel.SetStyle(types.NewSet(types.FsBold))
 	fontLabel.SetSize(12)
 	fontLabel.SetCharSet(font.CHINESEBIG5_CHARSET)
 	//fontLabel.SetColor(colors.ClGreen)
@@ -268,7 +268,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionText = lcl.NewLabel(m)
 		m.goVersionText.SetLeft(left)
 		m.goVersionText.SetTop(baseTop + 150)
-		m.goVersionText.SetCaption("　Go 版本")
+		m.goVersionText.SetCaption(" Go 版本")
 		m.goVersionText.SetFont(fontLabel)
 		m.goVersionText.SetParent(m.box)
 
@@ -619,8 +619,11 @@ func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, 
 // 应用程序图标
 func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
+		if !imageInfo.OK {
+			return
+		}
+		data, err := os.ReadFile(imageInfo.FilePath)
 		if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
-			data, err := os.ReadFile(imageInfo.FilePath)
 			if err != nil {
 				logs.Error("图标加载 PNG Decode:", err.Error())
 				return
@@ -643,14 +646,13 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 				logs.Error("图标加载 PNG Encode Save Buffer:", err.Error())
 				return
 			}
-
 			data = scalePngBuf.Bytes()
-			mem := lcl.NewMemoryStream()
-			defer mem.Free()
-			lcl.StreamHelper.WriteBuffer(mem, data)
-			mem.SetPosition(0)
-			m.projIconPreview.Picture().LoadFromStream(mem)
 		}
+		mem := lcl.NewMemoryStream()
+		defer mem.Free()
+		lcl.StreamHelper.WriteBuffer(mem, data)
+		mem.SetPosition(0)
+		m.projIconPreview.Picture().LoadFromStream(mem)
 		fmt.Println(imageInfo)
 	})
 	priceForm.SetWidth(450)
