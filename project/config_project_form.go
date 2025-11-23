@@ -50,8 +50,6 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	constr.SetMaxHeight(formHeight)
 	constr.SetMinWidth(formWidth)
 	constr.SetMinHeight(formHeight)
-	m.SetFormStyle(types.FsStayOnTop)
-	m.SetShowInTaskBar(types.StNever)
 	//m.SetColor(bgColor)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
