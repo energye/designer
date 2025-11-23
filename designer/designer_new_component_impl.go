@@ -69,16 +69,6 @@ func SetDesignMode(component lcl.IComponent) {
 
 func (m *TDesigningComponent) Free() {
 	m.formTab = nil
-	if m.object != nil && m.object.IsValid() {
-		m.object.Free()
-	}
-	if m.objectNon != nil && m.objectNon.IsValid() {
-		m.objectNon.Free()
-	}
-	if m.objectNonWrap != nil {
-		m.objectNonWrap.Free()
-		m.objectNonWrap = nil
-	}
 	m.parent = nil
 	for _, child := range m.Child {
 		child.Free()

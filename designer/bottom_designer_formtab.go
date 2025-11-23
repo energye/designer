@@ -253,10 +253,7 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	m.componentName = make(map[string]int)
 	m.recover = nil
-	m.scroll.Free()
 	m.tree.Free()
-	//m.formDesigner.Free() // TODO 需要优化, 所有窗体使用同一个 Designer
-	m.FormRoot.Free()
 	m.componentMenu.Free()
 	// 标记为 nil, 创建新窗体时序号根据长度自动增加
 	designer.designerForms[m.Id] = nil

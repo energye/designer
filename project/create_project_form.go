@@ -42,7 +42,7 @@ import (
 // 3. 所需依赖模块(lcl, cef, webview), 从网络下载, 或设计器内绑定(✔️)
 // 4. 模块模式： go.mod (✔️), go.work
 
-const (
+var (
 	formWidth    = int32(525)
 	formHeight   = int32(535)
 	minGoVersion = "1.20"
@@ -147,6 +147,10 @@ func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TClo
 }
 
 func (m *TCreateProjectForm) initComponents() {
+	fontSize := int32(12)
+	if tool.IsLinux {
+		fontSize = 10
+	}
 	fontLabel := lcl.NewFont()
 	fontLabel.SetName("微软雅黑")
 	//fontLabel.SetStyle(types.NewSet(types.FsBold))
@@ -155,7 +159,7 @@ func (m *TCreateProjectForm) initComponents() {
 	//fontLabel.SetColor(colors.ClGreen)
 	fontText := lcl.NewFont()
 	fontText.SetName("微软雅黑 Light")
-	fontText.SetSize(12)
+	fontText.SetSize(fontSize)
 
 	left := int32(35)
 	textWidth := int32(355)
@@ -234,7 +238,11 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathBtn.SetRadius(3)
 		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: baseTop + 45}
 		cusRect.SetWidth(60)
-		cusRect.SetHeight(30)
+		if tool.IsLinux {
+			cusRect.SetHeight(35)
+		} else {
+			cusRect.SetHeight(30)
+		}
 		m.projPathBtn.SetBoundsRect(cusRect)
 		m.projPathBtn.SetParent(m.box)
 		m.projPathBtn.SetOnClick(m.projPathClick)
@@ -383,7 +391,11 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modLocalDirBtn.SetRadius(3)
 		modLocalDirRect := types.TRect{Left: m.modLocalDirEdit.Left() + m.modLocalDirEdit.Width() + 5, Top: 0}
 		modLocalDirRect.SetWidth(60)
-		modLocalDirRect.SetHeight(30)
+		if tool.IsLinux {
+			modLocalDirRect.SetHeight(35)
+		} else {
+			modLocalDirRect.SetHeight(30)
+		}
 		m.modLocalDirBtn.SetBoundsRect(modLocalDirRect)
 		m.modLocalDirBtn.SetParent(m.modLocalBox)
 		m.modLocalDirBtn.SetOnClick(m.modLocalDirBtnClick)
@@ -564,31 +576,40 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
+	// 创建项目
+	if doRunCreate(projectName, projectDir) {
+		go func() {
+			// 更新设计器配置框架目录
+			if config.UpdateFrameworkDir(frameworkDir) {
+				config.UpdateConfig()
+				// 更新框架目录
+				frameworks.Path = config.Config.FrameworkDir
+			}
+			// 释放 LCL 库
+			frameworks.ExtractLCL(enableLCL)
+			// 释放 CEF 库
+			frameworks.ExtractCEF(enableCEF)
+			// 释放 WebView 库
+			frameworks.ExtractWV(enableWV)
 
-	go func() {
-		// 更新设计器配置框架目录
-		if config.UpdateFrameworkDir(frameworkDir) {
-			config.UpdateConfig()
-			// 更新框架目录
-			frameworks.Path = config.Config.FrameworkDir
-		}
-		// 释放 LCL 库
-		frameworks.ExtractLCL(enableLCL)
-		// 释放 CEF 库
-		frameworks.ExtractCEF(enableCEF)
-		// 释放 WebView 库
-		frameworks.ExtractWV(enableWV)
-		// 创建项目
-		doRunCreate(projectName, projectDir)
-		// 创建 windows manifest, syso
+		}()
+		go func() {
+			// 创建 windows manifest, syso
+			if !m.closing {
+				// 重置设计器
+				designer.ResetDesigner()
+				// 恢复按钮
+				m.cancelBtn.SetDisable(false)
+				m.createBtn.SetDisable(false)
+			}
+		}()
+	} else {
 		if !m.closing {
-			// 重置设计器
-			designer.ResetDesigner()
 			// 恢复按钮
 			m.cancelBtn.SetDisable(false)
 			m.createBtn.SetDisable(false)
 		}
-	}()
+	}
 }
 
 func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {
@@ -664,7 +685,7 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 // 模块选择
 func (m *TCreateProjectForm) modBoxChange(sender lcl.IObject) {
 	if m.modBox.ItemIndex() == 1 {
-		m.showError(m.modErrorLabel, m.modBox.BoundsRect(), "＊暂不支持从远程下载")
+		m.showError(m.modErrorLabel, m.modText.BoundsRect(), "＊暂不支持从远程下载")
 		return
 	}
 	m.baseErrorLabel.Hide()
@@ -682,12 +703,12 @@ func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message
 // 验证输入
 func (m *TCreateProjectForm) validateInputs() bool {
 	if strings.TrimSpace(m.projNameEdit.Text()) == "" {
-		m.showError(m.baseErrorLabel, m.projNameEdit.BoundsRect(), "＊项目名为空")
+		m.showError(m.baseErrorLabel, m.projNameText.BoundsRect(), "＊项目名为空")
 		return false
 	}
 	selectProjectPath := strings.TrimSpace(m.projPathEdit.Text())
 	if selectProjectPath == "" {
-		m.showError(m.baseErrorLabel, m.projPathEdit.BoundsRect(), "＊项目目录为空")
+		m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊项目目录为空")
 		return false
 	}
 	//if !tool.IsExist(selectProjectPath) {
@@ -695,7 +716,7 @@ func (m *TCreateProjectForm) validateInputs() bool {
 	//	return false
 	//}
 	if m.modBox.ItemIndex() == 1 {
-		m.showError(m.modErrorLabel, m.modBox.BoundsRect(), "＊暂不支持从远程下载")
+		m.showError(m.modErrorLabel, m.modText.BoundsRect(), "＊暂不支持从远程下载")
 		return false
 	}
 

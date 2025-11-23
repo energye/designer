@@ -27,6 +27,12 @@ import (
 	"syscall"
 )
 
+const (
+	IsWindows = runtime.GOOS == "windows"
+	IsLinux   = runtime.GOOS == "linux"
+	IsDarwin  = runtime.GOOS == "darwin"
+)
+
 // 加载图像到列表
 func ImageListAddPng(imageList lcl.IImageList, filePath string) {
 	data := resources.Images(filePath)

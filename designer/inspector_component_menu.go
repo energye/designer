@@ -46,7 +46,6 @@ func (m *TComponentMenu) Free() {
 	m.copy.SetOnClick(nil)
 	m.paste.SetOnClick(nil)
 	m.delete.SetOnClick(nil)
-	m.treePopupMenu.Free()
 }
 
 // 返回当前选中组件树节点
