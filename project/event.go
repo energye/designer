@@ -26,6 +26,7 @@ func init() {
 		if ok {
 			switch payload.Type {
 			case event.ProjectCreate:
+				// 创建项目
 				runCreate()
 			case event.ProjectLoad:
 				// 加载项目或UI
@@ -34,6 +35,9 @@ func init() {
 			case event.ProjectUpdateForm:
 				formTab := payload.Data.(*designer.FormTab)
 				runUpdate(formTab)
+			case event.ProjectConfig:
+				// 项目(应用)配置
+				runConfigApp()
 			}
 		}
 	}, func() {

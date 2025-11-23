@@ -254,6 +254,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.projectOption.SetShortCut(api.TextToShortCut("Ctrl+F11"))
 	m.projectOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("应用配置")
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectConfig}})
 	})
 	m.setting.Add(m.projectOption)
 }

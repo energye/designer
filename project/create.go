@@ -33,7 +33,7 @@ import (
 // 项目创建, 在指定目录创建新项目
 // 检查目录是否为空
 
-// 创建项目
+// 运行创建项目窗口
 func runCreate() {
 	// 显示创建项目窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
