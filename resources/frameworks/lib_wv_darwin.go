@@ -16,5 +16,7 @@
 
 package frameworks
 
+import "embed"
+
 //go:embed wv/darwin/wv.zip
 var wv embed.FS

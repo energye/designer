@@ -16,5 +16,7 @@
 
 package frameworks
 
+import "embed"
+
 //go:embed wv/linux/wv.zip
 var wv embed.FS
