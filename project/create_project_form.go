@@ -14,8 +14,10 @@
 package project
 
 import (
+	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -66,6 +68,7 @@ type TCreateProjectForm struct {
 	goVersionOK bool
 	box         lcl.IPanel
 	selectDir   lcl.ISelectDirectoryDialog
+
 	// 基础信息部分
 	baseGroupBox    lcl.ILabel
 	baseErrorLabel  lcl.ILabel
@@ -78,9 +81,17 @@ type TCreateProjectForm struct {
 	projTempBox     lcl.IComboBox
 	goVersionText   lcl.ILabel
 	goVersionStatus *wg.TButton
+
+	// 应用信息
 	projIcon        lcl.ILabel
+	projIconBox     lcl.IScrollBox
 	projIconPreview lcl.IImage
 	projIconBtn     *wg.TButton
+	//projProcName    lcl.ILabel
+	//projProcEdit    lcl.IEdit
+	//projDescName    lcl.ILabel
+	//projDescEdit    lcl.IEdit
+
 	// 模块部分
 	modGroupBox   lcl.ILabel
 	modErrorLabel lcl.ILabel
@@ -154,7 +165,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.baseGroupBox.SetParent(m.box)
 
 	m.modGroupBox = lcl.NewLabel(m)
-	m.modGroupBox.SetTop(290)
+	m.modGroupBox.SetTop(300)
 	m.modGroupBox.SetLeft(10)
 	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
 	m.modGroupBox.SetFont(fontLabel)
@@ -267,46 +278,37 @@ func (m *TCreateProjectForm) initComponents() {
 	{
 		m.projIcon = lcl.NewLabel(m)
 		m.projIcon.SetLeft(left)
-		m.projIcon.SetTop(baseTop + 200)
+		m.projIcon.SetTop(baseTop + 205)
 		m.projIcon.SetCaption("　　图标")
 		m.projIcon.SetFont(fontLabel)
 		m.projIcon.SetParent(m.box)
 
+		m.projIconBox = lcl.NewScrollBox(m)
+		m.projIconBox.SetLeft(120)
+		m.projIconBox.SetTop(baseTop + 182)
+		m.projIconBox.SetWidth(70)
+		m.projIconBox.SetHeight(70)
+		m.projIconBox.SetAutoScroll(false)
+		m.projIconBox.SetBorderStyleToBorderStyle(types.BsSingle)
+		//m.projIconBox.BorderSpacing().SetAround(6)
+		m.projIconBox.HorzScrollBar().SetTracking(true)
+		m.projIconBox.HorzScrollBar().SetVisible(true)
+		m.projIconBox.VertScrollBar().SetTracking(true)
+		m.projIconBox.VertScrollBar().SetVisible(true)
+		m.projIconBox.SetParent(m.box)
+		//m.projIconScrollBox.SetOnResize(m.imagePreviewOnPictureChanged)
+
 		m.projIconPreview = lcl.NewImage(m)
-		m.projIconPreview.SetLeft(120)
-		m.projIconPreview.SetTop(baseTop + 180)
-		m.projIconPreview.SetWidth(64)
-		m.projIconPreview.SetHeight(64)
+		m.projIconPreview.SetAlign(types.AlClient)
 		m.projIconPreview.SetAutoSize(true)
 		m.projIconPreview.SetCenter(true)
-		m.projIconPreview.SetParent(m.box)
-		m.projIconPreview.SetOnPaintBackground(func(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {
-			cell := int32(8)
-			bmp := lcl.NewBitmap()
-			bmp.SetPixelFormat(types.Pf24bit)
-			bmp.SetSize(rect.Width(), rect.Height())
-			bmpCanvas := bmp.Canvas()
-			bmpCanvas.BrushToBrush().SetColor(colors.ClWhite)
-			bmpCanvas.FillRectWithIntX4(0, 0, bmp.Width(), bmp.Height())
-			bmpCanvas.BrushToBrush().SetColor(colors.ClLtGray)
-			for i := 0; i < int(bmp.Width()/cell); i++ {
-				for j := 0; j < int(bmp.Height()/cell); j++ {
-					if (i%2 != 0) == (j%2 != 0) {
-						bmpCanvas.FillRectWithIntX4(int32(i)*cell, int32(j)*cell, int32(i+1)*cell, int32(j+1)*cell)
-					}
-				}
-			}
-			sourceRect := types.TRect{Left: 0, Top: 0}
-			sourceRect.SetWidth(bmp.Width())
-			sourceRect.SetHeight(bmp.Height())
-			canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
-		})
-		m.projIconPreview.Picture().LoadFromFile("C:\\app\\energy_designer\\designer\\resources\\images\\icons\\window-icon_64x64.png")
+		m.projIconPreview.SetParent(m.projIconBox)
+		m.projIconPreview.SetOnPaintBackground(m.projIconPreviewPaintBackground)
 
 		m.projIconBtn = wg.NewButton(m)
 		m.projIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
 		m.projIconBtn.SetRadius(3)
-		projIconRect := types.TRect{Left: m.projIconPreview.Left() + m.projIconPreview.Width() + 15, Top: baseTop + 186}
+		projIconRect := types.TRect{Left: m.projIconBox.Left() + m.projIconBox.Width() + 15, Top: baseTop + 191}
 		projIconRect.SetWidth(48)
 		projIconRect.SetHeight(48)
 		m.projIconBtn.SetBoundsRect(projIconRect)
@@ -314,6 +316,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projIconBtn.SetBorderWidth(wg.BbdNone, 1)
 		m.projIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
 		m.projIconBtn.SetParent(m.box)
+		m.projIconBtn.SetOnClick(m.projIconBtnClick)
 
 	}
 	baseTop = 280
@@ -454,6 +457,12 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	//m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
 	//m.WorkAreaCenter()
 
+	mem := lcl.NewMemoryStream()
+	defer mem.Free()
+	lcl.StreamHelper.WriteBuffer(mem, resources.Images("icons/window-icon_64x64.png"))
+	mem.SetPosition(0)
+	m.projIconPreview.Picture().LoadFromStream(mem)
+
 	go m.checkGoVersion()
 }
 
@@ -567,6 +576,38 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			m.createBtn.SetDisable(false)
 		}
 	}()
+}
+
+func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {
+	cell := int32(8)
+	bmp := lcl.NewBitmap()
+	bmp.SetPixelFormat(types.Pf24bit)
+	bmp.SetSize(rect.Width(), rect.Height())
+	bmpCanvas := bmp.Canvas()
+	bmpCanvas.BrushToBrush().SetColor(colors.ClWhite)
+	bmpCanvas.FillRectWithIntX4(0, 0, bmp.Width(), bmp.Height())
+	bmpCanvas.BrushToBrush().SetColor(colors.ClLtGray)
+	for i := 0; i < int(bmp.Width()/cell); i++ {
+		for j := 0; j < int(bmp.Height()/cell); j++ {
+			if (i%2 != 0) == (j%2 != 0) {
+				bmpCanvas.FillRectWithIntX4(int32(i)*cell, int32(j)*cell, int32(i+1)*cell, int32(j+1)*cell)
+			}
+		}
+	}
+	sourceRect := types.TRect{Left: 0, Top: 0}
+	sourceRect.SetWidth(bmp.Width())
+	sourceRect.SetHeight(bmp.Height())
+	canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
+}
+
+func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
+	priceForm := helperform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
+		fmt.Println(filePath)
+	})
+	priceForm.SetWidth(450)
+	priceForm.SetHeight(325)
+	priceForm.WorkAreaCenter()
+	priceForm.ShowModal()
 }
 
 // 模块选择
