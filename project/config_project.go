@@ -21,7 +21,7 @@ import "github.com/energye/lcl/lcl"
 func runConfigApp() {
 	// 显示运行项目(应用)配置窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		form := NewCreateProjectForm()
+		form := NewConfigProjectForm()
 		form.ShowModal()
 	})
 }
