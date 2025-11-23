@@ -581,6 +581,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		frameworks.ExtractWV(enableWV)
 		// 创建项目
 		doRunCreate(projectName, projectDir)
+		// 创建 windows manifest, syso
 		if !m.closing {
 			// 重置设计器
 			designer.ResetDesigner()
