@@ -49,8 +49,8 @@ func (m *TIconEditLink) Create() {
 	m.btn.SetImageIndex(0)
 	m.btn.SetCaption(m.BindData.EditStringValue())
 	m.btn.SetOnClick(func(sender lcl.IObject) {
-		helperform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
-			logs.Debug("TIconEditLink callback 图片目录:", filePath, ok)
+		helperform.NewGraphicPropertyEditor(func(image helperform.ImageInfo) {
+			logs.Debug("TIconEditLink callback 图片目录:", image.FilePath, image.OK)
 		}).ShowModal()
 	})
 	m.btn.SetLayout(types.BlGlyphRight)

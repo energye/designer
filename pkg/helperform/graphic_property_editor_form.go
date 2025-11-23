@@ -24,7 +24,13 @@ import (
 
 // 图片加载
 
-type DialogCallback func(filePath string, ok bool)
+type ImageInfo struct {
+	FilePath string
+	Rect     types.TRect
+	OK       bool
+}
+
+type DialogCallback func(image ImageInfo)
 
 type TGraphicPropertyEditorForm struct {
 	lcl.TEngForm
@@ -115,7 +121,12 @@ func (m *TGraphicPropertyEditorForm) initComponentLayout() {
 		logs.Debug("OKButton().SetOnClick")
 		m.SetModalResult(types.MrOk)
 		if m.dialogCallback != nil {
-			m.dialogCallback(m.imageFilePath, true)
+			br := m.imagePreview.BoundsRect()
+			m.dialogCallback(ImageInfo{
+				FilePath: m.imageFilePath,
+				Rect:     br,
+				OK:       true,
+			})
 		}
 		m.Close()
 	})
@@ -123,7 +134,12 @@ func (m *TGraphicPropertyEditorForm) initComponentLayout() {
 		logs.Debug("CancelButton().SetOnClick")
 		m.SetModalResult(types.MrCancel)
 		if m.dialogCallback != nil {
-			m.dialogCallback(m.imageFilePath, false)
+			br := m.imagePreview.BoundsRect()
+			m.dialogCallback(ImageInfo{
+				FilePath: m.imageFilePath,
+				Rect:     br,
+				OK:       false,
+			})
 		}
 		m.Close()
 	})

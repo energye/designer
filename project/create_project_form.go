@@ -113,7 +113,7 @@ type TCreateProjectForm struct {
 }
 
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
-	logs.Info("TCreateProjectForm FormCreate")
+	logs.Debug("TCreateProjectForm FormCreate")
 	m.SetCaption("新建项目")
 	m.SetWidth(formWidth)
 	m.SetHeight(formHeight)
@@ -450,6 +450,7 @@ func (m *TCreateProjectForm) initComponents() {
 
 // 窗口显示事件
 func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
+	logs.Debug("TCreateProjectForm Show")
 	//width := int32(555)
 	//height := int32(515)
 	//m.SetWidth(width)
@@ -601,8 +602,27 @@ func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, 
 }
 
 func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
-	priceForm := helperform.NewGraphicPropertyEditor(func(filePath string, ok bool) {
-		fmt.Println(filePath)
+	priceForm := helperform.NewGraphicPropertyEditor(func(image helperform.ImageInfo) {
+		//pngBuf := &bytes.Buffer{}
+		//pngBuf.Write(data)
+		//// 解码 png 到 image
+		//pngImg, err := png.Decode(pngBuf)
+		//if err != nil {
+		//	println("[ERROR] OnFavIconUrlChange PNG Decode:", err.Error())
+		//	return
+		//}
+		//pngBounds := pngImg.Bounds()
+		//// 存放缩放后的图像
+		//scaledImg := image.NewRGBA(image.Rect(0, 0, 64, 64))
+		//draw.CatmullRom.Scale(scaledImg, scaledImg.Bounds(), pngImg, pngBounds, draw.Over, nil)
+		//// 最后保存缩放 png
+		//scalePngBuf := &bytes.Buffer{}
+		//if err := png.Encode(scalePngBuf, scaledImg); err != nil {
+		//	println("[ERROR] OnFavIconUrlChange PNG Encode Save Buffer:", err.Error())
+		//	return
+		//}
+		//data := scalePngBuf.Bytes()
+		fmt.Println(image)
 	})
 	priceForm.SetWidth(450)
 	priceForm.SetHeight(325)
