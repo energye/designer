@@ -14,11 +14,8 @@
 package project
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/pkg/config"
-	"github.com/energye/designer/pkg/draw"
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -30,8 +27,6 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
-	"image"
-	"image/png"
 	"os"
 	"strconv"
 	"strings"
@@ -94,6 +89,7 @@ type TCreateProjectForm struct {
 	projIconBox     lcl.IScrollBox
 	projIconPreview lcl.IImage
 	projIconBtn     *wg.TButton
+	projIconData    []byte
 	//projProcName    lcl.ILabel
 	//projProcEdit    lcl.IEdit
 	//projDescName    lcl.ILabel
@@ -469,6 +465,7 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	//m.WorkAreaCenter()
 	m.one.Do(func() {
 		if m.projIconPreview != nil {
+			m.projIconData = resources.Images("icons/window-icon_256x256.png")
 			mem := lcl.NewMemoryStream()
 			defer mem.Free()
 			lcl.StreamHelper.WriteBuffer(mem, resources.Images("icons/window-icon_64x64.png"))
@@ -622,38 +619,32 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 		if !imageInfo.OK {
 			return
 		}
-		data, err := os.ReadFile(imageInfo.FilePath)
-		if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
+		go func() {
+			data, err := os.ReadFile(imageInfo.FilePath)
 			if err != nil {
 				logs.Error("图标加载 PNG Decode:", err.Error())
 				return
 			}
-			pngBuf := &bytes.Buffer{}
-			pngBuf.Write(data)
-			// 解码 png 到 image
-			pngImg, err := png.Decode(pngBuf)
-			if err != nil {
-				logs.Error("图标加载 PNG Decode:", err.Error())
-				return
+			previewData := data
+			if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
+				previewData = tool.Scale(data, 64, 64)
 			}
-			pngBounds := pngImg.Bounds()
-			// 存放缩放后的图像
-			scaledImg := image.NewRGBA(image.Rect(0, 0, 64, 64))
-			draw.CatmullRom.Scale(scaledImg, scaledImg.Bounds(), pngImg, pngBounds, draw.Over, nil)
-			// 最后保存缩放 png
-			scalePngBuf := &bytes.Buffer{}
-			if err := png.Encode(scalePngBuf, scaledImg); err != nil {
-				logs.Error("图标加载 PNG Encode Save Buffer:", err.Error())
-				return
+			// 预览
+			mem := lcl.NewMemoryStream()
+			lcl.StreamHelper.WriteBuffer(mem, previewData)
+			mem.SetPosition(0)
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.projIconPreview.Picture().LoadFromStream(mem)
+				mem.Free()
+			})
+			// 缩放到 256x256
+			saveData := data
+			if imageInfo.Rect.Width() > 256 || imageInfo.Rect.Height() > 256 {
+				saveData = tool.Scale(data, 256, 256)
 			}
-			data = scalePngBuf.Bytes()
-		}
-		mem := lcl.NewMemoryStream()
-		defer mem.Free()
-		lcl.StreamHelper.WriteBuffer(mem, data)
-		mem.SetPosition(0)
-		m.projIconPreview.Picture().LoadFromStream(mem)
-		fmt.Println(imageInfo)
+			m.projIconData = saveData
+		}()
+
 	})
 	priceForm.SetWidth(450)
 	priceForm.SetHeight(325)
