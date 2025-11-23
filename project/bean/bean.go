@@ -17,13 +17,14 @@ import "github.com/energye/designer/pkg/tool"
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name         string       `json:"name"`           // 项目名
-	EGPName      string       `json:"egp_name"`       // 项目配置文件名
-	Version      string       `json:"version"`        // 项目版本
-	Description  string       `json:"description"`    // 项目描述
-	Author       string       `json:"author"`         // 项目作者
-	Package      string       `json:"package"`        // 项目(应用)包名
-	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名
+	Name         string       `json:"name"`           // 项目名 "Your Application"
+	EGPName      string       `json:"egp_name"`       // 项目配置文件名 "xxx.egp"
+	Version      string       `json:"version"`        // 项目版本 "1.0.0"
+	ProductInfo  string       `json:"product_info"`   // 产品信息 "CompanyName.ProductName.AppName"
+	Description  string       `json:"description"`    // 项目描述 "Your application description."
+	Author       string       `json:"author"`         // 项目作者 "Your Name"
+	Package      string       `json:"package"`        // 项目(应用)包名 package "app"
+	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名 "main.go"
 	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
 	ActiveUIForm int          `json:"active_ui_form"` // 当前激活设计的窗体Id
 	Lang         string       `json:"lang"`           // 语言 zh_CN

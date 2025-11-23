@@ -107,17 +107,18 @@ func doRunCreate(name, dir string) {
 	// 项目使用目录名, TODO 以后增加配置窗口
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
-	newEGPFileName := name + consts.EGPExt
 	newProject := new(bean.TProject)
 	newProject.Name = name
-	newProject.EGPName = newEGPFileName
-	newProject.Version = "v0.0.0"
-	newProject.Description = "Project Description"
-	newProject.Author = "Author"
+	newProject.EGPName = name + consts.EGPExt
+	newProject.Version = "1.0.0"
+	newProject.Description = "Your application description."
+	newProject.ProductInfo = "CompanyName.ProductName.AppName"
+	newProject.Author = "Your Name"
 	newProject.Main = "main.go"
 	newProject.Lang = "zh_CN"
 	newProject.Package = consts.AppPackageName
-	if err = Write(dir, newProject); err != nil {
+	// 创建并写入项目配置文件
+	if err = WriteEGPConfig(dir, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
 		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
 		SetGlobalProject("", nil)
@@ -133,7 +134,7 @@ func doRunCreate(name, dir string) {
 }
 
 // 写入项目配置文件
-func Write(path string, project *bean.TProject) error {
+func WriteEGPConfig(path string, project *bean.TProject) error {
 	if project == nil {
 		return errors.New("项目配置为空")
 	}
