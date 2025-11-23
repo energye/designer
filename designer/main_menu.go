@@ -172,6 +172,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
 	exitWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("退出")
+		mainWindow.Close()
 	})
 	m.file.Add(exitWindow)
 }
@@ -183,6 +184,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.build = lcl.NewMenuItem(owner)
 	m.build.SetCaption("构建")
 	m.build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
+	m.build.SetShortCut(api.TextToShortCut("Ctrl+F8"))
 	m.build.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建")
 	})
@@ -191,6 +193,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.cleanBuild = lcl.NewMenuItem(owner)
 	m.cleanBuild.SetCaption("清理构建")
 	m.cleanBuild.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
+	m.cleanBuild.SetShortCut(api.TextToShortCut("Ctrl+Shift+F8"))
 	m.cleanBuild.SetOnClick(func(lcl.IObject) {
 		logs.Debug("清理构建")
 	})
@@ -203,6 +206,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.runApp = lcl.NewMenuItem(owner)
 	m.runApp.SetCaption("运行应用")
 	m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
+	m.runApp.SetShortCut(api.TextToShortCut("F9"))
 	m.runApp.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
 		toolbar.toolbarBtn.onRunPreviewForm(m.runApp)
@@ -229,6 +233,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.buildOption = lcl.NewMenuItem(owner)
 	m.buildOption.SetCaption("构建选项")
 	m.buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
+	m.buildOption.SetShortCut(api.TextToShortCut("Ctrl+F9"))
 	m.buildOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建选项")
 	})
@@ -236,17 +241,19 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 
 	m.environmentOption = lcl.NewMenuItem(owner)
 	m.environmentOption.SetCaption("环境配置")
-	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
+	m.environmentOption.SetShortCut(api.TextToShortCut("Ctrl+F10"))
 	m.environmentOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("环境配置")
 	})
 	m.setting.Add(m.environmentOption)
 
 	m.projectOption = lcl.NewMenuItem(owner)
-	m.projectOption.SetCaption("项目配置")
-	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options_200.png"))
+	m.projectOption.SetCaption("应用配置")
+	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_app_config.png"))
+	m.projectOption.SetShortCut(api.TextToShortCut("Ctrl+F11"))
 	m.projectOption.SetOnClick(func(lcl.IObject) {
-		logs.Debug("项目配置")
+		logs.Debug("应用配置")
 	})
 	m.setting.Add(m.projectOption)
 }
