@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"debug/pe"
 	"errors"
+	"github.com/energye/designer/pkg/winres/version"
 	"io"
-
-	"github.com/tc-hib/winres/version"
 )
 
 // Standard type IDs from  https://docs.microsoft.com/en-us/windows/win32/menurc/resource-types

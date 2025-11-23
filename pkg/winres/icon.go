@@ -5,13 +5,12 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/energye/designer/pkg/resize"
 	"image"
 	"image/color"
 	"image/png"
 	"io"
 	"sort"
-
-	"github.com/nfnt/resize"
 )
 
 // Icon describes a Windows icon.

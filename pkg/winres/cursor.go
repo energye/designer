@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/energye/designer/pkg/bmp"
 	"image"
 	"io"
 	"sort"
-
-	"golang.org/x/image/bmp"
 )
 
 // Cursor describes a mouse cursor.
