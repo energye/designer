@@ -26,6 +26,7 @@ import (
 
 type ImageInfo struct {
 	FilePath string
+	Data     []byte
 	Rect     types.TRect
 	OK       bool
 }
@@ -113,6 +114,21 @@ func (m *TGraphicPropertyEditorForm) initComponentLayout() {
 	m.groupBox.SetParent(m)
 
 	// 确定取消按钮
+	callDialogCallback := func(ok bool) {
+		if m.dialogCallback != nil {
+			br := m.imagePreview.BoundsRect()
+			mem := lcl.NewMemoryStream()
+			m.imagePreview.Picture().SaveToStream(mem)
+			data := lcl.StreamHelper.Read(mem, int(mem.Size()))
+			mem.Free()
+			m.dialogCallback(ImageInfo{
+				FilePath: m.imageFilePath,
+				Rect:     br,
+				Data:     data,
+				OK:       ok,
+			})
+		}
+	}
 	m.okCancelButtonPanel.SetAlign(types.AlBottom)
 	m.okCancelButtonPanel.SetShowButtons(types.NewSet(types.PbOK, types.PbCancel))
 	m.okCancelButtonPanel.OKButton().SetCaption("确定")
@@ -120,27 +136,13 @@ func (m *TGraphicPropertyEditorForm) initComponentLayout() {
 	m.okCancelButtonPanel.OKButton().SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("OKButton().SetOnClick")
 		m.SetModalResult(types.MrOk)
-		if m.dialogCallback != nil {
-			br := m.imagePreview.BoundsRect()
-			m.dialogCallback(ImageInfo{
-				FilePath: m.imageFilePath,
-				Rect:     br,
-				OK:       true,
-			})
-		}
+		callDialogCallback(true)
 		m.Close()
 	})
 	m.okCancelButtonPanel.CancelButton().SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("CancelButton().SetOnClick")
 		m.SetModalResult(types.MrCancel)
-		if m.dialogCallback != nil {
-			br := m.imagePreview.BoundsRect()
-			m.dialogCallback(ImageInfo{
-				FilePath: m.imageFilePath,
-				Rect:     br,
-				OK:       false,
-			})
-		}
+		callDialogCallback(false)
 		m.Close()
 	})
 	m.okCancelButtonPanel.SetParent(m)

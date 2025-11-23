@@ -621,11 +621,20 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 			return
 		}
 		go func() {
-			data, err := os.ReadFile(imageInfo.FilePath)
-			if err != nil {
-				logs.Error("图标加载 PNG Decode:", err.Error())
-				return
+			var (
+				data []byte
+				err  error
+			)
+			if len(imageInfo.Data) > 0 {
+				data = imageInfo.Data
+			} else {
+				data, err = os.ReadFile(imageInfo.FilePath)
+				if err != nil {
+					logs.Error("图标加载 PNG Decode:", err.Error())
+					return
+				}
 			}
+			// TODO 非 png 需要转换为 png
 			previewData := data
 			if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
 				previewData = tool.Scale(data, 64, 64)
