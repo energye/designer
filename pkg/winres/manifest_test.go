@@ -81,6 +81,7 @@ func Test_makeManifest(t *testing.T) {
 
   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
     <application>
+      <supportedOS Id="{6b74dbe7-2026-4c7e-863e-75aa6a3a8f79}"/>
       <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
       <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
       <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>

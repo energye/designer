@@ -71,6 +71,7 @@ const (
 	Win8AndAbove
 	Win81AndAbove
 	Win10AndAbove
+	Win11AndAbove
 )
 
 // ExecutionLevel is used in an AppManifest to set the required execution level.
@@ -83,6 +84,7 @@ const (
 )
 
 const (
+	osWin11    = "{6b74dbe7-2026-4c7e-863e-75aa6a3a8f79}"
 	osWin10    = "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"
 	osWin81    = "{1f676c76-80e1-4239-95bb-83d0f6d0da78}"
 	osWin8     = "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"
@@ -180,6 +182,7 @@ func makeManifest(manifest AppManifest) []byte {
 	}
 
 	vars.SupportedOS = []string{
+		osWin11,
 		osWin10,
 		osWin81,
 		osWin8,
@@ -188,12 +191,14 @@ func makeManifest(manifest AppManifest) []byte {
 	}
 	switch manifest.Compatibility {
 	case Win7AndAbove:
-		vars.SupportedOS = vars.SupportedOS[:4]
+		vars.SupportedOS = vars.SupportedOS[:5]
 	case Win8AndAbove:
-		vars.SupportedOS = vars.SupportedOS[:3]
+		vars.SupportedOS = vars.SupportedOS[:4]
 	case Win81AndAbove:
-		vars.SupportedOS = vars.SupportedOS[:2]
+		vars.SupportedOS = vars.SupportedOS[:3]
 	case Win10AndAbove:
+		vars.SupportedOS = vars.SupportedOS[:2]
+	case Win11AndAbove:
 		vars.SupportedOS = vars.SupportedOS[:1]
 	}
 
@@ -307,14 +312,14 @@ func AppManifestFromXML(data []byte) (AppManifest, error) {
 	}
 	m.Description = x.Description
 
-	m.Compatibility = Win10AndAbove + 1
+	m.Compatibility = Win11AndAbove + 1
 	for _, os := range x.Compatibility.Application.SupportedOS {
 		c := osIDToEnum(os.Id)
 		if c < m.Compatibility {
 			m.Compatibility = c
 		}
 	}
-	if m.Compatibility > Win10AndAbove {
+	if m.Compatibility > Win11AndAbove {
 		m.Compatibility = Win7AndAbove
 	}
 
@@ -389,8 +394,10 @@ func osIDToEnum(osID string) SupportedOS {
 		return Win8AndAbove
 	case osWin81:
 		return Win81AndAbove
+	case osWin10:
+		return Win10AndAbove
 	}
-	return Win10AndAbove
+	return Win11AndAbove
 }
 
 // JSON marshalling:
@@ -407,6 +414,8 @@ func (os SupportedOS) MarshalText() ([]byte, error) {
 		return []byte("win8.1"), nil
 	case Win10AndAbove:
 		return []byte("win10"), nil
+	case Win11AndAbove:
+		return []byte("win11"), nil
 	}
 	return nil, errors.New(errUnknownSupportedOS)
 }
@@ -427,6 +436,9 @@ func (os *SupportedOS) UnmarshalText(b []byte) error {
 		return nil
 	case "win10":
 		*os = Win10AndAbove
+		return nil
+	case "win11":
+		*os = Win11AndAbove
 		return nil
 	}
 	return errors.New(errUnknownSupportedOS)
