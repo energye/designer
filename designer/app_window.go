@@ -24,6 +24,7 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"os"
 	"sync"
+	"time"
 )
 
 var (
@@ -40,6 +41,7 @@ var (
 	splitterWidth    = int32(5)
 	leftToolsWidth   = int32(110)
 	gOnShow          = sync.Once{}
+	gAppEGPPath      string
 )
 
 // 设计器应用窗口
@@ -61,6 +63,11 @@ func SetComponentDefaultColor(control lcl.IWinControl) {
 // 添加组件到主题控件集合
 func AddComponentTheme(control lcl.IWinControl) {
 	themeControls.Add(tool.IntToString(control.Instance()), control)
+}
+
+// 设置应用配置文件路径
+func SetAppEGPPath(path string) {
+	gAppEGPPath = path
 }
 
 // 切换组件主题
@@ -132,10 +139,13 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		consoleText := tool.Buffer{}
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 		WriteConsole(consoleText.String())
-		// 自动打开 energy 项目
 		if len(os.Args) > 1 {
+			// 自动打开 energy 项目
 			filePath := os.Args[1]
 			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+		} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
+			// 自动打开 最后一次打开的项目
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
 		}
 	})
 }
@@ -161,12 +171,20 @@ func (m *TAppWindow) handleClose() {
 	logs.Info("closeHandle")
 	m.closing = true
 	br := m.BoundsRect()
+	// 更新设计器窗口
 	config.UpdateWindow(br.Left, br.Top, br.Width(), br.Height(), m.WindowState())
+	// 更新最后打开的项目
+	config.UpdateLastProject(gAppEGPPath)
+	// 更新配置文件
+	config.UpdateConfig()
 	// 取消所有生成事件
 	event.CancelAll()
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		// 最后在UI线程关闭
-		m.Close()
+	// 延迟关闭
+	time.AfterFunc(time.Second/10, func() {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 最后在UI线程关闭
+			m.Close()
+		})
 	})
 }
 

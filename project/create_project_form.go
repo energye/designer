@@ -570,6 +570,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	go func() {
 		// 更新设计器配置框架目录
 		if config.UpdateFrameworkDir(frameworkDir) {
+			config.UpdateConfig()
 			// 更新框架目录
 			frameworks.Path = config.Config.FrameworkDir
 		}

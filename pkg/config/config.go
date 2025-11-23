@@ -77,10 +77,11 @@ type Tab struct {
 
 // TConfig energy 配置文件
 type TConfig struct {
-	Window       Window `json:"window"`    // 窗口配置
-	FrameworkDir string `json:"framework"` // 框架目录
-	Registry     string `json:"registry"`  // 远程服务配置地址
-	Proxy        string `json:"proxy"`     // 代理地址
+	Window       Window `json:"window"`       // 窗口配置
+	FrameworkDir string `json:"framework"`    // 框架目录
+	Registry     string `json:"registry"`     // 远程服务配置地址
+	Proxy        string `json:"proxy"`        // 代理地址
+	LastProject  string `json:"last_project"` // 最后打开项目
 }
 
 // UpdateWindow 更新窗体配置
@@ -93,10 +94,6 @@ func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
 		Config.Window.Height = h
 	}
 	Config.Window.WindowState = windowState
-	data, e := json.MarshalIndent(Config, "", "\t")
-	err.CheckErr(e)
-	e = os.WriteFile(configPath, data, os.ModePerm)
-	err.CheckErr(e)
 }
 
 // UpdateFrameworkDir 更新设计器的框架存放目录配置
@@ -105,6 +102,20 @@ func UpdateFrameworkDir(frameworkDir string) bool {
 		return false
 	}
 	Config.FrameworkDir = frameworkDir
+	return true
+}
+
+// UpdateLastProject 更新设计器的框架存放目录配置
+func UpdateLastProject(projectEGPPath string) bool {
+	if !tool.IsExist(projectEGPPath) {
+		return false
+	}
+	Config.LastProject = projectEGPPath
+	return true
+}
+
+// UpdateConfig 更新设计器配置到配置文件, 在修改了 Config 后调用
+func UpdateConfig() bool {
 	data, e := json.MarshalIndent(Config, "", "\t")
 	err.CheckErr(e)
 	e = os.WriteFile(configPath, data, os.ModePerm)
