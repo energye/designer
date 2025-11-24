@@ -304,7 +304,8 @@ func (m *FormTab) AddFormNode() lcl.ITreeNode {
 	defer m.tree.EndUpdate()
 	items := m.tree.Items()
 	m.FormRoot.id = nextTreeDataId()
-	newNode := items.AddChild(nil, m.FormRoot.TreeName())
+	treeName := m.FormRoot.TreeName()
+	newNode := items.AddChild(nil, treeName)
 	newNode.SetImageIndex(m.FormRoot.IconIndex())    // 显示图标索引
 	newNode.SetSelectedIndex(m.FormRoot.IconIndex()) // 选中图标索引
 	newNode.SetData(m.FormRoot.instance())

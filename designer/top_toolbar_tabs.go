@@ -77,9 +77,7 @@ func (m *TopToolbar) createComponentTabs() {
 		sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
 		sheet.SetActiveColor(0xE3E3E3)                              // 设置激活颜色
 		sheet.SetColor(0xE3E3E3)                                    // 设置背景色
-		sheet.SetOnShow(func(sender lcl.IObject) {
-			//borderSet()
-		})
+
 		//sheet.Button().SetBorderDirections(types.NewSet())            // 设置默认无边框
 		//sheet.SetAlign(types.AlClient)
 		//sheet.SetParent(m.tab)

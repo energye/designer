@@ -346,10 +346,20 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 
 // 返回组件类名
 func (m *TDesigningComponent) Name() string {
+	name := ""
 	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNon.Name()
+		name = m.objectNon.Name()
 	} else {
-		return m.object.Name()
+		name = m.object.Name()
+	}
+	return name
+}
+
+func (m *TDesigningComponent) SetName(name string) {
+	if m.ComponentType == consts.CtNonVisual {
+		m.objectNon.SetName(name)
+	} else {
+		m.object.SetName(name)
 	}
 }
 
