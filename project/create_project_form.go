@@ -15,6 +15,7 @@ package project
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
@@ -29,6 +30,7 @@ import (
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -550,6 +552,8 @@ func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
 		initDir := gPath
 		if initDir == "" {
 			initDir = exec.Dir
+		} else {
+			initDir = filepath.Join(initDir, "../")
 		}
 		m.selectDir.SetInitialDir(initDir)
 	} else {
@@ -599,8 +603,16 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			// 释放 WebView 库
 			frameworks.ExtractWV(enableWV)
 
-		}()
-		go func() {
+			// go.mod
+			event.ConsoleWriteInfo("go mod tidy")
+			cmd := command.NewCMD()
+			cmd.IsPrint = false
+			cmd.HideWindow = true
+			cmd.Dir = projectDir
+			cmd.Console = func(data string, level command.Level) {
+				event.ConsoleWriteInfo(data)
+			}
+			cmd.Command("go", "mod", "tidy")
 			// 创建 windows manifest, syso
 			if !m.closing {
 				// 恢复按钮

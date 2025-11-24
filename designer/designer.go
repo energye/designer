@@ -306,7 +306,9 @@ func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 // 启用或禁用功能组件
 func SetEnableFuncComponent(enable bool) {
 	mainWindow.mainMenu.SetEnableMenuItems(enable)
-	toolbar.toolbarBtn.SetEnableToolButtons(enable)
+	if toolbar != nil {
+		toolbar.toolbarBtn.SetEnableToolButtons(enable)
+	}
 }
 
 // 启用或禁用保存功能

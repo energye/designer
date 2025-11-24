@@ -19,7 +19,6 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks"
-	"github.com/energye/lcl/tool/command"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -79,16 +78,6 @@ func createProjectDir() {
 			event.ConsoleWriteError("创建项目文件失败:", err.Error())
 		}
 	}
-	// go.mod
-	event.ConsoleWriteInfo("go mod tidy")
-	cmd := command.NewCMD()
-	cmd.IsPrint = false
-	cmd.HideWindow = true
-	cmd.Dir = appRoot
-	cmd.Console = func(data string, level command.Level) {
-		event.ConsoleWriteInfo(data)
-	}
-	cmd.Command("go", "mod", "tidy")
 }
 
 // 构建填充模板数据

@@ -73,13 +73,17 @@ func ClearConsole() {
 
 // 写入控制台
 func (m *BottomBox) WriteConsole(text string) {
-	m.console.console.Lines().Add(text)
-	m.console.console.SetSelStart(m.console.console.SelStart() + int32(len(text)))
+	if m != nil && m.console != nil {
+		m.console.console.Lines().Add(text)
+		m.console.console.SetSelStart(m.console.console.SelStart() + int32(len(text)))
+	}
 }
 
 // 清空控制台
 func (m *BottomBox) ClearConsole() {
-	m.console.console.Lines().Clear()
+	if m != nil && m.console != nil {
+		m.console.console.Lines().Clear()
+	}
 }
 
 // 初始化消息控制台事件
