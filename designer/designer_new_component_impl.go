@@ -598,7 +598,8 @@ func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
 
 // 查找属性节点, 根据属性名路径查找属性节点数据
 // namePaths: 属性名路径, [Font, Style] [Header, Font, Style]
-func (m *TDesigningComponent) FindNodeDataByNamePaths(namePaths []string) (result *vtedit.TEditNodeData) {
+func (m *TDesigningComponent) FindNodeDataByNamePaths(name string) (result *vtedit.TEditNodeData) {
+	namePaths := tool.Split(name, ".") // 属性名路径 Font.Style
 	if len(namePaths) == 0 || m.PropertyList == nil {
 		return nil
 	}

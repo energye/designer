@@ -252,6 +252,11 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	m.componentName = make(map[string]int)
+	if m.FormRoot.object != nil {
+		m.FormRoot.object.Free()
+		m.FormRoot.object = nil
+		m.FormRoot.originObject = nil
+	}
 	m.recover = nil
 	m.tree.Free()
 	m.componentMenu.Free()

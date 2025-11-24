@@ -55,21 +55,20 @@ func (m *FormTab) Recover() {
 	m.tree.BeginUpdate()
 	defer m.tree.EndUpdate()
 
-	// 加载属性到设计器
+	// 1. 加载属性到设计器
 	// 此步骤会初始化并填充设计组件实例
 	m.FormRoot.LoadPropertyToInspector()
-	// 添加到组件树
-	node := m.AddFormNode()
-	// 恢复属性
+	// 2. 恢复属性
 	recoverDesignerComponentProperty(tempRecover.property, m.FormRoot)
-	// 在恢复窗体属性后，所有组件加载完统一渲染
+	// 3. 在恢复窗体属性后，所有组件加载完统一渲染
 	m.FormRoot.SetVisible(false)
 	defer m.FormRoot.SetVisible(true)
-
-	// 恢复子组件
-	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
-	// 恢复的默认切换至当前Form编辑状态
+	// 4. 添加到组件树
+	node := m.AddFormNode()
+	// 5. 恢复的默认切换至当前Form编辑状态
 	node.SetSelected(true)
+	// 6. 恢复子组件
+	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
@@ -82,12 +81,12 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 		if create := GetRegisterComponent(child.ClassName); create != nil {
 			newComp := create(parent.formTab, 0, 0)
 			newComp.SetParent(parent)
-			// 2. 添加到组件树
-			parent.AddChild(newComp)
-			// 加载属性
+			// 1. 加载属性
 			newComp.GetProps()
-			// 恢复组件属性
+			// 2. 恢复组件属性
 			recoverDesignerComponentProperty(child.Properties, newComp)
+			// 3. 添加到组件树
+			parent.AddChild(newComp)
 			// 恢复子组件
 			recoverDesignerChildComponent(child.Child, newComp)
 		}
@@ -99,8 +98,7 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 // 2. 组件属性列表对应的属性Edit值
 func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component *TDesigningComponent) {
 	for _, property := range propertyList {
-		namePaths := tool.Split(property.Name, ".") // 属性名路径 Font.Style
-		propNodeData := component.FindNodeDataByNamePaths(namePaths)
+		propNodeData := component.FindNodeDataByNamePaths(property.Name)
 		if propNodeData != nil {
 			if propNodeData.Type() == consts.PdtCheckBoxList {
 				set := tool.SetToHashSet(property.Value)
