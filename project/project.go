@@ -16,7 +16,6 @@ package project
 import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/project/bean"
-	"path/filepath"
 )
 
 // 项目文件 xxx.egp 配置文件, 存在项目根目录
@@ -43,10 +42,10 @@ func SetGlobalProject(path string, project *bean.TProject) {
 	gPath = path
 	gProject = project
 	if path == "" || project == nil {
-		designer.SetAppEGPPath("")
+		designer.SetAppEGPPath("", "")
 		designer.SetEnableFuncComponent(false)
 	} else {
-		designer.SetAppEGPPath(filepath.Join(path, project.EGPName))
+		designer.SetAppEGPPath(path, project.EGPName)
 		designer.SetEnableFuncComponent(true)
 	}
 }

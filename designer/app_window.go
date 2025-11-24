@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -23,6 +24,7 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -42,6 +44,7 @@ var (
 	leftToolsWidth   = int32(110)
 	gOnShow          = sync.Once{}
 	gAppEGPPath      string
+	gAppName         string
 )
 
 // 设计器应用窗口
@@ -66,8 +69,21 @@ func AddComponentTheme(control lcl.IWinControl) {
 }
 
 // 设置应用配置文件路径
-func SetAppEGPPath(path string) {
-	gAppEGPPath = path
+func SetAppEGPPath(path, name string) {
+	var title string
+	if path == "" {
+		gAppEGPPath = ""
+		title = fmt.Sprintf("%v %v", config.FormConfig.Title, config.FormConfig.Version)
+	} else {
+		gAppEGPPath = filepath.Join(path, name)
+		title = fmt.Sprintf("%v %v - %v (%v)", config.FormConfig.Title, config.FormConfig.Version, name, path)
+	}
+	gAppName = name
+	if name != "" {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			mainWindow.SetCaption(title)
+		})
+	}
 }
 
 // 切换组件主题
@@ -86,7 +102,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Info("FormCreate")
 	cfg := config.FormConfig
 	// 属性
-	m.SetCaption(cfg.Title)
+	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
 	m.SetLeft(cfg.Window.X)
 	m.SetTop(cfg.Window.Y)
