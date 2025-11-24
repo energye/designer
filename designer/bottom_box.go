@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -51,7 +52,9 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.splitter.SetAlign(types.AlLeft)
 	box.splitter.SetWidth(splitterWidth)
 	box.splitter.SetMinSize(50)
-	box.splitter.SetResizeStyle(types.RsNone)
+	if tool.IsWindows {
+		box.splitter.SetResizeStyle(types.RsNone)
+	}
 	box.splitter.SetParent(box.box)
 
 	// 左侧-面板组件对象查看器

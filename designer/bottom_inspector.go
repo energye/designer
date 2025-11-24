@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
@@ -32,7 +33,9 @@ func (m *BottomBox) createInspectorLayout() *Inspector {
 		ins.boxSplitter = lcl.NewSplitter(m.leftBox)
 		ins.boxSplitter.SetAlign(types.AlTop)
 		ins.boxSplitter.SetWidth(splitterWidth)
-		ins.boxSplitter.SetResizeStyle(types.RsNone)
+		if tool.IsWindows {
+			ins.boxSplitter.SetResizeStyle(types.RsNone)
+		}
 		ins.boxSplitter.SetParent(m.leftBox)
 
 		tree := new(InspectorComponentTree)
