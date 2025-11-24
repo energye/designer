@@ -650,7 +650,7 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 				data []byte
 				err  error
 			)
-			if len(imageInfo.Data) > 0 {
+			if imageInfo.FilePath == "" {
 				data = imageInfo.Data
 			} else {
 				data, err = os.ReadFile(imageInfo.FilePath)
@@ -659,7 +659,15 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 					return
 				}
 			}
-			// TODO 非 png 需要转换为 png
+			//imageFormat, err := tool.DetectImageFormatByte(data)
+			//if err != nil {
+			//	logs.Error("图标加载 PNG DetectImageFormatByte:", err.Error())
+			//	return
+			//}
+			//if !tool.Equal(imageFormat, "png") {
+			//	// TODO 非 png 需要转换为 png
+			//}
+
 			previewData := data
 			if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
 				previewData = tool.Scale(data, 64, 64)
