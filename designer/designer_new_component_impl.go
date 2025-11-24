@@ -68,6 +68,12 @@ func SetDesignMode(component lcl.IComponent) {
 }
 
 func (m *TDesigningComponent) Free() {
+	if m.ComponentType == consts.CtNonVisual {
+		m.objectNonWrap.Free()
+	} else {
+		m.Object().Free()
+	}
+
 	m.formTab = nil
 	m.parent = nil
 	for _, child := range m.Child {
