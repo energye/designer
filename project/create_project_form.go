@@ -14,6 +14,7 @@
 package project
 
 import (
+	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
@@ -616,6 +617,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 				m.cancelBtn.SetDisable(false)
 				m.createBtn.SetDisable(false)
 			}
+			designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", gProject.Name, gPath))
 		}()
 	} else {
 		if !m.closing {

@@ -15,6 +15,7 @@ package project
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
@@ -84,7 +85,7 @@ func LoadProject(path, egpFilePath string) {
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 	// 加载完后设置窗口标题
-	designer.UpdateDesignerTitle(gPath)
+	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, gPath))
 }
 
 // LoadUI 加载UI布局文件
