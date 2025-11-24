@@ -525,9 +525,6 @@ func (m *TCreateProjectForm) checkGoVersion() {
 					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/weep.png"))
 				}
 				m.goVersionStatus.SetText(buf.String())
-				m.goVersionStatus.ForcePaint(func() {
-					m.goVersionStatus.Invalidate()
-				})
 			})
 		}
 		result = true
