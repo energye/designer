@@ -38,6 +38,7 @@ type Designer struct {
 	tab           *wg.TTab         // 设计器 tabs
 	tabMenu       lcl.IPopupMenu   // tab 菜单
 	designerForms map[int]*FormTab // 设计器窗体列表
+	designerCount int              // 设计器窗总数，动态更新
 }
 
 // 创建设计器的布局
@@ -106,7 +107,6 @@ func (m *Designer) hideAllComponentTrees() {
 func ResetDesigner() {
 	// 关闭所有已打开的设计窗体
 	tempForms := designer.designerForms
-	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
 	// 关闭之前打开的所有设计窗体
 	for _, form := range tempForms {
 		if form == nil {
@@ -114,10 +114,25 @@ func ResetDesigner() {
 		}
 		form.Close()
 	}
+	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
+	SetDesignerCount(0)
+}
+
+// SetDesignerCount
+// 设置当前设计器的窗体总数
+// 当前设计器添加窗体时 +1
+// 当前设计器删除窗体时 -1
+// 当前设计器重置时 =0
+func SetDesignerCount(count int) {
+	if count < 0 {
+		count = 0
+	}
+	designer.designerCount = count
 }
 
 // 添加一个窗体设计器 form tab
 func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
+	SetDesignerCount(m.designerCount + 1)
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
@@ -143,7 +158,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	if len(defaultId) > 0 {
 		form.Id = defaultId[0]
 	} else {
-		form.Id = len(m.designerForms) + 1
+		form.Id = m.designerCount
 	}
 	form.name = fmt.Sprintf("Form%v", form.Id)
 	// 窗体ID

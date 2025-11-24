@@ -261,8 +261,8 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	m.recover = nil
 	m.tree.Free()
 	m.componentMenu.Free()
-	// 标记为 nil, 创建新窗体时序号根据长度自动增加
-	designer.designerForms[m.Id] = nil
+	// 在设计器列表删除当前窗体
+	delete(designer.designerForms, m.Id)
 	if len(designer.tab.Pages()) == 0 {
 		designer.tab.EnableScrollButton(false)
 	}

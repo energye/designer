@@ -23,6 +23,7 @@ import (
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
+	"github.com/energye/lcl/tool/exec"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
@@ -546,7 +547,11 @@ func (m *TCreateProjectForm) modLocalDirBtnClick(sender lcl.IObject) {
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
 	m.selectDir.SetTitle("新建项目")
 	if m.projPathEdit.Text() == "" {
-		//m.projPathDir.SetFileName(exec.Dir)
+		initDir := gPath
+		if initDir == "" {
+			initDir = exec.Dir
+		}
+		m.selectDir.SetInitialDir(initDir)
 	} else {
 		m.selectDir.SetInitialDir(m.projPathEdit.Text())
 	}
@@ -576,6 +581,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
+	// 重置设计器
+	designer.ResetDesigner()
 	// 创建项目
 	if doRunCreate(projectName, projectDir) {
 		go func() {
@@ -596,8 +603,6 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		go func() {
 			// 创建 windows manifest, syso
 			if !m.closing {
-				// 重置设计器
-				designer.ResetDesigner()
 				// 恢复按钮
 				m.cancelBtn.SetDisable(false)
 				m.createBtn.SetDisable(false)
