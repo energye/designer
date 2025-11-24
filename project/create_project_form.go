@@ -655,7 +655,7 @@ func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
 			} else {
 				data, err = os.ReadFile(imageInfo.FilePath)
 				if err != nil {
-					logs.Error("图标加载 PNG Decode:", err.Error())
+					logs.Error("图标加载 PNG ReadFile:", err.Error())
 					return
 				}
 			}
