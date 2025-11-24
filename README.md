@@ -75,8 +75,14 @@ replace (
 
 ## 截图
 
+![ENERGY-designer-create-project.png](docs/image/ENERGY-designer-create-project.png)
+
 ![ENERGY-designer-run.png](docs%2Fimage%2FENERGY-designer-run.png)
 
 ![ENERGY-designer.png](docs%2Fimage%2FENERGY-designer.png)
 
+![ENERGY-designer-linux.png](docs/image/ENERGY-designer-linux.png)
+
 ![ENERGY-designer-preview.png](docs%2Fimage%2FENERGY-designer-preview.png)
+
+![ENERGY-designer-linux-preview.png](docs/image/ENERGY-designer-linux-preview.png)
