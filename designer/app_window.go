@@ -154,13 +154,15 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		consoleText := tool.Buffer{}
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 		WriteConsole(consoleText.String())
-		if len(os.Args) > 1 {
-			// 自动打开 energy 项目
-			filePath := os.Args[1]
-			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
-		} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
-			// 自动打开 最后一次打开的项目
-			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
+		if true { // 一个开关, 动态配置
+			if len(os.Args) > 1 {
+				// 自动打开 energy 项目
+				filePath := os.Args[1]
+				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+			} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
+				// 自动打开 最后一次打开的项目
+				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
+			}
 		}
 	})
 }

@@ -80,6 +80,8 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 
 	// 创建窗体设计器
 	designer = box.createFromDesignerLayout()
+
+	// 创建消息控制台
 	box.createConsole()
 
 	return box
