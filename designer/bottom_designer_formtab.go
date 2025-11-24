@@ -142,6 +142,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			// 2. 添加到组件树
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
 				owner.AddChild(newComp)
+				newComp.node.SetSelected(true) // 选中
 			})
 			// 放置对象
 			triggerUIGeneration(newComp)
@@ -340,7 +341,6 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		child.node = node
 		node.SetImageIndex(child.IconIndex())    // 显示图标索引
 		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
-		node.SetSelected(true)                   // 选中
 		node.SetData(child.instance())           // 设置数据为当前实例
 		// 添加到设计组件列表
 		m.AddComponentToList(child)
