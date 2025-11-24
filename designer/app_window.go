@@ -189,7 +189,7 @@ func (m *TAppWindow) handleClose() {
 }
 
 func (m *TAppWindow) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
-	logs.Info("OnClose")
+	logs.Info("OnClose closing:", m.closing)
 }
 
 func AddOnShow(fn func()) {
