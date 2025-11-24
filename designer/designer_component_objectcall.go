@@ -111,8 +111,6 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 		updateComponentMutex.Unlock()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 更改属性之前隐藏和重新显示
-			m.drag.Hide()
-			defer m.drag.Show()
 			m.doUpdateComponentPropertyToObject(updateNodeData)
 		})
 	})

@@ -13,12 +13,16 @@
 
 package mapper
 
-import "github.com/energye/designer/pkg/dast"
+import (
+	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/dast"
+	"path/filepath"
+)
 
 // 获取映射的类型值
 func GetLCL(name string) any {
-	// TODO 这个文件需要通过配置动态获取
-	fileName := "C:\\app\\workspace\\gen\\gout\\lcl\\go\\types\\lcl.go"
-	val := dast.GetConstValue(fileName, name)
+	frameDir := config.Config.FrameworkDir
+	srcLCLTypes := filepath.Join(frameDir, "src", "lcl", "types", "lcl.go")
+	val := dast.GetConstValue(srcLCLTypes, name)
 	return val
 }
