@@ -74,6 +74,7 @@ func ClearConsole() {
 // 写入控制台
 func (m *BottomBox) WriteConsole(text string) {
 	m.console.console.Lines().Add(text)
+	m.console.console.SetSelStart(m.console.console.SelStart() + int32(len(text)))
 }
 
 // 清空控制台
