@@ -15,8 +15,13 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"github.com/energye/lcl/types/font"
+	"github.com/energye/widget/wg"
 	"sync"
 )
 
@@ -39,6 +44,24 @@ type TConfigProjectForm struct {
 	one       sync.Once
 	box       lcl.IPanel
 	selectDir lcl.ISelectDirectoryDialog
+
+	appConfigTitle lcl.ILabel
+
+	appNameText lcl.ILabel
+	appNameEdit lcl.IEdit
+
+	appIcon        lcl.ILabel
+	appIconBox     lcl.IScrollBox
+	appIconPreview lcl.IImage
+	appIconBtn     *wg.TButton
+	appIconData    []byte
+
+	platformTitle lcl.ILabel
+
+	platformTab            *wg.TTab
+	platformTabPageWindows *wg.TPage
+	platformTabPageMacOS   *wg.TPage
+	platformTabPageLinux   *wg.TPage
 }
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
@@ -88,4 +111,153 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 func (m *TConfigProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
+	left := int32(35)
+	textLeft := int32(110)
+	textWidth := int32(355)
+	fontSize := int32(12)
+	if tool.IsLinux {
+		fontSize = 10
+	}
+
+	fontLabel := lcl.NewFont()
+	fontLabel.SetName("微软雅黑")
+	//fontLabel.SetStyle(types.NewSet(types.FsBold))
+	fontLabel.SetSize(12)
+	fontLabel.SetCharSet(font.CHINESEBIG5_CHARSET)
+	//fontLabel.SetColor(colors.ClGreen)
+	fontText := lcl.NewFont()
+	fontText.SetName("微软雅黑 Light")
+	fontText.SetSize(fontSize)
+
+	m.appConfigTitle = lcl.NewLabel(m)
+	m.appConfigTitle.SetLeft(10)
+	m.appConfigTitle.SetTop(10)
+	m.appConfigTitle.SetCaption("应用程序配置")
+	m.appConfigTitle.SetFont(fontLabel)
+	m.appConfigTitle.Font().SetSize(10)
+	m.appConfigTitle.SetParent(m.box)
+
+	baseTop := int32(40)
+	{
+		m.appNameText = lcl.NewLabel(m)
+		m.appNameText.SetLeft(left)
+		m.appNameText.SetTop(baseTop)
+		m.appNameText.SetCaption("应用标题")
+		m.appNameText.SetFont(fontLabel)
+		m.appNameText.SetParent(m.box)
+
+		m.appNameEdit = lcl.NewEdit(m)
+		m.appNameEdit.SetLeft(textLeft)
+		m.appNameEdit.SetTop(baseTop - 5)
+		m.appNameEdit.SetWidth(textWidth)
+		m.appNameEdit.SetFont(fontText)
+		m.appNameEdit.SetDoubleBuffered(true)
+		m.appNameEdit.SetParentColor(false)
+		m.appNameEdit.SetParent(m.box)
+		m.appNameEdit.SetTextHint("如: 我的应用")
+	}
+
+	{
+		m.appIcon = lcl.NewLabel(m)
+		m.appIcon.SetLeft(left)
+		m.appIcon.SetTop(baseTop + 50)
+		m.appIcon.SetCaption("应用图标")
+		m.appIcon.SetFont(fontLabel)
+		m.appIcon.SetParent(m.box)
+
+		m.appIconBox = lcl.NewScrollBox(m)
+		m.appIconBox.SetLeft(textLeft)
+		m.appIconBox.SetTop(baseTop + 50)
+		m.appIconBox.SetWidth(128)
+		m.appIconBox.SetHeight(128)
+		m.appIconBox.SetAutoScroll(false)
+		m.appIconBox.SetBorderStyleToBorderStyle(types.BsSingle)
+		//m.appIconBox.BorderSpacing().SetAround(6)
+		m.appIconBox.HorzScrollBar().SetTracking(true)
+		m.appIconBox.HorzScrollBar().SetVisible(true)
+		m.appIconBox.VertScrollBar().SetTracking(true)
+		m.appIconBox.VertScrollBar().SetVisible(true)
+		m.appIconBox.SetParent(m.box)
+		//m.appIconScrollBox.SetOnResize(m.imagePreviewOnPictureChanged)
+
+		m.appIconPreview = lcl.NewImage(m)
+		m.appIconPreview.SetAlign(types.AlClient)
+		m.appIconPreview.SetAutoSize(true)
+		m.appIconPreview.SetCenter(true)
+		m.appIconPreview.SetParent(m.appIconBox)
+		//m.appIconPreview.SetOnPaintBackground(m.appIconPreviewPaintBackground)
+
+		m.appIconBtn = wg.NewButton(m)
+		m.appIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
+		m.appIconBtn.SetRadius(3)
+		appIconRect := types.TRect{Left: m.appIconBox.Left() + m.appIconBox.Width() + 15, Top: baseTop + 50}
+		appIconRect.SetWidth(48)
+		appIconRect.SetHeight(48)
+		m.appIconBtn.SetBoundsRect(appIconRect)
+		m.appIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
+		m.appIconBtn.SetBorderWidth(wg.BbdNone, 1)
+		m.appIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
+		m.appIconBtn.SetParent(m.box)
+		//m.appIconBtn.SetOnClick(m.appIconBtnClick)
+	}
+
+	{
+		m.platformTitle = lcl.NewLabel(m)
+		m.platformTitle.SetLeft(10)
+		m.platformTitle.SetTop(baseTop + 190)
+		m.platformTitle.SetCaption("应用程序-平台配置")
+		m.platformTitle.SetFont(fontLabel)
+		m.platformTitle.Font().SetSize(10)
+		m.platformTitle.SetParent(m.box)
+	}
+
+	{
+		tabBtnColor := colors.TColor(0xF3F4F6)
+
+		m.platformTab = wg.NewTab(m)
+		m.platformTab.SetBounds(0, baseTop+220, m.Width(), m.Height()-(baseTop+200))
+		m.platformTab.SetColor(tabBtnColor)
+		m.platformTab.SetBorderStyleToBorderStyle(types.BsSingle)
+		m.platformTab.EnableScrollButton(false)
+		m.platformTab.SetParent(m.box)
+		m.platformTab.SetOnChange(func(sender lcl.IObject) {
+			for _, page := range m.platformTab.Pages() {
+				if page.Active() {
+					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
+				} else {
+					page.Button().SetBorderDirections(0)
+				}
+			}
+		})
+
+		// 设置标签按钮样式
+		setTabPageStyle := func(page *wg.TPage) {
+			page.SetColor(m.platformTab.Color()) // 设置背景色
+			page.Button().Font().SetColor(colors.ClBlack)
+			page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
+			page.Button().SetBorderWidth(wg.BbdBottom, 2)
+			page.Button().SetBorderColor(wg.BbdBottom, colors.ClBlue)
+			page.Button().SetColor(tabBtnColor)
+			page.SetDefaultColor(0xE3E3E3)
+			page.SetActiveColor(wg.DarkenColor(0xE3E3E3, 0.15))
+		}
+
+		m.platformTabPageWindows = m.platformTab.NewPage()
+		m.platformTabPageWindows.SetCaption("　Windows　")
+		m.platformTabPageWindows.Button().SetIconFavoriteFormBytes(resources.Images("button/windows.png"))
+		setTabPageStyle(m.platformTabPageWindows)
+
+		m.platformTabPageMacOS = m.platformTab.NewPage()
+		m.platformTabPageMacOS.SetCaption("　MacOS　")
+		m.platformTabPageMacOS.Button().SetIconFavoriteFormBytes(resources.Images("button/macos.png"))
+		setTabPageStyle(m.platformTabPageMacOS)
+
+		m.platformTabPageLinux = m.platformTab.NewPage()
+		m.platformTabPageLinux.SetCaption("　Linux　")
+		m.platformTabPageLinux.Button().SetIconFavoriteFormBytes(resources.Images("button/linux.png"))
+		setTabPageStyle(m.platformTabPageLinux)
+
+		m.platformTabPageWindows.SetActive(true)
+
+	}
 }

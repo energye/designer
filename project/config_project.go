@@ -23,5 +23,6 @@ func runConfigApp() {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewConfigProjectForm()
 		form.ShowModal()
+		//form.Show()
 	})
 }
