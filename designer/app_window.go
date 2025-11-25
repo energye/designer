@@ -38,7 +38,7 @@ var (
 	imageItem        *tool.ImageList
 	imageMenu        *tool.ImageList
 	imageTabComp     *tool.ImageList
-	themeControls    tool.HashMap[lcl.IWinControl]
+	themeControls    tool.HashMap[string, lcl.IWinControl]
 	splitterWidth    = int32(5)
 	leftToolsWidth   = int32(110)
 	gOnShow          = sync.Once{}

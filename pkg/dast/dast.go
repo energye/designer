@@ -23,10 +23,10 @@ import (
 	"path/filepath"
 )
 
-var astMap *tool.HashMap[*ast.File]
+var astMap *tool.HashMap[string, *ast.File]
 
 func init() {
-	astMap = tool.NewHashMap[*ast.File]()
+	astMap = tool.NewHashMap[string, *ast.File]()
 }
 
 func mustFile(filename string, src any) *ast.File {

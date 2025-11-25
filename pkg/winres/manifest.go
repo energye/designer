@@ -66,7 +66,7 @@ const (
 type SupportedOS int
 
 const (
-	WinVistaAndAbove SupportedOS = iota - 1
+	WinVistaAndAbove SupportedOS = iota
 	Win7AndAbove
 	Win8AndAbove
 	Win81AndAbove
@@ -190,6 +190,8 @@ func makeManifest(manifest AppManifest) []byte {
 		osWinVista,
 	}
 	switch manifest.Compatibility {
+	case WinVistaAndAbove:
+		vars.SupportedOS = vars.SupportedOS[:]
 	case Win7AndAbove:
 		vars.SupportedOS = vars.SupportedOS[:5]
 	case Win8AndAbove:

@@ -10,9 +10,9 @@ type Array[T comparable] struct {
 	values []T
 }
 
-type ArrayMap[T comparable] struct {
-	keys   []string
-	values map[string]T
+type ArrayMap[K, T comparable] struct {
+	keys   []K
+	values map[K]T
 }
 
 type HashSet struct {
@@ -24,8 +24,8 @@ type ArraySet struct {
 	hash map[string]bool
 }
 
-type HashMap[T comparable] struct {
-	values map[string]T
+type HashMap[K, T comparable] struct {
+	values map[K]T
 }
 
 func NewArray[T comparable]() *Array[T] {
@@ -155,11 +155,11 @@ func (m *ArraySet) Sort() {
 	sort.Strings(m.keys)
 }
 
-func (m *ArrayMap[T]) Del(key string) {
+func (m *ArrayMap[K, T]) Del(key K) {
 	if _, ok := m.values[key]; ok {
 		delete(m.values, key)
 		for idx, tmpKey := range m.keys {
-			if Equal(key, tmpKey) {
+			if key == tmpKey {
 				m.keys = append(m.keys[:idx], m.keys[idx+1:]...)
 				break
 			}
@@ -167,18 +167,18 @@ func (m *ArrayMap[T]) Del(key string) {
 	}
 }
 
-func NewArrayMap[T comparable]() *ArrayMap[T] {
-	return &ArrayMap[T]{keys: make([]string, 0), values: make(map[string]T)}
+func NewArrayMap[K, T comparable]() *ArrayMap[K, T] {
+	return &ArrayMap[K, T]{keys: make([]K, 0), values: make(map[K]T)}
 }
 
-func (m *ArrayMap[T]) ContainsKey(key string) bool {
+func (m *ArrayMap[K, T]) ContainsKey(key K) bool {
 	if _, ok := m.values[key]; ok {
 		return true
 	}
 	return false
 }
 
-func (m *ArrayMap[T]) ContainsValue(value T) bool {
+func (m *ArrayMap[K, T]) ContainsValue(value T) bool {
 	for _, val := range m.values {
 		if val == value {
 			return true
@@ -187,9 +187,9 @@ func (m *ArrayMap[T]) ContainsValue(value T) bool {
 	return false
 }
 
-func (m *ArrayMap[T]) Add(key string, value T) {
+func (m *ArrayMap[K, T]) Add(key K, value T) {
 	if m.values == nil {
-		m.values = make(map[string]T)
+		m.values = make(map[K]T)
 	}
 	if _, ok := m.values[key]; !ok {
 		m.keys = append(m.keys, key)
@@ -197,21 +197,21 @@ func (m *ArrayMap[T]) Add(key string, value T) {
 	m.values[key] = value
 }
 
-func (m *ArrayMap[T]) Get(key string) T {
+func (m *ArrayMap[K, T]) Get(key K) T {
 	return m.values[key]
 }
 
-func (m *ArrayMap[T]) Keys() []string {
+func (m *ArrayMap[K, T]) Keys() []K {
 	return m.keys
 }
 
-func (m *ArrayMap[T]) Values() (result []T) {
+func (m *ArrayMap[K, T]) Values() (result []T) {
 	for _, key := range m.keys {
 		result = append(result, m.values[key])
 	}
 	return
 }
-func (m *ArrayMap[T]) Iterate(fn func(key string, value T) bool) {
+func (m *ArrayMap[K, T]) Iterate(fn func(key K, value T) bool) {
 	if fn == nil {
 		return
 	}
@@ -222,18 +222,18 @@ func (m *ArrayMap[T]) Iterate(fn func(key string, value T) bool) {
 	}
 }
 
-func NewHashMap[T comparable]() *HashMap[T] {
-	return &HashMap[T]{values: make(map[string]T)}
+func NewHashMap[K, T comparable]() *HashMap[K, T] {
+	return &HashMap[K, T]{values: make(map[K]T)}
 }
 
-func (m *HashMap[T]) ContainsKey(key string) bool {
+func (m *HashMap[K, T]) ContainsKey(key K) bool {
 	if _, ok := m.values[key]; ok {
 		return true
 	}
 	return false
 }
 
-func (m *HashMap[T]) ContainsValue(value T) bool {
+func (m *HashMap[K, T]) ContainsValue(value T) bool {
 	for _, val := range m.values {
 		if val == value {
 			return true
@@ -242,22 +242,22 @@ func (m *HashMap[T]) ContainsValue(value T) bool {
 	return false
 }
 
-func (m *HashMap[T]) Add(key string, value T) {
+func (m *HashMap[K, T]) Add(key K, value T) {
 	if m.values == nil {
-		m.values = make(map[string]T)
+		m.values = make(map[K]T)
 	}
 	m.values[key] = value
 }
 
-func (m *HashMap[T]) Get(key string) T {
+func (m *HashMap[K, T]) Get(key K) T {
 	return m.values[key]
 }
 
-func (m *HashMap[T]) Values() map[string]T {
+func (m *HashMap[K, T]) Values() map[K]T {
 	return m.values
 }
 
-func (m *HashMap[T]) Iterate(fn func(key string, value T) bool) {
+func (m *HashMap[K, T]) Iterate(fn func(key K, value T) bool) {
 	if fn == nil {
 		return
 	}

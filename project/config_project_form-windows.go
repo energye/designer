@@ -15,6 +15,8 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/winres"
+	"github.com/energye/designer/project/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -206,28 +208,35 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 // 并设置默认选中项为第一个选项
 func (m *TConfigProjectForm) manifestDataInit() {
 	compatibilityOSBoxItems := m.compatibilityOSBox.Items()
-	compatibilityOSBoxItems.Add("Windows Vista")
-	compatibilityOSBoxItems.Add("Windows 7")
-	compatibilityOSBoxItems.Add("Windows 8")
-	compatibilityOSBoxItems.Add("Windows 8.1")
-	compatibilityOSBoxItems.Add("Windows 10")
-	compatibilityOSBoxItems.Add("Windows 11")
-	m.compatibilityOSBox.SetItemIndex(0)
+	for _, item := range bean.CompatibilityOSList.Values() {
+		compatibilityOSBoxItems.Add(item)
+	}
+	m.compatibilityOSBox.SetItemIndex(int32(winres.WinVistaAndAbove))
 
 	dpiBoxItems := m.dpiBox.Items()
-	dpiBoxItems.Add("System (true)")
-	dpiBoxItems.Add("UnAware (false)")
-	dpiBoxItems.Add("PerMonitor (true/PM)")
-	dpiBoxItems.Add("PerMonitorV2 (true/PM-V2)")
+	for _, item := range bean.DPIList.Values() {
+		dpiBoxItems.Add(item)
+	}
 	m.dpiBox.SetItemIndex(0)
 
 	runLevelBoxItems := m.runLevelBox.Items()
-	runLevelBoxItems.Add("AsInvoker (当前用户)")
-	runLevelBoxItems.Add("HighestAvailable (最高可用权限)")
-	runLevelBoxItems.Add("RequireAdministrator (要求管理员)")
+	for _, item := range bean.RunLevelList.Values() {
+		runLevelBoxItems.Add(item)
+	}
 	m.runLevelBox.SetItemIndex(0)
 }
 
+// saveWindows 保存 Windows 平台的配置信息
+// 该函数负责将 Windows 平台相关的配置数据进行持久化存储，
+// 包括应用程序的元数据、兼容性设置、DPI 配置以及各种 Manifest 属性等。
+// 最后生成一个完整的 Manifest 文件，并将其保存到项目目录中。
 func (m *TConfigProjectForm) saveWindows() {
+	// TODO: 实现 Windows 配置的保存逻辑
+	// 需要保存的配置包括：
+	// 1. 应用程序基本信息：名称、描述、版本
+	// 2. 兼容性设置：目标操作系统
+	// 3. DPI 设置：DPI 感知模式
+	// 4. 执行权限：运行级别
+	// 5. 各种功能开关状态：uiAccess、autoElevate 等复选框状态
 
 }

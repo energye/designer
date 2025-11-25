@@ -113,13 +113,9 @@ func doRunCreate(name, dir string) bool {
 	newProject := new(bean.TProject)
 	newProject.Name = name
 	newProject.EGPName = name + consts.EGPExt
-	newProject.Version = "1.0.0"
-	newProject.Description = "Your application description."
-	newProject.ProductInfo = "CompanyName.ProductName.AppName"
-	newProject.Author = "Your Name"
 	newProject.Main = "main.go"
-	newProject.Lang = "zh_CN"
 	newProject.Package = consts.AppPackageName
+	newProject.InitAppOption()
 	// 创建并写入项目配置文件
 	if err = WriteEGPConfig(dir, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())

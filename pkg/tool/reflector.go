@@ -29,8 +29,8 @@ type TMethod struct {
 }
 
 // GetAllMethods 获取结构体及其嵌入结构体的所有导出方法
-func methodNames(t reflect.Type) *ArrayMap[*TMethod] {
-	methods := NewArrayMap[*TMethod]()
+func methodNames(t reflect.Type) *ArrayMap[string, *TMethod] {
+	methods := NewArrayMap[string, *TMethod]()
 	collectMethods(t, 0, methods)
 	if t.Kind() != reflect.Ptr {
 		ptrType := reflect.PtrTo(t)
@@ -40,7 +40,7 @@ func methodNames(t reflect.Type) *ArrayMap[*TMethod] {
 }
 
 // collectMethods 递归收集方法
-func collectMethods(t reflect.Type, level int, methods *ArrayMap[*TMethod]) {
+func collectMethods(t reflect.Type, level int, methods *ArrayMap[string, *TMethod]) {
 	originalType := t
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -80,7 +80,7 @@ func collectMethods(t reflect.Type, level int, methods *ArrayMap[*TMethod]) {
 // 返回值:
 //
 //	*ArrayMap[string]: 包含所有方法名称的ArrayMap指针，如果输入为nil或无法获取类型信息则返回nil
-func GetObjectMethodNames(v any) *ArrayMap[*TMethod] {
+func GetObjectMethodNames(v any) *ArrayMap[string, *TMethod] {
 	if v == nil {
 		return nil
 	}
@@ -93,7 +93,7 @@ func GetObjectMethodNames(v any) *ArrayMap[*TMethod] {
 }
 
 // 修复属性信息
-func FixPropInfo(methods *ArrayMap[*TMethod], prop *lcl.ComponentProperties) {
+func FixPropInfo(methods *ArrayMap[string, *TMethod], prop *lcl.ComponentProperties) {
 	if methods == nil {
 		return
 	}
