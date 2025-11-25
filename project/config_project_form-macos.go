@@ -15,8 +15,12 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/lcl"
 )
 
 func (m *TConfigProjectForm) initMacOSOptions() {
 	logs.Debug("TConfigProjectForm initMacOSOptions")
+	test := lcl.NewLabel(m)
+	test.SetParent(m.platformTabPageMacOS)
+	test.SetCaption("MacOS")
 }

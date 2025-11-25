@@ -124,16 +124,16 @@ func (m *TConfigProjectForm) OnClose(sender lcl.IObject, closeAction *types.TClo
 func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 	logs.Debug("TConfigProjectForm Show")
 	m.one.Do(func() {
-		addSize := int32(20)
+		addSize := int32(60)
 		br := m.BoundsRect()
 		br.SetWidth(configProjectFormWidth)
 		br.SetHeight(configProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		//constr := m.Constraints()
-		//constr.SetMaxWidth(configProjectFormWidth)
-		//constr.SetMaxHeight(configProjectFormHeight + addSize)
-		//constr.SetMinWidth(configProjectFormWidth)
-		//constr.SetMinHeight(configProjectFormHeight + addSize)
+		constr := m.Constraints()
+		constr.SetMaxWidth(configProjectFormWidth)
+		constr.SetMaxHeight(configProjectFormHeight + addSize)
+		constr.SetMinWidth(configProjectFormWidth)
+		constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 	})
 }
@@ -143,7 +143,6 @@ func (m *TConfigProjectForm) initComponents() {
 
 	left := int32(35)
 	textLeft := int32(100)
-	textWidth := int32(355)
 
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
@@ -169,10 +168,10 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appTitleEdit = lcl.NewEdit(m)
 		m.appTitleEdit.SetLeft(textLeft)
 		m.appTitleEdit.SetTop(baseTop - 5)
-		m.appTitleEdit.SetWidth(textWidth)
+		m.appTitleEdit.SetWidth(440)
 		m.appTitleEdit.SetFont(m.font)
 		m.appTitleEdit.SetParent(m.box)
-		m.appTitleEdit.SetTextHint("My ENERGY App")
+		m.appTitleEdit.SetTextHint("my energy app")
 	}
 
 	{
@@ -223,15 +222,17 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTitle = lcl.NewLabel(m)
 		m.platformTitle.SetLeft(10)
 		m.platformTitle.SetTop(baseTop + 175)
-		m.platformTitle.SetCaption("应用程序 - 平台配置")
+		m.platformTitle.SetCaption("平台配置")
 		m.platformTitle.SetFont(m.font)
 		m.platformTitle.Font().SetSize(10)
 		m.platformTitle.SetParent(m.box)
 	}
 
 	{
+		setPlatformTitle := func(title string) {
+			m.platformTitle.SetCaption(title)
+		}
 		tabBtnColor := colors.TColor(0xF3F4F6)
-
 		m.platformTab = wg.NewTab(m)
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
 		tabBR.SetWidth(m.Width())
@@ -241,9 +242,17 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetParent(m.box)
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
-			for _, page := range m.platformTab.Pages() {
+			for i, page := range m.platformTab.Pages() {
 				if page.Active() {
 					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
+					switch i {
+					case 0:
+						setPlatformTitle("平台配置 - 适用于 Windows 系统 (Manifest 资源)")
+					case 1:
+						setPlatformTitle("平台配置 - 适用于 MacOS 系统")
+					case 2:
+						setPlatformTitle("平台配置 - 适用于 Linux 系统")
+					}
 				} else {
 					page.Button().SetBorderDirections(0)
 				}
@@ -256,10 +265,10 @@ func (m *TConfigProjectForm) initComponents() {
 			page.Button().Font().SetColor(colors.ClBlack)
 			page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
 			page.Button().SetBorderWidth(wg.BbdBottom, 2)
-			page.Button().SetBorderColor(wg.BbdBottom, colors.ClBlue)
+			page.Button().SetBorderColor(wg.BbdBottom, colors.TColor(0xdb9612))
 			page.Button().SetColor(tabBtnColor)
-			page.SetDefaultColor(0xE3E3E3)
-			page.SetActiveColor(wg.DarkenColor(0xE3E3E3, 0.15))
+			page.SetDefaultColor(tabBtnColor)
+			page.SetActiveColor(wg.DarkenColor(tabBtnColor, 0.15))
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
@@ -282,8 +291,5 @@ func (m *TConfigProjectForm) initComponents() {
 
 		m.platformTabPageWindows.SetActive(true)
 
-	}
-
-	{
 	}
 }

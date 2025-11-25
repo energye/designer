@@ -15,8 +15,12 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/lcl"
 )
 
 func (m *TConfigProjectForm) initLinuxOptions() {
 	logs.Debug("TConfigProjectForm initLinuxOptions")
+	test := lcl.NewLabel(m)
+	test.SetParent(m.platformTabPageLinux)
+	test.SetCaption("Linux")
 }
