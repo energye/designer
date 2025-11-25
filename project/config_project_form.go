@@ -92,6 +92,10 @@ type TConfigProjectForm struct {
 	// macos
 
 	// linux
+
+	// 操作按钮
+	cancelBtn *wg.TButton
+	saveBtn   *wg.TButton
 }
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
@@ -236,7 +240,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTab = wg.NewTab(m)
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
 		tabBR.SetWidth(m.Width())
-		tabBR.SetHeight(m.Height() - (tabBR.Top - 25))
+		tabBR.SetHeight(m.Height() - (tabBR.Top - 10))
 		m.platformTab.SetBoundsRect(tabBR)
 		m.platformTab.SetColor(tabBtnColor)
 		m.platformTab.EnableScrollButton(false)
@@ -291,5 +295,35 @@ func (m *TConfigProjectForm) initComponents() {
 
 		m.platformTabPageWindows.SetActive(true)
 
+	}
+
+	{
+		m.cancelBtn = wg.NewButton(m)
+		m.cancelBtn.SetText("关 闭")
+		m.cancelBtn.SetFont(m.font)
+		m.cancelBtn.Font().SetColor(colors.ClWhite)
+		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
+		m.cancelBtn.SetRadius(3)
+		cancelBtnRect := types.TRect{Left: 315, Top: 530}
+		cancelBtnRect.SetWidth(100)
+		cancelBtnRect.SetHeight(35)
+		m.cancelBtn.SetBoundsRect(cancelBtnRect)
+		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.cancelBtn.SetParent(m.box)
+		//m.cancelBtn.SetOnClick(m.closeClick)
+
+		m.saveBtn = wg.NewButton(m)
+		m.saveBtn.SetText("保 存")
+		m.saveBtn.SetFont(m.font)
+		m.saveBtn.Font().SetStyle(types.NewSet(types.FsBold))
+		m.saveBtn.Font().SetColor(colors.ClWhite)
+		m.saveBtn.SetRadius(3)
+		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
+		saveBtnRect.SetWidth(100)
+		saveBtnRect.SetHeight(35)
+		m.saveBtn.SetBoundsRect(saveBtnRect)
+		m.saveBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.saveBtn.SetParent(m.box)
+		//m.createBtn.SetOnClick(m.createClick)
 	}
 }
