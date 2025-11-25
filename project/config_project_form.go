@@ -14,13 +14,16 @@
 package project
 
 import (
+	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
+	"os"
 	"sync"
 )
 
@@ -193,13 +196,11 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIconBox.SetHeight(128)
 		m.appIconBox.SetAutoScroll(false)
 		m.appIconBox.SetBorderStyleToBorderStyle(types.BsSingle)
-		//m.appIconBox.BorderSpacing().SetAround(6)
 		m.appIconBox.HorzScrollBar().SetTracking(true)
 		m.appIconBox.HorzScrollBar().SetVisible(true)
 		m.appIconBox.VertScrollBar().SetTracking(true)
 		m.appIconBox.VertScrollBar().SetVisible(true)
 		m.appIconBox.SetParent(m.box)
-		//m.appIconScrollBox.SetOnResize(m.imagePreviewOnPictureChanged)
 
 		m.appIconPreview = lcl.NewImage(m)
 		m.appIconPreview.SetAlign(types.AlClient)
@@ -219,7 +220,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIconBtn.SetBorderWidth(wg.BbdNone, 1)
 		m.appIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
 		m.appIconBtn.SetParent(m.box)
-		//m.appIconBtn.SetOnClick(m.appIconBtnClick)
+		m.appIconBtn.SetOnClick(m.appIconBtnClick)
 	}
 
 	{
@@ -310,7 +311,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
 		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
 		m.cancelBtn.SetParent(m.box)
-		//m.cancelBtn.SetOnClick(m.closeClick)
+		m.cancelBtn.SetOnClick(m.closeClick)
 
 		m.saveBtn = wg.NewButton(m)
 		m.saveBtn.SetText("保 存")
@@ -324,6 +325,72 @@ func (m *TConfigProjectForm) initComponents() {
 		m.saveBtn.SetBoundsRect(saveBtnRect)
 		m.saveBtn.SetColor(colors.RGBToColor(46, 204, 113))
 		m.saveBtn.SetParent(m.box)
-		//m.createBtn.SetOnClick(m.createClick)
+		m.saveBtn.SetOnClick(m.saveClick)
 	}
+}
+
+func (m *TConfigProjectForm) closeClick(sender lcl.IObject) {
+	m.Close()
+}
+
+func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
+}
+
+// 应用程序图标
+func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
+	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
+		if !imageInfo.OK {
+			return
+		}
+		go func() {
+			var (
+				data []byte
+				err  error
+			)
+			if imageInfo.FilePath == "" {
+				data = imageInfo.Data
+			} else {
+				data, err = os.ReadFile(imageInfo.FilePath)
+				if err != nil {
+					logs.Error("图标加载 PNG ReadFile:", err.Error())
+					return
+				}
+			}
+			//imageFormat, err := tool.DetectImageFormatByte(data)
+			//if err != nil {
+			//	logs.Error("图标加载 PNG DetectImageFormatByte:", err.Error())
+			//	return
+			//}
+			//if !tool.Equal(imageFormat, "png") {
+			//	// TODO 非 png 需要转换为 png
+			//}
+
+			previewData := data
+			if imageInfo.Rect.Width() > 128 || imageInfo.Rect.Height() > 128 {
+				previewData = tool.Scale(data, 128, 128)
+			}
+			// 预览
+			mem := lcl.NewMemoryStream()
+			lcl.StreamHelper.WriteBuffer(mem, previewData)
+			mem.SetPosition(0)
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				m.appIconPreview.Picture().LoadFromStream(mem)
+				mem.Free()
+			})
+			// 缩放到
+			// windows: 256x256
+			// macos: 1024x1024
+			// linux: 256x256
+			saveData := data
+			if imageInfo.Rect.Width() > 256 || imageInfo.Rect.Height() > 256 {
+				saveData = tool.Scale(data, 256, 256)
+			}
+			m.appIconData = saveData
+		}()
+
+	})
+	priceForm.SetWidth(450)
+	priceForm.SetHeight(325)
+	priceForm.WorkAreaCenter()
+	priceForm.ShowModal()
 }
