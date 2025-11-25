@@ -589,10 +589,10 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
-	// 重置设计器
-	designer.ResetDesigner()
 	// 创建项目
 	if doRunCreate(projectName, projectDir) {
+		// 重置设计器
+		designer.ResetDesigner()
 		go func() {
 			// 更新设计器配置框架目录
 			if config.UpdateFrameworkDir(frameworkDir) {
