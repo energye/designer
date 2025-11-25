@@ -15,7 +15,6 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -26,7 +25,7 @@ import (
 )
 
 var (
-	configProjectFormWidth  = int32(505)
+	configProjectFormWidth  = int32(555)
 	configProjectFormHeight = int32(515)
 )
 
@@ -45,10 +44,12 @@ type TConfigProjectForm struct {
 	box       lcl.IPanel
 	selectDir lcl.ISelectDirectoryDialog
 
+	font lcl.IFont
+
 	appConfigTitle lcl.ILabel
 
-	appNameText lcl.ILabel
-	appNameEdit lcl.IEdit
+	appTitleText lcl.ILabel
+	appTitleEdit lcl.IEdit
 
 	appIcon        lcl.ILabel
 	appIconBox     lcl.IScrollBox
@@ -62,6 +63,35 @@ type TConfigProjectForm struct {
 	platformTabPageWindows *wg.TPage
 	platformTabPageMacOS   *wg.TPage
 	platformTabPageLinux   *wg.TPage
+
+	// windows manifest
+	appNameText                          lcl.ILabel
+	appNameEdit                          lcl.IEdit
+	appDescText                          lcl.ILabel
+	appDescEdit                          lcl.IEdit
+	appVersionText                       lcl.ILabel
+	appVersionEdit                       lcl.IEdit
+	compatibilityOSText                  lcl.ILabel
+	compatibilityOSBox                   lcl.IComboBox
+	dpiText                              lcl.ILabel
+	dpiBox                               lcl.IComboBox
+	runLevelText                         lcl.ILabel
+	runLevelBox                          lcl.IComboBox
+	uiAccessCheckBox                     lcl.ICheckBox
+	autoElevateBox                       lcl.ICheckBox
+	disableThemingBox                    lcl.ICheckBox
+	disableWindowFilteringBox            lcl.ICheckBox
+	highResolutionScrollingAwareBox      lcl.ICheckBox
+	ultraHighResolutionScrollingAwareBox lcl.ICheckBox
+	longPathAwareBox                     lcl.ICheckBox
+	printerDriverIsolationBox            lcl.ICheckBox
+	gDIScalingBox                        lcl.ICheckBox
+	segmentHeapBox                       lcl.ICheckBox
+	useCommonControlsV6Box               lcl.ICheckBox
+
+	// macos
+
+	// linux
 }
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
@@ -99,11 +129,11 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		br.SetWidth(configProjectFormWidth)
 		br.SetHeight(configProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		constr := m.Constraints()
-		constr.SetMaxWidth(configProjectFormWidth)
-		constr.SetMaxHeight(configProjectFormHeight + addSize)
-		constr.SetMinWidth(configProjectFormWidth)
-		constr.SetMinHeight(configProjectFormHeight + addSize)
+		//constr := m.Constraints()
+		//constr.SetMaxWidth(configProjectFormWidth)
+		//constr.SetMaxHeight(configProjectFormHeight + addSize)
+		//constr.SetMinWidth(configProjectFormWidth)
+		//constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 	})
 }
@@ -112,62 +142,50 @@ func (m *TConfigProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
 	left := int32(35)
-	textLeft := int32(110)
+	textLeft := int32(100)
 	textWidth := int32(355)
-	fontSize := int32(12)
-	if tool.IsLinux {
-		fontSize = 10
-	}
 
-	fontLabel := lcl.NewFont()
-	fontLabel.SetName("微软雅黑")
-	//fontLabel.SetStyle(types.NewSet(types.FsBold))
-	fontLabel.SetSize(12)
-	fontLabel.SetCharSet(font.CHINESEBIG5_CHARSET)
-	//fontLabel.SetColor(colors.ClGreen)
-	fontText := lcl.NewFont()
-	fontText.SetName("微软雅黑 Light")
-	fontText.SetSize(fontSize)
+	m.font = lcl.NewFont()
+	m.font.SetName("微软雅黑")
+	m.font.SetCharSet(font.CHINESEBIG5_CHARSET)
 
 	m.appConfigTitle = lcl.NewLabel(m)
 	m.appConfigTitle.SetLeft(10)
 	m.appConfigTitle.SetTop(10)
 	m.appConfigTitle.SetCaption("应用程序配置")
-	m.appConfigTitle.SetFont(fontLabel)
+	m.appConfigTitle.SetFont(m.font)
 	m.appConfigTitle.Font().SetSize(10)
 	m.appConfigTitle.SetParent(m.box)
 
 	baseTop := int32(40)
 	{
-		m.appNameText = lcl.NewLabel(m)
-		m.appNameText.SetLeft(left)
-		m.appNameText.SetTop(baseTop)
-		m.appNameText.SetCaption("应用标题")
-		m.appNameText.SetFont(fontLabel)
-		m.appNameText.SetParent(m.box)
+		m.appTitleText = lcl.NewLabel(m)
+		m.appTitleText.SetLeft(left)
+		m.appTitleText.SetTop(baseTop)
+		m.appTitleText.SetCaption("应用标题")
+		m.appTitleText.SetFont(m.font)
+		m.appTitleText.SetParent(m.box)
 
-		m.appNameEdit = lcl.NewEdit(m)
-		m.appNameEdit.SetLeft(textLeft)
-		m.appNameEdit.SetTop(baseTop - 5)
-		m.appNameEdit.SetWidth(textWidth)
-		m.appNameEdit.SetFont(fontText)
-		m.appNameEdit.SetDoubleBuffered(true)
-		m.appNameEdit.SetParentColor(false)
-		m.appNameEdit.SetParent(m.box)
-		m.appNameEdit.SetTextHint("如: 我的应用")
+		m.appTitleEdit = lcl.NewEdit(m)
+		m.appTitleEdit.SetLeft(textLeft)
+		m.appTitleEdit.SetTop(baseTop - 5)
+		m.appTitleEdit.SetWidth(textWidth)
+		m.appTitleEdit.SetFont(m.font)
+		m.appTitleEdit.SetParent(m.box)
+		m.appTitleEdit.SetTextHint("My ENERGY App")
 	}
 
 	{
 		m.appIcon = lcl.NewLabel(m)
 		m.appIcon.SetLeft(left)
-		m.appIcon.SetTop(baseTop + 50)
+		m.appIcon.SetTop(baseTop + 40)
 		m.appIcon.SetCaption("应用图标")
-		m.appIcon.SetFont(fontLabel)
+		m.appIcon.SetFont(m.font)
 		m.appIcon.SetParent(m.box)
 
 		m.appIconBox = lcl.NewScrollBox(m)
 		m.appIconBox.SetLeft(textLeft)
-		m.appIconBox.SetTop(baseTop + 50)
+		m.appIconBox.SetTop(baseTop + 40)
 		m.appIconBox.SetWidth(128)
 		m.appIconBox.SetHeight(128)
 		m.appIconBox.SetAutoScroll(false)
@@ -190,7 +208,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIconBtn = wg.NewButton(m)
 		m.appIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
 		m.appIconBtn.SetRadius(3)
-		appIconRect := types.TRect{Left: m.appIconBox.Left() + m.appIconBox.Width() + 15, Top: baseTop + 50}
+		appIconRect := types.TRect{Left: m.appIconBox.Left() + m.appIconBox.Width() + 15, Top: baseTop + 40}
 		appIconRect.SetWidth(48)
 		appIconRect.SetHeight(48)
 		m.appIconBtn.SetBoundsRect(appIconRect)
@@ -204,9 +222,9 @@ func (m *TConfigProjectForm) initComponents() {
 	{
 		m.platformTitle = lcl.NewLabel(m)
 		m.platformTitle.SetLeft(10)
-		m.platformTitle.SetTop(baseTop + 190)
+		m.platformTitle.SetTop(baseTop + 175)
 		m.platformTitle.SetCaption("应用程序 - 平台配置")
-		m.platformTitle.SetFont(fontLabel)
+		m.platformTitle.SetFont(m.font)
 		m.platformTitle.Font().SetSize(10)
 		m.platformTitle.SetParent(m.box)
 	}
@@ -215,9 +233,11 @@ func (m *TConfigProjectForm) initComponents() {
 		tabBtnColor := colors.TColor(0xF3F4F6)
 
 		m.platformTab = wg.NewTab(m)
-		m.platformTab.SetBounds(0, baseTop+220, m.Width(), m.Height()-(baseTop+200))
+		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
+		tabBR.SetWidth(m.Width())
+		tabBR.SetHeight(m.Height() - (tabBR.Top - 25))
+		m.platformTab.SetBoundsRect(tabBR)
 		m.platformTab.SetColor(tabBtnColor)
-		m.platformTab.SetBorderStyleToBorderStyle(types.BsSingle)
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetParent(m.box)
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
@@ -246,22 +266,24 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTabPageWindows.SetCaption("　Windows　")
 		m.platformTabPageWindows.Button().SetIconFavoriteFormBytes(resources.Images("button/windows.png"))
 		setTabPageStyle(m.platformTabPageWindows)
+		m.initWindowsOptions()
 
 		m.platformTabPageMacOS = m.platformTab.NewPage()
 		m.platformTabPageMacOS.SetCaption("　MacOS　")
 		m.platformTabPageMacOS.Button().SetIconFavoriteFormBytes(resources.Images("button/macos.png"))
 		setTabPageStyle(m.platformTabPageMacOS)
+		m.initMacOSOptions()
 
 		m.platformTabPageLinux = m.platformTab.NewPage()
 		m.platformTabPageLinux.SetCaption("　Linux　")
 		m.platformTabPageLinux.Button().SetIconFavoriteFormBytes(resources.Images("button/linux.png"))
 		setTabPageStyle(m.platformTabPageLinux)
+		m.initLinuxOptions()
 
 		m.platformTabPageWindows.SetActive(true)
 
 	}
 
 	{
-
 	}
 }

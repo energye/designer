@@ -11,15 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build darwin
-// +build darwin
-
 package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-func (m *TConfigProjectForm) initWindowsOptions() {
-	logs.Debug("TConfigProjectForm initWindowsOptions")
+func (m *TConfigProjectForm) initLinuxOptions() {
+	logs.Debug("TConfigProjectForm initLinuxOptions")
 }
