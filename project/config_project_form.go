@@ -134,11 +134,11 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		br.SetWidth(configProjectFormWidth)
 		br.SetHeight(configProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		//constr := m.Constraints()
-		//constr.SetMaxWidth(configProjectFormWidth)
-		//constr.SetMaxHeight(configProjectFormHeight + addSize)
-		//constr.SetMinWidth(configProjectFormWidth)
-		//constr.SetMinHeight(configProjectFormHeight + addSize)
+		constr := m.Constraints()
+		constr.SetMaxWidth(configProjectFormWidth)
+		constr.SetMaxHeight(configProjectFormHeight + addSize)
+		constr.SetMinWidth(configProjectFormWidth)
+		constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 	})
 }
@@ -247,6 +247,7 @@ func (m *TConfigProjectForm) initComponents() {
 
 		tabBtnColor := colors.TColor(0xF3F4F6)
 		m.platformTab = wg.NewTab(m)
+		m.platformTab.Margin = 10
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - (tabBR.Top - 10))
@@ -264,6 +265,7 @@ func (m *TConfigProjectForm) initComponents() {
 			}
 		})
 
+		btnColor := colors.RGBToColor(173, 216, 230)
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
 			page.SetTop(40)
@@ -277,8 +279,9 @@ func (m *TConfigProjectForm) initComponents() {
 			page.Button().SetColor(tabBtnColor)
 			page.Button().SetRadius(35)
 			page.SetDefaultColor(tabBtnColor)
-			page.Button().SetEnterColor(wg.DarkenColor(tabBtnColor, 0.1), wg.DarkenColor(tabBtnColor, 0.1))
-			page.SetActiveColor(wg.DarkenColor(tabBtnColor, 0.15))
+			page.Button().SetDownColor(wg.DarkenColor(btnColor, 0.15), wg.DarkenColor(btnColor, 0.15))
+			page.Button().SetEnterColor(wg.DarkenColor(btnColor, 0.1), wg.DarkenColor(btnColor, 0.1))
+			page.SetActiveColor(btnColor)
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
@@ -370,20 +373,22 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
 			//if !tool.Equal(imageFormat, "png") {
 			//	// TODO 非 png 需要转换为 png
 			//}
-
+			if data == nil {
+				return
+			}
 			previewData := data
 			if imageInfo.Rect.Width() > 128 || imageInfo.Rect.Height() > 128 {
 				previewData = tool.Scale(data, 128, 128)
 			}
 			// 预览
-			mem := lcl.NewMemoryStream()
-			lcl.StreamHelper.WriteBuffer(mem, previewData)
-			mem.SetPosition(0)
+			//mem := lcl.NewMemoryStream()
+			//lcl.StreamHelper.WriteBuffer(mem, previewData)
+			//mem.SetPosition(0)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				//m.appIconPreview.Picture().LoadFromStream(mem)
 				m.appIconBtn.SetIconFormBytes(previewData)
 				m.appIconBtn.SetCaption("")
-				mem.Free()
+				//mem.Free()
 			})
 			// 缩放到
 			// windows: 256x256
@@ -401,4 +406,7 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
 	priceForm.SetHeight(325)
 	priceForm.WorkAreaCenter()
 	priceForm.ShowModal()
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.appIconBtn.Leave(sender)
+	})
 }

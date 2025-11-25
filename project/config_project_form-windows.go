@@ -19,6 +19,8 @@ import (
 	"github.com/energye/designer/project/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"github.com/energye/widget/wg"
 )
 
 // initWindowsOptions 初始化 Windows 平台配置选项界面控件
@@ -67,6 +69,13 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.runLevelBox.SetReadOnly(true)
 	m.runLevelBox.SetStyle(types.CsDropDownList)
 	m.runLevelBox.SetParent(m.platformTabPageWindows)
+
+	bg := wg.NewButton(m)
+	bg.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))
+	bg.SetBounds(5, windowsBaseTop+120, m.Width()-10, 130)
+	bg.SetRadius(8)
+	bg.SetDisable(true)
+	bg.SetParent(m.platformTabPageWindows)
 
 	m.uiAccessCheckBox = lcl.NewCheckBox(m)
 	m.uiAccessCheckBox.SetLeft(10)
