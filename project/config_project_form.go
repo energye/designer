@@ -205,7 +205,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTitle = lcl.NewLabel(m)
 		m.platformTitle.SetLeft(10)
 		m.platformTitle.SetTop(baseTop + 190)
-		m.platformTitle.SetCaption("应用程序-平台配置")
+		m.platformTitle.SetCaption("应用程序 - 平台配置")
 		m.platformTitle.SetFont(fontLabel)
 		m.platformTitle.Font().SetSize(10)
 		m.platformTitle.SetParent(m.box)
@@ -258,6 +258,10 @@ func (m *TConfigProjectForm) initComponents() {
 		setTabPageStyle(m.platformTabPageLinux)
 
 		m.platformTabPageWindows.SetActive(true)
+
+	}
+
+	{
 
 	}
 }
