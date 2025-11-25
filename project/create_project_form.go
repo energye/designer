@@ -733,17 +733,27 @@ func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message
 // 验证输入
 func (m *TCreateProjectForm) validateInputs() bool {
 	if strings.TrimSpace(m.projNameEdit.Text()) == "" {
+		m.projNameEdit.SetFocus()
 		m.showError(m.baseErrorLabel, m.projNameText.BoundsRect(), "＊项目名为空")
 		return false
 	}
 	selectProjectPath := strings.TrimSpace(m.projPathEdit.Text())
 	if selectProjectPath == "" {
+		m.projPathEdit.SetFocus()
 		m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊项目目录为空")
 		return false
 	}
 	//if !tool.IsExist(selectProjectPath) {
-	//	m.showError(m.baseErrorLabel, m.projPathEdit.BoundsRect(), "＊目录不存在")
-	//	return false
+	//	//m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊目录不存在")
+	//	//isCreate := api.MessageDlg("目录不存在是否创建？", types.MtCustom,
+	//	//	types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
+	//	//if isCreate {
+	//	err := os.MkdirAll(selectProjectPath, os.ModePerm)
+	//	if err != nil {
+	//		m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊创建目录失败")
+	//		return false
+	//	}
+	//	//}
 	//}
 	if m.modBox.ItemIndex() == 1 {
 		m.showError(m.modErrorLabel, m.modText.BoundsRect(), "＊暂不支持从远程下载")
