@@ -19,6 +19,11 @@ import (
 	"github.com/energye/lcl/types"
 )
 
+// initWindowsOptions 初始化 Windows 平台配置选项界面控件
+//
+// 该方法用于在 Windows 配置标签页中创建并布局各类输入控件（如文本框、下拉框、复选框等），
+// 以便用户可以设置应用程序的元数据、兼容性、DPI 设置及各种高级 Manifest 属性。
+// 控件包括应用名称、描述、版本、操作系统兼容性、执行权限级别以及多个与系统行为相关的开关选项。
 func (m *TConfigProjectForm) initWindowsOptions() {
 	logs.Debug("TConfigProjectForm initWindowsOptions")
 
@@ -196,6 +201,9 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.manifestDataInit()
 }
 
+// manifestDataInit 初始化清单配置相关的下拉框数据
+// 该函数用于初始化兼容性操作系统、DPI感知模式和运行级别三个下拉框的选项内容，
+// 并设置默认选中项为第一个选项
 func (m *TConfigProjectForm) manifestDataInit() {
 	compatibilityOSBoxItems := m.compatibilityOSBox.Items()
 	compatibilityOSBoxItems.Add("Windows Vista")
@@ -218,4 +226,8 @@ func (m *TConfigProjectForm) manifestDataInit() {
 	runLevelBoxItems.Add("HighestAvailable (最高可用权限)")
 	runLevelBoxItems.Add("RequireAdministrator (要求管理员)")
 	m.runLevelBox.SetItemIndex(0)
+}
+
+func (m *TConfigProjectForm) saveWindows() {
+
 }

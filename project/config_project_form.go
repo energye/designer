@@ -145,6 +145,9 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 	})
 }
 
+// initComponents 初始化项目配置表单中的所有组件。
+// 此函数负责创建并设置表单中各个 UI 元素的位置、样式和行为，
+// 包括应用程序标题输入框、图标选择区域、平台配置选项卡以及保存/取消按钮等。
 func (m *TConfigProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
@@ -334,6 +337,7 @@ func (m *TConfigProjectForm) closeClick(sender lcl.IObject) {
 }
 
 func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
+	m.saveWindows()
 }
 
 // 应用程序图标
