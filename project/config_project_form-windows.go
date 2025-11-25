@@ -15,7 +15,6 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/project/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -84,6 +83,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.uiAccessCheckBox.SetCaption("uiAccess (用户界面访问)")
 	m.uiAccessCheckBox.SetHint("uiAccess (用户界面访问)")
 	m.uiAccessCheckBox.SetShowHint(true)
+	m.uiAccessCheckBox.SetChecked(gProject.AppOption.Windows.Manifest.UIAccess)
 	m.uiAccessCheckBox.SetParent(m.platformTabPageWindows)
 
 	m.autoElevateBox = lcl.NewCheckBox(m)
@@ -93,6 +93,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.autoElevateBox.SetCaption("autoElevate (自动提权)")
 	m.autoElevateBox.SetHint("autoElevate (自动提权)")
 	m.autoElevateBox.SetShowHint(true)
+	m.autoElevateBox.SetChecked(gProject.AppOption.Windows.Manifest.AutoElevate)
 	m.autoElevateBox.SetParent(m.platformTabPageWindows)
 
 	m.disableThemingBox = lcl.NewCheckBox(m)
@@ -102,6 +103,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableThemingBox.SetCaption("DisableTheming (禁用主题)")
 	m.disableThemingBox.SetHint("disableTheming (禁用主题)")
 	m.disableThemingBox.SetShowHint(true)
+	m.disableThemingBox.SetChecked(gProject.AppOption.Windows.Manifest.DisableTheming)
 	m.disableThemingBox.SetParent(m.platformTabPageWindows)
 
 	m.disableWindowFilteringBox = lcl.NewCheckBox(m)
@@ -111,6 +113,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableWindowFilteringBox.SetCaption("disableWindowFiltering (禁用窗口过滤)")
 	m.disableWindowFilteringBox.SetHint("disableWindowFiltering (禁用窗口过滤仅在 DPI 虚拟化启用时生效)")
 	m.disableWindowFilteringBox.SetShowHint(true)
+	m.disableWindowFilteringBox.SetChecked(gProject.AppOption.Windows.Manifest.DisableWindowFiltering)
 	m.disableWindowFilteringBox.SetParent(m.platformTabPageWindows)
 
 	m.highResolutionScrollingAwareBox = lcl.NewCheckBox(m)
@@ -120,6 +123,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.highResolutionScrollingAwareBox.SetCaption("highResolutionScrollingAware (高分辨率滚动)")
 	m.highResolutionScrollingAwareBox.SetHint("highResolutionScrollingAware (高分辨率滚动)")
 	m.highResolutionScrollingAwareBox.SetShowHint(true)
+	m.highResolutionScrollingAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware)
 	m.highResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.ultraHighResolutionScrollingAwareBox = lcl.NewCheckBox(m)
@@ -129,6 +133,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.ultraHighResolutionScrollingAwareBox.SetCaption("ultraHighResolutionScrollingAware (超高分辨率滚动)")
 	m.ultraHighResolutionScrollingAwareBox.SetHint("ultraHighResolutionScrollingAware (超高分辨率滚动Windows 10 2004+ / Windows 11)")
 	m.ultraHighResolutionScrollingAwareBox.SetShowHint(true)
+	m.ultraHighResolutionScrollingAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware)
 	m.ultraHighResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.longPathAwareBox = lcl.NewCheckBox(m)
@@ -138,6 +143,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.longPathAwareBox.SetCaption("longPathAware (启用长路径支持)")
 	m.longPathAwareBox.SetHint("longPathAware (启用长路径支持 Windows 10 1607 +)")
 	m.longPathAwareBox.SetShowHint(true)
+	m.longPathAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.LongPathAware)
 	m.longPathAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.gDIScalingBox = lcl.NewCheckBox(m)
@@ -147,6 +153,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.gDIScalingBox.SetCaption("gdiScaling (GDI 自动缩放)")
 	m.gDIScalingBox.SetHint("gdiScaling (启用 GDI 自动缩放 Windows 10 1703+)")
 	m.gDIScalingBox.SetShowHint(true)
+	m.gDIScalingBox.SetChecked(gProject.AppOption.Windows.Manifest.GDIScaling)
 	m.gDIScalingBox.SetParent(m.platformTabPageWindows)
 
 	m.segmentHeapBox = lcl.NewCheckBox(m)
@@ -156,7 +163,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.segmentHeapBox.SetCaption("segmentHeap (分段堆)")
 	m.segmentHeapBox.SetHint("启用 Segment Heap（Windows 10 2004+）")
 	m.segmentHeapBox.SetShowHint(true)
-	m.segmentHeapBox.SetEnabled(true)
+	m.segmentHeapBox.SetChecked(gProject.AppOption.Windows.Manifest.SegmentHeap)
 	m.segmentHeapBox.SetParent(m.platformTabPageWindows)
 
 	m.printerDriverIsolationBox = lcl.NewCheckBox(m)
@@ -166,6 +173,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.printerDriverIsolationBox.SetCaption("printerDriverIsolation (打印驱动隔离)")
 	m.printerDriverIsolationBox.SetHint("printerDriverIsolation (启用打印驱动隔离, 仅适用于打印驱动组件)")
 	m.printerDriverIsolationBox.SetShowHint(true)
+	m.printerDriverIsolationBox.SetChecked(gProject.AppOption.Windows.Manifest.PrinterDriverIsolation)
 	m.printerDriverIsolationBox.SetParent(m.platformTabPageWindows)
 
 	m.useCommonControlsV6Box = lcl.NewCheckBox(m)
@@ -175,6 +183,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.useCommonControlsV6Box.SetCaption("useCommonControlsV6 (视觉样式)")
 	m.useCommonControlsV6Box.SetHint("useCommonControlsV6 (启用视觉样式的现代控件)")
 	m.useCommonControlsV6Box.SetShowHint(true)
+	m.useCommonControlsV6Box.SetChecked(gProject.AppOption.Windows.Manifest.UseCommonControlsV6)
 	m.useCommonControlsV6Box.SetParent(m.platformTabPageWindows)
 
 	m.manifestDataInit()
@@ -188,19 +197,19 @@ func (m *TConfigProjectForm) manifestDataInit() {
 	for _, item := range bean.CompatibilityOSList.Values() {
 		compatibilityOSBoxItems.Add(item)
 	}
-	m.compatibilityOSBox.SetItemIndex(int32(winres.WinVistaAndAbove))
+	m.compatibilityOSBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.CompatibilityOS))
 
 	dpiBoxItems := m.dpiBox.Items()
 	for _, item := range bean.DPIList.Values() {
 		dpiBoxItems.Add(item)
 	}
-	m.dpiBox.SetItemIndex(int32(winres.DPIAware))
+	m.dpiBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.DPI))
 
 	runLevelBoxItems := m.runLevelBox.Items()
 	for _, item := range bean.RunLevelList.Values() {
 		runLevelBoxItems.Add(item)
 	}
-	m.runLevelBox.SetItemIndex(int32(winres.AsInvoker))
+	m.runLevelBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.RunLevel))
 }
 
 // saveWindows 保存 Windows 平台的配置信息

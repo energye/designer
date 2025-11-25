@@ -176,8 +176,9 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appTitleEdit = lcl.NewEdit(m)
 		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 280, 30)
 		m.appTitleEdit.SetFont(m.font)
-		m.appTitleEdit.SetParent(m.box)
 		m.appTitleEdit.SetTextHint("my energy app")
+		m.appTitleEdit.SetText(gProject.AppOption.Title)
+		m.appTitleEdit.SetParent(m.box)
 	}
 
 	{
@@ -190,6 +191,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIdEdit.SetBounds(textLeft, baseTop+35, 280, 30)
 		m.appIdEdit.SetFont(m.font)
 		m.appIdEdit.SetTextHint("company.product.app")
+		m.appIdEdit.SetText(gProject.AppOption.Id)
 		m.appIdEdit.SetParent(m.box)
 
 		m.appDescText = lcl.NewLabel(m)
@@ -201,6 +203,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appDescEdit.SetBounds(textLeft, baseTop+75, 280, 30)
 		m.appDescEdit.SetFont(m.font)
 		m.appDescEdit.SetTextHint("your application description.")
+		m.appDescEdit.SetText(gProject.AppOption.Desc)
 		m.appDescEdit.SetParent(m.box)
 
 		m.appVersionText = lcl.NewLabel(m)
@@ -212,6 +215,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 280, 30)
 		m.appVersionEdit.SetFont(m.font)
 		m.appVersionEdit.SetTextHint("1.2.3.4")
+		m.appVersionEdit.SetText(gProject.AppOption.Version)
 		m.appVersionEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
@@ -308,10 +312,9 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetText("关 闭")
+		m.cancelBtn.SetText("取　消")
 		m.cancelBtn.SetFont(m.font)
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
-		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.cancelBtn.SetRadius(3)
 		cancelBtnRect := types.TRect{Left: 315, Top: 530}
 		cancelBtnRect.SetWidth(100)
@@ -322,9 +325,8 @@ func (m *TConfigProjectForm) initComponents() {
 		m.cancelBtn.SetOnClick(m.closeClick)
 
 		m.saveBtn = wg.NewButton(m)
-		m.saveBtn.SetText("保 存")
+		m.saveBtn.SetText("保　存")
 		m.saveBtn.SetFont(m.font)
-		m.saveBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
 		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}

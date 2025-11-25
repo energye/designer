@@ -55,34 +55,34 @@ type TEnvOption struct {
 
 // TAppOption 应用配置
 type TAppOption struct {
-	AppTitle string      `json:"app_title"`
-	AppIcon  []byte      `json:"app_icon"`
-	Lang     string      `json:"lang"` // 语言
-	Windows  TAppWindows `json:"windows"`
-	MacOS    TAppMacOS   `json:"macos"`
-	Linux    TAppLinux   `json:"linux"`
+	Title   string      `json:"app_title"`
+	Id      string      `json:"id"`
+	Desc    string      `json:"desc"`
+	Version string      `json:"version"`
+	AppIcon []byte      `json:"app_icon"`
+	Lang    string      `json:"lang"` // 语言
+	Windows TAppWindows `json:"windows"`
+	MacOS   TAppMacOS   `json:"macos"`
+	Linux   TAppLinux   `json:"linux"`
 }
 
 // TAppWindows 应用配置-Windows
 type TAppWindows struct {
 	Manifest struct {
-		Name                              string `json:"name"`
-		Desc                              string `json:"desc"`
-		Version                           string `json:"version"`
-		CompatibilityOS                   string `json:"compatibility_os"`
-		DPI                               string `json:"dpi"`
-		RunLevel                          string `json:"run_level"`
-		UIAccess                          bool   `json:"ui_access"`
-		AutoElevate                       bool   `json:"auto_elevate"`
-		DisableTheming                    bool   `json:"disable_theming"`
-		DisableWindowFiltering            bool   `json:"disable_window_filtering"`
-		HighResolutionScrollingAware      bool   `json:"high_resolution_scrolling_aware"`
-		UltraHighResolutionScrollingAware bool   `json:"ultra_high_resolution_scrolling_aware"`
-		LongPathAware                     bool   `json:"long_path_aware"`
-		PrinterDriverIsolation            bool   `json:"printer_driver_isolation"`
-		GDIScaling                        bool   `json:"gdi_scaling"`
-		SegmentHeap                       bool   `json:"segment_heap"`
-		UseCommonControlsV6               bool   `json:"use_common_controls_v6"`
+		CompatibilityOS                   int32 `json:"compatibility_os"`
+		DPI                               int32 `json:"dpi"`
+		RunLevel                          int32 `json:"run_level"`
+		UIAccess                          bool  `json:"ui_access"`
+		AutoElevate                       bool  `json:"auto_elevate"`
+		DisableTheming                    bool  `json:"disable_theming"`
+		DisableWindowFiltering            bool  `json:"disable_window_filtering"`
+		HighResolutionScrollingAware      bool  `json:"high_resolution_scrolling_aware"`
+		UltraHighResolutionScrollingAware bool  `json:"ultra_high_resolution_scrolling_aware"`
+		LongPathAware                     bool  `json:"long_path_aware"`
+		PrinterDriverIsolation            bool  `json:"printer_driver_isolation"`
+		GDIScaling                        bool  `json:"gdi_scaling"`
+		SegmentHeap                       bool  `json:"segment_heap"`
+		UseCommonControlsV6               bool  `json:"use_common_controls_v6"`
 	} `json:"manifest"`
 }
 
@@ -99,16 +99,16 @@ var (
 )
 
 func (m *TProject) InitAppOption() {
-	m.AppOption.AppTitle = "MyEnergyApp"
+	m.AppOption.Title = "MyEnergyApp"
+	m.AppOption.Id = "CompanyName.ProductName.AppName"
+	m.AppOption.Desc = "Your application description."
+	m.AppOption.Version = "1.0.0"
 	m.AppOption.Lang = "zh_CN"
 
 	// windows 默认值
-	m.AppOption.Windows.Manifest.Name = "CompanyName.ProductName.AppName"
-	m.AppOption.Windows.Manifest.Desc = "Your application description."
-	m.AppOption.Windows.Manifest.Version = "1.0.0"
-	m.AppOption.Windows.Manifest.CompatibilityOS = CompatibilityOSList.Get(winres.WinVistaAndAbove)
-	m.AppOption.Windows.Manifest.DPI = DPIList.Get(winres.DPIAware)
-	m.AppOption.Windows.Manifest.RunLevel = RunLevelList.Get(winres.AsInvoker)
+	m.AppOption.Windows.Manifest.CompatibilityOS = int32(winres.WinVistaAndAbove)
+	m.AppOption.Windows.Manifest.DPI = int32(winres.DPIAware)
+	m.AppOption.Windows.Manifest.RunLevel = int32(winres.AsInvoker)
 	m.AppOption.Windows.Manifest.HighResolutionScrollingAware = true
 	m.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = true
 	m.AppOption.Windows.Manifest.LongPathAware = true
