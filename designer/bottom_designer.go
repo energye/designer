@@ -140,6 +140,8 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.tree.SetAutoExpand(true)
 	form.tree.SetReadOnly(true)
 	form.tree.SetDoubleBuffered(true)
+	form.tree.SetTreeLineColor(colors.RGBToColor(128, 128, 128))
+	form.tree.SetTreeLinePenStyle(types.PsSolid)
 	//m.tree.SetMultiSelect(true) // 多选控制
 	form.tree.SetAlign(types.AlClient)
 	form.tree.SetVisible(false)

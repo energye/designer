@@ -47,8 +47,8 @@ import (
 // 4. 模块模式： go.mod (✔️), go.work
 
 var (
-	formWidth    = int32(525)
-	formHeight   = int32(535)
+	formWidth    = int32(505)
+	formHeight   = int32(515)
 	minGoVersion = "1.20"
 )
 
@@ -126,11 +126,6 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.SetHeight(formHeight)
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
-	constr := m.Constraints()
-	constr.SetMaxWidth(formWidth)
-	constr.SetMaxHeight(formHeight)
-	constr.SetMinWidth(formWidth)
-	constr.SetMinHeight(formHeight)
 	//m.SetColor(bgColor)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
@@ -140,7 +135,8 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
-	//m._HookWndProcMessage()
+
+	//(&hook.TWindowHook{Form: m}).Hook()
 }
 
 func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
@@ -148,6 +144,10 @@ func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 }
 
 func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+}
+
+func (m *TCreateProjectForm) CreateParams(params *types.TCreateParams) {
+	logs.Info("TCreateProjectForm CreateParams")
 }
 
 func (m *TCreateProjectForm) initComponents() {
@@ -471,13 +471,19 @@ func (m *TCreateProjectForm) initComponents() {
 // 窗口显示事件
 func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	logs.Debug("TCreateProjectForm Show")
-	//width := int32(555)
-	//height := int32(515)
-	//m.SetWidth(width)
-	//m.SetHeight(height)
-	//m.SetBoundsRect(m.BoundsRect()) // trigger WM_NCCALCSIZE hook msg
-	//m.WorkAreaCenter()
 	m.one.Do(func() {
+		addSize := int32(20)
+		br := m.BoundsRect()
+		br.SetWidth(formWidth + addSize)
+		br.SetHeight(formHeight + addSize)
+		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
+		constr := m.Constraints()
+		constr.SetMaxWidth(formWidth + addSize)
+		constr.SetMaxHeight(formHeight + addSize)
+		constr.SetMinWidth(formWidth + addSize)
+		constr.SetMinHeight(formHeight + addSize)
+		m.WorkAreaCenter()
+
 		if m.projIconPreview != nil {
 			m.projIconData = resources.Images("icons/window-icon_256x256.png")
 			mem := lcl.NewMemoryStream()
@@ -784,49 +790,3 @@ func getVersionPart(parts []string, index int) int {
 	}
 	return num
 }
-
-//func (m *TCreateProjectForm) wndProc(hwnd types.HWND, message uint32, wParam, lParam uintptr) uintptr {
-//	switch message {
-//	case messages.WM_DPICHANGED:
-//		if !lcl.Application.Scaled() {
-//			newWindowSize := (*types.TRect)(unsafe.Pointer(lParam))
-//			win.SetWindowPos(m.Handle(), uintptr(0),
-//				newWindowSize.Left, newWindowSize.Top, newWindowSize.Right-newWindowSize.Left, newWindowSize.Bottom-newWindowSize.Top,
-//				win.SWP_NOZORDER|win.SWP_NOACTIVATE)
-//		}
-//	}
-//	switch message {
-//	case messages.WM_ACTIVATE:
-//		win.ExtendFrameIntoClientArea(m.Handle(), win.Margins{CxLeftWidth: 1, CxRightWidth: 1, CyTopHeight: 1, CyBottomHeight: 1})
-//	case messages.WM_NCCALCSIZE:
-//		if wParam != 0 {
-//			isMaximize := uint32(win.GetWindowLong(m.Handle(), win.GWL_STYLE))&win.WS_MAXIMIZE != 0
-//			if isMaximize {
-//				rect := (*types.TRect)(unsafe.Pointer(lParam))
-//				monitor := win.MonitorFromRect(rect, win.MONITOR_DEFAULTTONULL)
-//				if monitor != 0 {
-//					var monitorInfo types.TMonitorInfo
-//					monitorInfo.CbSize = types.DWORD(unsafe.Sizeof(monitorInfo))
-//					if win.GetMonitorInfo(monitor, &monitorInfo) {
-//						*rect = monitorInfo.RcWork
-//					}
-//				}
-//			}
-//			return 0
-//		}
-//	}
-//
-//	return win.CallWindowProc(m.oldWndPrc, uintptr(hwnd), message, wParam, lParam)
-//}
-//
-//func (m *TCreateProjectForm) _HookWndProcMessage() {
-//	wndProcCallback := syscall.NewCallback(m.wndProc)
-//	m.oldWndPrc = win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, wndProcCallback)
-//}
-
-//func (m *TCreateProjectForm) _RestoreWndProc() {
-//	if m.oldWndPrc != 0 {
-//		win.SetWindowLongPtr(m.Handle(), win.GWL_WNDPROC, m.oldWndPrc)
-//		m.oldWndPrc = 0
-//	}
-//}

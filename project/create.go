@@ -40,6 +40,8 @@ func runCreate() {
 		form := NewCreateProjectForm()
 		// 为什么 debug 时显示不出来呢？
 		form.ShowModal()
+		//form.Show()
+		logs.Debug("runCreate NewCreateProjectForm show end")
 	})
 }
 
