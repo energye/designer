@@ -20,6 +20,11 @@ import (
 	"sync"
 )
 
+var (
+	configProjectFormWidth  = int32(505)
+	configProjectFormHeight = int32(515)
+)
+
 // NewConfigProjectForm 创建一个新的项目创建表单实例
 // 该函数初始化一个 TConfigProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewConfigProjectForm() *TConfigProjectForm {
@@ -30,27 +35,19 @@ func NewConfigProjectForm() *TConfigProjectForm {
 
 type TConfigProjectForm struct {
 	lcl.TEngForm
-	oldWndPrc   uintptr
-	closing     bool
-	goVersionOK bool
-	one         sync.Once
-	box         lcl.IPanel
-	selectDir   lcl.ISelectDirectoryDialog
+	closing   bool
+	one       sync.Once
+	box       lcl.IPanel
+	selectDir lcl.ISelectDirectoryDialog
 }
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TConfigProjectForm FormCreate")
 	m.SetCaption("应用配置")
-	m.SetWidth(formWidth)
-	m.SetHeight(formHeight)
+	m.SetWidth(configProjectFormWidth)
+	m.SetHeight(configProjectFormHeight)
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
-	constr := m.Constraints()
-	constr.SetMaxWidth(formWidth)
-	constr.SetMaxHeight(formHeight)
-	constr.SetMinWidth(formWidth)
-	constr.SetMinHeight(formHeight)
-	//m.SetColor(bgColor)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
 	m.box = lcl.NewPanel(m)
@@ -59,7 +56,8 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
-	//m._HookWndProcMessage()
+
+	//(&hook.TWindowHook{Form: m}).Hook()
 }
 
 func (m *TConfigProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
@@ -69,11 +67,25 @@ func (m *TConfigProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 func (m *TConfigProjectForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 }
 
-func (m *TConfigProjectForm) initComponents() {
-}
-
 // 窗口显示事件
 func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 	logs.Debug("TConfigProjectForm Show")
+	m.one.Do(func() {
+		addSize := int32(20)
+		br := m.BoundsRect()
+		br.SetWidth(configProjectFormWidth)
+		br.SetHeight(configProjectFormHeight + addSize)
+		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
+		constr := m.Constraints()
+		constr.SetMaxWidth(configProjectFormWidth)
+		constr.SetMaxHeight(configProjectFormHeight + addSize)
+		constr.SetMinWidth(configProjectFormWidth)
+		constr.SetMinHeight(configProjectFormHeight + addSize)
+		m.WorkAreaCenter()
+	})
+}
+
+func (m *TConfigProjectForm) initComponents() {
+	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
 }

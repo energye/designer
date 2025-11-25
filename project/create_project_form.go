@@ -47,9 +47,9 @@ import (
 // 4. 模块模式： go.mod (✔️), go.work
 
 var (
-	formWidth    = int32(505)
-	formHeight   = int32(515)
-	minGoVersion = "1.20"
+	createProjectFormWidth  = int32(525)
+	createProjectFormHeight = int32(515)
+	minGoVersion            = "1.20"
 )
 
 var (
@@ -68,7 +68,6 @@ func NewCreateProjectForm() *TCreateProjectForm {
 
 type TCreateProjectForm struct {
 	lcl.TEngForm
-	oldWndPrc   uintptr
 	closing     bool
 	goVersionOK bool
 	one         sync.Once
@@ -122,11 +121,10 @@ type TCreateProjectForm struct {
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TCreateProjectForm FormCreate")
 	m.SetCaption("新建项目")
-	m.SetWidth(formWidth)
-	m.SetHeight(formHeight)
+	m.SetWidth(createProjectFormWidth)
+	m.SetHeight(createProjectFormHeight)
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
-	//m.SetColor(bgColor)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
 	m.box = lcl.NewPanel(m)
@@ -361,7 +359,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modLocalBox.SetBevelOuter(types.BvNone)
 		m.modLocalBox.SetTop(baseTop + 95)
 		m.modLocalBox.SetHeight(100)
-		m.modLocalBox.SetWidth(formWidth)
+		m.modLocalBox.SetWidth(createProjectFormWidth)
 		m.modLocalBox.SetVisible(true)
 		m.modLocalBox.SetParent(m.box)
 
@@ -369,7 +367,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modRemoteBox.SetBevelOuter(types.BvNone)
 		m.modRemoteBox.SetTop(baseTop + 95)
 		m.modRemoteBox.SetHeight(100)
-		m.modRemoteBox.SetWidth(formWidth)
+		m.modRemoteBox.SetWidth(createProjectFormWidth)
 		m.modRemoteBox.SetVisible(false)
 		m.modRemoteBox.SetParent(m.box)
 
@@ -474,14 +472,14 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	m.one.Do(func() {
 		addSize := int32(20)
 		br := m.BoundsRect()
-		br.SetWidth(formWidth + addSize)
-		br.SetHeight(formHeight + addSize)
+		br.SetWidth(createProjectFormWidth)
+		br.SetHeight(createProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
 		constr := m.Constraints()
-		constr.SetMaxWidth(formWidth + addSize)
-		constr.SetMaxHeight(formHeight + addSize)
-		constr.SetMinWidth(formWidth + addSize)
-		constr.SetMinHeight(formHeight + addSize)
+		constr.SetMaxWidth(createProjectFormWidth)
+		constr.SetMaxHeight(createProjectFormHeight + addSize)
+		constr.SetMinWidth(createProjectFormWidth)
+		constr.SetMinHeight(createProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 
 		if m.projIconPreview != nil {
