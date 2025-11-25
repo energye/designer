@@ -101,10 +101,23 @@ var (
 func (m *TProject) InitAppOption() {
 	m.AppOption.AppTitle = "MyEnergyApp"
 	m.AppOption.Lang = "zh_CN"
+
+	// windows 默认值
 	m.AppOption.Windows.Manifest.Name = "CompanyName.ProductName.AppName"
 	m.AppOption.Windows.Manifest.Desc = "Your application description."
 	m.AppOption.Windows.Manifest.Version = "1.0.0"
 	m.AppOption.Windows.Manifest.CompatibilityOS = CompatibilityOSList.Get(winres.WinVistaAndAbove)
+	m.AppOption.Windows.Manifest.DPI = DPIList.Get(winres.DPIAware)
+	m.AppOption.Windows.Manifest.RunLevel = RunLevelList.Get(winres.AsInvoker)
+	m.AppOption.Windows.Manifest.HighResolutionScrollingAware = true
+	m.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = true
+	m.AppOption.Windows.Manifest.LongPathAware = true
+	m.AppOption.Windows.Manifest.GDIScaling = true
+	m.AppOption.Windows.Manifest.UseCommonControlsV6 = true
+
+	// macos 默认值
+
+	// linux 默认值
 }
 
 // 模板调用 返回当前项目的所有窗体名称

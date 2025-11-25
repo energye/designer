@@ -54,11 +54,14 @@ type TConfigProjectForm struct {
 	appTitleText lcl.ILabel
 	appTitleEdit lcl.IEdit
 
-	appIcon        lcl.ILabel
-	appIconBox     lcl.IScrollBox
-	appIconPreview lcl.IImage
 	appIconBtn     *wg.TButton
 	appIconData    []byte
+	appIdText      lcl.ILabel
+	appIdEdit      lcl.IEdit
+	appDescText    lcl.ILabel
+	appDescEdit    lcl.IEdit
+	appVersionText lcl.ILabel
+	appVersionEdit lcl.IEdit
 
 	platformTitle lcl.ILabel
 
@@ -68,12 +71,7 @@ type TConfigProjectForm struct {
 	platformTabPageLinux   *wg.TPage
 
 	// windows manifest
-	appNameText                          lcl.ILabel
-	appNameEdit                          lcl.IEdit
-	appDescText                          lcl.ILabel
-	appDescEdit                          lcl.IEdit
-	appVersionText                       lcl.ILabel
-	appVersionEdit                       lcl.IEdit
+
 	compatibilityOSText                  lcl.ILabel
 	compatibilityOSBox                   lcl.IComboBox
 	dpiText                              lcl.ILabel
@@ -136,11 +134,11 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		br.SetWidth(configProjectFormWidth)
 		br.SetHeight(configProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		constr := m.Constraints()
-		constr.SetMaxWidth(configProjectFormWidth)
-		constr.SetMaxHeight(configProjectFormHeight + addSize)
-		constr.SetMinWidth(configProjectFormWidth)
-		constr.SetMinHeight(configProjectFormHeight + addSize)
+		//constr := m.Constraints()
+		//constr.SetMaxWidth(configProjectFormWidth)
+		//constr.SetMaxHeight(configProjectFormHeight + addSize)
+		//constr.SetMinWidth(configProjectFormWidth)
+		//constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 	})
 }
@@ -176,52 +174,61 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appTitleText.SetParent(m.box)
 
 		m.appTitleEdit = lcl.NewEdit(m)
-		m.appTitleEdit.SetLeft(textLeft)
-		m.appTitleEdit.SetTop(baseTop - 5)
-		m.appTitleEdit.SetWidth(440)
+		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 280, 30)
 		m.appTitleEdit.SetFont(m.font)
 		m.appTitleEdit.SetParent(m.box)
 		m.appTitleEdit.SetTextHint("my energy app")
 	}
 
 	{
-		m.appIcon = lcl.NewLabel(m)
-		m.appIcon.SetLeft(left)
-		m.appIcon.SetTop(baseTop + 40)
-		m.appIcon.SetCaption("应用图标")
-		m.appIcon.SetFont(m.font)
-		m.appIcon.SetParent(m.box)
+		m.appIdText = lcl.NewLabel(m)
+		m.appIdText.SetLeft(left)
+		m.appIdText.SetTop(baseTop + 40)
+		m.appIdText.SetCaption("应用标识")
+		m.appIdText.SetParent(m.box)
+		m.appIdEdit = lcl.NewEdit(m)
+		m.appIdEdit.SetBounds(textLeft, baseTop+35, 280, 30)
+		m.appIdEdit.SetFont(m.font)
+		m.appIdEdit.SetTextHint("company.product.app")
+		m.appIdEdit.SetParent(m.box)
 
-		m.appIconBox = lcl.NewScrollBox(m)
-		m.appIconBox.SetLeft(textLeft)
-		m.appIconBox.SetTop(baseTop + 40)
-		m.appIconBox.SetWidth(128)
-		m.appIconBox.SetHeight(128)
-		m.appIconBox.SetAutoScroll(false)
-		m.appIconBox.SetBorderStyleToBorderStyle(types.BsSingle)
-		m.appIconBox.HorzScrollBar().SetTracking(true)
-		m.appIconBox.HorzScrollBar().SetVisible(true)
-		m.appIconBox.VertScrollBar().SetTracking(true)
-		m.appIconBox.VertScrollBar().SetVisible(true)
-		m.appIconBox.SetParent(m.box)
+		m.appDescText = lcl.NewLabel(m)
+		m.appDescText.SetLeft(left)
+		m.appDescText.SetTop(baseTop + 80)
+		m.appDescText.SetCaption("应用描述")
+		m.appDescText.SetParent(m.box)
+		m.appDescEdit = lcl.NewEdit(m)
+		m.appDescEdit.SetBounds(textLeft, baseTop+75, 280, 30)
+		m.appDescEdit.SetFont(m.font)
+		m.appDescEdit.SetTextHint("your application description.")
+		m.appDescEdit.SetParent(m.box)
 
-		m.appIconPreview = lcl.NewImage(m)
-		m.appIconPreview.SetAlign(types.AlClient)
-		m.appIconPreview.SetAutoSize(true)
-		m.appIconPreview.SetCenter(true)
-		m.appIconPreview.SetParent(m.appIconBox)
-		//m.appIconPreview.SetOnPaintBackground(m.appIconPreviewPaintBackground)
+		m.appVersionText = lcl.NewLabel(m)
+		m.appVersionText.SetLeft(left)
+		m.appVersionText.SetTop(baseTop + 120)
+		m.appVersionText.SetCaption("应用版本")
+		m.appVersionText.SetParent(m.box)
+		m.appVersionEdit = lcl.NewEdit(m)
+		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 280, 30)
+		m.appVersionEdit.SetFont(m.font)
+		m.appVersionEdit.SetTextHint("1.2.3.4")
+		m.appVersionEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
-		m.appIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
+		m.appIconBtn.SetIconFormBytes(resources.Images("button/upload_64x64.png"))
 		m.appIconBtn.SetRadius(3)
-		appIconRect := types.TRect{Left: m.appIconBox.Left() + m.appIconBox.Width() + 15, Top: baseTop + 40}
-		appIconRect.SetWidth(48)
-		appIconRect.SetHeight(48)
+		appIconRect := types.TRect{Left: m.Width() - 158, Top: baseTop - 5}
+		appIconRect.SetWidth(145)
+		appIconRect.SetHeight(145)
+		m.appIconBtn.TextOffSetY = 50
+		m.appIconBtn.SetCaption("点击加载应用图标")
+		m.appIconBtn.SetHint("点击加载应用图标")
+		m.appIconBtn.SetShowHint(true)
+		m.appIconBtn.SetFont(m.font)
 		m.appIconBtn.SetBoundsRect(appIconRect)
 		m.appIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
 		m.appIconBtn.SetBorderWidth(wg.BbdNone, 1)
-		m.appIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
+		m.appIconBtn.SetColor(0xF3F4F6)
 		m.appIconBtn.SetParent(m.box)
 		m.appIconBtn.SetOnClick(m.appIconBtnClick)
 	}
@@ -229,7 +236,7 @@ func (m *TConfigProjectForm) initComponents() {
 	{
 		m.platformTitle = lcl.NewLabel(m)
 		m.platformTitle.SetLeft(10)
-		m.platformTitle.SetTop(baseTop + 175)
+		m.platformTitle.SetTop(baseTop + 155)
 		m.platformTitle.SetCaption("平台配置")
 		m.platformTitle.SetFont(m.font)
 		m.platformTitle.Font().SetSize(10)
@@ -237,9 +244,7 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 
 	{
-		setPlatformTitle := func(title string) {
-			m.platformTitle.SetCaption(title)
-		}
+
 		tabBtnColor := colors.TColor(0xF3F4F6)
 		m.platformTab = wg.NewTab(m)
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
@@ -250,32 +255,29 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetParent(m.box)
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
-			for i, page := range m.platformTab.Pages() {
+			for _, page := range m.platformTab.Pages() {
 				if page.Active() {
-					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
-					switch i {
-					case 0:
-						setPlatformTitle("平台配置 - 适用于 Windows 系统 (Manifest 资源)")
-					case 1:
-						setPlatformTitle("平台配置 - 适用于 MacOS 系统")
-					case 2:
-						setPlatformTitle("平台配置 - 适用于 Linux 系统")
-					}
+					//page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
 				} else {
-					page.Button().SetBorderDirections(0)
+					//page.Button().SetBorderDirections(0)
 				}
 			}
 		})
 
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
+			page.SetTop(40)
+			page.SetHeight(m.platformTab.Height() - 40)
 			page.SetColor(m.platformTab.Color()) // 设置背景色
+			page.Button().SetHeight(35)
+			page.Button().SetLeft(10)
+			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
 			page.Button().Font().SetColor(colors.ClBlack)
-			page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
-			page.Button().SetBorderWidth(wg.BbdBottom, 2)
-			page.Button().SetBorderColor(wg.BbdBottom, colors.TColor(0xdb9612))
+			page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(colors.ClGray, 0.5))
 			page.Button().SetColor(tabBtnColor)
+			page.Button().SetRadius(35)
 			page.SetDefaultColor(tabBtnColor)
+			page.Button().SetEnterColor(wg.DarkenColor(tabBtnColor, 0.1), wg.DarkenColor(tabBtnColor, 0.1))
 			page.SetActiveColor(wg.DarkenColor(tabBtnColor, 0.15))
 		}
 
@@ -378,7 +380,9 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
 			lcl.StreamHelper.WriteBuffer(mem, previewData)
 			mem.SetPosition(0)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.appIconPreview.Picture().LoadFromStream(mem)
+				//m.appIconPreview.Picture().LoadFromStream(mem)
+				m.appIconBtn.SetIconFormBytes(previewData)
+				m.appIconBtn.SetCaption("")
 				mem.Free()
 			})
 			// 缩放到
