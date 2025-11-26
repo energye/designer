@@ -22,7 +22,6 @@ import (
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/pkg/winres/version"
 	"github.com/energye/designer/project/bean"
-	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -230,7 +229,7 @@ func (m *TConfigProjectForm) manifestDataInit() {
 func (m *TConfigProjectForm) saveWindows() {
 	iconData := m.appIconData
 	if iconData == nil {
-		iconData = resources.Images("icons/window-icon_256x256.png")
+		iconData = gProject.AppOption.Icon
 	}
 	var err error
 	// 图标转为 ico 集合: [256, 128, 64, 48, 32, 16]

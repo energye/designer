@@ -16,6 +16,7 @@ package bean
 import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winres"
+	"github.com/energye/designer/resources"
 )
 
 // TProject 项目信息 xxx.egp 配置文件
@@ -55,12 +56,12 @@ type TEnvOption struct {
 
 // TAppOption 应用配置
 type TAppOption struct {
-	Title     string      `json:"app_title"`
+	Title     string      `json:"title"`
 	Id        string      `json:"id"`
 	Desc      string      `json:"desc"`
 	Version   string      `json:"version"`
 	Copyright string      `json:"copyright"`
-	AppIcon   []byte      `json:"app_icon"`
+	Icon      []byte      `json:"icon"` // 应用图标, 作用在窗口和执行文件上
 	Lang      string      `json:"lang"` // 语言
 	Windows   TAppWindows `json:"windows"`
 	MacOS     TAppMacOS   `json:"macos"`
@@ -109,6 +110,7 @@ func (m *TProject) InitAppOption() {
 	m.AppOption.Copyright = "Copyright (C) 2022-2024 Your Company Name. All rights reserved."
 	m.AppOption.Version = "1.0.0.0"
 	m.AppOption.Lang = "zh_CN"
+	m.AppOption.Icon = resources.Images("icons/window-icon_256x256.png") // 默认内置图标
 
 	// windows 默认值
 	m.AppOption.Windows.Manifest.CompatibilityOS = int32(winres.WinVistaAndAbove)
