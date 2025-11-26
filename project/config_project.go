@@ -76,3 +76,16 @@ func AppVersionNum(version string) [4]uint16 {
 	}
 	return versionNum
 }
+
+// 更新窗口图标
+// Windows	16×16	24×24/32×32	.ico	16×16、24×24、32×32
+// macOS	16×16	32×32		.icns		16×16、32×32
+// Linux	16×16	24×24		.png		16×16、24×24
+func updateWindowICON() {
+	icon := gProject.AppOption.Icon
+	if icon.Data == nil || icon.W <= 0 || icon.H <= 0 {
+		logs.Error("更新窗口图标, 图标数据不能为空/大小不正确")
+		return
+	}
+
+}

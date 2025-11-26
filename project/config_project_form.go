@@ -413,6 +413,8 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 		}()
 		// 更新 windows 配置并生成程序信息
 		saveOrUpdateWindowsManifest()
+		// 更新图标
+		updateWindowICON()
 	}()
 }
 

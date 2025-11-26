@@ -67,7 +67,7 @@ type TAppOption struct {
 	Linux     TAppLinux   `json:"linux"`
 }
 
-// TAppIcon 应用图标
+// TAppIcon 应用图标 png 格式
 // 标准大小为 1024x1024
 // 不同平台需要做对应的绽放处理
 type TAppIcon struct {
