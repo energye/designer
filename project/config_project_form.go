@@ -359,7 +359,7 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetText("取　消")
+		m.cancelBtn.SetText("关　闭")
 		m.cancelBtn.SetFont(m.font)
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
 		m.cancelBtn.SetRadius(3)
