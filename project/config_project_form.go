@@ -64,6 +64,8 @@ type TConfigProjectForm struct {
 	appDescEdit      lcl.IEdit
 	appVersionText   lcl.ILabel
 	appVersionEdit   lcl.IEdit
+	appCopyrightText lcl.ILabel
+	appCopyrightEdit lcl.IEdit
 
 	platformTitle lcl.ILabel
 
@@ -167,8 +169,8 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 func (m *TConfigProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
-	left := int32(35)
-	textLeft := int32(100)
+	left := int32(10)
+	textLeft := int32(45)
 
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
@@ -187,12 +189,12 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appTitleText = lcl.NewLabel(m)
 		m.appTitleText.SetLeft(left)
 		m.appTitleText.SetTop(baseTop)
-		m.appTitleText.SetCaption("应用标题")
+		m.appTitleText.SetCaption("标题")
 		m.appTitleText.SetFont(m.font)
 		m.appTitleText.SetParent(m.box)
 
 		m.appTitleEdit = lcl.NewEdit(m)
-		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 280, 30)
+		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 340, 30)
 		m.appTitleEdit.SetFont(m.font)
 		m.appTitleEdit.SetTextHint("my energy app")
 		m.appTitleEdit.SetText(gProject.AppOption.Title)
@@ -203,10 +205,10 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIdText = lcl.NewLabel(m)
 		m.appIdText.SetLeft(left)
 		m.appIdText.SetTop(baseTop + 40)
-		m.appIdText.SetCaption("应用标识")
+		m.appIdText.SetCaption("标识")
 		m.appIdText.SetParent(m.box)
 		m.appIdEdit = lcl.NewEdit(m)
-		m.appIdEdit.SetBounds(textLeft, baseTop+35, 280, 30)
+		m.appIdEdit.SetBounds(textLeft, baseTop+35, 340, 30)
 		m.appIdEdit.SetFont(m.font)
 		m.appIdEdit.SetTextHint("company.product.app")
 		m.appIdEdit.SetText(gProject.AppOption.Id)
@@ -215,10 +217,10 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appDescText = lcl.NewLabel(m)
 		m.appDescText.SetLeft(left)
 		m.appDescText.SetTop(baseTop + 80)
-		m.appDescText.SetCaption("应用描述")
+		m.appDescText.SetCaption("描述")
 		m.appDescText.SetParent(m.box)
 		m.appDescEdit = lcl.NewEdit(m)
-		m.appDescEdit.SetBounds(textLeft, baseTop+75, 280, 30)
+		m.appDescEdit.SetBounds(textLeft, baseTop+75, 340, 30)
 		m.appDescEdit.SetFont(m.font)
 		m.appDescEdit.SetTextHint("your application description.")
 		m.appDescEdit.SetText(gProject.AppOption.Desc)
@@ -227,14 +229,26 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appVersionText = lcl.NewLabel(m)
 		m.appVersionText.SetLeft(left)
 		m.appVersionText.SetTop(baseTop + 120)
-		m.appVersionText.SetCaption("应用版本")
+		m.appVersionText.SetCaption("版本")
 		m.appVersionText.SetParent(m.box)
 		m.appVersionEdit = lcl.NewEdit(m)
-		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 280, 30)
+		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 100, 30)
 		m.appVersionEdit.SetFont(m.font)
 		m.appVersionEdit.SetTextHint("1.2.3.4")
 		m.appVersionEdit.SetText(gProject.AppOption.Version)
 		m.appVersionEdit.SetParent(m.box)
+
+		m.appCopyrightText = lcl.NewLabel(m)
+		m.appCopyrightText.SetLeft(m.appVersionEdit.Left() + m.appVersionEdit.Width() + left)
+		m.appCopyrightText.SetTop(baseTop + 120)
+		m.appCopyrightText.SetCaption("版权")
+		m.appCopyrightText.SetParent(m.box)
+		m.appCopyrightEdit = lcl.NewEdit(m)
+		m.appCopyrightEdit.SetBounds(m.appCopyrightText.Left()+35, baseTop+115, 195, 30)
+		m.appCopyrightEdit.SetFont(m.font)
+		m.appCopyrightEdit.SetTextHint("Copyright (C)")
+		m.appCopyrightEdit.SetText(gProject.AppOption.Copyright)
+		m.appCopyrightEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
 		m.appIconBtn.SetIconFormBytes(resources.Images("button/upload_64x64.png"))
@@ -494,13 +508,12 @@ func (m *TConfigProjectForm) AppTitle() string {
 	return title
 }
 
-// TODO 未补全窗口组件项
 func (m *TConfigProjectForm) AppCopyright() string {
-	//copyright := m.appTitleEdit.Text()
-	//if copyright == "" {
-	//	copyright = gProject.AppOption.Copyright
-	//}
-	return gProject.AppOption.Copyright
+	copyright := m.appCopyrightEdit.Text()
+	if copyright == "" {
+		copyright = gProject.AppOption.Copyright
+	}
+	return copyright
 }
 
 func (m *TConfigProjectForm) AppId() string {
