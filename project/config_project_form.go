@@ -54,14 +54,15 @@ type TConfigProjectForm struct {
 	appTitleText lcl.ILabel
 	appTitleEdit lcl.IEdit
 
-	appIconBtn     *wg.TButton
-	appIconData    []byte
-	appIdText      lcl.ILabel
-	appIdEdit      lcl.IEdit
-	appDescText    lcl.ILabel
-	appDescEdit    lcl.IEdit
-	appVersionText lcl.ILabel
-	appVersionEdit lcl.IEdit
+	appIconBtn       *wg.TButton
+	appRemoveIconBtn *wg.TButton
+	appIconData      []byte
+	appIdText        lcl.ILabel
+	appIdEdit        lcl.IEdit
+	appDescText      lcl.ILabel
+	appDescEdit      lcl.IEdit
+	appVersionText   lcl.ILabel
+	appVersionEdit   lcl.IEdit
 
 	platformTitle lcl.ILabel
 
@@ -111,6 +112,7 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	m.box = lcl.NewPanel(m)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetAlign(types.AlClient)
+	m.box.SetColor(colors.ClWhite)
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
@@ -220,21 +222,36 @@ func (m *TConfigProjectForm) initComponents() {
 
 		m.appIconBtn = wg.NewButton(m)
 		m.appIconBtn.SetIconFormBytes(resources.Images("button/upload_64x64.png"))
+		//m.appIconBtn.SetIconCloseFormBytes(resources.Images("button/remove_16x16.png"))
+		//m.appIconBtn.SetIconCloseHighlightFormBytes(resources.Images("button/remove_16x16_highlight.png"))
 		m.appIconBtn.SetRadius(3)
 		appIconRect := types.TRect{Left: m.Width() - 158, Top: baseTop - 5}
 		appIconRect.SetWidth(145)
 		appIconRect.SetHeight(145)
 		m.appIconBtn.TextOffSetY = 50
+		m.appIconBtn.SetBoundsRect(appIconRect)
 		m.appIconBtn.SetCaption("点击加载应用图标")
 		m.appIconBtn.SetHint("点击加载应用图标")
 		m.appIconBtn.SetShowHint(true)
 		m.appIconBtn.SetFont(m.font)
-		m.appIconBtn.SetBoundsRect(appIconRect)
 		m.appIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
 		m.appIconBtn.SetBorderWidth(wg.BbdNone, 1)
 		m.appIconBtn.SetColor(0xF3F4F6)
 		m.appIconBtn.SetParent(m.box)
-		m.appIconBtn.SetOnClick(m.appIconBtnClick)
+		m.appIconBtn.SetOnMouseUp(m.appIconBtnClick)
+
+		m.appRemoveIconBtn = wg.NewButton(m)
+		m.appRemoveIconBtn.SetRadius(3)
+		m.appRemoveIconBtn.SetIconFormBytes(resources.Images("button/remove_16x16_highlight.png"))
+		appRemoveIconRect := types.TRect{Left: appIconRect.Left + appIconRect.Width() - 24, Top: appIconRect.Top}
+		appRemoveIconRect.SetWidth(24)
+		appRemoveIconRect.SetHeight(24)
+		m.appRemoveIconBtn.SetBoundsRect(appRemoveIconRect)
+		m.appRemoveIconBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.appRemoveIconBtn.SetAlpha(200)
+		m.appRemoveIconBtn.SetVisible(false)
+		m.appRemoveIconBtn.SetParent(m.box)
+		m.appRemoveIconBtn.SetOnMouseUp(m.appRemoveIconBtnClick)
 	}
 
 	{
@@ -249,7 +266,7 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 
-		tabColor := colors.TColor(0xF3F4F6)
+		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
 		btnColor := colors.RGBToColor(173, 216, 230)
 
 		m.platformTab = wg.NewTab(m)
@@ -258,7 +275,7 @@ func (m *TConfigProjectForm) initComponents() {
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - (tabBR.Top - 10))
 		m.platformTab.SetBoundsRect(tabBR)
-		m.platformTab.SetColor(tabColor)
+		m.platformTab.SetColor(colors.ClWhite)
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetParent(m.box)
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
@@ -347,8 +364,23 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 	m.saveWindows()
 }
 
+func (m *TConfigProjectForm) appIconBtnLoadData(data []byte, text string) {
+	if data == nil {
+		m.appRemoveIconBtn.Hide()
+		data = resources.Images("button/upload_64x64.png")
+	} else {
+		m.appRemoveIconBtn.Show()
+	}
+	m.appIconBtn.SetIconFormBytes(data)
+	m.appIconBtn.SetCaption(text)
+}
+
+func (m *TConfigProjectForm) appRemoveIconBtnClick(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	m.appIconBtnLoadData(nil, "点击加载应用图标")
+}
+
 // 应用程序图标
-func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
+func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
 		if !imageInfo.OK {
 			return
@@ -383,14 +415,8 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject) {
 				previewData = tool.Scale(data, 128, 128)
 			}
 			// 预览
-			//mem := lcl.NewMemoryStream()
-			//lcl.StreamHelper.WriteBuffer(mem, previewData)
-			//mem.SetPosition(0)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				//m.appIconPreview.Picture().LoadFromStream(mem)
-				m.appIconBtn.SetIconFormBytes(previewData)
-				m.appIconBtn.SetCaption("")
-				//mem.Free()
+				m.appIconBtnLoadData(previewData, "")
 			})
 			// 缩放到
 			// windows: 256x256
