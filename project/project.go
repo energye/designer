@@ -60,3 +60,13 @@ func Path() string {
 func Project() *bean.TProject {
 	return gProject
 }
+
+// 返回当前项目资源路径
+func ResourcePath() string {
+	return filepath.Join(Path(), "resources")
+}
+
+// 返回当前项目内置资源目录
+func EmbedPath() string {
+	return filepath.Join(ResourcePath(), "embed")
+}

@@ -14,9 +14,15 @@
 package project
 
 import (
+	"bytes"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/project/bean"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"image/png"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -78,14 +84,58 @@ func AppVersionNum(version string) [4]uint16 {
 }
 
 // 更新窗口图标
+// TODO ?? 下面是标准尺寸
 // Windows	16×16	24×24/32×32	.ico	16×16、24×24、32×32
 // macOS	16×16	32×32		.icns		16×16、32×32
 // Linux	16×16	24×24		.png		16×16、24×24
 func updateWindowICON() {
 	icon := gProject.AppOption.Icon
+	if icon.Data == nil {
+		// 使用默认图标
+		icon = bean.TAppIcon{
+			Data: resources.Images("icons/window-icon_256x256.png"),
+			W:    256,
+			H:    256,
+		}
+	}
 	if icon.Data == nil || icon.W <= 0 || icon.H <= 0 {
-		logs.Error("更新窗口图标, 图标数据不能为空/大小不正确")
+		logs.Error("updateWindowICON, 图标数据不能为空/大小不正确")
 		return
 	}
-
+	iconData := icon.Data // png
+	// 这里没使用标准尺寸, 统一最大尺寸为: 256x256
+	if icon.W > 256 || icon.H > 256 {
+		iconData = tool.Scale(iconData, 256, 256)
+	}
+	pngBuf := new(bytes.Buffer)
+	pngBuf.Write(iconData)
+	pngImage, err := png.Decode(pngBuf)
+	if err != nil {
+		logs.Error("updateWindowICON, 图标转为 png 对象失败:", err.Error())
+		return
+	}
+	icoBuf := new(bytes.Buffer)
+	err = tool.Encode(icoBuf, pngImage)
+	if err != nil {
+		logs.Error("updateWindowICON, png 转为 ico 对象失败:", err.Error())
+		return
+	}
+	// 保存图标
+	// icon.ico
+	embedPath := EmbedPath()
+	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
+	err = os.WriteFile(iconIcoFilePath, icoBuf.Bytes(), 0666)
+	if err != nil {
+		logs.Error("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
+		return
+	}
+	// icon.png
+	iconPngFilePath := filepath.Join(embedPath, "icon.png")
+	err = os.WriteFile(iconPngFilePath, iconData, 0666)
+	if err != nil {
+		logs.Error("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
+		return
+	}
+	// macOS
+	// icon.icns
 }

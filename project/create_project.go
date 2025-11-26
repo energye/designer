@@ -45,7 +45,7 @@ func createProjectDir() {
 	// 代码存放目录
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName)
 	// 资源存放目录
-	resourcesPath := filepath.Join(appRoot, "resources")
+	resourcesPath := ResourcePath()
 	resourcesEmbedPath := filepath.Join(resourcesPath, "embed")
 	paths := []string{appCodePath, resourcesPath, resourcesEmbedPath}
 	for _, path := range paths {
@@ -73,7 +73,7 @@ func createProjectDir() {
 		{appRoot, "main.go", buildTemplateData(runCodeTemplate, &data)},
 	}
 	for _, file := range files {
-		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0666); err != nil {
 			logs.Error("创建项目文件失败:", err.Error())
 			event.ConsoleWriteError("创建项目文件失败:", err.Error())
 		}

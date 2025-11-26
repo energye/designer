@@ -85,17 +85,6 @@ type TCreateProjectForm struct {
 	goVersionText   lcl.ILabel
 	goVersionStatus *wg.TButton
 
-	// 应用信息
-	//projIcon        lcl.ILabel
-	//projIconBox     lcl.IScrollBox
-	//projIconPreview lcl.IImage
-	//projIconBtn     *wg.TButton
-	//projIconData    []byte
-	//projProcName    lcl.ILabel
-	//projProcEdit    lcl.IEdit
-	//projDescName    lcl.ILabel
-	//projDescEdit    lcl.IEdit
-
 	// 模块部分
 	modGroupBox   lcl.ILabel
 	modErrorLabel lcl.ILabel
@@ -213,7 +202,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit.SetDoubleBuffered(true)
 		m.projNameEdit.SetParentColor(false)
 		m.projNameEdit.SetParent(m.box)
-		m.projNameEdit.SetTextHint("如: MyEnergyAPP")
+		m.projNameEdit.SetTextHint("YourProjectName")
 	}
 	{
 		m.projPathText = lcl.NewLabel(m)
@@ -230,7 +219,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathEdit.SetFont(fontText)
 		m.projPathEdit.SetDoubleBuffered(true)
 		//m.projPathEdit.SetReadOnly(true)
-		m.projPathEdit.SetTextHint("如: /app/xxx/energyapp")
+		m.projPathEdit.SetTextHint("/your/app/path/name")
 		m.projPathEdit.SetParent(m.box)
 
 		m.projPathBtn = wg.NewButton(m)
@@ -289,50 +278,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.SetHint("在本机检测已安装可用的 Go 版本.\n绿色: 检测成功, 支持.\n红色: 检测失败, 不支持.")
 		m.goVersionStatus.SetParent(m.box)
 	}
-	{
-		//m.projIcon = lcl.NewLabel(m)
-		//m.projIcon.SetLeft(left)
-		//m.projIcon.SetTop(baseTop + 205)
-		//m.projIcon.SetCaption("　　图标")
-		//m.projIcon.SetFont(fontLabel)
-		//m.projIcon.SetParent(m.box)
-		//
-		//m.projIconBox = lcl.NewScrollBox(m)
-		//m.projIconBox.SetLeft(120)
-		//m.projIconBox.SetTop(baseTop + 182)
-		//m.projIconBox.SetWidth(70)
-		//m.projIconBox.SetHeight(70)
-		//m.projIconBox.SetAutoScroll(false)
-		//m.projIconBox.SetBorderStyleToBorderStyle(types.BsSingle)
-		////m.projIconBox.BorderSpacing().SetAround(6)
-		//m.projIconBox.HorzScrollBar().SetTracking(true)
-		//m.projIconBox.HorzScrollBar().SetVisible(true)
-		//m.projIconBox.VertScrollBar().SetTracking(true)
-		//m.projIconBox.VertScrollBar().SetVisible(true)
-		//m.projIconBox.SetParent(m.box)
-		////m.projIconScrollBox.SetOnResize(m.imagePreviewOnPictureChanged)
-		//
-		//m.projIconPreview = lcl.NewImage(m)
-		//m.projIconPreview.SetAlign(types.AlClient)
-		//m.projIconPreview.SetAutoSize(true)
-		//m.projIconPreview.SetCenter(true)
-		//m.projIconPreview.SetParent(m.projIconBox)
-		//m.projIconPreview.SetOnPaintBackground(m.projIconPreviewPaintBackground)
-		//
-		//m.projIconBtn = wg.NewButton(m)
-		//m.projIconBtn.SetIconFormBytes(resources.Images("button/image.png"))
-		//m.projIconBtn.SetRadius(3)
-		//projIconRect := types.TRect{Left: m.projIconBox.Left() + m.projIconBox.Width() + 15, Top: baseTop + 191}
-		//projIconRect.SetWidth(48)
-		//projIconRect.SetHeight(48)
-		//m.projIconBtn.SetBoundsRect(projIconRect)
-		//m.projIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
-		//m.projIconBtn.SetBorderWidth(wg.BbdNone, 1)
-		//m.projIconBtn.SetColor(colors.RGBToColor(135, 206, 235))
-		//m.projIconBtn.SetParent(m.box)
-		//m.projIconBtn.SetOnClick(m.projIconBtnClick)
 
-	}
 	baseTop = 210
 	{
 		m.modText = lcl.NewLabel(m)
@@ -483,15 +429,6 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMinWidth(createProjectFormWidth)
 		constr.SetMinHeight(createProjectFormHeight + addSize)
 		m.WorkAreaCenter()
-
-		//if m.projIconPreview != nil {
-		//	m.projIconData = resources.Images("icons/window-icon_256x256.png")
-		//	mem := lcl.NewMemoryStream()
-		//	defer mem.Free()
-		//	lcl.StreamHelper.WriteBuffer(mem, resources.Images("icons/window-icon_64x64.png"))
-		//	mem.SetPosition(0)
-		//	m.projIconPreview.Picture().LoadFromStream(mem)
-		//}
 		go m.checkGoVersion()
 	})
 }

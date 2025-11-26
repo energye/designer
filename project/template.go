@@ -25,7 +25,7 @@ package main
 import (
 	"github.com/energye/lcl/lcl" 
 	"{{.Name}}/app"
-	_ "{{.Name}}/resources"
+	. "{{.Name}}/resources"
 )
 
 func main() {
@@ -33,6 +33,7 @@ func main() {
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
+	SetIcon(lcl.Application)
 	lcl.Application.NewForms(app.Forms...)
 	lcl.Application.Run()
 }
@@ -74,7 +75,10 @@ const resourcesGoTemplate = `// ================================================
 
 package resources
 
-import "embed"
+import (
+	"embed"
+	"github.com/energye/lcl/lcl"
+)
 
 //go:embed embed
 var icon embed.FS
@@ -84,5 +88,20 @@ var icon embed.FS
 func Embed(fileName string) []byte {
 	data, _ := icon.ReadFile("embed/" + fileName)
 	return data
+}
+
+// SetIcon 设置应用程序图标
+// 函数签名不能修改
+//
+//	app - 应用程序接口对象, 用于设置图标
+func SetIcon(app lcl.IApp) {
+	stream := lcl.NewMemoryStream()
+	lcl.StreamHelper.Write(stream, Embed("icon.png"))
+	stream.SetPosition(0)
+	png := lcl.NewPortableNetworkGraphic()
+	png.LoadFromStreamWithStream(stream)
+	app.Icon().Assign(png)
+	png.Free()
+	stream.Free()
 }
 `
