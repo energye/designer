@@ -591,62 +591,6 @@ func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, 
 	canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
 }
 
-// 应用程序图标
-//func (m *TCreateProjectForm) projIconBtnClick(sender lcl.IObject) {
-//	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
-//		if !imageInfo.OK {
-//			return
-//		}
-//		go func() {
-//			var (
-//				data []byte
-//				err  error
-//			)
-//			if imageInfo.FilePath == "" {
-//				data = imageInfo.Data
-//			} else {
-//				data, err = os.ReadFile(imageInfo.FilePath)
-//				if err != nil {
-//					logs.Error("图标加载 PNG ReadFile:", err.Error())
-//					return
-//				}
-//			}
-//			//imageFormat, err := tool.DetectImageFormatByte(data)
-//			//if err != nil {
-//			//	logs.Error("图标加载 PNG DetectImageFormatByte:", err.Error())
-//			//	return
-//			//}
-//			//if !tool.Equal(imageFormat, "png") {
-//			//	// TODO 非 png 需要转换为 png
-//			//}
-//
-//			previewData := data
-//			if imageInfo.Rect.Width() > 64 || imageInfo.Rect.Height() > 64 {
-//				previewData = tool.Scale(data, 64, 64)
-//			}
-//			// 预览
-//			mem := lcl.NewMemoryStream()
-//			lcl.StreamHelper.WriteBuffer(mem, previewData)
-//			mem.SetPosition(0)
-//			lcl.RunOnMainThreadAsync(func(id uint32) {
-//				m.projIconPreview.Picture().LoadFromStream(mem)
-//				mem.Free()
-//			})
-//			// 缩放到 256x256
-//			saveData := data
-//			if imageInfo.Rect.Width() > 256 || imageInfo.Rect.Height() > 256 {
-//				saveData = tool.Scale(data, 256, 256)
-//			}
-//			m.projIconData = saveData
-//		}()
-//
-//	})
-//	priceForm.SetWidth(450)
-//	priceForm.SetHeight(325)
-//	priceForm.WorkAreaCenter()
-//	priceForm.ShowModal()
-//}
-
 // 模块选择
 func (m *TCreateProjectForm) modBoxChange(sender lcl.IObject) {
 	if m.modBox.ItemIndex() == 1 {
