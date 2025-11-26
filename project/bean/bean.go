@@ -115,7 +115,7 @@ func (m *TProject) InitAppOption() {
 	m.AppOption.Title = "MyEnergyApp"
 	m.AppOption.Id = "CompanyName.productName.AppName"
 	m.AppOption.Desc = "Your Application Description."
-	m.AppOption.Copyright = "Copyright (C) 2022-2024 Your Company Name. All rights reserved."
+	m.AppOption.Copyright = "Copyright (C) YYYY-YYYY Your Company Name. All rights reserved."
 	m.AppOption.Version = "1.0.0.0"
 	m.AppOption.Lang = "zh_CN"
 	//m.AppOption.Icon = resources.Images("icons/window-icon_256x256.png") // 默认内置图标

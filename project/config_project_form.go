@@ -25,7 +25,6 @@ import (
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
 	"os"
-	"strconv"
 	"sync"
 )
 
@@ -58,7 +57,7 @@ type TConfigProjectForm struct {
 
 	appIconBtn       *wg.TButton
 	appRemoveIconBtn *wg.TButton
-	appIconData      bean.TAppIcon
+	appIconData      bean.TAppIcon // 应用配置窗口打开时默认从项目配置读取并设置
 	appIdText        lcl.ILabel
 	appIdEdit        lcl.IEdit
 	appDescText      lcl.ILabel
@@ -388,29 +387,8 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 	}
 	m.cancelBtn.SetDisable(true)
 	m.saveBtn.SetDisable(true)
-
-	// 项目配置对象
-	gProject.AppOption.Title = m.AppTitle()
-	gProject.AppOption.Id = m.AppId()
-	gProject.AppOption.Desc = m.AppDesc()
-	gProject.AppOption.Copyright = m.AppCopyright()
-	gProject.AppOption.Version = m.AppVersion()
-	gProject.AppOption.Icon = m.appIconData
-	gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
-	gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
-	gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
-	gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
-	gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
-	gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
-	gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
-	gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
-
+	// 保存项目配置
+	m.saveProjectConfig()
 	go func() {
 		defer func() {
 			if !m.closing {
@@ -419,13 +397,8 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 				m.saveBtn.SetDisable(false)
 			}
 		}()
-		// 更新项目配置文件
-		if err := WriteEGPConfig(gPath, gProject); err != nil {
-			logs.Error("保存-写入项目配置文件失败")
-			return
-		}
-		// 保存 windows 配置并生成程序信息
-		m.saveWindows()
+		// 更新 windows 配置并生成程序信息
+		saveOrUpdateWindowsManifest()
 	}()
 }
 
@@ -552,15 +525,4 @@ func (m *TConfigProjectForm) AppVersion() string {
 		appVersion = gProject.AppOption.Version
 	}
 	return appVersion
-}
-
-func (m *TConfigProjectForm) AppVersionNum() [4]uint16 {
-	versionNum := [4]uint16{0, 0, 0, 0}
-	for i, v := range tool.Split(m.AppVersion(), ".") {
-		if i < len(versionNum) {
-			vn, _ := strconv.ParseUint(v, 10, 16)
-			versionNum[i] = uint16(vn)
-		}
-	}
-	return versionNum
 }

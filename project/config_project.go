@@ -13,7 +13,12 @@
 
 package project
 
-import "github.com/energye/lcl/lcl"
+import (
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
+	"strconv"
+)
 
 // 项目(应用)配置
 
@@ -25,4 +30,49 @@ func runConfigApp() {
 		form.ShowModal()
 		//form.Show()
 	})
+}
+
+// saveProjectConfig 保存项目配置信息
+// 该函数将表单中的项目配置信息保存到全局项目配置对象中，
+// 并异步写入到项目配置文件中。
+func (m *TConfigProjectForm) saveProjectConfig() {
+	// 项目配置对象
+	gProject.AppOption.Title = m.AppTitle()
+	gProject.AppOption.Id = m.AppId()
+	gProject.AppOption.Desc = m.AppDesc()
+	gProject.AppOption.Copyright = m.AppCopyright()
+	gProject.AppOption.Version = m.AppVersion()
+	gProject.AppOption.Icon = m.appIconData
+	gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
+	gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
+	gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
+	gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
+	gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
+	gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
+	gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
+	gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
+	go func() {
+		// 更新项目配置文件
+		if err := WriteEGPConfig(gPath, gProject); err != nil {
+			logs.Error("保存-写入项目配置文件失败")
+			return
+		}
+	}()
+}
+
+func AppVersionNum(version string) [4]uint16 {
+	versionNum := [4]uint16{0, 0, 0, 0}
+	for i, v := range tool.Split(version, ".") {
+		if i < len(versionNum) {
+			vn, _ := strconv.ParseUint(v, 10, 16)
+			versionNum[i] = uint16(vn)
+		}
+	}
+	return versionNum
 }

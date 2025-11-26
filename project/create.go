@@ -127,6 +127,8 @@ func doRunCreate(name, dir string) bool {
 		SetGlobalProject(dir, newProject)
 		// 创建项目目录结构和文件
 		createProjectDir()
+		// 创建 windows 应用程序清单配置
+		saveOrUpdateWindowsManifest()
 		// 创建项目成功
 		logs.Info("创建项目成功", newProject.Name, dir)
 		event.ConsoleWriteInfo("创建项目成功", newProject.Name, dir)

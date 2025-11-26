@@ -223,12 +223,17 @@ func (m *TConfigProjectForm) manifestDataInit() {
 	m.runLevelBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.RunLevel))
 }
 
-// saveWindows 保存 Windows 平台的配置信息
-// 该函数负责将 Windows 平台相关的配置数据进行持久化存储，
-// 包括应用程序的元数据、兼容性设置、DPI 配置以及各种 Manifest 属性等。
-// 最后生成一个完整的 Manifest 文件，并将其保存到项目目录中。
-func (m *TConfigProjectForm) saveWindows() {
-	iconData := m.appIconData
+// saveOrUpdateWindowsManifest 用于生成并保存 Windows 平台所需的资源文件（如图标、版本信息等）。
+// 该函数会根据项目配置生成不同尺寸的 ICO 图标，并将应用程序的元数据（如版本号、版权信息等）
+// 写入到 .syso 资源对象文件中，供编译时链接使用。
+//
+//	无显式参数，依赖全局变量：
+//	  - gProject: 当前项目的配置信息
+//	  - gPath: 项目根路径
+//	 调用时机: 创建项目/修改项目配置时
+func saveOrUpdateWindowsManifest() {
+	// 图标
+	iconData := gProject.AppOption.Icon
 	if iconData.Data == nil {
 		// 使用默认图标
 		iconData.Data = resources.Images("icons/window-icon_256x256.png")
@@ -257,27 +262,27 @@ func (m *TConfigProjectForm) saveWindows() {
 		logs.Error("应用配置-保存配置-SetIcon: ", err.Error())
 		return
 	}
-	rs.SetManifest(m.NewManifest())
+	rs.SetManifest(NewManifest())
 
 	// 文件版本信息
 	v := version.Info{}
-	v.ProductVersion = m.AppVersionNum()
-	v.FileVersion = m.AppVersionNum()
+	v.ProductVersion = AppVersionNum(gProject.AppOption.Version)
+	v.FileVersion = AppVersionNum(gProject.AppOption.Version)
 	v.Flags.SpecialBuild = true
 	v.Timestamp = time.Now()
 	// langID: 2052(中文) 1033(英语)
-	v.Set(2052, version.CompanyName, m.AppId())
-	v.Set(2052, version.ProductName, m.AppTitle())
-	v.Set(2052, version.LegalCopyright, m.AppCopyright())
-	v.Set(2052, version.FileDescription, m.AppDesc())
-	v.Set(2052, version.ProductVersion, m.AppVersion())
-	v.Set(2052, version.FileVersion, m.AppVersion())
-	v.Set(2052, version.Comments, m.AppDesc())
+	v.Set(2052, version.CompanyName, gProject.AppOption.Id)
+	v.Set(2052, version.ProductName, gProject.AppOption.Title)
+	v.Set(2052, version.LegalCopyright, gProject.AppOption.Copyright)
+	v.Set(2052, version.FileDescription, gProject.AppOption.Desc)
+	v.Set(2052, version.ProductVersion, gProject.AppOption.Version)
+	v.Set(2052, version.FileVersion, gProject.AppOption.Version)
+	v.Set(2052, version.Comments, gProject.AppOption.Desc)
 	rs.SetVersionInfo(v)
 
 	// 保存到 resource 目录
 	resourcesPath := filepath.Join(gPath, "resources")
-	for _, arch := range []winres.Arch{winres.ArchAMD64, winres.ArchARM64, winres.ArchI386} {
+	for _, arch := range []winres.Arch{winres.ArchAMD64 /*winres.ArchARM64,*/, winres.ArchI386} {
 		sysoOutBuf := tool.Buffer{}
 		err = rs.WriteObject(&sysoOutBuf, arch)
 		if err != nil {
@@ -293,26 +298,29 @@ func (m *TConfigProjectForm) saveWindows() {
 	}
 }
 
-func (m *TConfigProjectForm) NewManifest() winres.AppManifest {
+// NewManifest 创建一个新的 Windows 应用程序清单配置
+// 该函数初始化并返回一个 winres.AppManifest 结构体，其中填充了来自全局项目配置的应用程序元数据
+// 和 Windows 特定的清单设置。
+func NewManifest() winres.AppManifest {
 	return winres.AppManifest{
 		Identity: winres.AssemblyIdentity{
-			Name:    m.AppId(),
-			Version: m.AppVersionNum(),
+			Name:    gProject.AppOption.Id,
+			Version: AppVersionNum(gProject.AppOption.Version),
 		},
-		Description:                       m.AppDesc(),
-		UIAccess:                          m.uiAccessCheckBox.Checked(),
-		AutoElevate:                       m.autoElevateBox.Checked(),
-		DisableTheming:                    m.disableThemingBox.Checked(),
-		DisableWindowFiltering:            m.disableWindowFilteringBox.Checked(),
-		HighResolutionScrollingAware:      m.highResolutionScrollingAwareBox.Checked(),
-		UltraHighResolutionScrollingAware: m.ultraHighResolutionScrollingAwareBox.Checked(),
-		LongPathAware:                     m.longPathAwareBox.Checked(),
-		PrinterDriverIsolation:            m.printerDriverIsolationBox.Checked(),
-		GDIScaling:                        m.gDIScalingBox.Checked(),
-		SegmentHeap:                       m.segmentHeapBox.Checked(),
-		UseCommonControlsV6:               m.useCommonControlsV6Box.Checked(),
-		ExecutionLevel:                    winres.ExecutionLevel(m.runLevelBox.ItemIndex()),
-		Compatibility:                     winres.SupportedOS(m.compatibilityOSBox.ItemIndex()),
-		DPIAwareness:                      winres.DPIAwareness(m.dpiBox.ItemIndex()),
+		Description:                       gProject.AppOption.Desc,
+		UIAccess:                          gProject.AppOption.Windows.Manifest.UIAccess,
+		AutoElevate:                       gProject.AppOption.Windows.Manifest.AutoElevate,
+		DisableTheming:                    gProject.AppOption.Windows.Manifest.DisableTheming,
+		DisableWindowFiltering:            gProject.AppOption.Windows.Manifest.DisableWindowFiltering,
+		HighResolutionScrollingAware:      gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware,
+		UltraHighResolutionScrollingAware: gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware,
+		LongPathAware:                     gProject.AppOption.Windows.Manifest.LongPathAware,
+		PrinterDriverIsolation:            gProject.AppOption.Windows.Manifest.PrinterDriverIsolation,
+		GDIScaling:                        gProject.AppOption.Windows.Manifest.GDIScaling,
+		SegmentHeap:                       gProject.AppOption.Windows.Manifest.SegmentHeap,
+		UseCommonControlsV6:               gProject.AppOption.Windows.Manifest.UseCommonControlsV6,
+		ExecutionLevel:                    winres.ExecutionLevel(gProject.AppOption.Windows.Manifest.RunLevel),
+		Compatibility:                     winres.SupportedOS(gProject.AppOption.Windows.Manifest.CompatibilityOS),
+		DPIAwareness:                      winres.DPIAwareness(gProject.AppOption.Windows.Manifest.DPI),
 	}
 }
