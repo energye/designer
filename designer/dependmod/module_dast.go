@@ -13,7 +13,14 @@
 
 package dependmod
 
-import "github.com/energye/designer/pkg/logs"
+import (
+	"fmt"
+	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/dast"
+	"github.com/energye/designer/pkg/logs"
+	"go/ast"
+	"path/filepath"
+)
 
 // 初始化模块类型信息
 // 功能依赖 frameworks/src 源码:
@@ -35,5 +42,11 @@ func InitDependencyModule() {
 
 // 初始化模块类型信息
 func initModuleTypeInfo() {
-
+	frameDir := config.Config.FrameworkDir
+	lclSrcEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
+	funcMap := dast.GetAllFunction(lclSrcEventDef)
+	funcMap.Iterate(func(name string, fn *ast.FuncDecl) bool {
+		fmt.Println(name, fn)
+		return false
+	})
 }

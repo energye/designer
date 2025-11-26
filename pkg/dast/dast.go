@@ -29,7 +29,7 @@ func init() {
 	astMap = tool.NewHashMap[string, *ast.File]()
 }
 
-func mustFile(filename string, src any) *ast.File {
+func MustFile(filename string, src any) *ast.File {
 	_, file := filepath.Split(filename)
 	if astFile := astMap.Get(file); astFile != nil {
 		return astFile
@@ -63,9 +63,28 @@ func FindFunction(filename string, functionName string) *ast.FuncDecl {
 	return nil
 }
 
+// GetAllFunction 在Go源文件中获取所有函数声明
+func GetAllFunction(filename string) *tool.HashMap[string, *ast.FuncDecl] {
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return nil
+	}
+	result := tool.NewHashMap[string, *ast.FuncDecl]()
+	// 遍历文件中的所有声明
+	for _, decl := range node.Decls {
+		// 检查是否为函数声明
+		if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+			functionName := funcDecl.Name.Name
+			result.Add(functionName, funcDecl)
+		}
+	}
+	return result
+}
+
 // FindConst 查找常量声明
 func FindConst(filename string, constName string) *ast.ValueSpec {
-	node := mustFile(filename, nil)
+	node := MustFile(filename, nil)
 	if node == nil {
 		return nil
 	}
