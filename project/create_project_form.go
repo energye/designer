@@ -16,6 +16,7 @@ package project
 import (
 	"fmt"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -541,6 +542,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			frameworks.ExtractCEF(enableCEF)
 			// 释放 WebView 库
 			frameworks.ExtractWV(enableWV)
+			// 初始化依赖模块
+			dependmod.InitDependencyModule()
 
 			// go.mod
 			event.ConsoleWriteInfo("go mod tidy")

@@ -131,6 +131,7 @@ func doRunCreate(name, dir string) bool {
 		saveOrUpdateWindowsManifest()
 		// 更新图标
 		updateWindowICON()
+
 		// 创建项目成功
 		logs.Info("创建项目成功", newProject.Name, dir)
 		event.ConsoleWriteInfo("创建项目成功", newProject.Name, dir)
