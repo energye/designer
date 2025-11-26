@@ -55,15 +55,16 @@ type TEnvOption struct {
 
 // TAppOption 应用配置
 type TAppOption struct {
-	Title   string      `json:"app_title"`
-	Id      string      `json:"id"`
-	Desc    string      `json:"desc"`
-	Version string      `json:"version"`
-	AppIcon []byte      `json:"app_icon"`
-	Lang    string      `json:"lang"` // 语言
-	Windows TAppWindows `json:"windows"`
-	MacOS   TAppMacOS   `json:"macos"`
-	Linux   TAppLinux   `json:"linux"`
+	Title     string      `json:"app_title"`
+	Id        string      `json:"id"`
+	Desc      string      `json:"desc"`
+	Version   string      `json:"version"`
+	Copyright string      `json:"copyright"`
+	AppIcon   []byte      `json:"app_icon"`
+	Lang      string      `json:"lang"` // 语言
+	Windows   TAppWindows `json:"windows"`
+	MacOS     TAppMacOS   `json:"macos"`
+	Linux     TAppLinux   `json:"linux"`
 }
 
 // TAppWindows 应用配置-Windows
@@ -98,11 +99,15 @@ var (
 	RunLevelList        = tool.NewArrayMap[winres.ExecutionLevel, string]()
 )
 
+// InitAppOption 初始化应用程序选项，设置默认值
+// 该函数用于为 TProject 结构体的 AppOption 字段设置初始默认配置，
+// 包括通用的应用信息以及针对不同操作系统的特定默认设置。
 func (m *TProject) InitAppOption() {
 	m.AppOption.Title = "MyEnergyApp"
-	m.AppOption.Id = "CompanyName.ProductName.AppName"
-	m.AppOption.Desc = "Your application description."
-	m.AppOption.Version = "1.0.0"
+	m.AppOption.Id = "CompanyName.productName.AppName"
+	m.AppOption.Desc = "Your Application Description."
+	m.AppOption.Copyright = "Copyright (C) 2022-2024 Your Company Name. All rights reserved."
+	m.AppOption.Version = "1.0.0.0"
 	m.AppOption.Lang = "zh_CN"
 
 	// windows 默认值

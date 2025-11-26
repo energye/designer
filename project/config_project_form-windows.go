@@ -14,12 +14,23 @@
 package project
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/pkg/winicon"
+	"github.com/energye/designer/pkg/winres"
+	"github.com/energye/designer/pkg/winres/version"
 	"github.com/energye/designer/project/bean"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
+	"os"
+	"path/filepath"
+	"runtime"
+	"time"
 )
 
 // initWindowsOptions 初始化 Windows 平台配置选项界面控件
@@ -217,12 +228,87 @@ func (m *TConfigProjectForm) manifestDataInit() {
 // 包括应用程序的元数据、兼容性设置、DPI 配置以及各种 Manifest 属性等。
 // 最后生成一个完整的 Manifest 文件，并将其保存到项目目录中。
 func (m *TConfigProjectForm) saveWindows() {
-	// TODO: 实现 Windows 配置的保存逻辑
-	// 需要保存的配置包括：
-	// 1. 应用程序基本信息：名称、描述、版本
-	// 2. 兼容性设置：目标操作系统
-	// 3. DPI 设置：DPI 感知模式
-	// 4. 执行权限：运行级别
-	// 5. 各种功能开关状态：uiAccess、autoElevate 等复选框状态
+	iconData := m.appIconData
+	if iconData == nil {
+		iconData = resources.Images("icons/window-icon_256x256.png")
+	}
+	var err error
+	// 图标转为 ico 集合: [256, 128, 64, 48, 32, 16]
+	icoSetBuf := tool.Buffer{}
+	err = winicon.GenerateIcon(bytes.NewBuffer(iconData), &icoSetBuf, []int{256, 128, 64, 48, 32, 16})
+	if err != nil {
+		logs.Error("应用配置-保存配置-GenerateIcon: ", err.Error())
+		return
+	}
 
+	rs := &winres.ResourceSet{}
+
+	ico, err := winres.LoadICO(bytes.NewReader(icoSetBuf.Bytes()))
+	if err != nil {
+		logs.Error("应用配置-保存配置-LoadICO: ", err.Error())
+		return
+	}
+	err = rs.SetIcon(winres.RT_ICON, ico)
+	if err != nil {
+		logs.Error("应用配置-保存配置-SetIcon: ", err.Error())
+		return
+	}
+	rs.SetManifest(m.NewManifest())
+
+	// 文件版本信息
+	v := version.Info{}
+	v.ProductVersion = m.AppVersionNum()
+	v.FileVersion = m.AppVersionNum()
+	v.Flags.SpecialBuild = true
+	v.Timestamp = time.Now()
+	// langID: 2052(中文) 1033(英语)
+	v.Set(2052, version.CompanyName, m.AppId())
+	v.Set(2052, version.ProductName, m.AppTitle())
+	v.Set(2052, version.LegalCopyright, m.AppCopyright())
+	v.Set(2052, version.FileDescription, m.AppDesc())
+	v.Set(2052, version.ProductVersion, m.AppVersion())
+	v.Set(2052, version.FileVersion, m.AppVersion())
+	v.Set(2052, version.Comments, m.AppDesc())
+	rs.SetVersionInfo(v)
+
+	// 保存到 resource 目录
+	resourcesPath := filepath.Join(gPath, "resources")
+	for _, arch := range []winres.Arch{winres.ArchAMD64, winres.ArchARM64, winres.ArchI386} {
+		sysoOutBuf := tool.Buffer{}
+		err = rs.WriteObject(&sysoOutBuf, arch)
+		if err != nil {
+			logs.Error("应用配置-保存配置-WriteObject: ", err.Error())
+			return
+		}
+		sysoOutFile := fmt.Sprintf("%s-%s_%v.syso", gProject.Name, runtime.GOOS, arch)
+		// 保存到项目的 resources 目录
+		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0666)
+		if err != nil {
+			logs.Error("应用配置-保存配置-WriteFile: ", err.Error())
+		}
+	}
+}
+
+func (m *TConfigProjectForm) NewManifest() winres.AppManifest {
+	return winres.AppManifest{
+		Identity: winres.AssemblyIdentity{
+			Name:    m.AppId(),
+			Version: m.AppVersionNum(),
+		},
+		Description:                       m.AppDesc(),
+		UIAccess:                          m.uiAccessCheckBox.Checked(),
+		AutoElevate:                       m.autoElevateBox.Checked(),
+		DisableTheming:                    m.disableThemingBox.Checked(),
+		DisableWindowFiltering:            m.disableWindowFilteringBox.Checked(),
+		HighResolutionScrollingAware:      m.highResolutionScrollingAwareBox.Checked(),
+		UltraHighResolutionScrollingAware: m.ultraHighResolutionScrollingAwareBox.Checked(),
+		LongPathAware:                     m.longPathAwareBox.Checked(),
+		PrinterDriverIsolation:            m.printerDriverIsolationBox.Checked(),
+		GDIScaling:                        m.gDIScalingBox.Checked(),
+		SegmentHeap:                       m.segmentHeapBox.Checked(),
+		UseCommonControlsV6:               m.useCommonControlsV6Box.Checked(),
+		ExecutionLevel:                    winres.ExecutionLevel(m.runLevelBox.ItemIndex()),
+		Compatibility:                     winres.SupportedOS(m.compatibilityOSBox.ItemIndex()),
+		DPIAwareness:                      winres.DPIAwareness(m.dpiBox.ItemIndex()),
+	}
 }

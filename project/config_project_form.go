@@ -24,6 +24,7 @@ import (
 	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
 	"os"
+	"strconv"
 	"sync"
 )
 
@@ -364,10 +365,15 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 	m.saveWindows()
 }
 
+// appIconBtnLoadData 加载应用图标按钮的数据和文本
+// 该函数用于设置应用图标按钮显示的图标和文本内容，并根据是否有图标数据来控制移除图标按钮的显示状态
+//   - data: 图标图像数据字节切片，如果为nil则使用默认的上传图标
+//   - text: 要设置给图标按钮的文本标题
 func (m *TConfigProjectForm) appIconBtnLoadData(data []byte, text string) {
 	if data == nil {
 		m.appRemoveIconBtn.Hide()
 		data = resources.Images("button/upload_64x64.png")
+		m.appIconData = nil
 	} else {
 		m.appRemoveIconBtn.Show()
 	}
@@ -375,11 +381,14 @@ func (m *TConfigProjectForm) appIconBtnLoadData(data []byte, text string) {
 	m.appIconBtn.SetCaption(text)
 }
 
+// appRemoveIconBtnClick 处理应用图标移除按钮的点击事件
+// 当用户点击移除图标按钮时，该函数会被触发，用于清除当前的应用图标并重置为默认状态
 func (m *TConfigProjectForm) appRemoveIconBtnClick(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	m.appIconBtnLoadData(nil, "点击加载应用图标")
 }
 
-// 应用程序图标
+// appIconBtnClick 是应用图标按钮的点击事件处理函数。
+// 当用户点击图标设置按钮时，打开图形属性编辑器用于选择或上传新的应用图标。
 func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	priceForm := helperform.NewGraphicPropertyEditor(func(imageInfo helperform.ImageInfo) {
 		if !imageInfo.OK {
@@ -423,12 +432,11 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TM
 			// macos: 1024x1024
 			// linux: 256x256
 			saveData := data
-			if imageInfo.Rect.Width() > 256 || imageInfo.Rect.Height() > 256 {
-				saveData = tool.Scale(data, 256, 256)
+			if imageInfo.Rect.Width() > 1024 || imageInfo.Rect.Height() > 1024 {
+				saveData = tool.Scale(data, 1024, 1024)
 			}
 			m.appIconData = saveData
 		}()
-
 	})
 	priceForm.SetWidth(450)
 	priceForm.SetHeight(325)
@@ -437,4 +445,56 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TM
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.appIconBtn.Leave(sender)
 	})
+}
+
+func (m *TConfigProjectForm) AppTitle() string {
+	title := m.appTitleEdit.Text()
+	if title == "" {
+		title = gProject.AppOption.Title
+	}
+	return title
+}
+
+// TODO 未补全窗口组件项
+func (m *TConfigProjectForm) AppCopyright() string {
+	//copyright := m.appTitleEdit.Text()
+	//if copyright == "" {
+	//	copyright = gProject.AppOption.Copyright
+	//}
+	return gProject.AppOption.Copyright
+}
+
+func (m *TConfigProjectForm) AppId() string {
+	id := m.appIdEdit.Text()
+	if id == "" {
+		id = gProject.AppOption.Id
+	}
+	return id
+}
+
+func (m *TConfigProjectForm) AppDesc() string {
+	desc := m.appDescEdit.Text()
+	if desc == "" {
+		desc = gProject.AppOption.Desc
+	}
+	return desc
+}
+
+func (m *TConfigProjectForm) AppVersion() string {
+	appVersion := m.appVersionEdit.Text()
+	if appVersion == "" {
+		appVersion = gProject.AppOption.Version
+	}
+	return appVersion
+}
+
+func (m *TConfigProjectForm) AppVersionNum() [4]uint16 {
+	versionNum := [4]uint16{0, 0, 0, 0}
+	for i, v := range tool.Split(m.AppVersion(), ".") {
+		if i < len(versionNum) {
+			vn, _ := strconv.ParseUint(v, 10, 16)
+			versionNum[i] = uint16(vn)
+		}
+	}
+	return versionNum
 }
