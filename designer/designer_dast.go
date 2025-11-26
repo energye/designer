@@ -37,5 +37,4 @@ func initModuleTypeInfo() {
 		logs.Info("initModuleTypeInfo:", level, data)
 	}
 	cmd.Command("go", "list", "-m", "-f", "{{.Dir}}", consts.DmLCL)
-
 }
