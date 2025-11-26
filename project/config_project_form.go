@@ -249,27 +249,27 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 
-		tabBtnColor := colors.TColor(0xF3F4F6)
+		tabColor := colors.TColor(0xF3F4F6)
+		btnColor := colors.RGBToColor(173, 216, 230)
+
 		m.platformTab = wg.NewTab(m)
 		m.platformTab.Margin = 10
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - (tabBR.Top - 10))
 		m.platformTab.SetBoundsRect(tabBR)
-		m.platformTab.SetColor(tabBtnColor)
+		m.platformTab.SetColor(tabColor)
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetParent(m.box)
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
 			for _, page := range m.platformTab.Pages() {
 				if page.Active() {
-					//page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom))
+					page.Button().SetBorderDirections(0)
 				} else {
-					//page.Button().SetBorderDirections(0)
+					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom, wg.BbdLeft, wg.BbdTop, wg.BbdRight))
 				}
 			}
 		})
-
-		btnColor := colors.RGBToColor(173, 216, 230)
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
 			page.SetTop(40)
@@ -279,12 +279,12 @@ func (m *TConfigProjectForm) initComponents() {
 			page.Button().SetLeft(10)
 			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
 			page.Button().Font().SetColor(colors.ClBlack)
-			page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(colors.ClGray, 0.5))
-			page.Button().SetColor(tabBtnColor)
+			page.Button().SetBorderColor(wg.BbdNone, wg.DarkenColor(tabColor, 0.1))
 			page.Button().SetRadius(35)
-			page.SetDefaultColor(tabBtnColor)
+			page.Button().SetColor(tabColor)
 			page.Button().SetDownColor(wg.DarkenColor(btnColor, 0.15), wg.DarkenColor(btnColor, 0.15))
 			page.Button().SetEnterColor(wg.DarkenColor(btnColor, 0.1), wg.DarkenColor(btnColor, 0.1))
+			page.SetDefaultColor(tabColor)
 			page.SetActiveColor(btnColor)
 		}
 
