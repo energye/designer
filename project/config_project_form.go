@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/project/bean"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -57,7 +58,7 @@ type TConfigProjectForm struct {
 
 	appIconBtn       *wg.TButton
 	appRemoveIconBtn *wg.TButton
-	appIconData      []byte
+	appIconData      bean.TAppIcon
 	appIdText        lcl.ILabel
 	appIdEdit        lcl.IEdit
 	appDescText      lcl.ILabel
@@ -143,6 +144,21 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMinWidth(configProjectFormWidth)
 		constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
+		// 初始时设置图标
+		m.appIconData = gProject.AppOption.Icon
+		go func() {
+			// 预览
+			if gProject.AppOption.Icon.Data != nil {
+				// 预览图标过大, 需要绽放
+				tempIconData := gProject.AppOption.Icon.Data
+				if gProject.AppOption.Icon.W > 128 || gProject.AppOption.Icon.H > 128 {
+					tempIconData = tool.Scale(tempIconData, 128, 128)
+				}
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.appIconBtnLoadData(tempIconData, "")
+				})
+			}
+		}()
 	})
 }
 
@@ -361,8 +377,56 @@ func (m *TConfigProjectForm) closeClick(sender lcl.IObject) {
 	m.Close()
 }
 
+func (m *TConfigProjectForm) validateInputs() bool {
+	return false
+}
+
 func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
-	m.saveWindows()
+	if m.validateInputs() {
+		logs.Error("保存-验证输入失败")
+		return
+	}
+	m.cancelBtn.SetDisable(true)
+	m.saveBtn.SetDisable(true)
+
+	// 项目配置对象
+	gProject.AppOption.Title = m.AppTitle()
+	gProject.AppOption.Id = m.AppId()
+	gProject.AppOption.Desc = m.AppDesc()
+	gProject.AppOption.Copyright = m.AppCopyright()
+	gProject.AppOption.Version = m.AppVersion()
+	gProject.AppOption.Icon = m.appIconData
+	gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
+	gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
+	gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
+	gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
+	gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
+	gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
+	gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
+	gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
+	gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
+	gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
+
+	go func() {
+		defer func() {
+			if !m.closing {
+				// 恢复按钮
+				m.cancelBtn.SetDisable(false)
+				m.saveBtn.SetDisable(false)
+			}
+		}()
+		// 更新项目配置文件
+		if err := WriteEGPConfig(gPath, gProject); err != nil {
+			logs.Error("保存-写入项目配置文件失败")
+			return
+		}
+		// 保存 windows 配置并生成程序信息
+		m.saveWindows()
+	}()
 }
 
 // appIconBtnLoadData 加载应用图标按钮的数据和文本
@@ -373,7 +437,7 @@ func (m *TConfigProjectForm) appIconBtnLoadData(data []byte, text string) {
 	if data == nil {
 		m.appRemoveIconBtn.Hide()
 		data = resources.Images("button/upload_64x64.png")
-		m.appIconData = nil
+		m.appIconData = bean.TAppIcon{}
 	} else {
 		m.appRemoveIconBtn.Show()
 	}
@@ -432,10 +496,12 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TM
 			// macos: 1024x1024
 			// linux: 256x256
 			saveData := data
-			if imageInfo.Rect.Width() > 1024 || imageInfo.Rect.Height() > 1024 {
+			w, h := imageInfo.Rect.Width(), imageInfo.Rect.Height()
+			if w > 1024 || h > 1024 {
 				saveData = tool.Scale(data, 1024, 1024)
+				w, h = 1204, 1204
 			}
-			m.appIconData = saveData
+			m.appIconData = bean.TAppIcon{Data: saveData, W: w, H: h}
 		}()
 	})
 	priceForm.SetWidth(450)

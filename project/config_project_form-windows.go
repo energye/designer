@@ -22,6 +22,7 @@ import (
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/pkg/winres/version"
 	"github.com/energye/designer/project/bean"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -228,13 +229,17 @@ func (m *TConfigProjectForm) manifestDataInit() {
 // 最后生成一个完整的 Manifest 文件，并将其保存到项目目录中。
 func (m *TConfigProjectForm) saveWindows() {
 	iconData := m.appIconData
-	if iconData == nil {
-		iconData = gProject.AppOption.Icon
+	if iconData.Data == nil {
+		// 使用默认图标
+		iconData.Data = resources.Images("icons/window-icon_256x256.png")
+		iconData.W = 256
+		iconData.H = 256
 	}
+
 	var err error
 	// 图标转为 ico 集合: [256, 128, 64, 48, 32, 16]
 	icoSetBuf := tool.Buffer{}
-	err = winicon.GenerateIcon(bytes.NewBuffer(iconData), &icoSetBuf, []int{256, 128, 64, 48, 32, 16})
+	err = winicon.GenerateIcon(bytes.NewBuffer(iconData.Data), &icoSetBuf, []int{256, 128, 64, 48, 32, 16})
 	if err != nil {
 		logs.Error("应用配置-保存配置-GenerateIcon: ", err.Error())
 		return
