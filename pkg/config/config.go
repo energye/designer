@@ -160,8 +160,7 @@ func init() {
 	// 从 energy 配置文件读取
 	if !tool.IsDir(energyDir) {
 		// 非目录删除文件
-		e = os.Remove(energyDir)
-		err.CheckErr(e)
+		_ = os.Remove(energyDir)
 	}
 	// 创建 energy 目录
 	_ = os.Mkdir(energyDir, os.ModePerm)
