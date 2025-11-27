@@ -40,23 +40,22 @@ func InitDependencyModule() {
 
 // 初始化模块类型信息
 func initModuleTypeInfo() {
-	frameDir := config.Config.FrameworkDir
 	// LCL 模块的事件回调函数类型
-	lclSRCEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
+	lclSRCEventDef := filepath.Join(config.Config.FrameworkDirForLCL(), "lcl", "callback_event_def.go")
 	gLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
 
 	// CEF 模块的事件回调函数类型
-	cefSRCEventDef := filepath.Join(frameDir, "src", "cef", "cef", "callback_event_def.go")
+	cefSRCEventDef := filepath.Join(config.Config.FrameworkDirForCEF(), "cef", "callback_event_def.go")
 	gCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef)
 
 	// WV 模块的事件回调函数类型
 	// Windows
-	wvWindowsSRCEventDef := filepath.Join(frameDir, "src", "wv", "windows", "callback_event_def.go")
+	wvWindowsSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "windows", "callback_event_def.go")
 	gWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliases(wvWindowsSRCEventDef)
 	//  macOS
-	wvDarwinSRCEventDef := filepath.Join(frameDir, "src", "wv", "darwin", "callback_event_def.go")
+	wvDarwinSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "darwin", "callback_event_def.go")
 	gWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliases(wvDarwinSRCEventDef)
 	// Linux
-	wvLinuxSRCEventDef := filepath.Join(frameDir, "src", "wv", "linux", "callback_event_def.go")
+	wvLinuxSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "linux", "callback_event_def.go")
 	gWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliases(wvLinuxSRCEventDef)
 }

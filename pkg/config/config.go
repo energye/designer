@@ -84,6 +84,32 @@ type TConfig struct {
 	LastProject  string `json:"last_project"` // 最后打开项目
 }
 
+// FrameworkDirForSrcVersion 返回源码版本的框架目录路径。
+// 它通过将 FrameworkDir 与 "src" 和当前版本连接来构建路径。
+//
+//   - string: 构建的源码版本框架目录路径，如果未设置 FrameworkDir 则返回空字符串
+func (m *TConfig) FrameworkDirForSrcVersion() (string, string) {
+	if m.FrameworkDir != "" {
+		return filepath.Join(m.FrameworkDir, "src"), FormConfig.Version
+	}
+	return "", ""
+}
+
+func (m *TConfig) FrameworkDirForLCL() string {
+	src, version := m.FrameworkDirForSrcVersion()
+	return filepath.Join(src, "lcl@"+version)
+}
+
+func (m *TConfig) FrameworkDirForCEF() string {
+	src, version := m.FrameworkDirForSrcVersion()
+	return filepath.Join(src, "cef@"+version)
+}
+
+func (m *TConfig) FrameworkDirForWV() string {
+	src, version := m.FrameworkDirForSrcVersion()
+	return filepath.Join(src, "wv@"+version)
+}
+
 // UpdateWindow 更新窗体配置
 // 在窗体改变大小时调用, 窗体关闭时
 func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {

@@ -276,7 +276,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.SetBoundsRect(goVersionRect)
 		m.goVersionStatus.SetColor(colors.ClGray)
 		m.goVersionStatus.SetShowHint(true)
-		m.goVersionStatus.SetHint("在本机检测已安装可用的 Go 版本.\n绿色: 检测成功, 支持.\n红色: 检测失败, 不支持.")
+		m.goVersionStatus.SetHint("在本机检测已安装可用的 Go 版本\n绿色: 检测成功, 支持\n红色: 检测失败, 不支持")
 		m.goVersionStatus.SetParent(m.box)
 	}
 
@@ -345,7 +345,7 @@ func (m *TCreateProjectForm) initComponents() {
 		} else {
 			modLocalDirRect.SetHeight(30)
 		}
-		m.modLocalDirBtn.SetHint("默认为 ENERGY Designer 安装目录")
+		m.modLocalDirBtn.SetHint("默认 ENERGY Designer 安装目录")
 		m.modLocalDirBtn.SetShowHint(true)
 		m.modLocalDirBtn.SetBoundsRect(modLocalDirRect)
 		m.modLocalDirBtn.SetParent(m.modLocalBox)
@@ -369,7 +369,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modCEFCheckBox.SetCaption("CEF (Web UI)")
 		m.modCEFCheckBox.SetHint("Chromium Embedded Framework")
 		m.modCEFCheckBox.SetShowHint(true)
-		//m.modCEFCheckBox.SetChecked(true)
+		m.modCEFCheckBox.SetChecked(true)
 		m.modCEFCheckBox.SetEnabled(frameworks.EnableCEF)
 		m.modCEFCheckBox.SetParent(m.modLocalBox)
 
@@ -380,7 +380,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modWebviewCheckBox.SetCaption("WebView (Web UI)")
 		m.modWebviewCheckBox.SetHint("System Runtime Framework")
 		m.modWebviewCheckBox.SetShowHint(true)
-		//m.modWebviewCheckBox.SetChecked(true)
+		m.modWebviewCheckBox.SetChecked(true)
 		m.modWebviewCheckBox.SetEnabled(frameworks.EnableWV)
 		m.modWebviewCheckBox.SetParent(m.modLocalBox)
 	}

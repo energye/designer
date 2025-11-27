@@ -16,9 +16,9 @@ package project
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/resources/frameworks"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -57,7 +57,7 @@ func createProjectDir() {
 	data := *gProject
 	// 本地模式
 	localModule := tool.Buffer{}
-	localModule.WriteString("replace github.com/energye/lcl", " => ", frameworks.LCLLocalPath, "\n")
+	localModule.WriteString("replace github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
 	data.Data = localModule.String()
 
 	// 文件创建

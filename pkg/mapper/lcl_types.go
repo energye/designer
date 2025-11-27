@@ -19,10 +19,10 @@ import (
 	"path/filepath"
 )
 
-// 获取映射的类型值
+// GetLCL 获取映射的类型值
 func GetLCL(name string) any {
-	frameDir := config.Config.FrameworkDir
-	srcLCLTypes := filepath.Join(frameDir, "src", "lcl", "types", "lcl.go")
+	lclPath := config.Config.FrameworkDirForLCL()
+	srcLCLTypes := filepath.Join(lclPath, "lcl", "types", "lcl.go")
 	val := dast.GetConstValue(srcLCLTypes, name)
 	return val
 }
