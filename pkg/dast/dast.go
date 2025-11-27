@@ -45,9 +45,8 @@ func MustFile(filename string, src any) *ast.File {
 
 // FindFunction 在Go源文件中查找函数声明
 func FindFunction(filename string, functionName string) *ast.FuncDecl {
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
-	if err != nil {
+	node := MustFile(filename, nil) // 使用缓存版本
+	if node == nil {
 		return nil
 	}
 	// 遍历文件中的所有声明
@@ -63,20 +62,28 @@ func FindFunction(filename string, functionName string) *ast.FuncDecl {
 	return nil
 }
 
-// GetAllFunction 在Go源文件中获取所有函数声明
-func GetAllFunction(filename string) *tool.HashMap[string, *ast.FuncDecl] {
-	fset := token.NewFileSet()
-	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
-	if err != nil {
+// GetAllFuncTypeAliases 在Go源文件中获取所有函数类型别名
+func GetAllFuncTypeAliases(filename string) *tool.HashMap[string, *ast.FuncType] {
+	node := MustFile(filename, nil)
+	if node == nil {
 		return nil
 	}
-	result := tool.NewHashMap[string, *ast.FuncDecl]()
-	// 遍历文件中的所有声明
+	result := tool.NewHashMap[string, *ast.FuncType]()
 	for _, decl := range node.Decls {
-		// 检查是否为函数声明
-		if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-			functionName := funcDecl.Name.Name
-			result.Add(functionName, funcDecl)
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok || genDecl.Tok != token.TYPE {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			funcType, ok := typeSpec.Type.(*ast.FuncType)
+			if !ok {
+				continue
+			}
+			result.Add(typeSpec.Name.Name, funcType)
 		}
 	}
 	return result

@@ -14,11 +14,9 @@
 package dependmod
 
 import (
-	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
-	"go/ast"
 	"path/filepath"
 )
 
@@ -43,10 +41,16 @@ func InitDependencyModule() {
 // 初始化模块类型信息
 func initModuleTypeInfo() {
 	frameDir := config.Config.FrameworkDir
-	lclSrcEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
-	funcMap := dast.GetAllFunction(lclSrcEventDef)
-	funcMap.Iterate(func(name string, fn *ast.FuncDecl) bool {
-		fmt.Println(name, fn)
-		return false
-	})
+	// LCL 模块的事件回调函数类型
+	lclSRCEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
+	GLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
+
+	// CEF 模块的事件回调函数类型
+	cefSRCEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
+	GCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef)
+
+	// WV 模块的事件回调函数类型
+	// Windows macOS Linux
+	//wvSRCEventDef := filepath.Join(frameDir, "src", "lcl", "lcl", "callback_event_def.go")
+	//GWVFuncTypeAliases = dast.GetAllFuncTypeAliases(wvSRCEventDef)
 }

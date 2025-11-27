@@ -249,6 +249,10 @@ func (m *HashMap[K, T]) Add(key K, value T) {
 	m.values[key] = value
 }
 
+func (m *HashMap[K, T]) Clear() {
+	m.values = make(map[K]T)
+}
+
 func (m *HashMap[K, T]) Get(key K) T {
 	return m.values[key]
 }
