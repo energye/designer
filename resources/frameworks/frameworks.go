@@ -64,7 +64,7 @@ func ExtractLCL(enable bool) {
 func ExtractCEF(enable bool) {
 	if enable {
 		_ = os.MkdirAll(src, os.ModePerm)
-		extractLCL(CEFLocalPath)
+		extractCEF(CEFLocalPath)
 	}
 }
 
@@ -72,6 +72,6 @@ func ExtractCEF(enable bool) {
 func ExtractWV(enable bool) {
 	if enable {
 		_ = os.MkdirAll(src, os.ModePerm)
-		extractLCL(WVLocalPath)
+		extractWV(WVLocalPath)
 	}
 }

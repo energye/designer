@@ -15,12 +15,13 @@ package dast
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/energye/designer/pkg/tool"
 	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
-	"path/filepath"
 )
 
 var astMap *tool.HashMap[string, *ast.File]
@@ -30,8 +31,9 @@ func init() {
 }
 
 func MustFile(filename string, src any) *ast.File {
-	_, file := filepath.Split(filename)
-	if astFile := astMap.Get(file); astFile != nil {
+	hash := md5.Sum([]byte(filename))
+	key := hex.EncodeToString(hash[:])
+	if astFile := astMap.Get(key); astFile != nil {
 		return astFile
 	}
 	fset := token.NewFileSet()
@@ -39,7 +41,7 @@ func MustFile(filename string, src any) *ast.File {
 	if err != nil {
 		return nil
 	}
-	astMap.Add(file, node)
+	astMap.Add(key, node)
 	return node
 }
 

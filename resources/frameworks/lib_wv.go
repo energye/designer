@@ -36,7 +36,7 @@ func extractWV(outputPath string) {
 	}
 	// 提到父目录, 因为解压时包含 wv 目录
 	outputPath = filepath.Join(outputPath, "../")
-	data, e := lcl.ReadFile("wv/wv.zip")
+	data, e := wv.ReadFile("wv/wv.zip")
 	err.CheckErr(e)
 	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	err.CheckErr(e)

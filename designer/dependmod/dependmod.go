@@ -19,7 +19,9 @@ import (
 )
 
 var (
-	GLCLFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
-	GCEFFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
-	GWVFuncTypeAliases  = tool.NewHashMap[string, *ast.FuncType]()
+	gLCLFuncTypeAliases       = tool.NewHashMap[string, *ast.FuncType]()
+	gCEFFuncTypeAliases       = tool.NewHashMap[string, *ast.FuncType]()
+	gWVWindowsFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
+	gWVDarwinFuncTypeAliases  = tool.NewHashMap[string, *ast.FuncType]()
+	gWVLinuxFuncTypeAliases   = tool.NewHashMap[string, *ast.FuncType]()
 )
