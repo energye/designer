@@ -81,14 +81,14 @@ func LoadProject(path, egpFilePath string) {
 	}
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
-	// 初始化依赖模块
-	dependmod.InitDependencyModule()
 	// 重置设计器
 	designer.ResetDesigner()
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 	// 加载完后设置窗口标题
 	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, gPath))
+	// 初始化依赖模块信息 ast
+	dependmod.InitDependencyModule()
 }
 
 // LoadUI 加载UI布局文件

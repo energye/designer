@@ -38,6 +38,7 @@ func MustFile(filename string, src any) *ast.File {
 	}
 	fset := token.NewFileSet()
 	node, err := parser.ParseFile(fset, filename, src, parser.ParseComments)
+	//node, err := parser.ParseFile(fset, filename, src, parser.SkipObjectResolution)
 	if err != nil {
 		return nil
 	}

@@ -412,7 +412,7 @@ func (m *TDesigningComponent) GetProps() {
 			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 		}
 		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
-		logs.Debug("LoadComponent Count:", len(properties))
+		logs.Debug("LoadComponent Count:", len(properties), "ClassName:", m.ClassName())
 		// 拆分 属性和事件
 		var (
 			eventList       []*vtedit.TEditNodeData

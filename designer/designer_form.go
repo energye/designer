@@ -22,7 +22,8 @@ import (
 )
 
 type TDesignerForm struct {
-	lcl.TEngForm
+	//lcl.TEngForm
+	*lcl.TForm
 }
 
 func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
@@ -38,10 +39,6 @@ func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
 	m.SetFormStyle(types.FsNormal)
 }
 
-func (m *TDesignerForm) CreateParams(params *types.TCreateParams) {
-	logs.Info("TDesignerForm CreateParams ", *params)
-}
-
 // 创建设计窗体
 func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc := new(TDesigningComponent)
@@ -50,10 +47,10 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc.mustComponentPropertyPage()
 	m.FormRoot = dc
 
-	//designerForm := lcl.NewEngForm(nil)
-	//designerForm := lcl.NewForm(nil)
-	designerForm := &TDesignerForm{}
-	lcl.Application.NewForm(designerForm)
+	newDesForm := lcl.NewForm(nil)
+	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
+	designerForm.FormCreate(designerForm)
+	//lcl.Application.NewForm(designerForm) // 应该是不能使用这个方试创建设计窗体, 会导致实例失效
 
 	designerForm.SetName(m.name)
 	designerForm.SetCaption(m.name)
