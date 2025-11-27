@@ -17,8 +17,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
+	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/err"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/command"
+	"os"
 	"path/filepath"
 )
 
@@ -28,16 +33,31 @@ var cef embed.FS
 // 释放 CEF 框架源码库
 func extractCEF(outputPath string) {
 	// 存在 go.mod 文件则不进行解压
-	if tool.IsExist(filepath.Join(outputPath, "go.mod")) {
+	gomod := filepath.Join(outputPath, "go.mod")
+	if tool.IsExist(gomod) {
 		return
 	}
-	// 提到父目录, 因为解压时包含 cef 目录
-	data, e := cef.ReadFile("cef/cef.zip")
+	zipData, e := cef.ReadFile("cef/cef.zip")
 	err.CheckErr(e)
-	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	zipReader, e := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
 	err.CheckErr(e)
 	for _, file := range zipReader.File {
 		_, e := tool.ExtractFile(file, outputPath)
 		err.CheckErr(e)
 	}
+	replace := fmt.Sprintf(`replace (
+	github.com/energye/lcl => %v
+)`, config.Config.FrameworkDirForLCL())
+	data, e := renderModLocalTemplate("github.com/energye/cef", replace)
+	err.CheckErr(e)
+	e = os.WriteFile(gomod, data, 0666)
+	err.CheckErr(e)
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = outputPath
+	cmd.Console = func(data string, level command.Level) {
+		logs.Debug("go mod tidy:", data)
+	}
+	cmd.Command("go", "mod", "tidy")
 }

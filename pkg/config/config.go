@@ -79,9 +79,13 @@ type Tab struct {
 type TConfig struct {
 	Window       Window `json:"window"`       // 窗口配置
 	FrameworkDir string `json:"framework"`    // 框架目录
+	Mod          TMod   `json:"mod"`          // 模块配置
 	Registry     string `json:"registry"`     // 远程服务配置地址
 	Proxy        string `json:"proxy"`        // 代理地址
 	LastProject  string `json:"last_project"` // 最后打开项目
+}
+
+type TMod struct {
 }
 
 // FrameworkDirForSrcVersion 返回源码版本的框架目录路径。

@@ -15,6 +15,7 @@ package tool
 
 import (
 	"archive/zip"
+	"bytes"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/api"
@@ -25,6 +26,7 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+	"text/template"
 )
 
 const (
@@ -196,6 +198,18 @@ func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 	defer dstFile.Close()
 	_, err = io.Copy(dstFile, srcFile)
 	return targetFile, err
+}
+
+func RenderTemplate(templateText string, data map[string]any) ([]byte, error) {
+	tmpl, err := template.New("RenderTemplate").Parse(templateText)
+	if err != nil {
+		return nil, err
+	}
+	var out bytes.Buffer
+	if err = tmpl.Execute(&out, data); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
 
 //// DirPermissions 结构体用于存储目录权限检查结果

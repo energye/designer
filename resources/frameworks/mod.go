@@ -13,30 +13,23 @@
 
 package frameworks
 
-import (
-	"archive/zip"
-	"bytes"
-	"embed"
-	"github.com/energye/designer/pkg/err"
-	"github.com/energye/designer/pkg/tool"
-	"path/filepath"
-)
+import "github.com/energye/designer/pkg/tool"
 
-//go:embed lcl/lcl.zip
-var lcl embed.FS
+// 模块本地依赖模板
+//
+//	 使用:
+//		  在 cef, wv 库源码依赖配置
+const modLocalTemplate = `module {{.Module}}
 
-// 释放 LCL 框架源码库
-func extractLCL(outputPath string) {
-	// 存在 go.mod 文件则不进行解压
-	if tool.IsExist(filepath.Join(outputPath, "go.mod")) {
-		return
-	}
-	data, e := lcl.ReadFile("lcl/lcl.zip")
-	err.CheckErr(e)
-	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
-	err.CheckErr(e)
-	for _, file := range zipReader.File {
-		_, e := tool.ExtractFile(file, outputPath)
-		err.CheckErr(e)
-	}
+go 1.20
+
+{{.Replace}}
+`
+
+// renderModLocalTemplate 渲染本地模块模板
+func renderModLocalTemplate(module string, replace string) ([]byte, error) {
+	return tool.RenderTemplate(modLocalTemplate, map[string]any{
+		"Module":  module,
+		"Replace": replace,
+	})
 }
