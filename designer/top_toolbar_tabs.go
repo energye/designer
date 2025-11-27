@@ -67,6 +67,7 @@ func (m *TopToolbar) createComponentTabs() {
 		//sheet := lcl.NewTabSheet(m.tab)
 		sheet := m.tab.NewPage()
 		//sheet.Button().Font().SetStyle(types.NewSet(types.FsBold))
+		sheet.Button().SetAutoSize(true)
 		sheet.SetCaption(tab.Cn) // 设置标签按钮显示文本
 		sheet.Button().Font().SetColor(colors.ClBlack)
 		sheet.Button().SetBorderDirections(0)

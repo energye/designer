@@ -173,6 +173,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
 	form.sheet.Button().SetCloseHintText("关闭设计窗体")
 	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
+	form.sheet.Button().SetAutoSize(true)
 	form.sheet.Button().SetCaption(form.name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
 	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色

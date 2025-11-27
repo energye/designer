@@ -304,6 +304,24 @@ func (m *TConfigProjectForm) initComponents() {
 		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
 		btnColor := colors.RGBToColor(0, 120, 212)
 
+		type Button struct {
+			iconDefault []byte
+			iconActive  []byte
+		}
+		buttons := tool.NewHashMap[string, *Button]()
+		buttons.Add("Windows", &Button{
+			iconDefault: resources.Images("button/windows_16x16.png"),
+			iconActive:  resources.Images("button/windows_white_16x16.png"),
+		})
+		buttons.Add("MacOS", &Button{
+			iconDefault: resources.Images("button/macos_16x16.png"),
+			iconActive:  resources.Images("button/macos_white_16x16.png"),
+		})
+		buttons.Add("Linux", &Button{
+			iconDefault: resources.Images("button/linux_16x16.png"),
+			iconActive:  resources.Images("button/linux_white_16x16.png"),
+		})
+
 		m.platformTab = wg.NewTab(m)
 		m.platformTab.Margin = 10
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
@@ -318,9 +336,11 @@ func (m *TConfigProjectForm) initComponents() {
 				if page.Active() {
 					page.Button().SetBorderDirections(0)
 					page.Button().Font().SetColor(colors.ClWhite)
+					page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconActive)
 				} else {
 					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom, wg.BbdLeft, wg.BbdTop, wg.BbdRight))
 					page.Button().Font().SetColor(colors.ClBlack)
+					page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconDefault)
 				}
 			}
 		})
@@ -329,6 +349,7 @@ func (m *TConfigProjectForm) initComponents() {
 			page.SetTop(40)
 			page.SetHeight(m.platformTab.Height() - 40)
 			page.SetColor(m.platformTab.Color()) // 设置背景色
+			page.Button().SetWidth(95)
 			page.Button().SetHeight(35)
 			page.Button().SetLeft(10)
 			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
@@ -336,27 +357,27 @@ func (m *TConfigProjectForm) initComponents() {
 			page.Button().SetBorderColor(wg.BbdNone, wg.DarkenColor(tabColor, 0.1))
 			page.Button().SetRadius(20)
 			page.Button().SetColor(tabColor)
-			page.Button().SetDownColor(wg.DarkenColor(btnColor, 0.15), wg.DarkenColor(btnColor, 0.15))
-			page.Button().SetEnterColor(wg.DarkenColor(btnColor, 0.1), wg.DarkenColor(btnColor, 0.1))
+			page.Button().SetDownColor(wg.LightenColor(btnColor, 0.15), wg.LightenColor(btnColor, 0.15))
+			page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.1))
 			page.SetDefaultColor(tabColor)
 			page.SetActiveColor(btnColor)
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
-		m.platformTabPageWindows.SetCaption("　Windows　")
-		m.platformTabPageWindows.Button().SetIconFavoriteFormBytes(resources.Images("button/windows.png"))
+		m.platformTabPageWindows.SetCaption("Windows")
+		m.platformTabPageWindows.Button().SetIconFavoriteFormBytes(buttons.Get("Windows").iconDefault)
 		setTabPageStyle(m.platformTabPageWindows)
 		m.initWindowsOptions()
 
 		m.platformTabPageMacOS = m.platformTab.NewPage()
-		m.platformTabPageMacOS.SetCaption("　MacOS　")
-		m.platformTabPageMacOS.Button().SetIconFavoriteFormBytes(resources.Images("button/macos.png"))
+		m.platformTabPageMacOS.SetCaption("MacOS")
+		m.platformTabPageMacOS.Button().SetIconFavoriteFormBytes(buttons.Get("MacOS").iconDefault)
 		setTabPageStyle(m.platformTabPageMacOS)
 		m.initMacOSOptions()
 
 		m.platformTabPageLinux = m.platformTab.NewPage()
-		m.platformTabPageLinux.SetCaption("　Linux　")
-		m.platformTabPageLinux.Button().SetIconFavoriteFormBytes(resources.Images("button/linux.png"))
+		m.platformTabPageLinux.SetCaption("Linux")
+		m.platformTabPageLinux.Button().SetIconFavoriteFormBytes(buttons.Get("Linux").iconDefault)
 		setTabPageStyle(m.platformTabPageLinux)
 		m.initLinuxOptions()
 
