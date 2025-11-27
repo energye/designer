@@ -444,6 +444,7 @@ func (m *TCreateProjectForm) checkGoVersion() {
 	result := false
 	cmd := command.NewCMD()
 	cmd.IsPrint = false
+	cmd.HideWindow = true
 	cmd.Console = func(data string, level command.Level) {
 		if !result {
 			logs.Debug(level, data)

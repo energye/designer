@@ -32,6 +32,7 @@ var runCmd *command.CMD
 func build(output string) (err error) {
 	buildCmd := command.NewCMD()
 	buildCmd.IsPrint = false
+	buildCmd.HideWindow = true
 	buildCmd.Dir = project.Path()
 	buildCmd.Console = func(data string, level command.Level) {
 		logs.Info("Level", level.String(), data)
@@ -74,6 +75,7 @@ func runPreview(state chan<- any) {
 	// 运行命令
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
+	runCmd.HideWindow = true
 	runCmd.Dir = project.Path()
 	runCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)

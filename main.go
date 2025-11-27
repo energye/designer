@@ -27,6 +27,7 @@ import (
 	"strings"
 )
 
+// go build -ldflags="-H windowsgui -s -w" -trimpath
 func main() {
 	// go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
