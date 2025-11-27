@@ -25,7 +25,7 @@ import (
 //go:embed lcl/lcl.zip
 var lcl embed.FS
 
-// 释放 LCL 框架库
+// 释放 LCL 框架源码库
 func extractLCL(outputPath string) {
 	// 存在 go.mod 文件则不进行解压
 	if tool.IsExist(filepath.Join(outputPath, "go.mod")) {
