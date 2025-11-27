@@ -47,10 +47,10 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc.mustComponentPropertyPage()
 	m.FormRoot = dc
 
+	// 创建设计窗体实例
 	newDesForm := lcl.NewForm(nil)
 	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
 	designerForm.FormCreate(designerForm)
-	//lcl.Application.NewForm(designerForm) // 应该是不能使用这个方试创建设计窗体, 会导致实例失效
 
 	designerForm.SetName(m.name)
 	designerForm.SetCaption(m.name)
