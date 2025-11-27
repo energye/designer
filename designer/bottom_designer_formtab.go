@@ -42,14 +42,17 @@ type FormTab struct {
 	recover       *TRecoverForm        // 恢复模式
 }
 
+// UIFile 返回UI文件名 xxx.ui
 func (m *FormTab) UIFile() string {
 	return strings.ToLower(m.FormRoot.Name()) + consts.UIExt
 }
 
+// GOFile 返回 Go UI 文件名 xxx.ui.go
 func (m *FormTab) GOFile() string {
 	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoExt
 }
 
+// GOUserFile 返回 Go 用户文件名 xxx.go
 func (m *FormTab) GOUserFile() string {
 	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoUserExt
 }

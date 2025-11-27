@@ -58,9 +58,18 @@ func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vted
 	}
 }
 
+// 执行更新组件绑定事件到代码, 该操作不更新 api 绑定, 而是直接更新代码
+func (m *TDesigningComponent) doUpdateComponentBindEventToCode(updateNodeData *vtedit.TEditNodeData) {
+	logs.Debug("更新组件:", m.ClassName(), "事件:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
+	if updateNodeData.IsModify() {
+		// 事件修改
+		triggerUIGeneration(m)
+	}
+}
+
 // 执行更新组件属性到对象 api
 func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
-	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name())
+	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
@@ -110,12 +119,30 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 		delete(updateComponentTimers, compName)
 		updateComponentMutex.Unlock()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 更改属性之前隐藏和重新显示
 			m.doUpdateComponentPropertyToObject(updateNodeData)
 		})
 	})
 	updateComponentTimers[compName] = timer
+}
 
+// 更新组件绑定事件到代码
+func (m *TDesigningComponent) UpdateComponentBindEventToCode(updateNodeData *vtedit.TEditNodeData) {
+	updateComponentMutex.Lock()
+	defer updateComponentMutex.Unlock()
+	compName := m.Name()
+	// 取消之前的定时器
+	if timer, exists := updateComponentTimers[compName]; exists {
+		timer.Stop()
+	}
+	// 创建新的定时器
+	timer := time.AfterFunc(updateComponentDelay, func() {
+		updateComponentMutex.Lock()
+		delete(updateComponentTimers, compName)
+		updateComponentMutex.Unlock()
+		m.doUpdateComponentBindEventToCode(updateNodeData)
+
+	})
+	updateComponentTimers[compName] = timer
 }
 
 // 更新组件树节点信息

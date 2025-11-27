@@ -89,6 +89,7 @@ func tryRenameFileName(tempFormTab *designer.FormTab) {
 			break
 		}
 	}
+	// 判断 UI 文件名是否相同, 如果不相同则更改当前窗体的文件名
 	if uiForm != nil && uiForm.UIFile != uiFileName {
 		// 修改 xxx.ui 布局文件名
 		oldUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.UIFile)

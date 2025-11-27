@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
+	projBean "github.com/energye/designer/project/bean"
 	"github.com/energye/designer/uigen/bean"
 	"go/format"
 	"os"
@@ -30,14 +31,17 @@ import (
 )
 
 // 生成用户代码文件
+// 生成条件: 文件未创建, 绑定事件, self 修改
 func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
 	goUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
 	// 检查文件是否已存在
 	// 如果文件已存在，不覆盖
 	if _, err := os.Stat(goUIUserFilePath); err == nil {
+		// 尝试更新用户代码: 绑定事件, self 修改
+		tryUpdateUserCode(formTab, component)
 		return nil // 文件已存在，直接返回
 	}
-
+	// 创建用户代码文件
 	// 构建模板数据
 	data := buildUserTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
@@ -88,4 +92,32 @@ func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
 	}
 	formData.Form.Children = formData.Form.buildComponents(component)
 	return formData
+}
+
+// 是否更新自身(self)引用参数
+func isUpdateSelf(formTab *designer.FormTab) bool {
+	// ui 布局文件名
+	uiFileName := formTab.UIFile()
+	// 验证UI布局文件名
+	var uiForm *projBean.TUIForm
+	for _, form := range project.Project().UIForms {
+		if form.Id == formTab.Id {
+			uiForm = &form
+			break
+		}
+	}
+	// 判断 UI 文件名是否不同, 如果不同更改当前窗体的文件名
+	if uiForm != nil && uiForm.UIFile != uiFileName {
+		return true
+	}
+	return false
+}
+
+// 尝试更新用户代码: 绑定事件, self 修改
+func tryUpdateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) {
+	goUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	if isUpdateSelf(formTab) {
+		// self 修改
+	}
+	_ = goUIUserFilePath
 }

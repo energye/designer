@@ -159,6 +159,7 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 // 设计组件接口
 type IDesigningComponent interface {
 	UpdateComponentPropertyToObject(nodeData *TEditNodeData)
+	UpdateComponentBindEventToCode(updateNodeData *TEditNodeData)
 }
 
 // 编辑的节点数据
@@ -265,9 +266,14 @@ func (m *TEditNodeData) Name() string {
 func (m *TEditNodeData) FormInspectorPropertyToComponentProperty() {
 	if m.EditNodeData != nil {
 		logs.Debug("TEditLinkNodeData FormInspectorPropertyToComponentProperty property-name:", m.EditNodeData.Name)
-		//go lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.AffiliatedComponent.UpdateComponentPropertyToObject(m)
-		//})
+	}
+}
+
+func (m *TEditNodeData) FormInspectorEventToComponentEvent() {
+	if m.EditNodeData != nil {
+		logs.Debug("TEditLinkNodeData FormInspectorEventToComponentEvent property-name:", m.EditNodeData.Name)
+		m.AffiliatedComponent.UpdateComponentBindEventToCode(m)
 	}
 }
 
@@ -309,6 +315,8 @@ func (m *TEditNodeData) IsModify() bool {
 				return true
 			}
 		}
+	case consts.PdtMethod:
+		println("test PdtMethod")
 	}
 	return false
 }
