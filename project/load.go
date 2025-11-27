@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -80,6 +81,8 @@ func LoadProject(path, egpFilePath string) {
 	}
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
+	// 初始化依赖模块
+	dependmod.InitDependencyModule()
 	// 重置设计器
 	designer.ResetDesigner()
 	// 恢复设计器窗体
