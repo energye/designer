@@ -118,6 +118,7 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.box = lcl.NewPanel(m)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetAlign(types.AlClient)
+	m.box.SetColor(colors.ClWhite)
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
