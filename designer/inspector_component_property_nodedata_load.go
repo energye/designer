@@ -99,8 +99,8 @@ func (m *TDesigningComponent) loadEventList() {
 					customProperty := vtedit.NewEditLinkNodeData(customProp)
 					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
 						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
-					m.PropertyList[i] = newEditNodeData // 更新到组件属性
-					nodeData = m.PropertyList[i]
+					m.EventList[i] = newEditNodeData // 更新到组件属性
+					nodeData = m.EventList[i]
 					newEditNodeData.Build()
 				} else {
 					// 自定义属性添加？？

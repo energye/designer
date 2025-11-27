@@ -94,6 +94,8 @@ func (m *TEditLinkNodeData) EditValue() any {
 		return m.IntValue
 	case consts.PdtClass:
 		return m.StringValue
+	case consts.PdtMethod:
+		return m.StringValue
 	default:
 		return ""
 	}
@@ -115,6 +117,8 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 		m.StringValue = value.(string)
 	case consts.PdtColorSelect:
 		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
+	case consts.PdtMethod:
+		m.StringValue = value.(string)
 	}
 }
 
@@ -181,6 +185,7 @@ var (
 // 创建一个编辑节点数据
 func NewEditLinkNodeData(prop *lcl.ComponentProperties) *TEditLinkNodeData {
 	m := &TEditLinkNodeData{Metadata: prop}
+	// 构建当前节点数据
 	m.Build()
 	return m
 }
@@ -316,7 +321,7 @@ func (m *TEditNodeData) IsModify() bool {
 			}
 		}
 	case consts.PdtMethod:
-		println("test PdtMethod")
+		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
 	}
 	return false
 }

@@ -101,7 +101,7 @@ func (m *TEditLinkNodeData) Build() {
 	case consts.TkMethod: // 方法事件回调
 		m.Type = consts.PdtMethod
 		m.Name = m.Metadata.Name
-		m.StringValue = m.Metadata.Type
+		m.StringValue = "" // ?? = m.Metadata.Type
 	default: // 未识别类型
 		m.Type = consts.PdtText // todo 使用文本
 		m.Name = m.Metadata.Name
