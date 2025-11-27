@@ -60,13 +60,17 @@ var (
 // NewCreateProjectForm 创建一个新的项目创建表单实例
 // 该函数初始化一个 TCreateProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewCreateProjectForm() *TCreateProjectForm {
-	designerForm := &TCreateProjectForm{}
-	lcl.Application.NewForm(designerForm)
-	return designerForm
+	newEngForm := lcl.NewEngForm(nil)
+	newForm := &TCreateProjectForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	//lcl.Application.NewForm(newForm) // 不使用原因：go debug 模式有问题
+	newForm.FormCreate(newForm)
+	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
+	newForm.SetOnClose(newForm.OnClose)
+	return newForm
 }
 
 type TCreateProjectForm struct {
-	lcl.TEngForm
+	*lcl.TEngForm
 	closing     bool
 	goVersionOK bool
 	one         sync.Once
@@ -131,10 +135,7 @@ func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 }
 
 func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
-}
-
-func (m *TCreateProjectForm) CreateParams(params *types.TCreateParams) {
-	logs.Info("TCreateProjectForm CreateParams")
+	*closeAction = types.CaFree
 }
 
 func (m *TCreateProjectForm) initComponents() {

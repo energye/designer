@@ -34,7 +34,7 @@ type ImageInfo struct {
 type DialogCallback func(image ImageInfo)
 
 type TGraphicPropertyEditorForm struct {
-	lcl.TEngForm
+	*lcl.TEngForm
 	loadButton          lcl.IButton
 	saveButton          lcl.IButton
 	clearButton         lcl.IButton
@@ -52,13 +52,13 @@ type TGraphicPropertyEditorForm struct {
 }
 
 func NewGraphicPropertyEditor(dialogCallback DialogCallback) *TGraphicPropertyEditorForm {
-	designerForm := &TGraphicPropertyEditorForm{dialogCallback: dialogCallback}
-	lcl.Application.NewForm(designerForm)
-	//designerForm.IEngForm = lcl.NewEngForm(nil)
-	//designerForm.FormCreate(nil)
-	//designerForm.SetOnCloseQuery(designerForm.OnCloseQuery)
-	//designerForm.SetOnClose(designerForm.OnClose)
-	return designerForm
+	newEngForm := lcl.NewEngForm(nil)
+	newForm := &TGraphicPropertyEditorForm{TEngForm: newEngForm.(*lcl.TEngForm), dialogCallback: dialogCallback}
+	//lcl.Application.NewForm(newForm)  // 不使用原因：go debug 模式有问题
+	newForm.FormCreate(newEngForm)
+	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
+	newForm.SetOnClose(newForm.OnClose)
+	return newForm
 }
 
 func (m *TGraphicPropertyEditorForm) FormCreate(sender lcl.IObject) {
@@ -79,6 +79,7 @@ func (m *TGraphicPropertyEditorForm) OnCloseQuery(sender lcl.IObject, canClose *
 
 func (m *TGraphicPropertyEditorForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
 	logs.Info("TGraphicPropertyEditorForm OnClose")
+	*closeAction = types.CaFree
 }
 
 func (m *TGraphicPropertyEditorForm) initComponentLayout() {

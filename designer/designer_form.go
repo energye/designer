@@ -50,6 +50,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	// 创建设计窗体实例
 	newDesForm := lcl.NewForm(nil)
 	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
+	//lcl.Application.NewForm(designerForm)  // 不使用原因：go debug 模式有问题
 	designerForm.FormCreate(designerForm)
 
 	designerForm.SetName(m.name)
