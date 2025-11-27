@@ -32,7 +32,6 @@ func extractLCL(outputPath string) {
 		return
 	}
 	// 提到父目录, 因为解压时包含 lcl 目录
-	outputPath = filepath.Join(outputPath, "../")
 	data, e := lcl.ReadFile("lcl/lcl.zip")
 	err.CheckErr(e)
 	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))

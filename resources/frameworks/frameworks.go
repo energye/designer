@@ -14,6 +14,7 @@
 package frameworks
 
 import (
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/exec"
 	"os"
@@ -34,16 +35,6 @@ var (
 	RuntimePath = filepath.Join(Path, "runtime")
 )
 
-var (
-	src = filepath.Join(Path, "src")
-	// LCLLocalPath LCL 框架源码路径
-	LCLLocalPath = filepath.Join(src, "lcl")
-	// CEFLocalPath CEF 框架源码路径
-	CEFLocalPath = filepath.Join(src, "cef")
-	// WVLocalPath WebView 框架源码路径, darwin/linux/windows
-	WVLocalPath = filepath.Join(src, "wv")
-)
-
 // ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
 func ExtractLibrary() {
@@ -55,7 +46,9 @@ func ExtractLibrary() {
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
 func ExtractLCL(enable bool) {
 	if enable {
-		_ = os.MkdirAll(src, os.ModePerm)
+		// LCLLocalPath LCL 框架源码路径
+		LCLLocalPath := config.Config.FrameworkDirForLCL()
+		_ = os.MkdirAll(LCLLocalPath, os.ModePerm)
 		extractLCL(LCLLocalPath)
 	}
 }
@@ -63,7 +56,8 @@ func ExtractLCL(enable bool) {
 // ExtractCEF 根据enable参数决定是否执行 CEF 库提取操作
 func ExtractCEF(enable bool) {
 	if enable {
-		_ = os.MkdirAll(src, os.ModePerm)
+		CEFLocalPath := config.Config.FrameworkDirForCEF()
+		_ = os.MkdirAll(CEFLocalPath, os.ModePerm)
 		extractCEF(CEFLocalPath)
 	}
 }
@@ -71,7 +65,8 @@ func ExtractCEF(enable bool) {
 // ExtractWV 根据enable参数决定是否执行 WebView 库提取操作
 func ExtractWV(enable bool) {
 	if enable {
-		_ = os.MkdirAll(src, os.ModePerm)
+		WVLocalPath := config.Config.FrameworkDirForWV()
+		_ = os.MkdirAll(WVLocalPath, os.ModePerm)
 		extractWV(WVLocalPath)
 	}
 }
