@@ -302,7 +302,7 @@ func (m *TConfigProjectForm) initComponents() {
 	{
 
 		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
-		btnColor := colors.RGBToColor(173, 216, 230)
+		btnColor := colors.RGBToColor(0, 120, 212)
 
 		m.platformTab = wg.NewTab(m)
 		m.platformTab.Margin = 10
@@ -317,8 +317,10 @@ func (m *TConfigProjectForm) initComponents() {
 			for _, page := range m.platformTab.Pages() {
 				if page.Active() {
 					page.Button().SetBorderDirections(0)
+					page.Button().Font().SetColor(colors.ClWhite)
 				} else {
 					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom, wg.BbdLeft, wg.BbdTop, wg.BbdRight))
+					page.Button().Font().SetColor(colors.ClBlack)
 				}
 			}
 		})
@@ -332,7 +334,7 @@ func (m *TConfigProjectForm) initComponents() {
 			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
 			page.Button().Font().SetColor(colors.ClBlack)
 			page.Button().SetBorderColor(wg.BbdNone, wg.DarkenColor(tabColor, 0.1))
-			page.Button().SetRadius(35)
+			page.Button().SetRadius(20)
 			page.Button().SetColor(tabColor)
 			page.Button().SetDownColor(wg.DarkenColor(btnColor, 0.15), wg.DarkenColor(btnColor, 0.15))
 			page.Button().SetEnterColor(wg.DarkenColor(btnColor, 0.1), wg.DarkenColor(btnColor, 0.1))
