@@ -256,11 +256,13 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	m.componentName = make(map[string]int)
-	if m.FormRoot.object != nil {
-		m.FormRoot.object.Free()
-		m.FormRoot.object = nil
-		m.FormRoot.originObject = nil
-	}
+	// todo 先注释使用下面的
+	//if m.FormRoot.object != nil {
+	//	m.FormRoot.object.Free()
+	//	m.FormRoot.object = nil
+	//	m.FormRoot.originObject = nil
+	//}
+	m.FormRoot.Free() // 使用此代码释放
 	m.recover = nil
 	m.tree.Free()
 	m.componentMenu.Free()
