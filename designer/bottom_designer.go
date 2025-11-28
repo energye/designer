@@ -15,7 +15,6 @@ package designer
 
 import (
 	"fmt"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -32,7 +31,7 @@ var (
 	defaultWidth, defaultHeight int32 = 600, 400
 )
 
-// 设计器
+// 主设计器
 type Designer struct {
 	//page          lcl.IPageControl // 设计器 tabs
 	tab           *wg.TTab         // 设计器 tabs
@@ -51,6 +50,7 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.tab.SetAlign(types.AlClient)
 	des.tab.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
 	des.tab.SetBevelOuter(types.BvLowered)
+	//des.tab.SetColor(colors.ClBlue)
 	des.tab.ScrollLeft().SetTop(3)
 	des.tab.ScrollLeft().SetHeight(20)
 	des.tab.ScrollLeft().SetColor(wg.DarkenColor(bgLightColor, 0.1))
@@ -58,18 +58,7 @@ func (m *BottomBox) createFromDesignerLayout() *Designer {
 	des.tab.ScrollRight().SetHeight(20)
 	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
 	des.tab.EnableScrollButton(false)
-	//des.page.SetTabStop(true)
 	des.tab.SetParent(m.rightBox)
-	// 右键菜单
-	//des.page.SetOnContextPopup(func(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
-	//
-	//})
-	des.tab.SetOnClick(func(sender lcl.IObject) {
-		logs.Debug("Designer PageControl click")
-	})
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		des.tab.RecalculatePosition()
-	})
 
 	// 创建tab上的右键菜单
 	des.createTabMenu()
