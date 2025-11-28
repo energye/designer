@@ -101,6 +101,7 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 		propNodeData := component.FindNodeDataByNamePaths(property.Name)
 		if propNodeData != nil {
 			if propNodeData.Type() == consts.PdtCheckBoxList {
+				// 转换 set 集合为 hashSet
 				set := tool.SetToHashSet(property.Value)
 				for _, checkBox := range propNodeData.EditNodeData.CheckBoxValue {
 					checkBox.Checked = set.Contains(checkBox.Name)

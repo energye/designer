@@ -12,6 +12,25 @@ var (
 	testTestFilePath = filepath.Join(wd, "dast_test.go")
 )
 
+type TCursor = int16
+
+const (
+	CrHigh = TCursor(0)
+
+	CrDefault = TCursor(0)
+	CrNone    = TCursor(-1)
+	CrArrow   = TCursor(-2)
+)
+
+type TTest2 = int16
+
+const (
+	TestHigh TTest2 = iota
+	TestDefault
+	TestNone
+	TestArrow
+)
+
 type TTestStruct struct {
 	Name string
 	Age  int

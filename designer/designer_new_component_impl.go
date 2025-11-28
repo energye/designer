@@ -421,17 +421,32 @@ func (m *TDesigningComponent) GetProps() {
 			tempPropertyMap = make(map[string]struct{}) // 用于下面判断
 		)
 		for _, prop := range properties {
-			newProp := prop
-			tool.FixPropInfo(methods, &newProp)
+			metadata := prop
+			tool.FixPropInfo(methods, &metadata)
+
+			if customMetadatas := configCompProp.GetCustomPropertyList(metadata.Name); customMetadatas != nil {
+				if len(customMetadatas) == 1 {
+					// 数组只有一个元素时, 将它做为元数据使用, 替换当前属性
+					customMetadata := customMetadatas[0]
+					// Options 默认值设置
+					if customMetadata.Options == "" {
+						// 未配置options时, 使用源数据默认值
+						customMetadata.Options = metadata.Options
+					}
+					metadata = customMetadata
+				}
+			}
+
 			// 创建节点数据
-			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&newProp)
+			newEditLinkNodeData := vtedit.NewEditLinkNodeData(&metadata)
 			// 节点数据包装
 			newEditNodeData := &vtedit.TEditNodeData{
 				EditNodeData:        newEditLinkNodeData,
 				OriginNodeData:      newEditLinkNodeData.Clone(), // 克隆一份原始数据
 				AffiliatedComponent: m,
 			}
-			if newProp.Kind == consts.TkMethod {
+
+			if metadata.Kind == consts.TkMethod {
 				// tkMethod 事件函数
 				eventList = append(eventList, newEditNodeData)
 			} else {
@@ -452,7 +467,7 @@ func (m *TDesigningComponent) GetProps() {
 			// 创建节点数据
 			customProperty := vtedit.NewEditLinkNodeData(&prop)
 			// 节点数据包装
-			newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
+			newEditNodeData := &vtedit.TEditNodeData{EditNodeData: customProperty,
 				OriginNodeData:      customProperty.Clone(), // 克隆一份原始数据
 				AffiliatedComponent: m}
 			propertyList = append(propertyList, newEditNodeData) // 添加到组件属性

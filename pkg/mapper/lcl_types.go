@@ -29,7 +29,7 @@ var _LCLTypeFiles = []string{
 
 // GetLCL 获取映射的类型值
 func GetLCL(name string) any {
-	if v := cache.Get(name); v != nil {
+	if v := cacheValue.Get(name); v != nil {
 		return v
 	}
 	lclPath := config.Config.FrameworkDirForLCL()
@@ -37,7 +37,7 @@ func GetLCL(name string) any {
 		filePath := filepath.Join(lclPath, "types", file)
 		val := dast.GetConstValue(filePath, name)
 		if val != nil {
-			cache.Add(name, val)
+			cacheValue.Add(name, val)
 			return val
 		}
 	}

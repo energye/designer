@@ -29,39 +29,13 @@ func (m *TDesigningComponent) loadPropertyList() {
 	}
 	m.isLoadProperty = true
 	configCompProp := config.ComponentProperty
-	for i, nodeData := range m.PropertyList {
+	for _, nodeData := range m.PropertyList {
 		// 通用属性, 排除的属性
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
 		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
-		if !nodeData.IsFinal {
-			// 自定义属性, 使用会覆蓋掉
-			// 返回数组
-			if customProps := configCompProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
-				if len(customProps) == 1 {
-					// 数组只有一个元素，规则为直接作用在当前属性上
-					customProp := &customProps[0]
-					// 默认值设置
-					if customProp.Options == "" {
-						// 未配置options时,使用默认值
-						customProp.Options = nodeData.EditNodeData.Metadata.Options
-					} else {
-						// TODO 其它元数据的字段默认值??
-					}
-					customProperty := vtedit.NewEditLinkNodeData(customProp)
-					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
-						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
-					m.PropertyList[i] = newEditNodeData // 更新到组件属性
-					nodeData = m.PropertyList[i]
-					newEditNodeData.Build()
-				} else {
-					// 自定义属性添加？？
-				}
-			}
-			nodeData.IsFinal = true
-		}
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
 	}
@@ -75,39 +49,13 @@ func (m *TDesigningComponent) loadEventList() {
 	}
 	m.isLoadEvent = true
 	configCompProp := config.ComponentProperty
-	for i, nodeData := range m.EventList {
+	for _, nodeData := range m.EventList {
 		// 通用属性, 排除的属性
 		if configCompProp.IsExclude(nodeData.EditNodeData.Name) {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
 		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
-		if !nodeData.IsFinal {
-			// 自定义属性, 使用会覆蓋掉
-			// 返回数组
-			if customProps := configCompProp.GetCustomPropertyList(nodeData.EditNodeData.Name); customProps != nil {
-				if len(customProps) == 1 {
-					// 数组只有一个元素，规则为直接作用在当前属性上
-					customProp := &customProps[0]
-					// 默认值设置
-					if customProp.Options == "" {
-						// 未配置options时,使用默认值
-						customProp.Options = nodeData.EditNodeData.Metadata.Options
-					} else {
-						// TODO 其它元数据的字段默认值??
-					}
-					customProperty := vtedit.NewEditLinkNodeData(customProp)
-					newEditNodeData := &vtedit.TEditNodeData{IsFinal: true, EditNodeData: customProperty,
-						OriginNodeData: customProperty.Clone(), AffiliatedComponent: m}
-					m.EventList[i] = newEditNodeData // 更新到组件属性
-					nodeData = m.EventList[i]
-					newEditNodeData.Build()
-				} else {
-					// 自定义属性添加？？
-				}
-			}
-			nodeData.IsFinal = true
-		}
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.eventTree, 0, nodeData)
 	}

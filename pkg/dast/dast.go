@@ -193,7 +193,7 @@ func CreateMethod(filename string, typeName string, methodName string, params []
 	return buf.Bytes()
 }
 
-// 获取常量值
+// GetConstValue 获取常量值, 在指定 go 源码文件获取常量值
 func GetConstValue(filename string, name string) any {
 	value := FindConst(filename, name)
 	if value != nil && len(value.Names) > 0 {

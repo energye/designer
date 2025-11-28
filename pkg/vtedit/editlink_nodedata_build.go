@@ -29,10 +29,10 @@ import (
 // 构建节点数据
 func (m *TEditLinkNodeData) Build() {
 	kind := consts.PropertyKind(m.Metadata.Kind)
+	m.Name = m.Metadata.Name
 	switch kind {
 	case consts.TkEnumeration: // 枚举 单选, 使用下拉框
 		m.Type = consts.PdtComboBox
-		m.Name = m.Metadata.Name
 		m.StringValue = tool.FirstToUpper(m.Metadata.Value)
 		options := tool.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
@@ -43,7 +43,6 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case consts.TkSet: // 集合 多选, 使用子菜单列表
 		m.Type = consts.PdtCheckBoxList
-		m.Name = m.Metadata.Name
 		values := tool.Split(m.Metadata.Value, ",")
 		options := tool.Split(m.Metadata.Options, ",")
 		sort.Strings(options)
@@ -60,19 +59,15 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case consts.TkBool: // 布尔类型
 		m.Type = consts.PdtCheckBox
-		m.Name = m.Metadata.Name
 		m.Checked = m.Metadata.Value == "1"
 	case consts.TkAString: // 字符串
 		m.Type = consts.PdtText
-		m.Name = m.Metadata.Name
 		m.StringValue = m.Metadata.Value
 	case consts.TkChar: // 密码
 		m.Type = consts.PdtUint16
-		m.Name = m.Metadata.Name
 		m.StringValue = "" // 默认 0 == 空
 	case consts.TkInteger: // 数字
 		m.Type = consts.PdtInt
-		m.Name = m.Metadata.Name
 		v, _ := strconv.Atoi(m.Metadata.Value)
 		m.IntValue = v
 		// TModalResult TCursor TGraphicsColor
@@ -84,12 +79,10 @@ func (m *TEditLinkNodeData) Build() {
 		}
 	case consts.TkInt64: // 数字 64
 		m.Type = consts.PdtInt64
-		m.Name = m.Metadata.Name
 		v, _ := strconv.Atoi(m.Metadata.Value)
 		m.IntValue = v
 	case consts.TkClass: // 类
 		m.Type = consts.PdtClass
-		m.Name = m.Metadata.Name
 		// 获取类实例 属性
 		classInstance, err := strconv.ParseUint(m.Metadata.Value, 10, bits.UintSize)
 		if err != nil {
@@ -100,13 +93,10 @@ func (m *TEditLinkNodeData) Build() {
 		m.StringValue = "(" + m.Metadata.Type + ")"
 	case consts.TkMethod: // 方法事件回调
 		m.Type = consts.PdtMethod
-		m.Name = m.Metadata.Name
 		m.StringValue = "" // ?? = m.Metadata.Type
 	default: // 未识别类型
 		m.Type = consts.PdtText // todo 使用文本
-		m.Name = m.Metadata.Name
 		logs.Warn("未识别的元数据类型:", m.Metadata.ToJSON())
-		return
 	}
 }
 

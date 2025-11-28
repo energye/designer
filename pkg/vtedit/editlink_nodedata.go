@@ -170,7 +170,6 @@ type IDesigningComponent interface {
 type TEditNodeData struct {
 	Parent              *TEditNodeData      // 父属性节点
 	Child               []*TEditNodeData    // 子属性节点
-	IsFinal             bool                // 标记是否最终对象, 用于完整的数据
 	EditNodeData        *TEditLinkNodeData  // 编辑数据
 	OriginNodeData      *TEditLinkNodeData  // 原始数据
 	AffiliatedNode      types.PVirtualNode  // 所属属性树节点

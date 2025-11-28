@@ -15,5 +15,9 @@ package mapper
 
 import "github.com/energye/designer/pkg/tool"
 
-// cache ast 获取的常量值缓存
-var cache = tool.NewHashMap[string, any]()
+var (
+	// cacheValue 缓存 ast 根据常量名获取的常量值
+	// key: 常量名
+	// value: 常量值
+	cacheValue = tool.NewHashMap[string, any]()
+)
