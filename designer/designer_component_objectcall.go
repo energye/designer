@@ -27,16 +27,15 @@ import (
 	"github.com/energye/lcl/types"
 	"reflect"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 )
 
 // 组件对象函数调用
 
 var (
-	updateComponentTimers = make(map[string]*time.Timer)
-	updateComponentMutex  sync.Mutex
-	updateComponentDelay  = 50 * time.Millisecond
+	updateComponentMutex atomic.Bool
+	updateComponentDelay = 50 * time.Millisecond
 )
 
 func methodNameToSet(name string) string {
@@ -106,43 +105,24 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 
 // 更新组件属性到对象
 func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
-	updateComponentMutex.Lock()
-	defer updateComponentMutex.Unlock()
-	compName := m.Name()
-	// 取消之前的定时器
-	if timer, exists := updateComponentTimers[compName]; exists {
-		timer.Stop()
+	if updateComponentMutex.Load() {
+		return
 	}
-	// 创建新的定时器
-	timer := time.AfterFunc(updateComponentDelay, func() {
-		updateComponentMutex.Lock()
-		delete(updateComponentTimers, compName)
-		updateComponentMutex.Unlock()
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.doUpdateComponentPropertyToObject(updateNodeData)
-		})
+	updateComponentMutex.Store(true)
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.doUpdateComponentPropertyToObject(updateNodeData)
+		updateComponentMutex.Store(false)
 	})
-	updateComponentTimers[compName] = timer
 }
 
 // 更新组件绑定事件到代码
 func (m *TDesigningComponent) UpdateComponentBindEventToCode(updateNodeData *vtedit.TEditNodeData) {
-	updateComponentMutex.Lock()
-	defer updateComponentMutex.Unlock()
-	compName := m.Name()
-	// 取消之前的定时器
-	if timer, exists := updateComponentTimers[compName]; exists {
-		timer.Stop()
+	if updateComponentMutex.Load() {
+		return
 	}
-	// 创建新的定时器
-	timer := time.AfterFunc(updateComponentDelay, func() {
-		updateComponentMutex.Lock()
-		delete(updateComponentTimers, compName)
-		updateComponentMutex.Unlock()
-		m.doUpdateComponentBindEventToCode(updateNodeData)
-
-	})
-	updateComponentTimers[compName] = timer
+	updateComponentMutex.Store(true)
+	m.doUpdateComponentBindEventToCode(updateNodeData)
+	updateComponentMutex.Store(false)
 }
 
 // 更新组件树节点信息
