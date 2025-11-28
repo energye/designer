@@ -521,6 +521,13 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	// 禁用按钮
 	m.cancelBtn.SetDisable(true)
 	m.createBtn.SetDisable(true)
+	recoverBtn := func() {
+		if !m.closing {
+			// 恢复按钮
+			m.cancelBtn.SetDisable(false)
+			m.createBtn.SetDisable(false)
+		}
+	}
 	// 框架安装目录
 	frameworkDir := m.modLocalDirEdit.Text()
 	enableLCL := m.modLCLCheckBox.Checked()
@@ -528,8 +535,9 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
-	// 创建项目
-	if doRunCreate(projectName, projectDir) {
+	// 检查创建项目
+	if checkCreate(projectDir) {
+		// 允许创建
 		// 重置设计器
 		designer.ResetDesigner()
 		go func() {
@@ -547,31 +555,26 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			frameworks.ExtractWV(enableWV)
 			// 初始化依赖模块
 			dependmod.InitDependencyModule()
-
-			// go.mod
-			event.ConsoleWriteInfo("go mod tidy")
-			cmd := command.NewCMD()
-			cmd.IsPrint = false
-			cmd.HideWindow = true
-			cmd.Dir = projectDir
-			cmd.Console = func(data string, level command.Level) {
-				event.ConsoleWriteInfo(data)
-			}
-			cmd.Command("go", "mod", "tidy")
-			// 创建 windows manifest, syso
-			if !m.closing {
+			// 运行创建项目
+			if doRunCreate(projectName, projectDir) {
+				// go.mod
+				event.ConsoleWriteInfo("go mod tidy")
+				cmd := command.NewCMD()
+				cmd.IsPrint = false
+				cmd.HideWindow = true
+				cmd.Dir = projectDir
+				cmd.Console = func(data string, level command.Level) {
+					event.ConsoleWriteInfo(data)
+				}
+				cmd.Command("go", "mod", "tidy")
 				// 恢复按钮
-				m.cancelBtn.SetDisable(false)
-				m.createBtn.SetDisable(false)
+				recoverBtn()
+				designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", gProject.Name, gPath))
 			}
-			designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", gProject.Name, gPath))
+
 		}()
 	} else {
-		if !m.closing {
-			// 恢复按钮
-			m.cancelBtn.SetDisable(false)
-			m.createBtn.SetDisable(false)
-		}
+		recoverBtn()
 	}
 }
 

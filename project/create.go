@@ -45,8 +45,8 @@ func runCreate() {
 	})
 }
 
-// 执行创建项目
-func doRunCreate(name, dir string) bool {
+// 检查创建条件
+func checkCreate(dir string) bool {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
 		logs.Error("目录不存在:", dir)
@@ -107,7 +107,12 @@ func doRunCreate(name, dir string) bool {
 			return false
 		}
 	}
-	// 项目使用目录名, TODO 以后增加配置窗口
+	return true
+}
+
+// 运行创建项目
+func doRunCreate(name, dir string) bool {
+	// 开始创建项目
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
 	newProject := new(bean.TProject)
@@ -115,9 +120,9 @@ func doRunCreate(name, dir string) bool {
 	newProject.EGPName = name + consts.EGPExt
 	newProject.Main = "main.go"
 	newProject.Package = consts.AppPackageName
-	newProject.InitAppOption()
+	newProject.InitAppOption() // 初始化应用配置数据
 	// 创建并写入项目配置文件
-	if err = WriteEGPConfig(dir, newProject); err != nil {
+	if err := WriteEGPConfig(dir, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
 		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
 		SetGlobalProject("", nil)
@@ -129,9 +134,8 @@ func doRunCreate(name, dir string) bool {
 		createProjectDir()
 		// 创建 windows 应用程序清单配置
 		saveOrUpdateWindowsManifest()
-		// 更新图标
+		// 更新应用图标
 		updateWindowICON()
-
 		// 创建项目成功
 		logs.Info("创建项目成功", newProject.Name, dir)
 		event.ConsoleWriteInfo("创建项目成功", newProject.Name, dir)
