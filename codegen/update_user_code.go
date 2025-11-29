@@ -69,9 +69,18 @@ func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 //	xxx.go => 事件定义
 //	xxx.ui => 事件记录
 func doUpdateEvent(uiGenData designer.TUIGenerationData) {
+	if uiGenData.NodeData == nil {
+		logs.Error("执行更新绑定事件-事件节点数据为 nil")
+		return
+	}
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
 	newFormName := "T" + formTab.FormRoot.Name()
-	logs.Debug("FormName:", newFormName, goUserFilePath)
+
+	//eventFuncType := uiGenData.NodeData.EditNodeData.Metadata.Type
+	//eventFuncName := uiGenData.NodeData.Name()
+	//eventFuncName := uiGenData.NodeData.Name()
+	logs.Debug("FormName:", newFormName, goUserFilePath, "PropName:", uiGenData.NodeData.Name(),
+		"PropType:", uiGenData.NodeData.Type(), "TypeName:", uiGenData.NodeData.EditNodeData.Metadata.Type)
 
 }
