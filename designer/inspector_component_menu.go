@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 )
@@ -147,12 +148,12 @@ func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 		parent := comp.parent
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 在删除之前先切换编辑父节组件
-			parent.formTab.switchComponentEditing(parent)
+			parent.FormTab.switchComponentEditing(parent)
 			logs.Debug("组件菜单-删除 组件名:", comp.Name())
 			comp.Remove() // 删除当前组件
 		})
 		// 删除控件
-		triggerUIGeneration(parent) // 更新布局文件
+		triggerUIGeneration(parent, nil, event.CodeGenUI) // 更新布局文件
 	}
 }
 

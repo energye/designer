@@ -35,7 +35,7 @@ import (
 // 依赖 uigen UI 布局文件
 // 生成触发条件: UI 布局文件修改后
 
-// 生成自动代码文件
+// 生成自动代码文件, todo: 使用内存缓存？统一写入文件？
 func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
 	// 构建模板数据
 	data := buildAutoTemplateData(component)

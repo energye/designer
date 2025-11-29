@@ -25,8 +25,9 @@ import (
 )
 
 // 根据UI文件生成Go代码
-func runGenerateCode(formTab *designer.FormTab) error {
+func runGenerateCode(uiGenData designer.TUIGenerationData) error {
 	logs.Debug("运行 UI 布局代码生成")
+	formTab := uiGenData.Component.FormTab
 	uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
@@ -51,15 +52,15 @@ func runGenerateCode(formTab *designer.FormTab) error {
 }
 
 // 更新自引用
-func runUpdateSelf(formTab *designer.FormTab) error {
+func runUpdateSelf(uiGenData designer.TUIGenerationData) error {
 	logs.Debug("运行更新自引用")
-	doUpdateSelf(formTab)
+	doUpdateSelf(uiGenData)
 	return nil
 }
 
 // 更新绑定事件
-func runUpdateEvent(formTab *designer.FormTab) error {
+func runUpdateEvent(uiGenData designer.TUIGenerationData) error {
 	logs.Debug("运行更新绑定事件")
-	doUpdateEvent(formTab)
+	doUpdateEvent(uiGenData)
 	return nil
 }

@@ -166,7 +166,7 @@ func (m *TEngFormDesigner) popupMenu(sender lcl.IControl, message *types.TLMCont
 	//		point := sender.ClientToScreenWithPoint(types.TPoint{}) // todo types.TPoint{} 参数需要传递一个正确的值
 	//		x, y = point.X, point.Y
 	//	}
-	//	comp.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(x, y)
+	//	comp.FormTab.componentMenu.treePopupMenu.PopUpWithIntX2(x, y)
 	//}
 	*message.Result() = 1
 }

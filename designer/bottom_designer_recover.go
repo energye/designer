@@ -79,7 +79,7 @@ func (m *FormTab) Recover() {
 func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
 	for _, child := range childList {
 		if create := GetRegisterComponent(child.ClassName); create != nil {
-			newComp := create(parent.formTab, 0, 0)
+			newComp := create(parent.FormTab, 0, 0)
 			newComp.SetParent(parent)
 			// 1. 加载属性
 			newComp.GetProps()

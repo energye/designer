@@ -63,7 +63,7 @@ func (m *TDesigningComponent) doUpdateComponentBindEventToCode(updateNodeData *v
 	logs.Debug("更新组件:", m.ClassName(), "事件:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
 	if updateNodeData.IsModify() {
 		// 事件修改
-		triggerUIGeneration(m, event.CodeGenEvent)
+		triggerUIGeneration(m, updateNodeData, event.CodeGenEvent)
 	}
 }
 
@@ -83,13 +83,13 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
 			m.UpdateTreeNode(updateNodeData)
 			// 属性修改-UI布局
-			triggerUIGeneration(m)
+			triggerUIGeneration(m, updateNodeData, event.CodeGenUI)
 		}
 	} else if rs == err.RsIgnoreProp { // 忽略的属性, 成功的一种
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
 		m.UpdateTreeNode(updateNodeData)
 		// 属性修改-UI布局
-		triggerUIGeneration(m)
+		triggerUIGeneration(m, updateNodeData, event.CodeGenUI)
 	} else {
 		// 更新失败
 		switch rs {
@@ -142,9 +142,9 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 		m.node.SetText(m.TreeName())
 		// 窗体组件
 		if m.ComponentType == consts.CtForm {
-			//m.formTab.name = m.Name()
+			//m.FormTab.name = m.Name()
 			// 更新设计窗体标签名
-			m.formTab.sheet.SetCaption(m.Name())
+			m.FormTab.sheet.SetCaption(m.Name())
 		}
 	}
 	return nil
@@ -161,7 +161,7 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 	switch propName {
 	case "name":
 		// 在当前设计面板只有唯一一个组件的名
-		if m.formTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
+		if m.FormTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())
 			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName

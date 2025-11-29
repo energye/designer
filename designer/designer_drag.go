@@ -306,7 +306,7 @@ func (m *drag) Follow() {
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
 		// 转换为 form tab 的坐标
-		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.formTab.scroll)
+		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.FormTab.scroll)
 		x, y := point.X, point.Y
 		width, height := br.Width(), br.Height()
 		db := dragBorder / 2
@@ -336,7 +336,7 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 	sender.SetHint(hint)
 	if m.isDown {
 		m.Hide()
-		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.FormRoot.object)
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		x := point.X - m.dx
 		y := point.Y - m.dy
 		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
@@ -351,15 +351,15 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
 	m.relation.mustComponentPropertyPage()
 	m.mustDS()
-	if !sender.formTab.placeComponent(sender, X, Y) {
+	if !sender.FormTab.placeComponent(sender, X, Y) {
 		m.isDown = true
-		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.formTab.FormRoot.object)
+		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		m.dx, m.dy = point.X, point.Y
 		br := sender.BoundsRect()
 		m.dcl = br.Left
 		m.dct = br.Top
 		// 更新设计查看器的属性信息
-		sender.formTab.switchComponentEditing(sender)
+		sender.FormTab.switchComponentEditing(sender)
 		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 设置选中状态

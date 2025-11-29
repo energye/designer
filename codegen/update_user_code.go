@@ -13,7 +13,12 @@
 
 package codegen
 
-import "github.com/energye/designer/designer"
+import (
+	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/project"
+	"path/filepath"
+)
 
 // 更新用户代码文件
 // 此处功能为:
@@ -21,11 +26,19 @@ import "github.com/energye/designer/designer"
 //	 2. 自引用
 
 // 执行更新自引用
-func doUpdateSelf(formTab *designer.FormTab) {
-
+// 被执行时说明当前窗体名称被修改. 窗体 name 修改过程 => file name (xxx.ui.go xxx.go xxx.ui) => go self code
+// ast 用户文件
+func doUpdateSelf(uiGenData designer.TUIGenerationData) {
+	formTab := uiGenData.Component.FormTab
+	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	logs.Debug(goUserFilePath)
 }
 
 // 执行更新绑定事件
-func doUpdateEvent(formTab *designer.FormTab) {
-
+// 被执行时说明组件事件被修改. 组件属性-事件 => file code (xxx.go xxx.ui) => go event code
+// ast 用户文件
+func doUpdateEvent(uiGenData designer.TUIGenerationData) {
+	formTab := uiGenData.Component.FormTab
+	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	logs.Debug(goUserFilePath)
 }

@@ -34,9 +34,10 @@ var (
 )
 
 // UI布局文件生成
-func runDebouncedGenerate(formTab *designer.FormTab, type_ event.Type) {
+func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
+	formTab := uiGenData.Component.FormTab
 	formName := formTab.Id
 	// 取消之前的定时器
 	if timer, exists := debounceTimers[formName]; exists {
@@ -63,13 +64,13 @@ func runDebouncedGenerate(formTab *designer.FormTab, type_ event.Type) {
 		} else {
 			if isUpdateSelf {
 				// 触发代码生成事件 - 自引用
-				triggerCodeGeneration(formTab, event.CodeGenSelf)
+				triggerCodeGeneration(uiGenData, event.CodeGenSelf)
 			} else if type_ == event.CodeGenEvent {
 				// 触发代码生成事件 - 绑定事件
-				triggerCodeGeneration(formTab, event.CodeGenEvent)
+				triggerCodeGeneration(uiGenData, event.CodeGenEvent)
 			} else {
-				// 触发代码生成事件 - UI 布局
-				triggerCodeGeneration(formTab, event.CodeGenUI)
+				// 触发代码生成事件 - UI 布局, 全量更新
+				triggerCodeGeneration(uiGenData, event.CodeGenUI)
 			}
 			// 触发更新项目管理的窗体信息事件
 			triggerProjectUpdate(formTab)

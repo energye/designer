@@ -126,7 +126,7 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		// 2. 添加到组件树
 		newNode := newForm.AddFormNode()
 		newNode.SetSelected(true)
-		triggerUIGeneration(newForm.FormRoot)
+		triggerUIGeneration(newForm.FormRoot, nil, event.CodeGenUI)
 		// 显示
 		designer.tab.HideAllActivated()
 		newForm.sheet.SetActive(true)

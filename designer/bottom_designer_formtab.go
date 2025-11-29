@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -137,7 +138,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			// 创建设计组件
 			newComp := create(m, x, y)
 			newComp.SetParent(owner)
-			newComp.formTab.switchComponentEditing(newComp)
+			newComp.FormTab.switchComponentEditing(newComp)
 			newComp.DragEnd()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
@@ -147,8 +148,8 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 				owner.AddChild(newComp)
 				newComp.node.SetSelected(true) // 选中
 			})
-			// 放置对象
-			triggerUIGeneration(newComp)
+			// 放置对象创建全量UI
+			triggerUIGeneration(newComp, nil, event.CodeGenUI)
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}

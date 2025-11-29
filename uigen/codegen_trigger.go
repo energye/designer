@@ -21,10 +21,10 @@ import (
 // 生成回调事件
 
 // 触发Go代码生成事件
-func triggerCodeGeneration(formTab *designer.FormTab, type_ event.Type) {
+func triggerCodeGeneration(uiGenData designer.TUIGenerationData, type_ event.Type) {
 	event.Emit(event.TTrigger{Name: event.GenCode, Payload: event.TPayload{
 		Type: type_,
-		Data: formTab,
+		Data: uiGenData,
 	}})
 }
 

@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/lcl/types"
 	"unsafe"
 )
@@ -27,7 +28,7 @@ func (m *TDesigningComponent) instance() uintptr {
 
 // 向当前组件节点添加子组件节点
 func (m *TDesigningComponent) AddChild(child *TDesigningComponent) {
-	m.formTab.AddComponentNode(m, child)
+	m.FormTab.AddComponentNode(m, child)
 }
 
 // 设置当前设计组件为选中状态
@@ -108,5 +109,5 @@ func (m *TDesigningComponent) Order(changeLevel consts.ChangeLevel) {
 	//		println("ControlIndex:", parent.GetControlIndex(child), child.Name())
 	//	}
 	//}
-	triggerUIGeneration(m)
+	triggerUIGeneration(m, nil, event.CodeGenUI)
 }

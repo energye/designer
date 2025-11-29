@@ -24,27 +24,24 @@ import (
 func init() {
 	event.On(event.GenCode, func(trigger event.TTrigger) {
 		if payload, ok := trigger.Payload.(event.TPayload); ok {
-			switch payload.Type {
-			case event.CodeGenUI:
-				// 根据UI布局文件生成代码
-				if formTab, ok := payload.Data.(*designer.FormTab); ok {
-					err := runGenerateCode(formTab)
+			uiGenData, ok := payload.Data.(designer.TUIGenerationData)
+			if ok {
+				switch payload.Type {
+				case event.CodeGenUI:
+					// 根据UI布局文件生成代码
+					err := runGenerateCode(uiGenData)
 					if err != nil {
 						logs.Error("代码生成错误-UI布局:", err.Error())
 					}
-				}
-			case event.CodeGenEvent:
-				// 更新用户代码-绑定事件
-				if formTab, ok := payload.Data.(*designer.FormTab); ok {
-					err := runUpdateEvent(formTab)
+				case event.CodeGenEvent:
+					// 更新用户代码-绑定事件
+					err := runUpdateEvent(uiGenData)
 					if err != nil {
 						logs.Error("代码生成错误-绑定事件:", err.Error())
 					}
-				}
-			case event.CodeGenSelf:
-				// 更新用户代码-自引用（当窗体名被修改时）
-				if formTab, ok := payload.Data.(*designer.FormTab); ok {
-					err := runUpdateSelf(formTab)
+				case event.CodeGenSelf:
+					// 更新用户代码-自引用（当窗体名被修改时）
+					err := runUpdateSelf(uiGenData)
 					if err != nil {
 						logs.Error("代码生成错误-自引用:", err.Error())
 					}

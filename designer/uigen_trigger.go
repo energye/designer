@@ -13,19 +13,33 @@
 
 package designer
 
-import "github.com/energye/designer/event"
+import (
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/vtedit"
+)
 
 // 触发生成代码事件
 
 // 触发UI布局生成事件
-func triggerUIGeneration(component *TDesigningComponent, type_ ...event.Type) {
+//
+//	component 更新的组件
+//	nodeData  组件的属性数据
+//	  nil 时是 xxx.ui.go 更新, 全量更新
+//	  非 nil 时指定组件属性, 自引用更新或事件更新
+//	type 更新类型: ui 布局, 自引用, 绑定事件
+func triggerUIGeneration(component *TDesigningComponent, nodeData *vtedit.TEditNodeData, type_ event.Type) {
 	if component == nil {
 		return
 	}
-	t := event.CodeGenUI // 默认UI
-	if len(type_) > 0 {
-		t = type_[0] // 事件或self, 当前是事件
-	}
-	payload := event.TPayload{Type: t, Data: component.formTab}
+	payload := event.TPayload{Type: type_, Data: TUIGenerationData{Component: component, NodeData: nodeData}}
 	event.Emit(event.TTrigger{Name: event.GenUI, Payload: payload})
+}
+
+// TUIGenerationData UI 生成数据载体
+type TUIGenerationData struct {
+	Component *TDesigningComponent // 更新的组件
+	// 组件的属性数据
+	// nil 时是 xxx.ui.go 更新, 全量更新
+	// 非 nil 时指定组件属性, 自引用更新或事件更新
+	NodeData *vtedit.TEditNodeData // 组件的属性数据
 }

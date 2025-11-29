@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -30,7 +31,7 @@ import (
 
 // 设计组件
 type TDesigningComponent struct {
-	formTab        *FormTab                  // 所属设计窗体
+	FormTab        *FormTab                  // 所属设计窗体
 	id             int                       // id 标识
 	originObject   any                       // 原始组件对象
 	object         lcl.IWinControl           // 组件 对象 可视
@@ -74,7 +75,7 @@ func (m *TDesigningComponent) Free() {
 		m.Object().Free()
 	}
 
-	m.formTab = nil
+	m.FormTab = nil
 	m.parent = nil
 	for _, child := range m.Child {
 		child.Free()
@@ -139,7 +140,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 func newVisualComponent(designerForm *FormTab) *TDesigningComponent {
 	m := new(TDesigningComponent)
 	m.ComponentType = consts.CtVisual
-	m.formTab = designerForm
+	m.FormTab = designerForm
 	return m
 }
 
@@ -147,7 +148,7 @@ func newVisualComponent(designerForm *FormTab) *TDesigningComponent {
 func newNonVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
 	m := new(TDesigningComponent)
 	m.ComponentType = consts.CtNonVisual
-	m.formTab = formTab
+	m.FormTab = formTab
 	objectWrap := NewNonVisualComponentWrap(formTab.FormRoot.object, m)
 	objectWrap.SetLeftTop(x, y)
 	m.objectNonWrap = objectWrap
@@ -232,7 +233,7 @@ func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMous
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if button == types.MbRight && m.ComponentType != consts.CtForm {
 		cursorPos := lcl.Mouse.CursorPos()
-		m.formTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
+		m.FormTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
 	} else {
 		m.drag.OnMouseUp(m, button, shift, X, Y)
 	}
@@ -260,7 +261,7 @@ func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 	}
 	if top != nil && left != nil {
 		// 更新坐标
-		triggerUIGeneration(m)
+		triggerUIGeneration(m, nil, event.CodeGenUI)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 同步更新属性列表
 			top.SetEditValue(x)
@@ -290,7 +291,7 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 	}
 	if width != nil && height != nil {
 		// 更新宽高
-		triggerUIGeneration(m)
+		triggerUIGeneration(m, nil, event.CodeGenUI)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			width.SetEditValue(w)
 			m.propertyTree.InvalidateNode(width.AffiliatedNode)

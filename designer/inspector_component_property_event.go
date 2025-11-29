@@ -229,7 +229,7 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				switch data.Type() {
 				case consts.PdtMethod:
-					//println("Form:", m.formTab.FormRoot.Name(), "prop-name:", data.Name(), "prop-type:", data.EditStringValue())
+					//println("Form:", m.FormTab.FormRoot.Name(), "prop-name:", data.Name(), "prop-type:", data.EditStringValue())
 					link := vtedit.NewEventComboBoxEditLink(data)
 					*outEditLink = link.AsIVTEditLink()
 				}
