@@ -30,7 +30,23 @@ func init() {
 				if formTab, ok := payload.Data.(*designer.FormTab); ok {
 					err := runGenerateCode(formTab)
 					if err != nil {
-						logs.Error("代码生成错误:", err.Error())
+						logs.Error("代码生成错误-UI布局:", err.Error())
+					}
+				}
+			case event.CodeGenEvent:
+				// 更新用户代码-绑定事件
+				if formTab, ok := payload.Data.(*designer.FormTab); ok {
+					err := runUpdateEvent(formTab)
+					if err != nil {
+						logs.Error("代码生成错误-绑定事件:", err.Error())
+					}
+				}
+			case event.CodeGenSelf:
+				// 更新用户代码-自引用（当窗体名被修改时）
+				if formTab, ok := payload.Data.(*designer.FormTab); ok {
+					err := runUpdateSelf(formTab)
+					if err != nil {
+						logs.Error("代码生成错误-自引用:", err.Error())
 					}
 				}
 			}

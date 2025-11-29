@@ -11,21 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package designer
+package codegen
 
-import "github.com/energye/designer/event"
+import "github.com/energye/designer/designer"
 
-// 触发生成代码事件
+// 更新用户代码文件
+// 此处功能为:
+//   1. 事件绑定/删除/修改
+//	 2. 自引用
 
-// 触发UI布局生成事件
-func triggerUIGeneration(component *TDesigningComponent, type_ ...event.Type) {
-	if component == nil {
-		return
-	}
-	t := event.CodeGenUI // 默认UI
-	if len(type_) > 0 {
-		t = type_[0] // 事件或self, 当前是事件
-	}
-	payload := event.TPayload{Type: t, Data: component.formTab}
-	event.Emit(event.TTrigger{Name: event.GenUI, Payload: payload})
+// 执行更新自引用
+func doUpdateSelf(formTab *designer.FormTab) {
+
+}
+
+// 执行更新绑定事件
+func doUpdateEvent(formTab *designer.FormTab) {
+
 }

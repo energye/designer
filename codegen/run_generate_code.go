@@ -26,7 +26,7 @@ import (
 
 // 根据UI文件生成Go代码
 func runGenerateCode(formTab *designer.FormTab) error {
-	logs.Debug("运行代码生成")
+	logs.Debug("运行 UI 布局代码生成")
 	uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
@@ -47,5 +47,19 @@ func runGenerateCode(formTab *designer.FormTab) error {
 		return fmt.Errorf("生成用户代码失败: %w", err)
 	}
 
+	return nil
+}
+
+// 更新自引用
+func runUpdateSelf(formTab *designer.FormTab) error {
+	logs.Debug("运行更新自引用")
+	doUpdateSelf(formTab)
+	return nil
+}
+
+// 更新绑定事件
+func runUpdateEvent(formTab *designer.FormTab) error {
+	logs.Debug("运行更新绑定事件")
+	doUpdateEvent(formTab)
 	return nil
 }

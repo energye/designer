@@ -15,6 +15,7 @@ package uigen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
 	projBean "github.com/energye/designer/project/bean"
@@ -29,11 +30,11 @@ import (
 var (
 	debounceTimers = make(map[int]*time.Timer)
 	debounceMutex  sync.Mutex
-	debounceDelay  = 500 * time.Millisecond
+	debounceDelay  = 500 * time.Millisecond // 最大更新间隔
 )
 
 // UI布局文件生成
-func runDebouncedGenerate(formTab *designer.FormTab) {
+func runDebouncedGenerate(formTab *designer.FormTab, type_ event.Type) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
 	formName := formTab.Id
@@ -52,7 +53,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 			return
 		}
 		// 尝试更新文件名
-		tryRenameFileName(formTab)
+		isUpdateSelf := tryRenameFileName(formTab)
 
 		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
 		// 执行UI生成
@@ -60,8 +61,16 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 		if err != nil {
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
-			// 触发代码生成事件
-			triggerCodeGeneration(formTab)
+			if isUpdateSelf {
+				// 触发代码生成事件 - 自引用
+				triggerCodeGeneration(formTab, event.CodeGenSelf)
+			} else if type_ == event.CodeGenEvent {
+				// 触发代码生成事件 - 绑定事件
+				triggerCodeGeneration(formTab, event.CodeGenEvent)
+			} else {
+				// 触发代码生成事件 - UI 布局
+				triggerCodeGeneration(formTab, event.CodeGenUI)
+			}
 			// 触发更新项目管理的窗体信息事件
 			triggerProjectUpdate(formTab)
 		}
@@ -77,7 +86,7 @@ func runDebouncedGenerate(formTab *designer.FormTab) {
 //	xxx.ui
 //	xxx.ui.go
 //	xxx.go
-func tryRenameFileName(tempFormTab *designer.FormTab) {
+func tryRenameFileName(tempFormTab *designer.FormTab) bool {
 	// ui 布局文件名
 	uiFileName := tempFormTab.UIFile()
 
@@ -96,7 +105,7 @@ func tryRenameFileName(tempFormTab *designer.FormTab) {
 		newUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiFileName)
 		if err := os.Rename(oldUIFilePath, newUIFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
-			return
+			return false
 		}
 		uiForm.UIFile = uiFileName
 
@@ -105,7 +114,7 @@ func tryRenameFileName(tempFormTab *designer.FormTab) {
 		newGoUIFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.GOFile())
 		if err := os.Rename(oldGoUIFilePath, newGoUIFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
-			return
+			return false
 		}
 		uiForm.GOFile = tempFormTab.GOFile()
 
@@ -114,8 +123,10 @@ func tryRenameFileName(tempFormTab *designer.FormTab) {
 		newGoUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.GOUserFile())
 		if err := os.Rename(oldGoUIUserFilePath, newGoUIUserFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
-			return
+			return false
 		}
 		uiForm.GOUserFile = tempFormTab.GOUserFile()
+		return true
 	}
+	return false
 }

@@ -26,8 +26,9 @@ const (
 
 // 代码生成模块, 数据载体类型
 const (
-	CodeGenUI   Type = iota // 生成 ui.go
-	CodeGenMain             // 生成 main.go
+	CodeGenUI    Type = iota // 生成 xxx.ui.go UI 布局代码
+	CodeGenEvent             // 生成 xxx.go 用户代码, 事件
+	CodeGenSelf              // 生成 xxx.go 用户代码和 self 自引用(窗体 name 被修改时)
 )
 
 // 控制台, 数据载体类型

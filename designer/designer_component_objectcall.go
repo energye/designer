@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/mapper"
@@ -62,7 +63,7 @@ func (m *TDesigningComponent) doUpdateComponentBindEventToCode(updateNodeData *v
 	logs.Debug("更新组件:", m.ClassName(), "事件:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
 	if updateNodeData.IsModify() {
 		// 事件修改
-		triggerUIGeneration(m)
+		triggerUIGeneration(m, event.CodeGenEvent)
 	}
 }
 
@@ -81,13 +82,13 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 			// 成功
 			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
 			m.UpdateTreeNode(updateNodeData)
-			// 属性修改
+			// 属性修改-UI布局
 			triggerUIGeneration(m)
 		}
 	} else if rs == err.RsIgnoreProp { // 忽略的属性, 成功的一种
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
 		m.UpdateTreeNode(updateNodeData)
-		// 属性修改
+		// 属性修改-UI布局
 		triggerUIGeneration(m)
 	} else {
 		// 更新失败
@@ -162,7 +163,6 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 		// 在当前设计面板只有唯一一个组件的名
 		if m.formTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())
-
 			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}

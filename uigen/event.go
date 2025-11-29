@@ -21,8 +21,11 @@ import (
 
 func init() {
 	event.On(event.GenUI, func(trigger event.TTrigger) {
-		if formTab, ok := trigger.Payload.(*designer.FormTab); ok {
-			runDebouncedGenerate(formTab)
+		payload, ok := trigger.Payload.(event.TPayload)
+		if ok {
+			if formTab, ok := payload.Data.(*designer.FormTab); ok {
+				runDebouncedGenerate(formTab, payload.Type)
+			}
 		}
 	}, func() {
 		logs.Println("停止UI生成器")
