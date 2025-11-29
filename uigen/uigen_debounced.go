@@ -38,21 +38,22 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
 	formTab := uiGenData.Component.FormTab
-	formName := formTab.Id
+	formId := formTab.Id
 	// 取消之前的定时器
-	if timer, exists := debounceTimers[formName]; exists {
+	if timer, exists := debounceTimers[formId]; exists {
 		timer.Stop()
 	}
-
 	// 创建新的定时器
 	timer := time.AfterFunc(debounceDelay, func() {
 		debounceMutex.Lock()
-		delete(debounceTimers, formName)
+		delete(debounceTimers, formId)
 		debounceMutex.Unlock()
-		if formTab.FormRoot.Name() == "" {
+		formName := formTab.FormRoot.Name()
+		if formName == "" {
 			// 如果正在加载设计时, 同时点击关闭设计窗口, 获取Name为空, 跳过生成
 			return
 		}
+
 		// 尝试更新文件名
 		isUpdateSelf := tryRenameFileName(formTab)
 
@@ -64,6 +65,7 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 		} else {
 			if isUpdateSelf {
 				// 触发代码生成事件 - 自引用
+				uiGenData.Component.FormTab.OldFormName = formName
 				triggerCodeGeneration(uiGenData, event.CodeGenSelf)
 			} else if type_ == event.CodeGenEvent {
 				// 触发代码生成事件 - 绑定事件
@@ -77,7 +79,7 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 		}
 	})
 
-	debounceTimers[formName] = timer
+	debounceTimers[formId] = timer
 }
 
 // 尝试更新文件名
