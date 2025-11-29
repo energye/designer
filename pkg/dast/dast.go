@@ -133,6 +133,31 @@ func FindType(filename string, typeName string) *ast.TypeSpec {
 	return nil
 }
 
+// UpdateMethodRecv 更新指定go代码文件的所有方法接收者
+func UpdateMethodRecv(filename string, oldTypeName, newTypename string) ([]byte, bool, error) {
+	isUpdate := false
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+	for _, decl := range node.Decls {
+		if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+			if funcDecl.Recv != nil && len(funcDecl.Recv.List) > 0 {
+				if recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr); ok {
+					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == oldTypeName {
+						ident.Name = newTypename
+						isUpdate = true
+					}
+				}
+			}
+		}
+	}
+	if isUpdate {
+		var buf bytes.Buffer
+		err := format.Node(&buf, fset, node)
+		return buf.Bytes(), true, err
+	}
+	return nil, false, nil
+}
+
 // DeleteMethod 从Go源文件中删除方法
 func DeleteMethod(filename string, typeName string, methodName string) []byte {
 	fset := token.NewFileSet()

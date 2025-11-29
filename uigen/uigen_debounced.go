@@ -37,7 +37,8 @@ var (
 func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type) {
 	debounceMutex.Lock()
 	defer debounceMutex.Unlock()
-	formTab := uiGenData.Component.FormTab
+	tempUIGenData := uiGenData
+	formTab := tempUIGenData.Component.FormTab
 	formId := formTab.Id
 	// 取消之前的定时器
 	if timer, exists := debounceTimers[formId]; exists {
@@ -48,7 +49,7 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 		debounceMutex.Lock()
 		delete(debounceTimers, formId)
 		debounceMutex.Unlock()
-		formName := formTab.FormRoot.Name()
+		formName := tempUIGenData.Component.FormTab.FormRoot.Name()
 		if formName == "" {
 			// 如果正在加载设计时, 同时点击关闭设计窗口, 获取Name为空, 跳过生成
 			return
@@ -65,14 +66,15 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 		} else {
 			if isUpdateSelf {
 				// 触发代码生成事件 - 自引用
-				uiGenData.Component.FormTab.OldFormName = formName
-				triggerCodeGeneration(uiGenData, event.CodeGenSelf)
+				triggerCodeGeneration(tempUIGenData, event.CodeGenSelf)
+				// 触发代码生成事件 - UI 布局, 全量更新
+				triggerCodeGeneration(tempUIGenData, event.CodeGenUI)
 			} else if type_ == event.CodeGenEvent {
 				// 触发代码生成事件 - 绑定事件
-				triggerCodeGeneration(uiGenData, event.CodeGenEvent)
+				triggerCodeGeneration(tempUIGenData, event.CodeGenEvent)
 			} else {
 				// 触发代码生成事件 - UI 布局, 全量更新
-				triggerCodeGeneration(uiGenData, event.CodeGenUI)
+				triggerCodeGeneration(tempUIGenData, event.CodeGenUI)
 			}
 			// 触发更新项目管理的窗体信息事件
 			triggerProjectUpdate(formTab)

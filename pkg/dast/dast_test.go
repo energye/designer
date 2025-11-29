@@ -9,7 +9,7 @@ import (
 
 var (
 	wd, _            = os.Getwd()
-	testTestFilePath = filepath.Join(wd, "dast_test.go")
+	testTestFilePath = filepath.Join(wd, "dast_bean_test.go")
 )
 
 type TCursor = int16
@@ -51,4 +51,10 @@ func TestCreateMethod(t *testing.T) {
 	t.Log(string(code))
 	code = DeleteMethod(testTestFilePath, "TTestStruct", "NewTestStruct")
 	t.Log(string(code))
+}
+
+func TestUpdateRecvMethodByTypeName(t *testing.T) {
+	newCode, isUpdate, err := UpdateMethodRecv("C:\\360Downloads\\myapp3\\app\\form.go", "TForm1", "NewTestStruct")
+	t.Log(isUpdate, err)
+	t.Log(string(newCode))
 }

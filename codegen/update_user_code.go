@@ -15,8 +15,10 @@ package codegen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
+	"os"
 	"path/filepath"
 )
 
@@ -28,10 +30,35 @@ import (
 // 执行更新自引用
 // 被执行时说明当前窗体名称被修改. 窗体 name 修改过程 => file name (xxx.ui.go xxx.go xxx.ui) => go self code
 // ast 用户文件
+//
+//	功能: 修改窗体绑定的自引用结构名. 例如 窗体结构 TForm1 > TForm2,  原: func (m *Form1) 新名: func (m *TForm2)
+//	仅修改 xxx.go 用户文件, 其它文件需手动修改
 func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-	logs.Debug(goUserFilePath)
+	newFormName := "T" + formTab.FormRoot.Name()
+	oldFormName := "T" + uiGenData.Component.FormTab.OldFormName
+	logs.Debug("NewFormName:", newFormName, "OldFormName:", oldFormName, "FilePath:", goUserFilePath)
+	// 查找 OldFormName 的类型函数名
+	// 修改 OldFormName 类型函数为 newFormName 的函数
+	// 写入文件
+	newCode, isUpdate, err := dast.UpdateMethodRecv(goUserFilePath, oldFormName, newFormName)
+	if err != nil {
+		logs.Error("执行更新自引用-UpdateMethodRecv:", err.Error())
+		return
+	}
+	if !isUpdate {
+		return
+	}
+	st, err := os.Stat(goUserFilePath)
+	if err != nil {
+		logs.Error("执行更新自引用-Stat:", err.Error())
+		return
+	}
+	if err = os.WriteFile(goUserFilePath, newCode, st.Mode()); err != nil {
+		logs.Error("执行更新自引用-WriteFile:", err.Error())
+		return
+	}
 }
 
 // 执行更新绑定事件
@@ -40,5 +67,6 @@ func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-	logs.Debug(goUserFilePath)
+	newFormName := formTab.FormRoot.Name()
+	logs.Debug("FormName:", newFormName, goUserFilePath)
 }

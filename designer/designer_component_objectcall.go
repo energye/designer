@@ -166,6 +166,9 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}
+		if m.ComponentType == consts.CtForm {
+			m.FormTab.OldFormName = m.Name()
+		}
 	case "enabled", "visible":
 		// 忽略调用API的属性
 		return err.RsIgnoreProp
