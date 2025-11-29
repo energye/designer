@@ -27,10 +27,10 @@ import (
 
 // 设计器面板
 
-// 设计表单的 tab
+// 设计窗体的 tab
 type FormTab struct {
 	Id         int    // 唯一索引, 关联 forms key: index
-	name       string // 窗体名称, 实际是一个临时名称
+	name       string // 窗体名称, 临时: 在初始化时使用
 	IsDesigner bool   // 当前设计窗体Form是否正在设计
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
@@ -38,6 +38,7 @@ type FormTab struct {
 	tree          lcl.ITreeView        // 组件树
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
 	formDesigner  *TEngFormDesigner    // 设计器处理器
+	OldFormName   string               // 旧的窗体名称, 临时：在自引用修改时使用
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	componentMenu *TComponentMenu      // 组件菜单
 	recover       *TRecoverForm        // 恢复模式
