@@ -197,6 +197,8 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) str
 		value = tool.IntToString(m.Value)
 	case consts.PdtClass: // Class instance
 		logs.Debug("属性类对象实例未设置:", m.Value)
+	case consts.PdtMethod:
+		value = "m." + m.Value.(string) // 事件绑定
 	}
 	// 属性名
 	name := namePaths[len(namePaths)-1]

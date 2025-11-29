@@ -118,6 +118,16 @@ func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
 		}
 	}
 
+	if component.EventList != nil {
+		for _, event := range component.EventList {
+			if event.IsModify() {
+				eventName := event.Name()
+				eventValue := event.EditValue()
+				uiComp.Properties = append(uiComp.Properties, bean.TProperty{Name: eventName, Value: eventValue, Type: event.Type()})
+			}
+		}
+	}
+
 	// 递归处理子组件
 	for _, child := range component.Child {
 		uiComp.Child = append(uiComp.Child, buildUITree(child))

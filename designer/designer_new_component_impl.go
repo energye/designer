@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	uiBean "github.com/energye/designer/uigen/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"sort"
@@ -631,17 +632,26 @@ func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
 
 // 查找属性节点, 根据属性名路径查找属性节点数据
 // namePaths: 属性名路径, [Font, Style] [Header, Font, Style]
-func (m *TDesigningComponent) FindNodeDataByNamePaths(name string) (result *vtedit.TEditNodeData) {
-	namePaths := tool.Split(name, ".") // 属性名路径 Font.Style
-	if len(namePaths) == 0 || m.PropertyList == nil {
+func (m *TDesigningComponent) FindNodeDataByNamePaths(property uiBean.TProperty) (result *vtedit.TEditNodeData) {
+	namePaths := tool.Split(property.Name, ".") // 属性名路径 Font.Style
+	if len(namePaths) == 0 || m.PropertyList == nil || m.EventList == nil {
 		return nil
 	}
 	propName := namePaths[0]
 	// 查找当前属性节点数据
-	for _, data := range m.PropertyList {
-		if data.Name() == propName {
-			result = data
-			break
+	if property.Type == consts.PdtMethod {
+		for _, data := range m.EventList {
+			if data.Name() == propName {
+				result = data
+				break
+			}
+		}
+	} else {
+		for _, data := range m.PropertyList {
+			if data.Name() == propName {
+				result = data
+				break
+			}
 		}
 	}
 	if result != nil && len(namePaths) > 1 {

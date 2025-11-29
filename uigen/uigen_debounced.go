@@ -65,17 +65,14 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 			logs.Error("UI布局文件生成错误:", err.Error())
 		} else {
 			if isUpdateSelf {
-				// 触发代码生成事件 - 自引用
+				// 触发代码生成事件 - 自引用 > 用户代码
 				triggerCodeGeneration(tempUIGenData, event.CodeGenSelf)
-				// 触发代码生成事件 - UI 布局, 全量更新
-				triggerCodeGeneration(tempUIGenData, event.CodeGenUI)
 			} else if type_ == event.CodeGenEvent {
-				// 触发代码生成事件 - 绑定事件
+				// 触发代码生成事件 - 绑定事件 > 用户代码
 				triggerCodeGeneration(tempUIGenData, event.CodeGenEvent)
-			} else {
-				// 触发代码生成事件 - UI 布局, 全量更新
-				triggerCodeGeneration(tempUIGenData, event.CodeGenUI)
 			}
+			// 触发代码生成事件 - UI 布局, 全量更新
+			triggerCodeGeneration(tempUIGenData, event.CodeGenUI)
 			// 触发更新项目管理的窗体信息事件
 			triggerProjectUpdate(formTab)
 		}

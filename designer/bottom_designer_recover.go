@@ -98,7 +98,7 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 // 2. 组件属性列表对应的属性Edit值
 func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component *TDesigningComponent) {
 	for _, property := range propertyList {
-		propNodeData := component.FindNodeDataByNamePaths(property.Name)
+		propNodeData := component.FindNodeDataByNamePaths(property)
 		if propNodeData != nil {
 			if propNodeData.Type() == consts.PdtCheckBoxList {
 				// 转换 set 集合为 hashSet

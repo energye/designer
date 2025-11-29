@@ -61,10 +61,7 @@ func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vted
 // 执行更新组件绑定事件到代码, 该操作不更新 api 绑定, 而是直接更新代码
 func (m *TDesigningComponent) doUpdateComponentBindEventToCode(updateNodeData *vtedit.TEditNodeData) {
 	logs.Debug("更新组件:", m.ClassName(), "事件:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
-	if updateNodeData.IsModify() {
-		// 事件修改
-		triggerUIGeneration(m, updateNodeData, event.CodeGenEvent)
-	}
+	triggerUIGeneration(m, updateNodeData, event.CodeGenEvent)
 }
 
 // 执行更新组件属性到对象 api

@@ -62,11 +62,16 @@ func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 }
 
 // 执行更新绑定事件
-// 被执行时说明组件事件被修改. 组件属性-事件 => file code (xxx.go xxx.ui) => go event code
+// 被执行时说明组件事件被修改. 组件属性-事件 => file code (xxx.ui.go xxx.go xxx.ui) => go event code
 // ast 用户文件
+//
+//	xxx.ui.go => 绑定事件
+//	xxx.go => 事件定义
+//	xxx.ui => 事件记录
 func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-	newFormName := formTab.FormRoot.Name()
+	newFormName := "T" + formTab.FormRoot.Name()
 	logs.Debug("FormName:", newFormName, goUserFilePath)
+
 }
