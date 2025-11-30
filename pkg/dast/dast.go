@@ -203,37 +203,38 @@ func DeleteMethod(filename string, typeName string, methodName string) []byte {
 	return buf.Bytes()
 }
 
-// 创建方法
-func CreateMethod(filename string, typeName string, methodName string, params []*ast.Field, returns []*ast.Field) []byte {
+// CreateMethod 在指定的Go源文件中创建一个新的方法定义
+//
+//	filename - 要修改的源文件路径
+//	typeName - 接收者类型名称
+//	methodName - 新方法的名称
+//	params - 方法参数列表的AST节点
+//	returns - 方法返回值列表的AST节点
+//
+//
+//	[]byte - 格式化后的源码字节流
+//	error - 格式化过程中可能产生的错误
+func CreateMethod(filename string, typeName string, methodName string, params *ast.FieldList, returns *ast.FieldList) ([]byte, error) {
 	fset := token.NewFileSet()
 	node, _ := parser.ParseFile(fset, filename, nil, parser.ParseComments)
-	for _, decl := range node.Decls {
-		if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.TYPE {
-			for _, spec := range genDecl.Specs {
-				if typeSpec, ok := spec.(*ast.TypeSpec); ok && typeSpec.Name.Name == typeName {
-					// 创建新方法
-					method := &ast.FuncDecl{
-						Recv: &ast.FieldList{
-							List: []*ast.Field{{
-								Names: []*ast.Ident{ast.NewIdent("self")},
-								Type:  &ast.StarExpr{X: ast.NewIdent(typeName)},
-							}},
-						},
-						Name: ast.NewIdent(methodName),
-						Type: &ast.FuncType{
-							Params:  &ast.FieldList{List: params},
-							Results: &ast.FieldList{List: returns},
-						},
-						Body: &ast.BlockStmt{},
-					}
-					node.Decls = append(node.Decls, method)
-				}
-			}
-		}
+	newMethod := &ast.FuncDecl{
+		Recv: &ast.FieldList{
+			List: []*ast.Field{{
+				Names: []*ast.Ident{ast.NewIdent("m")},
+				Type:  &ast.StarExpr{X: ast.NewIdent(typeName)},
+			}},
+		},
+		Name: ast.NewIdent(methodName),
+		Type: &ast.FuncType{
+			Params:  params,
+			Results: returns,
+		},
+		Body: &ast.BlockStmt{},
 	}
+	node.Decls = append(node.Decls, newMethod)
 	var buf bytes.Buffer
-	format.Node(&buf, fset, node)
-	return buf.Bytes()
+	err := format.Node(&buf, fset, node)
+	return buf.Bytes(), err
 }
 
 // GetConstValue 获取常量值, 在指定 go 源码文件获取常量值

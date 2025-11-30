@@ -47,7 +47,7 @@ func TestCreateMethod(t *testing.T) {
 	if !ok {
 		t.Fatal("ts.Type is not *ast.FuncType")
 	}
-	code := CreateMethod(testTestFilePath, "TTestStruct", "NewTestStruct", fnc.Params.List, fnc.Results.List)
+	code, _ := CreateMethod(testTestFilePath, "TTestStruct", "NewTestStruct", fnc.Params, fnc.Results)
 	t.Log(string(code))
 	code = DeleteMethod(testTestFilePath, "TTestStruct", "NewTestStruct")
 	t.Log(string(code))

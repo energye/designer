@@ -14,7 +14,9 @@
 package codegen
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project"
@@ -75,12 +77,43 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	}
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-	newFormName := "T" + formTab.FormRoot.Name()
+	formName := "T" + formTab.FormRoot.Name()
+	nodeData := uiGenData.NodeData.EditNodeData
+	bindEventFuncName := uiGenData.NodeData.EditStringValue()
+	logs.Debug("FormName:", formName, goUserFilePath, "PropName:", uiGenData.NodeData.Name(),
+		"PropType:", uiGenData.NodeData.Type(), "TypeName:", nodeData.Metadata.Type, "EventState:", nodeData.EventState)
 
-	//eventFuncType := uiGenData.NodeData.EditNodeData.Metadata.Type
-	//eventFuncName := uiGenData.NodeData.Name()
-	//eventFuncName := uiGenData.NodeData.Name()
-	logs.Debug("FormName:", newFormName, goUserFilePath, "PropName:", uiGenData.NodeData.Name(),
-		"PropType:", uiGenData.NodeData.Type(), "TypeName:", uiGenData.NodeData.EditNodeData.Metadata.Type)
+	switch nodeData.EventState {
+	case consts.EsUpdate:
+		// A > B 忽略
+	case consts.EsDelete:
+		// 忽略
+	case consts.EsAdd:
+		// > A
+		// 生成绑定事件
+		funcType := dependmod.GetLCLFuncTypeAlias(nodeData.Metadata.Type)
+		if funcType == nil {
+			logs.Error("doUpdateEvent 获取函数类型别名返回 nil")
+		} else {
+			s, err := os.Stat(goUserFilePath)
+			if err != nil {
+				logs.Error("doUpdateEvent 获取代码文件信息失败.", err.Error())
+				return
+			}
+			// 创建新方法
+			newCode, err := dast.CreateMethod(goUserFilePath, formName, bindEventFuncName, funcType.Params, funcType.Results)
+			if err != nil {
+				logs.Error("doUpdateEvent 创建方法失败.", bindEventFuncName, err.Error())
+				return
+			}
+			err = os.WriteFile(goUserFilePath, newCode, s.Mode())
+			if err != nil {
+				logs.Error("doUpdateEvent 创建方法失败.", bindEventFuncName, goUserFilePath, err.Error())
+				return
+			}
+			// 成功, 立即更新一次文件改变监听
+
+		}
+	}
 
 }
