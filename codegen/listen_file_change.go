@@ -14,6 +14,7 @@
 package codegen
 
 import (
+	"context"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
@@ -23,8 +24,10 @@ import (
 )
 
 var (
-	ticker   *time.Ticker
-	fileInfo *tool.HashMap[string, *TListenFileInfo]
+	gCtx      context.Context
+	gCancel   context.CancelFunc
+	gTicker   *time.Ticker
+	gFileInfo *tool.HashMap[string, *TListenFileInfo]
 )
 
 type TListenFileInfo struct {
@@ -34,20 +37,39 @@ type TListenFileInfo struct {
 	Exist   bool      // 是否存在
 }
 
+func stopListenFileChange() {
+	if gCtx != nil {
+		logs.Println("ListenFileChange 停止运行监听文件改变任务")
+		gCancel()
+		gCtx = nil
+		gCancel = nil
+	}
+	if gTicker != nil {
+		logs.Println("ListenFileChange stop")
+		gTicker.Stop()
+		gTicker = nil
+	}
+}
+
 // 监听文件改变任务
 func runListenFileChange() {
-	if ticker != nil {
-		logs.Debug("停止运行监听文件改变任务")
-		ticker.Stop()
-		ticker = nil
-	}
-	logs.Debug("启动监听文件改变任务")
+	stopListenFileChange()
+	logs.Println("ListenFileChange 启动监听文件改变任务")
+	gCtx, gCancel = context.WithCancel(context.Background())
+	gTicker = time.NewTicker(time.Second) // 1 秒？
 	// 创建(重置)
-	fileInfo = tool.NewHashMap[string, *TListenFileInfo]()
-	ticker = time.NewTicker(time.Second)
+	gFileInfo = tool.NewHashMap[string, *TListenFileInfo]()
 	go func() {
-		for range ticker.C {
-			detectFileChange()
+		defer func() {
+			logs.Println("ListenFileChange done.")
+		}()
+		for {
+			select {
+			case <-gCtx.Done():
+				return
+			case <-gTicker.C:
+				detectFileChange()
+			}
 		}
 	}()
 }
@@ -60,7 +82,7 @@ func detectFileChange() {
 		return
 	}
 	// 重置文件存在状态, 默认 false
-	fileInfo.Iterate(func(key string, value *TListenFileInfo) bool {
+	gFileInfo.Iterate(func(key string, value *TListenFileInfo) bool {
 		value.Exist = false
 		return false
 	})
@@ -69,17 +91,17 @@ func detectFileChange() {
 	appCodePath := filepath.Join(projPath, proj.Package)
 	for _, form := range project.Project().UIForms {
 		userFile := filepath.Join(appCodePath, form.GOUserFile)
-		if fi := fileInfo.Get(form.Name); fi != nil {
+		if fi := gFileInfo.Get(form.Name); fi != nil {
 			fi.Exist = true
 		} else {
-			fileInfo.Add(form.Name, &TListenFileInfo{Id: form.Id, Path: userFile, ModTime: time.Now(), Exist: true})
+			gFileInfo.Add(form.Name, &TListenFileInfo{Id: form.Id, Path: userFile, ModTime: time.Now(), Exist: true})
 		}
 	}
 
 	// 待删除不存在的文件列表
 	var removeNotExistList []string
 	// 验证文件状态
-	fileInfo.Iterate(func(formName string, file *TListenFileInfo) bool {
+	gFileInfo.Iterate(func(formName string, file *TListenFileInfo) bool {
 		if !file.Exist {
 			// 不存在的添加到待删除列表
 			removeNotExistList = append(removeNotExistList, formName)
@@ -94,15 +116,23 @@ func detectFileChange() {
 			file.ModTime = fi.ModTime()
 			// 当文件改变后处理对应逻辑
 			// 功能:
-			//   获得窗体引用接收者的所有方法
-			//   其它待添加...
-			logs.Debug("listenFileChange 文件被修改 窗体名:", formName, "窗体ID", file.Id, "文件:", file.Path)
+			//   ast 获得窗体引用接收者的所有方法
+			//   其它待添加... 如: 代码编辑检测
+			logs.Debug("ListenFileChange 文件被修改 窗体名:", formName, "窗体ID", file.Id, "文件:", file.Path)
+
+			// ast 加载窗体引用接收者的所有方法
+			loadFormRecvMethods(file.Path, formName, file.Id)
 		}
 		return false
 	})
 
 	for _, name := range removeNotExistList {
-		logs.Debug("listenFileChange 删除不存在的文件:", name)
-		fileInfo.Remove(name)
+		logs.Debug("ListenFileChange 在检测列表删除不存在的:", name)
+		gFileInfo.Remove(name)
 	}
+}
+
+// ast 加载窗体引用接收者的所有方法
+func loadFormRecvMethods(filePath, formName string, formId int) {
+
 }
