@@ -271,3 +271,7 @@ func (m *HashMap[K, T]) Iterate(fn func(key K, value T) bool) {
 		}
 	}
 }
+
+func (m *HashMap[K, T]) Remove(name K) {
+	delete(m.values, name)
+}
