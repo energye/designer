@@ -71,11 +71,12 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 	case consts.PdtClass:
 		return m.StringValue
 	case consts.PdtMethod:
-		value := ""
-		if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
-			value = m.ComboBoxValue[m.Index].StringValue
-		}
-		return value
+		//value := ""
+		//if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
+		//	value = m.ComboBoxValue[m.Index].StringValue
+		//}
+		//return value
+		return m.StringValue
 	default:
 		return ""
 	}
@@ -101,11 +102,12 @@ func (m *TEditLinkNodeData) EditValue() any {
 	case consts.PdtClass:
 		return m.StringValue
 	case consts.PdtMethod:
-		var value any
-		if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
-			value = m.ComboBoxValue[m.Index].StringValue
-		}
-		return value
+		//var value any
+		//if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
+		//	value = m.ComboBoxValue[m.Index].StringValue
+		//}
+		//return value
+		return m.StringValue
 	default:
 		return ""
 	}
@@ -128,15 +130,16 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 	case consts.PdtColorSelect:
 		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
 	case consts.PdtMethod:
+		m.StringValue = value.(string)
 		// TODO 还有些问题, 需要修改
-		if m.ComboBoxValue == nil || m.Index == -1 {
-			m.ComboBoxValue = append(m.ComboBoxValue, &TEditLinkNodeData{StringValue: value.(string)})
-			m.Index = int32(len(m.ComboBoxValue)) - 1
-		} else if m.Index < int32(len(m.ComboBoxValue)) {
-			m.ComboBoxValue[m.Index] = &TEditLinkNodeData{StringValue: value.(string)}
-		} else {
-			logs.Error("TEditLinkNodeData SetEditValue 类型 Method 失败 索引:", m.Index, "数据:", value, "ComboBoxValue", m.ComboBoxValue)
-		}
+		//if m.ComboBoxValue == nil || m.Index == -1 {
+		//	m.ComboBoxValue = append(m.ComboBoxValue, &TEditLinkNodeData{StringValue: value.(string)})
+		//	m.Index = int32(len(m.ComboBoxValue)) - 1
+		//} else if m.Index < int32(len(m.ComboBoxValue)) {
+		//	m.ComboBoxValue[m.Index] = &TEditLinkNodeData{StringValue: value.(string)}
+		//} else {
+		//	logs.Error("TEditLinkNodeData SetEditValue 类型 Method 失败 索引:", m.Index, "数据:", value, "ComboBoxValue", m.ComboBoxValue)
+		//}
 	}
 }
 

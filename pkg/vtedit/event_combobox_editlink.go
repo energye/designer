@@ -83,6 +83,7 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 }
 
 func (m *TEventComboBoxEditLink) SetValue(index int32, value string) {
+	m.BindData.EditNodeData.SetEditValue(value)
 	if index == -1 && value == "" {
 		// 删除
 		m.BindData.EditNodeData.Index = -1
@@ -157,7 +158,8 @@ func (m *TEventComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, nod
 	if text != "" && text != defaultText {
 		items := m.combobox.Items()
 		index := int32(-1)
-		for i := int32(0); i < items.Count(); i++ {
+		count := items.Count()
+		for i := int32(0); i < count; i++ {
 			if items.Strings(i) == text {
 				index = i
 				break
