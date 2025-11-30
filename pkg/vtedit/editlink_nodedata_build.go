@@ -28,7 +28,7 @@ import (
 
 // 构建节点数据
 func (m *TEditLinkNodeData) Build() {
-	kind := consts.PropertyKind(m.Metadata.Kind)
+	kind := m.Metadata.Kind
 	m.Name = m.Metadata.Name
 	switch kind {
 	case consts.TkEnumeration: // 枚举 单选, 使用下拉框
@@ -93,7 +93,7 @@ func (m *TEditLinkNodeData) Build() {
 		m.StringValue = "(" + m.Metadata.Type + ")"
 	case consts.TkMethod: // 方法事件回调
 		m.Type = consts.PdtMethod
-		m.StringValue = "" // ?? = m.Metadata.Type
+		m.StringValue = ""
 	default: // 未识别类型
 		m.Type = consts.PdtText // todo 使用文本
 		logs.Warn("未识别的元数据类型:", m.Metadata.ToJSON())
