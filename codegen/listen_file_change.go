@@ -15,9 +15,12 @@ package codegen
 
 import (
 	"context"
+	"github.com/energye/designer/designer"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
+	"go/ast"
 	"os"
 	"path/filepath"
 	"time"
@@ -74,7 +77,7 @@ func runListenFileChange() {
 	}()
 }
 
-// 检测文件
+// DetectFileChange 检测文件
 func detectFileChange() {
 	projPath := project.Path()
 	proj := project.Project()
@@ -134,5 +137,18 @@ func detectFileChange() {
 
 // ast 加载窗体引用接收者的所有方法
 func loadFormRecvMethods(filePath, formName string, formId int) {
-
+	formName = "T" + formName
+	var funcs []*dast.TFuncInfo
+	dast.FindRecvMethod(filePath, formName, func(funcDecl *ast.FuncDecl) {
+		name := funcDecl.Name.Name
+		params := funcDecl.Type.Params
+		results := funcDecl.Type.Results
+		funcInfo := &dast.TFuncInfo{
+			Name:    name,
+			Params:  dast.ParseFields(params),
+			Results: dast.ParseFields(results),
+		}
+		funcs = append(funcs, funcInfo)
+	})
+	designer.SetRecvMethods(formId, funcs)
 }

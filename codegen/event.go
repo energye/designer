@@ -61,5 +61,6 @@ func init() {
 		runListenFileChange()
 	}, func() {
 		logs.Println("停止文件改变监听")
+		stopListenFileChange()
 	})
 }

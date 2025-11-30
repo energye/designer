@@ -14,6 +14,7 @@
 package vtedit
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -29,7 +30,6 @@ type TEventComboBoxEditLink struct {
 	*TBaseEditLink
 	combobox lcl.IComboBox
 	bounds   types.TRect
-	text     string
 	stopping bool
 }
 
@@ -55,12 +55,7 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 			m.combobox.SetItemIndex(-1)
 			return
 		}
-		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
-		m.BindData.EditNodeData.StringValue = text
-		//logs.Debug("TEventComboBoxEditLink OnChange index:", m.BindData.EditNodeData.Index, "text:", m.BindData.EditNodeData.StringValue)
-		//m.BindData.FormInspectorPropertyToComponentProperty()
 	})
-
 	m.combobox.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TEventComboBoxEditLink OnKeyDown key:", *key)
 		if *key == keys.VkReturn {
@@ -70,7 +65,44 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 		}
 	})
 	items := m.combobox.Items()
-	items.Add(defaultText)
+
+	comboBoxValue := []*TEditLinkNodeData{
+		{StringValue: defaultText},
+	}
+	methods := m.BindData.AffiliatedComponent.GetRecvMethods()
+	if methods != nil {
+		// TODO 过滤匹配出符合的事件类型方法
+		for _, method := range methods {
+			comboBoxValue = append(comboBoxValue, &TEditLinkNodeData{StringValue: method.Name})
+		}
+	}
+	m.BindData.EditNodeData.ComboBoxValue = comboBoxValue
+	for _, item := range m.BindData.EditNodeData.ComboBoxValue {
+		items.Add(item.StringValue)
+	}
+}
+
+func (m *TEventComboBoxEditLink) SetValue(index int32, value string) {
+	if index == -1 && value == "" {
+		// 删除
+		m.BindData.EditNodeData.Index = -1
+		m.BindData.EditNodeData.EventState = consts.EsDelete
+		return
+	}
+	if index == -1 && value != "" {
+		// -1 新增
+		m.BindData.EditNodeData.ComboBoxValue = append(m.BindData.EditNodeData.ComboBoxValue, &TEditLinkNodeData{StringValue: value})
+		m.BindData.EditNodeData.Index = int32(len(m.BindData.EditNodeData.ComboBoxValue)) - 1
+		m.BindData.EditNodeData.EventState = consts.EsAdd
+	} else if index == 0 || value == "" {
+		// 0 (none) 删除
+		m.BindData.EditNodeData.Index = -1
+		m.BindData.EditNodeData.EventState = consts.EsDelete
+	} else {
+		// 1-n 更新
+		m.BindData.EditNodeData.Index = index
+		m.BindData.EditNodeData.EventState = consts.EsUpdate
+	}
 }
 
 func (m *TEventComboBoxEditLink) BeginEdit() bool {
@@ -99,8 +131,7 @@ func (m *TEventComboBoxEditLink) EndEdit() bool {
 	logs.Debug("TEventComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.BindData.EditNodeData.Index = m.combobox.ItemIndex()
-		m.BindData.EditNodeData.StringValue = m.combobox.Text()
+		m.SetValue(m.combobox.ItemIndex(), m.combobox.Text())
 		m.combobox.Hide()
 		if m.VTree != nil {
 			m.VTree.EndEditNode()
@@ -117,12 +148,26 @@ func (m *TEventComboBoxEditLink) PrepareEdit(tree lcl.ILazVirtualStringTree, nod
 	m.VTree = tree
 	m.Node = node
 	m.Column = column
-	m.VTree.GetTextInfo(node, column, m.combobox.Font(), &m.bounds, &m.text)
-	logs.Debug("  PrepareEdit GetTextInfo:", m.bounds, m.text)
+	text := ""
+	m.VTree.GetTextInfo(node, column, m.combobox.Font(), &m.bounds, &text)
+	logs.Debug("  PrepareEdit GetTextInfo:", m.bounds, text)
 	m.combobox.Font().SetColor(colors.ClWindowText)
 	m.combobox.SetParent(m.VTree)
 	m.combobox.HandleNeeded()
-	m.combobox.SetText(m.text)
+	if text != "" && text != defaultText {
+		items := m.combobox.Items()
+		index := int32(-1)
+		for i := int32(0); i < items.Count(); i++ {
+			if items.Strings(i) == text {
+				index = i
+				break
+			}
+		}
+		if index != -1 {
+			m.combobox.SetItemIndex(index)
+			m.BindData.EditNodeData.Index = index
+		}
+	}
 	return true
 }
 

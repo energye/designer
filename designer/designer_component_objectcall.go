@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/mapper"
@@ -121,6 +122,13 @@ func (m *TDesigningComponent) UpdateComponentBindEventToCode(updateNodeData *vte
 	updateComponentMutex.Store(true)
 	m.doUpdateComponentBindEventToCode(updateNodeData)
 	updateComponentMutex.Store(false)
+}
+
+// GetRecvMethods 获取接收方法列表
+// 返回与当前设计组件关联的接收方法信息数组
+// 这些方法通常是在代码生成过程中需要绑定到组件上的事件处理方法
+func (m *TDesigningComponent) GetRecvMethods() []*dast.TFuncInfo {
+	return m.FormTab.recvMethods
 }
 
 // 更新组件树节点信息

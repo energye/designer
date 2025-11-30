@@ -15,6 +15,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -140,6 +141,15 @@ func SetDesignerCount(count int) {
 		count = 0
 	}
 	designer.designerCount = count
+}
+
+// SetRecvMethods 设置指定表单的接收方法列表
+// formId: 表单ID，用于定位需要设置接收方法的表单
+// methods: 接收方法信息列表，包含方法的详细信息
+func SetRecvMethods(formId int, methods []*dast.TFuncInfo) {
+	if form, ok := designer.designerForms[formId]; ok {
+		form.SetRecvMethods(methods)
+	}
 }
 
 // 添加一个窗体设计器 form tab

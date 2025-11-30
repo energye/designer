@@ -133,6 +133,24 @@ func FindType(filename string, typeName string) *ast.TypeSpec {
 	return nil
 }
 
+// FindRecvMethod 更新指定go代码文件的所有方法接收者
+func FindRecvMethod(filename string, recvName string, callback func(funcDecl *ast.FuncDecl)) {
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, filename, nil, parser.SkipObjectResolution)
+	for _, decl := range node.Decls {
+		if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+			if funcDecl.Recv != nil && len(funcDecl.Recv.List) > 0 {
+				if recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr); ok {
+					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == recvName {
+						callback(funcDecl)
+					}
+				}
+			}
+		}
+	}
+
+}
+
 // UpdateMethodRecv 更新指定go代码文件的所有方法接收者
 func UpdateMethodRecv(filename string, oldTypeName, newTypename string) ([]byte, bool, error) {
 	isUpdate := false

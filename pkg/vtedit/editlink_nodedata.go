@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
@@ -36,10 +37,11 @@ type TEditLinkNodeData struct {
 	FloatValue    float64                  // 属性值 float64
 	BoolValue     bool                     // 属性值 bool
 	IntValue      int                      // 属性值 int
+	EventState    consts.TEventState       // 属性事件更新 状态
 	Class         TPropClass               // 属性值 class 实例
 	CheckBoxValue []*TEditLinkNodeData     // 属性值 checkbox
 	ComboBoxValue []*TEditLinkNodeData     // 属性值 combobox
-	Type          consts.PropertyDataType  // 属性值类型 普通文本, 单选框, 多选框, 下拉框, 菜单(子菜单)
+	Type          consts.PropertyDataType  // 属性值类型
 }
 
 // 属性值 class
@@ -69,7 +71,11 @@ func (m *TEditLinkNodeData) EditStringValue() string {
 	case consts.PdtClass:
 		return m.StringValue
 	case consts.PdtMethod:
-		return m.StringValue
+		value := ""
+		if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
+			value = m.ComboBoxValue[m.Index].StringValue
+		}
+		return value
 	default:
 		return ""
 	}
@@ -95,7 +101,11 @@ func (m *TEditLinkNodeData) EditValue() any {
 	case consts.PdtClass:
 		return m.StringValue
 	case consts.PdtMethod:
-		return m.StringValue
+		var value any
+		if m.Index != -1 && m.Index < int32(len(m.ComboBoxValue)) {
+			value = m.ComboBoxValue[m.Index].StringValue
+		}
+		return value
 	default:
 		return ""
 	}
@@ -118,7 +128,15 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 	case consts.PdtColorSelect:
 		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
 	case consts.PdtMethod:
-		m.StringValue = value.(string)
+		// TODO 还有些问题, 需要修改
+		if m.ComboBoxValue == nil || m.Index == -1 {
+			m.ComboBoxValue = append(m.ComboBoxValue, &TEditLinkNodeData{StringValue: value.(string)})
+			m.Index = int32(len(m.ComboBoxValue)) - 1
+		} else if m.Index < int32(len(m.ComboBoxValue)) {
+			m.ComboBoxValue[m.Index] = &TEditLinkNodeData{StringValue: value.(string)}
+		} else {
+			logs.Error("TEditLinkNodeData SetEditValue 类型 Method 失败 索引:", m.Index, "数据:", value, "ComboBoxValue", m.ComboBoxValue)
+		}
 	}
 }
 
@@ -164,6 +182,7 @@ func (m *TEditLinkNodeData) Clone() *TEditLinkNodeData {
 type IDesigningComponent interface {
 	UpdateComponentPropertyToObject(nodeData *TEditNodeData)
 	UpdateComponentBindEventToCode(updateNodeData *TEditNodeData)
+	GetRecvMethods() []*dast.TFuncInfo
 }
 
 // 编辑的节点数据
@@ -320,7 +339,7 @@ func (m *TEditNodeData) IsModify() bool {
 			}
 		}
 	case consts.PdtMethod:
-		return m.EditNodeData.StringValue != m.OriginNodeData.StringValue
+		return m.EditNodeData.Index > 0 // 索引大于0表示修改
 	}
 	return false
 }

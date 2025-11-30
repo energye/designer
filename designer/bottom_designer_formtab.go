@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -42,6 +43,7 @@ type FormTab struct {
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	componentMenu *TComponentMenu      // 组件菜单
 	recover       *TRecoverForm        // 恢复模式
+	recvMethods   []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表
 }
 
 // UIFile 返回UI文件名 xxx.ui
@@ -57,6 +59,10 @@ func (m *FormTab) GOFile() string {
 // GOUserFile 返回 Go 用户文件名 xxx.go
 func (m *FormTab) GOUserFile() string {
 	return strings.ToLower(m.FormRoot.Name()) + consts.UIGoUserExt
+}
+
+func (m *FormTab) SetRecvMethods(methods []*dast.TFuncInfo) {
+	m.recvMethods = methods
 }
 
 // 强制关闭当前tab

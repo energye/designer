@@ -54,7 +54,24 @@ func TestCreateMethod(t *testing.T) {
 }
 
 func TestUpdateRecvMethodByTypeName(t *testing.T) {
-	newCode, isUpdate, err := UpdateMethodRecv("C:\\360Downloads\\myapp3\\app\\form.go", "TForm1", "NewTestStruct")
+	newCode, isUpdate, err := UpdateMethodRecv(testTestFilePath, "TTestStruct", "NewTestStruct")
 	t.Log(isUpdate, err)
 	t.Log(string(newCode))
+}
+
+func TestFindRecvMethod(t *testing.T) {
+	var funcs []TFuncInfo
+	FindRecvMethod(testTestFilePath, "TTestStruct", func(funcDecl *ast.FuncDecl) {
+		name := funcDecl.Name.Name
+		params := funcDecl.Type.Params
+		results := funcDecl.Type.Results
+		t.Log(name, params, results)
+		funcInfo := TFuncInfo{
+			Name:    name,
+			Params:  ParseFields(params),
+			Results: ParseFields(results),
+		}
+		funcs = append(funcs, funcInfo)
+	})
+	t.Log(funcs)
 }

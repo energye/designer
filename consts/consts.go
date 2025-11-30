@@ -155,3 +155,13 @@ const (
 	// DmWidget 自定义组件 模块
 	DmWidget DependencyModule = "github.com/energye/widget"
 )
+
+// TEventState 组件属性-事件属性绑定状态
+type TEventState int32
+
+const (
+	EsNone   TEventState = iota // 事件绑定更新 - 无操作
+	EsUpdate                    // 事件绑定更新 - 更新了事件函数
+	EsDelete                    // 事件绑定删除 - 删除了事件函数
+	EsAdd                       // 事件绑定添加 - 添加了事件函数
+)
