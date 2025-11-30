@@ -81,6 +81,8 @@ func LoadProject(path, egpFilePath string) {
 	}
 	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
 	SetGlobalProject(path, loadProject)
+	// 触发文件修改监听事件
+	event.Emit(event.TTrigger{Name: event.ListenFileChange})
 	// 重置设计器
 	designer.ResetDesigner()
 	// 恢复设计器窗体

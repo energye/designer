@@ -22,6 +22,7 @@ import (
 // Go代码生成
 
 func init() {
+	// 代码生成事件监听
 	event.On(event.GenCode, func(trigger event.TTrigger) {
 		if payload, ok := trigger.Payload.(event.TPayload); ok {
 			uiGenData, ok := payload.Data.(designer.TUIGenerationData)
@@ -50,5 +51,15 @@ func init() {
 		}
 	}, func() {
 		logs.Println("停止代码生成器")
+	})
+
+	// 文件改变监听
+	// 运行时机, 每次都会重置监斩
+	//   打开项目后
+	//   新建项目后
+	event.On(event.ListenFileChange, func(trigger event.TTrigger) {
+		runListenFileChange()
+	}, func() {
+		logs.Println("停止文件改变监听")
 	})
 }

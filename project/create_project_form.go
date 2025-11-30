@@ -537,6 +537,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	projectDir := m.projPathEdit.Text()
 	// 检查创建项目
 	if checkCreate(projectDir) {
+		// 触发文件修改监听事件
+		event.Emit(event.TTrigger{Name: event.ListenFileChange})
 		// 允许创建
 		// 重置设计器
 		designer.ResetDesigner()
