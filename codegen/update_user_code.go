@@ -79,11 +79,9 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	}
 	formTab := uiGenData.Component.FormTab
 	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
-	formName := "T" + formTab.FormRoot.Name()
+	formName := "T" + formTab.FormRoot.Name() // T + [FormName]
 	nodeData := uiGenData.NodeData.EditNodeData
 	bindEventFuncName := uiGenData.NodeData.EditStringValue()
-	logs.Debug("FormName:", formName, goUserFilePath, "PropName:", uiGenData.NodeData.Name(),
-		"PropType:", uiGenData.NodeData.Type(), "TypeName:", nodeData.Metadata.Type, "EventState:", nodeData.EventState)
 
 	switch nodeData.EventState {
 	case consts.EsUpdate:
@@ -92,8 +90,10 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 		// 忽略
 	case consts.EsAdd:
 		// > A
+		// 模块类型别名集合 TODO 多模块时需要动态控制 lcl, cef, wv
+		funcTypeAliases := dependmod.GLCLFuncTypeAliases
 		// 生成绑定事件
-		funcType := dependmod.GLCLFuncTypeAliases.Funcs.Get(nodeData.Metadata.Type)
+		funcType := funcTypeAliases.Funcs.Get(nodeData.Metadata.Type)
 		if funcType == nil {
 			logs.Error("doUpdateEvent 获取函数类型别名返回 nil")
 		} else {
@@ -102,8 +102,6 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 				logs.Error("doUpdateEvent 获取代码文件信息失败.", err.Error())
 				return
 			}
-
-			funcTypeAliases := dependmod.GLCLFuncTypeAliases
 			// 创建新方法
 			newCode, err := dast.CreateMethod(goUserFilePath, func(file *ast.File) {
 				currImports := dast.PackageImportToHashMap(file.Imports) // 当前包
@@ -153,7 +151,7 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 				return
 			}
 			// 成功, 立即更新一次文件改变监听
-
+			detectFileChange()
 		}
 	}
 

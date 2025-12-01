@@ -131,6 +131,16 @@ func (m *TDesigningComponent) GetRecvMethods() []*dast.TFuncInfo {
 	return m.FormTab.recvMethods
 }
 
+func (m *TDesigningComponent) GetClassName() string {
+	className := m.ClassName()
+	return className
+}
+
+func (m *TDesigningComponent) GetName() string {
+	name := m.Name()
+	return name
+}
+
 // 更新组件树节点信息
 // 在设计组件属性修改后同步修改组件树节点可见值
 func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) error {

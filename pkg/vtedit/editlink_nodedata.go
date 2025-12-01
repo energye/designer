@@ -186,6 +186,8 @@ type IDesigningComponent interface {
 	UpdateComponentPropertyToObject(nodeData *TEditNodeData)
 	UpdateComponentBindEventToCode(updateNodeData *TEditNodeData)
 	GetRecvMethods() []*dast.TFuncInfo
+	GetClassName() string
+	GetName() string
 }
 
 // 编辑的节点数据

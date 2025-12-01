@@ -245,10 +245,13 @@ func DeleteMethod(filename string, typeName string, methodName string) []byte {
 //	error - 格式化过程中可能产生的错误
 func CreateMethod(filename string, callback func(file *ast.File)) ([]byte, error) {
 	fset := token.NewFileSet()
-	node, _ := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
 	callback(node)
 	var buf bytes.Buffer
-	err := format.Node(&buf, fset, node)
+	err = format.Node(&buf, fset, node)
 	return buf.Bytes(), err
 }
 
@@ -318,6 +321,63 @@ func FixFieldList(allImports, currImports, addImports *tool.HashMap[string, stri
 	if fieldList == nil {
 		return
 	}
+
+	//				if !currImports.ContainsKey(identX.Name) {
+	//					// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
+	//					packageImport := allImports.Get(identX.Name)
+	//					if pkg, ok := currImports.ContainsValue(packageImport); ok {
+	//						// 导入包路径是相同的, 修改 type
+	//						tempType = &ast.SelectorExpr{
+	//							X:   ast.NewIdent(pkg),
+	//							Sel: ast.NewIdent(selectorExprX.Sel.Name),
+	//						}
+	//					} else {
+	//						addImports.Add("", packageImport)
+	//					}
+	//				}
+	var processType func(fieldType ast.Expr) ast.Expr
+	processType = func(fieldType ast.Expr) ast.Expr {
+		switch t := fieldType.(type) {
+		case *ast.Ident:
+			// 判断参数类型 t.Name 是否 Go 内置类型, 如果不是则使用当前模块的包
+			if !IsBuiltinTypeName(t.Name) {
+				if !currImports.ContainsKey(mod) {
+					packageImport := allImports.Get(mod)
+					addImports.Add("", packageImport)
+				}
+				return &ast.SelectorExpr{
+					X:   ast.NewIdent(mod),
+					Sel: ast.NewIdent(t.Name),
+				}
+			} else {
+				return t
+			}
+		case *ast.StarExpr:
+			return &ast.StarExpr{
+				X:    processType(t.X),
+				Star: t.Star,
+			}
+		case *ast.SelectorExpr:
+			if identX, ok := t.X.(*ast.Ident); ok {
+				if !currImports.ContainsKey(identX.Name) {
+					// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
+					packageImport := allImports.Get(identX.Name)
+					// 导入包路径是相同的, 修改参数类型导入名称
+					if pkg, ok := currImports.ContainsValue(packageImport); ok {
+						return &ast.SelectorExpr{
+							X:   ast.NewIdent(pkg),
+							Sel: ast.NewIdent(t.Sel.Name),
+						}
+					} else {
+						addImports.Add("", packageImport)
+					}
+				}
+			}
+			return t
+		}
+		return fieldType
+	}
+
 	newFieldList = &ast.FieldList{
 		Opening: fieldList.Opening,
 		List:    nil,
@@ -331,46 +391,92 @@ func FixFieldList(allImports, currImports, addImports *tool.HashMap[string, stri
 			Tag:     field.Tag,
 			Comment: field.Comment,
 		}
+		newField.Type = processType(field.Type)
 		newFieldList.List = append(newFieldList.List, newField)
-		nameIdent := field.Names[0]
-		_ = nameIdent
-		if typeIdent, ok := field.Type.(*ast.Ident); ok {
-			typeName := typeIdent.Name // 参数类型名
-			// 判断参数类型是否 Go 内置类型, 如果不是则使用当前模块的包
-			if !IsBuiltinTypeName(typeName) {
-				if !currImports.ContainsKey(mod) {
-					packageImport := allImports.Get(mod)
-					addImports.Add("", packageImport)
-				}
-				// 字段类型加个包声明
-				newField.Type = &ast.SelectorExpr{
-					X:   ast.NewIdent(mod),
-					Sel: ast.NewIdent(typeName),
-				}
-			}
-		} else if typeStarExpr, ok := field.Type.(*ast.StarExpr); ok {
-			tempType := field.Type
-			if selectorExprX, ok := typeStarExpr.X.(*ast.SelectorExpr); ok {
-				if identX, ok := selectorExprX.X.(*ast.Ident); ok {
-					if !currImports.ContainsKey(identX.Name) {
-						// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
-						packageImport := allImports.Get(identX.Name)
-						if pkg, ok := currImports.ContainsValue(packageImport); ok {
-							// 导入包路径是相同的, 修改 type
-							tempType = &ast.SelectorExpr{
-								X:   ast.NewIdent(pkg),
-								Sel: ast.NewIdent(selectorExprX.Sel.Name),
-							}
-						} else {
-							addImports.Add("", packageImport)
-						}
-					}
-				}
-			}
-			newField.Type = tempType
-		}
 	}
-
+	//for _, field := range fieldList.List {
+	//	newField := &ast.Field{
+	//		Doc:     field.Doc,
+	//		Names:   field.Names,
+	//		Type:    nil,
+	//		Tag:     field.Tag,
+	//		Comment: field.Comment,
+	//	}
+	//	newFieldList.List = append(newFieldList.List, newField)
+	//	if typeIdent, ok := field.Type.(*ast.Ident); ok {
+	//		typeName := typeIdent.Name // 参数类型名
+	//		// 判断参数类型是否 Go 内置类型, 如果不是则使用当前模块的包
+	//		if !IsBuiltinTypeName(typeName) {
+	//			if !currImports.ContainsKey(mod) {
+	//				packageImport := allImports.Get(mod)
+	//				addImports.Add("", packageImport)
+	//			}
+	//			// 字段类型加个包声明
+	//			newField.Type = &ast.SelectorExpr{
+	//				X:   ast.NewIdent(mod),
+	//				Sel: ast.NewIdent(typeName),
+	//			}
+	//		} else {
+	//			newField.Type = field.Type
+	//		}
+	//	} else if typeStarExpr, ok := field.Type.(*ast.StarExpr); ok {
+	//		tempType := field.Type
+	//		if selectorExprX, ok := typeStarExpr.X.(*ast.SelectorExpr); ok {
+	//			if identX, ok := selectorExprX.X.(*ast.Ident); ok {
+	//				if !currImports.ContainsKey(identX.Name) {
+	//					// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
+	//					packageImport := allImports.Get(identX.Name)
+	//					if pkg, ok := currImports.ContainsValue(packageImport); ok {
+	//						// 导入包路径是相同的, 修改 type
+	//						tempType = &ast.SelectorExpr{
+	//							X:   ast.NewIdent(pkg),
+	//							Sel: ast.NewIdent(selectorExprX.Sel.Name),
+	//						}
+	//					} else {
+	//						addImports.Add("", packageImport)
+	//					}
+	//				}
+	//			}
+	//		} else if typeIdent, ok := typeStarExpr.X.(*ast.Ident); ok {
+	//			typeName := typeIdent.Name // 参数类型名
+	//			// 判断参数类型是否 Go 内置类型, 如果不是则使用当前模块的包
+	//			if !IsBuiltinTypeName(typeName) {
+	//				if !currImports.ContainsKey(mod) {
+	//					packageImport := allImports.Get(mod)
+	//					addImports.Add("", packageImport)
+	//				}
+	//				// 字段类型加个包声明
+	//				tempType = &ast.SelectorExpr{
+	//					X:   ast.NewIdent(mod),
+	//					Sel: ast.NewIdent(typeName),
+	//				}
+	//			} else {
+	//				tempType = field.Type
+	//			}
+	//		}
+	//		newField.Type = tempType
+	//	} else if typeSelectorExpr, ok := field.Type.(*ast.SelectorExpr); ok {
+	//		tempType := field.Type
+	//		if identX, ok := typeSelectorExpr.X.(*ast.Ident); ok {
+	//			if !currImports.ContainsKey(identX.Name) {
+	//				// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
+	//				packageImport := allImports.Get(identX.Name)
+	//				if pkg, ok := currImports.ContainsValue(packageImport); ok {
+	//					// 导入包路径是相同的, 修改 type
+	//					tempType = &ast.SelectorExpr{
+	//						X:   ast.NewIdent(pkg),
+	//						Sel: ast.NewIdent(typeSelectorExpr.Sel.Name),
+	//					}
+	//				} else {
+	//					addImports.Add("", packageImport)
+	//				}
+	//			}
+	//		}
+	//		newField.Type = tempType
+	//	} else {
+	//		newField.Type = field.Type
+	//	}
+	//}
 	return
 }
 

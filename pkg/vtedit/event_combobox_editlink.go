@@ -48,6 +48,8 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 	m.combobox.SetBorderStyle(types.BsSingle)
 	m.combobox.SetAutoSize(false)
 	m.combobox.SetDoubleBuffered(true)
+	m.combobox.SetShowHint(true)
+	m.combobox.SetHint("双击创建绑定事件")
 	m.combobox.SetOnChange(func(sender lcl.IObject) {
 		text := m.combobox.Text()
 		if text == defaultText {
@@ -64,8 +66,38 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 			})
 		}
 	})
-	items := m.combobox.Items()
+	m.combobox.SetOnDblClick(func(sender lcl.IObject) {
+		compName := m.BindData.AffiliatedComponent.GetName()
+		propName := m.BindData.Name()
+		logs.Debug("自动创建绑定事件名", compName, propName)
+		bindEventName := compName + propName
+		// 验证当前列表是否已有该事件
+		items := m.combobox.Items()
+		count := m.combobox.Items().Count()
+		itemIndex := int32(-1)
+		for i := int32(0); i < count; i++ {
+			if items.Strings(i) == bindEventName {
+				itemIndex = i
+				break
+			}
+		}
+		if itemIndex == -1 {
+			// 添加
+			m.combobox.SetItemIndex(-1)
+			m.combobox.SetText(bindEventName)
+			items.Add(bindEventName)
+		} else {
+			// 索引
+			m.combobox.SetText(bindEventName)
+			m.combobox.SetItemIndex(itemIndex)
+		}
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.VTree.EndEditNode()
+		})
+	})
 
+	// 动态添加下拉项, 需要过滤匹配
+	items := m.combobox.Items()
 	comboBoxValue := []*TEditLinkNodeData{
 		{StringValue: defaultText},
 	}
