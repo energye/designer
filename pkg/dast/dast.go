@@ -116,7 +116,8 @@ func GetAllFuncTypeAliases(filename string) *TFuncTypeAlias {
 			if !ok {
 				continue
 			}
-			funcs.Funcs.Add(typeSpec.Name.Name, funcType)
+			lowerType := strings.ToLower(typeSpec.Name.Name)
+			funcs.Funcs.Add(lowerType, funcType)
 		}
 	}
 	return funcs

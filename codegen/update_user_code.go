@@ -24,6 +24,7 @@ import (
 	"go/ast"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // 更新用户代码文件
@@ -91,11 +92,12 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	case consts.EsAdd:
 		// > A
 		// 模块类型别名集合 TODO 多模块时需要动态控制 lcl, cef, wv
-		funcTypeAliases := dependmod.GLCLFuncTypeAliases
+		funcTypeAliases := dependmod.GetFuncTypeAliases(uiGenData.Component.GetMod())
 		// 生成绑定事件
-		funcType := funcTypeAliases.Funcs.Get(nodeData.Metadata.Type)
+		lowerType := strings.ToLower(nodeData.Metadata.Type)
+		funcType := funcTypeAliases.Funcs.Get(lowerType)
 		if funcType == nil {
-			logs.Error("doUpdateEvent 获取函数类型别名返回 nil")
+			logs.Error("doUpdateEvent 获取函数类型别名返回 nil", lowerType)
 		} else {
 			s, err := os.Stat(goUserFilePath)
 			if err != nil {

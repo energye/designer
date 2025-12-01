@@ -92,7 +92,9 @@ func GetObjectMethodNames(v any) *ArrayMap[string, *TMethod] {
 	return methods
 }
 
-// 修复属性信息
+// FixPropInfo 修复属性信息，将属性名与对象方法名进行匹配和修正
+// @param methods 对象方法列表，用于查找和匹配属性对应的方法
+// @param prop 组件属性信息，需要被修正的属性对象
 func FixPropInfo(methods *ArrayMap[string, *TMethod], prop *lcl.ComponentProperties) {
 	if methods == nil {
 		return
@@ -103,20 +105,34 @@ func FixPropInfo(methods *ArrayMap[string, *TMethod], prop *lcl.ComponentPropert
 		// 原因: 1. 完全不存在, 2. 属性名与对象方法名不一致
 		// 当为原因2时需要将属性名改为实际的方法名
 		prop.Name = methods.Get(name).Name
+		return
 	} else if prop.Kind == consts.TkMethod {
-		// TODO on event
-	} else {
-		logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
-		// 遍历对象方法列表, 匹配出所有属性名
-		type_ := strings.ToLower(RemoveT(prop.Type))
-		name_ := strings.ToLower(name)
-		methods.Iterate(func(methodName string, value *TMethod) bool {
-			if strings.Contains(methodName, name_) && strings.Contains(methodName, type_) {
-				prop.Name = value.Name
-				return true
-			}
-			return false
-		})
+		// 属性类型为事件
+		onName := "set" + name
+		if methods.ContainsKey(onName) {
+			// SetOnXxx
+			onName = methods.Get(onName).Name
+			// 去除 Set 前缀
+			onName = onName[3:]
+			prop.Name = onName
+			return
+		} else {
+			logs.Warn("属性类型为事件, 但对象方法不存在:", onName)
+			return
+		}
 	}
-	// 获取属性默认值
+	logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
+	// 遍历对象方法列表, 匹配出所有属性名
+	type_ := strings.ToLower(RemoveT(prop.Type))
+	name_ := strings.ToLower(name)
+	// 最后的尝试, 当Go里的对象方法名, 同时包含了组件属性名+类型时,
+	// 这种情况属于同名不同参的方法, 因为Go不支持重载方法
+	// 例如： BorderStyleToFormStyle
+	methods.Iterate(func(methodName string, value *TMethod) bool {
+		if strings.Contains(methodName, name_) && strings.Contains(methodName, type_) {
+			prop.Name = value.Name
+			return true
+		}
+		return false
+	})
 }

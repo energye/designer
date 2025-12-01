@@ -22,6 +22,7 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/keys"
+	"strings"
 )
 
 // 事件选择方法下拉框
@@ -106,10 +107,10 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 	methods := m.BindData.AffiliatedComponent.GetRecvMethods()
 	if methods != nil {
 		// 过滤匹配出符合的事件类型方法
-		methodType := m.BindData.EditNodeData.Metadata.Type
 		funcTypeAliases := dependmod.GetFuncTypeAliases(m.BindData.AffiliatedComponent.GetMod())
 		if funcTypeAliases != nil {
-			if funcType := funcTypeAliases.Funcs.Get(methodType); funcType != nil {
+			lowerType := strings.ToLower(m.BindData.EditNodeData.Metadata.Type)
+			if funcType := funcTypeAliases.Funcs.Get(lowerType); funcType != nil {
 				// 得到参数和返回值列表与 GetRecvMethods 匹配过滤
 				funcInfo := &dast.TFuncInfo{
 					Params:  dast.ParseFields(funcType.Params),
