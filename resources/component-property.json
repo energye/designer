@@ -10,7 +10,8 @@
       "AnchorSideRight",
       "AnchorSideTop",
       "ClientHeight",
-      "ClientWidth"
+      "ClientWidth",
+      "OnRenderOLEData"
     ],
     "include": [
       {
