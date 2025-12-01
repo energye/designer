@@ -131,15 +131,16 @@ func (m *TEditLinkNodeData) SetEditValue(value any) {
 		m.IntValue, _ = tool.StrToInt(tool.IntToString(value))
 	case consts.PdtMethod:
 		m.StringValue = value.(string)
-		// TODO 还有些问题, 需要修改
-		//if m.ComboBoxValue == nil || m.Index == -1 {
-		//	m.ComboBoxValue = append(m.ComboBoxValue, &TEditLinkNodeData{StringValue: value.(string)})
-		//	m.Index = int32(len(m.ComboBoxValue)) - 1
-		//} else if m.Index < int32(len(m.ComboBoxValue)) {
-		//	m.ComboBoxValue[m.Index] = &TEditLinkNodeData{StringValue: value.(string)}
-		//} else {
-		//	logs.Error("TEditLinkNodeData SetEditValue 类型 Method 失败 索引:", m.Index, "数据:", value, "ComboBoxValue", m.ComboBoxValue)
-		//}
+		if m.ComboBoxValue == nil && m.StringValue != "" {
+			// 事实上: 此处只在初始化时设置临时默认值. 或被设置新值时做为一个临时数据
+			// 主要用于未被修改时可保证数据完整性
+			// 当被编辑后会被覆盖
+			m.ComboBoxValue = []*TEditLinkNodeData{
+				{StringValue: defaultText},
+				{StringValue: m.StringValue},
+			}
+			m.Index = 1 // 设置值为 1 表示被修改
+		}
 	}
 }
 
