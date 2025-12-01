@@ -79,7 +79,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 
 // 构建用户代码模板数据
 func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet[string]()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,

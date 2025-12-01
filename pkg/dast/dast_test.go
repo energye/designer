@@ -1,6 +1,10 @@
 package dast
 
 import (
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
+	lclTypes "github.com/energye/lcl/types"
 	"go/ast"
 	"os"
 	"path/filepath"
@@ -31,26 +35,38 @@ const (
 	TestArrow
 )
 
+type ITestInterface interface {
+	Method1(pam1 lcl.IObject, param2 string, param3 TTestStruct, param4 lclTypes.TRect) lcl.IPanel
+	Method2(pam1 lcl.IObject, param2 string, param3 TTestStruct, param4 lclTypes.TRect) lcl.IPanel
+}
+
 type TTestStruct struct {
 	Name string
 	Age  int
 }
 
-type TTestEvent func(pam1 int32, param2 string) string
-
 func TestCreateMethod(t *testing.T) {
-	ts := FindType(testTestFilePath, "TTestEvent")
-	if ts == nil {
-		t.Fatal("ts is nil")
-	}
-	fnc, ok := ts.Type.(*ast.FuncType)
-	if !ok {
-		t.Fatal("ts.Type is not *ast.FuncType")
-	}
-	code, _ := CreateMethod(testTestFilePath, "TTestStruct", "NewTestStruct", fnc.Params, fnc.Results)
+	code, _ := CreateMethod(testTestFilePath, func(file *ast.File) {
+		newMethod := &ast.FuncDecl{
+			Recv: &ast.FieldList{
+				List: []*ast.Field{{
+					Names: []*ast.Ident{ast.NewIdent("m")},
+					Type:  &ast.StarExpr{X: ast.NewIdent("NewIdent")},
+				}},
+			},
+			Name: ast.NewIdent("NewMethod"),
+			Type: &ast.FuncType{},
+			Body: &ast.BlockStmt{},
+		}
+		file.Decls = append(file.Decls, newMethod)
+		file.Imports = append(file.Imports, &ast.ImportSpec{})
+	})
 	t.Log(string(code))
-	code = DeleteMethod(testTestFilePath, "TTestStruct", "NewTestStruct")
-	t.Log(string(code))
+	//ast.Ident
+	//ast.SelectorExpr
+
+	//code = DeleteMethod(testTestFilePath, "TTestStruct", "NewTestStruct")
+	//t.Log(string(code))
 }
 
 func TestUpdateRecvMethodByTypeName(t *testing.T) {
@@ -61,7 +77,7 @@ func TestUpdateRecvMethodByTypeName(t *testing.T) {
 
 func TestFindRecvMethod(t *testing.T) {
 	var funcs []TFuncInfo
-	FindRecvMethod(testTestFilePath, "TTestStruct", func(funcDecl *ast.FuncDecl) {
+	FindRecvMethod(testTestFilePath, "TTestEvent", func(funcDecl *ast.FuncDecl) {
 		name := funcDecl.Name.Name
 		params := funcDecl.Type.Params
 		results := funcDecl.Type.Results
@@ -74,4 +90,51 @@ func TestFindRecvMethod(t *testing.T) {
 		funcs = append(funcs, funcInfo)
 	})
 	t.Log(funcs)
+}
+
+func TestFixFieldList(t *testing.T) {
+
+	GLCLFuncTypeAliases := GetAllFuncTypeAliases(testTestFilePath)
+	GLCLFuncTypeAliases.Mod = "lcl"
+	GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
+
+	funcType := GLCLFuncTypeAliases.Funcs.Get("TAlignPositionEvent")
+
+	code, err := CreateMethod(testTestFilePath, func(file *ast.File) {
+		currImports := PackageImportToHashMap(file.Imports) // 当前包
+		allImports := tool.NewHashMap[string, string]()     // 所有包
+		addImports := tool.NewHashMap[string, string]()     // 添加包
+		GLCLFuncTypeAliases.Imports.Iterate(func(key string, value string) bool {
+			allImports.Add(key, value)
+			return false
+		})
+		currImports.Iterate(func(key string, value string) bool {
+			allImports.Add(key, value)
+			return false
+		})
+		// 可能添加的新导入包
+		params := FixFieldList(allImports, currImports, addImports, GLCLFuncTypeAliases.Mod, funcType.Params)
+		results := FixFieldList(allImports, currImports, addImports, GLCLFuncTypeAliases.Mod, funcType.Results)
+		newMethod := &ast.FuncDecl{
+			Recv: &ast.FieldList{
+				List: []*ast.Field{{
+					Names: []*ast.Ident{ast.NewIdent("m")},
+					Type:  &ast.StarExpr{X: ast.NewIdent("NewFormName")},
+				}},
+			},
+			Name: ast.NewIdent("NewEventName"),
+			Type: &ast.FuncType{
+				Params:  params,
+				Results: results,
+			},
+			Body: &ast.BlockStmt{},
+		}
+		file.Decls = append(file.Decls, newMethod)
+
+		addImports.Iterate(func(alias string, pkgPath string) bool {
+			file.Imports = append(file.Imports, CreateImport(alias, pkgPath))
+			return false
+		})
+	})
+	t.Log(string(code), err)
 }

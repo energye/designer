@@ -19,7 +19,9 @@ import (
 	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project"
+	"go/ast"
 	"os"
 	"path/filepath"
 )
@@ -91,7 +93,7 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	case consts.EsAdd:
 		// > A
 		// 生成绑定事件
-		funcType := dependmod.GetLCLFuncTypeAlias(nodeData.Metadata.Type)
+		funcType := dependmod.GLCLFuncTypeAliases.Funcs.Get(nodeData.Metadata.Type)
 		if funcType == nil {
 			logs.Error("doUpdateEvent 获取函数类型别名返回 nil")
 		} else {
@@ -100,8 +102,47 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 				logs.Error("doUpdateEvent 获取代码文件信息失败.", err.Error())
 				return
 			}
+
+			funcTypeAliases := dependmod.GLCLFuncTypeAliases
 			// 创建新方法
-			newCode, err := dast.CreateMethod(goUserFilePath, formName, bindEventFuncName, funcType.Params, funcType.Results)
+			newCode, err := dast.CreateMethod(goUserFilePath, func(file *ast.File) {
+				currImports := dast.PackageImportToHashMap(file.Imports) // 当前包
+				allImports := tool.NewHashMap[string, string]()          // 所有包
+				addImports := tool.NewHashMap[string, string]()          // 添加包
+				// 合并包
+				funcTypeAliases.Imports.Iterate(func(key string, value string) bool {
+					allImports.Add(key, value)
+					return false
+				})
+				// 合并包
+				currImports.Iterate(func(key string, value string) bool {
+					allImports.Add(key, value)
+					return false
+				})
+				// 修改参数和返回值
+				params := dast.FixFieldList(allImports, currImports, addImports, funcTypeAliases.Mod, funcType.Params)
+				results := dast.FixFieldList(allImports, currImports, addImports, funcTypeAliases.Mod, funcType.Results)
+				newMethod := &ast.FuncDecl{
+					Recv: &ast.FieldList{
+						List: []*ast.Field{{
+							Names: []*ast.Ident{ast.NewIdent("m")},
+							Type:  &ast.StarExpr{X: ast.NewIdent(formName)},
+						}},
+					},
+					Name: ast.NewIdent(bindEventFuncName),
+					Type: &ast.FuncType{
+						Params:  params,
+						Results: results,
+					},
+					Body: &ast.BlockStmt{},
+				}
+				file.Decls = append(file.Decls, newMethod)
+				// 添加导入包
+				addImports.Iterate(func(alias string, pkgPath string) bool {
+					file.Imports = append(file.Imports, dast.CreateImport(alias, pkgPath))
+					return false
+				})
+			})
 			if err != nil {
 				logs.Error("doUpdateEvent 创建方法失败.", bindEventFuncName, err.Error())
 				return

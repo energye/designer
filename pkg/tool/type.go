@@ -1,10 +1,24 @@
+// Copyright © yanghy. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+
 package tool
 
 import (
 	"sort"
 )
 
-type null struct{}
+// Null 空结构体
+type Null struct{}
 
 type Array[T comparable] struct {
 	values []T
@@ -15,8 +29,8 @@ type ArrayMap[K, T comparable] struct {
 	values map[K]T
 }
 
-type HashSet struct {
-	values map[string]null
+type HashSet[T comparable] struct {
+	values map[T]Null
 }
 
 type ArraySet struct {
@@ -58,50 +72,37 @@ func (m *Array[T]) Values() []T {
 	return m.values
 }
 
-func NewHashSet() *HashSet {
-	return &HashSet{values: make(map[string]null)}
+func NewHashSet[T comparable]() *HashSet[T] {
+	return &HashSet[T]{values: make(map[T]Null)}
 }
 
-func NewHashSetByValues(values ...string) *HashSet {
-	result := &HashSet{values: make(map[string]null)}
+func NewHashSetByValues[T comparable](values ...T) *HashSet[T] {
+	result := &HashSet[T]{values: make(map[T]Null)}
 	result.Add(values...)
 	return result
 }
 
-func (m *HashSet) Values() (values []string) {
+func (m *HashSet[T]) Values() (values []T) {
 	for key, _ := range m.values {
 		values = append(values, key)
 	}
 	return
 }
 
-func (m *HashSet) Contains(key string) bool {
+func (m *HashSet[T]) Contains(key T) bool {
 	if _, ok := m.values[key]; ok {
 		return ok
 	}
 	return false
 }
 
-func (m *HashSet) ContainsPrefix(key string) bool {
-	l := len(key)
-	for tmpKey, _ := range m.values {
-		tl := len(tmpKey)
-		if l >= tl {
-			if key[:tl] == tmpKey {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func (m *HashSet) Add(value ...string) {
+func (m *HashSet[T]) Add(value ...T) {
 	for _, v := range value {
-		m.values[v] = null{}
+		m.values[v] = Null{}
 	}
 }
 
-func (m *HashSet) Iterate(fn func(key string) bool) {
+func (m *HashSet[T]) Iterate(fn func(key T) bool) {
 	for key, _ := range m.values {
 		if fn(key) {
 			break
@@ -233,13 +234,15 @@ func (m *HashMap[K, T]) ContainsKey(key K) bool {
 	return false
 }
 
-func (m *HashMap[K, T]) ContainsValue(value T) bool {
-	for _, val := range m.values {
+func (m *HashMap[K, T]) ContainsValue(value T) (key K, ok bool) {
+	for k, val := range m.values {
 		if val == value {
-			return true
+			key = k
+			ok = true
+			return
 		}
 	}
-	return false
+	return
 }
 
 func (m *HashMap[K, T]) Add(key K, value T) {

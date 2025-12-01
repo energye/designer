@@ -36,10 +36,10 @@ const (
 
 // 窗体数据
 type TFormData struct {
-	BaseInfo    *TBaseInfo      // 基础信息
-	PackageName string          // 包名
-	Imports     *tool.HashSet   // 导入包
-	Form        *TComponentData // 窗体根组件节点
+	BaseInfo    *TBaseInfo            // 基础信息
+	PackageName string                // 包名
+	Imports     *tool.HashSet[string] // 导入包
+	Form        *TComponentData       // 窗体根组件节点
 }
 
 // 组件数据

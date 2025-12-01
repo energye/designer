@@ -95,8 +95,8 @@ func SetToString(value any) string {
 
 // SetToHashSet
 // 该函数将Set类型转换为HashSet
-func SetToHashSet(value any) *HashSet {
-	hashSet := NewHashSet()
+func SetToHashSet(value any) *HashSet[string] {
+	hashSet := NewHashSet[string]()
 	set := strings.Split(SetToString(value), ",")
 	for _, v := range set {
 		if v != "" {

@@ -78,7 +78,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 
 // 构建自动代码模板数据
 func buildAutoTemplateData(component *bean.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet[string]()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,

@@ -14,6 +14,7 @@
 package dependmod
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
@@ -42,20 +43,30 @@ func InitDependencyModule() {
 func initModuleTypeInfo() {
 	// LCL 模块的事件回调函数类型
 	lclSRCEventDef := filepath.Join(config.Config.FrameworkDirForLCL(), "lcl", "callback_event_def.go")
-	gLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
+	GLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
+	GLCLFuncTypeAliases.Mod = "lcl"
+	GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
 
 	// CEF 模块的事件回调函数类型
 	cefSRCEventDef := filepath.Join(config.Config.FrameworkDirForCEF(), "cef", "callback_event_def.go")
-	gCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef)
+	GCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef)
+	GCEFFuncTypeAliases.Mod = "cef"
+	GCEFFuncTypeAliases.Imports.Add(GCEFFuncTypeAliases.Mod, consts.DmCEF)
 
 	// WV 模块的事件回调函数类型
 	// Windows
 	wvWindowsSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "windows", "callback_event_def.go")
-	gWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliases(wvWindowsSRCEventDef)
+	GWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliases(wvWindowsSRCEventDef)
+	GWVWindowsFuncTypeAliases.Mod = "wv"
+	GWVWindowsFuncTypeAliases.Imports.Add(GWVWindowsFuncTypeAliases.Mod, consts.DmWVWindows)
 	//  macOS
 	wvDarwinSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "darwin", "callback_event_def.go")
-	gWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliases(wvDarwinSRCEventDef)
+	GWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliases(wvDarwinSRCEventDef)
+	GWVDarwinFuncTypeAliases.Mod = "wv"
+	GWVDarwinFuncTypeAliases.Imports.Add(GWVDarwinFuncTypeAliases.Mod, consts.DmWVMacOS)
 	// Linux
 	wvLinuxSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "linux", "callback_event_def.go")
-	gWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliases(wvLinuxSRCEventDef)
+	GWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliases(wvLinuxSRCEventDef)
+	GWVLinuxFuncTypeAliases.Mod = "wv"
+	GWVLinuxFuncTypeAliases.Imports.Add(GWVLinuxFuncTypeAliases.Mod, consts.DmWVLinux)
 }

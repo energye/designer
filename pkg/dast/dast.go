@@ -22,12 +22,17 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 var astMap *tool.HashMap[string, *ast.File]
 
 func init() {
 	astMap = tool.NewHashMap[string, *ast.File]()
+	// 初始化内置类型
+	initBuiltinTypesMap()
 }
 
 func MustFile(filename string, src any) *ast.File {
@@ -65,13 +70,37 @@ func FindFunction(filename string, functionName string) *ast.FuncDecl {
 	return nil
 }
 
+type TFuncTypeAlias struct {
+	Mod     string
+	Imports *tool.HashMap[string, string]
+	Funcs   *tool.HashMap[string, *ast.FuncType]
+}
+
+func PackageImportToHashMap(importSpec []*ast.ImportSpec) *tool.HashMap[string, string] {
+	imports := tool.NewHashMap[string, string]()
+	for _, spec := range importSpec {
+		name := ""
+		importPath := ""
+		if spec.Name != nil {
+			name = spec.Name.Name
+		}
+		importPath = strings.Trim(spec.Path.Value, "\"")
+		if name == "" {
+			name = filepath.Base(importPath)
+		}
+		imports.Add(name, importPath)
+	}
+	return imports
+}
+
 // GetAllFuncTypeAliases 在Go源文件中获取所有函数类型别名
-func GetAllFuncTypeAliases(filename string) *tool.HashMap[string, *ast.FuncType] {
+func GetAllFuncTypeAliases(filename string) *TFuncTypeAlias {
 	node := MustFile(filename, nil)
 	if node == nil {
 		return nil
 	}
-	result := tool.NewHashMap[string, *ast.FuncType]()
+	funcs := &TFuncTypeAlias{Funcs: tool.NewHashMap[string, *ast.FuncType]()}
+	funcs.Imports = PackageImportToHashMap(node.Imports)
 	for _, decl := range node.Decls {
 		genDecl, ok := decl.(*ast.GenDecl)
 		if !ok || genDecl.Tok != token.TYPE {
@@ -86,10 +115,10 @@ func GetAllFuncTypeAliases(filename string) *tool.HashMap[string, *ast.FuncType]
 			if !ok {
 				continue
 			}
-			result.Add(typeSpec.Name.Name, funcType)
+			funcs.Funcs.Add(typeSpec.Name.Name, funcType)
 		}
 	}
-	return result
+	return funcs
 }
 
 // FindConst 查找常量声明
@@ -214,24 +243,10 @@ func DeleteMethod(filename string, typeName string, methodName string) []byte {
 //
 //	[]byte - 格式化后的源码字节流
 //	error - 格式化过程中可能产生的错误
-func CreateMethod(filename string, typeName string, methodName string, params *ast.FieldList, returns *ast.FieldList) ([]byte, error) {
+func CreateMethod(filename string, callback func(file *ast.File)) ([]byte, error) {
 	fset := token.NewFileSet()
 	node, _ := parser.ParseFile(fset, filename, nil, parser.ParseComments)
-	newMethod := &ast.FuncDecl{
-		Recv: &ast.FieldList{
-			List: []*ast.Field{{
-				Names: []*ast.Ident{ast.NewIdent("m")},
-				Type:  &ast.StarExpr{X: ast.NewIdent(typeName)},
-			}},
-		},
-		Name: ast.NewIdent(methodName),
-		Type: &ast.FuncType{
-			Params:  params,
-			Results: returns,
-		},
-		Body: &ast.BlockStmt{},
-	}
-	node.Decls = append(node.Decls, newMethod)
+	callback(node)
 	var buf bytes.Buffer
 	err := format.Node(&buf, fset, node)
 	return buf.Bytes(), err
@@ -245,4 +260,133 @@ func GetConstValue(filename string, name string) any {
 		return ident.Obj.Data
 	}
 	return nil
+}
+
+var (
+	// 内置类型
+	builtinTypesMap = tool.NewHashMap[string, struct{}]()
+)
+
+// 初始化内置类型
+func initBuiltinTypesMap() {
+	builtinTypesMap.Add("bool", struct{}{})
+	builtinTypesMap.Add("int", struct{}{})
+	builtinTypesMap.Add("int8", struct{}{})
+	builtinTypesMap.Add("int16", struct{}{})
+	builtinTypesMap.Add("int32", struct{}{})
+	builtinTypesMap.Add("int64", struct{}{})
+	builtinTypesMap.Add("uint", struct{}{})
+	builtinTypesMap.Add("uint8", struct{}{})
+	builtinTypesMap.Add("uint16", struct{}{})
+	builtinTypesMap.Add("uint32", struct{}{})
+	builtinTypesMap.Add("uint64", struct{}{})
+	builtinTypesMap.Add("uintptr", struct{}{})
+	builtinTypesMap.Add("byte", struct{}{})
+	builtinTypesMap.Add("rune", struct{}{})
+	builtinTypesMap.Add("float32", struct{}{})
+	builtinTypesMap.Add("float64", struct{}{})
+	builtinTypesMap.Add("complex64", struct{}{})
+	builtinTypesMap.Add("complex128", struct{}{})
+	builtinTypesMap.Add("string", struct{}{})
+	builtinTypesMap.Add("interface", struct{}{})
+	builtinTypesMap.Add("any", struct{}{})
+	builtinTypesMap.Add("chan", struct{}{})
+	builtinTypesMap.Add("map", struct{}{})
+	builtinTypesMap.Add("func", struct{}{})
+}
+
+// IsBuiltinTypeName 简单的判断类型名是否为内置类型
+func IsBuiltinTypeName(typeName string) bool {
+	if x := strings.LastIndex(typeName, "*"); x != -1 {
+		typeName = typeName[x+1:]
+	}
+	return builtinTypesMap.ContainsKey(typeName)
+}
+
+// FixFieldList 用于修复字段列表中的类型引用问题，确保非内置类型的字段正确地加上包前缀。
+// 同时处理已存在或缺失的导入项，并更新字段类型表达式。
+//
+//   - allImports: 所有可用的导入映射，键为包名，值为包路径。
+//   - currImports: 当前文件中已经存在的导入项。
+//   - addImports: 需要新增的导入项集合。
+//   - mod: 当前模块名称（通常作为包前缀使用）。
+//   - fieldList: 原始的字段列表。
+//
+// 返回值：
+//   - newFieldList: 修复后的字段列表，其中类型引用已被修正。
+func FixFieldList(allImports, currImports, addImports *tool.HashMap[string, string], mod string, fieldList *ast.FieldList) (newFieldList *ast.FieldList) {
+	if fieldList == nil {
+		return
+	}
+	newFieldList = &ast.FieldList{
+		Opening: fieldList.Opening,
+		List:    nil,
+		Closing: fieldList.Closing,
+	}
+	for _, field := range fieldList.List {
+		newField := &ast.Field{
+			Doc:     field.Doc,
+			Names:   field.Names,
+			Type:    nil,
+			Tag:     field.Tag,
+			Comment: field.Comment,
+		}
+		newFieldList.List = append(newFieldList.List, newField)
+		nameIdent := field.Names[0]
+		_ = nameIdent
+		if typeIdent, ok := field.Type.(*ast.Ident); ok {
+			typeName := typeIdent.Name // 参数类型名
+			// 判断参数类型是否 Go 内置类型, 如果不是则使用当前模块的包
+			if !IsBuiltinTypeName(typeName) {
+				if !currImports.ContainsKey(mod) {
+					packageImport := allImports.Get(mod)
+					addImports.Add("", packageImport)
+				}
+				// 字段类型加个包声明
+				newField.Type = &ast.SelectorExpr{
+					X:   ast.NewIdent(mod),
+					Sel: ast.NewIdent(typeName),
+				}
+			}
+		} else if typeStarExpr, ok := field.Type.(*ast.StarExpr); ok {
+			tempType := field.Type
+			if selectorExprX, ok := typeStarExpr.X.(*ast.SelectorExpr); ok {
+				if identX, ok := selectorExprX.X.(*ast.Ident); ok {
+					if !currImports.ContainsKey(identX.Name) {
+						// 不存在，准备添加，但需要判断一下，除了有别名以外，导入的包路径是否相同，如果包路径相同，将type改为原有的
+						packageImport := allImports.Get(identX.Name)
+						if pkg, ok := currImports.ContainsValue(packageImport); ok {
+							// 导入包路径是相同的, 修改 type
+							tempType = &ast.SelectorExpr{
+								X:   ast.NewIdent(pkg),
+								Sel: ast.NewIdent(selectorExprX.Sel.Name),
+							}
+						} else {
+							addImports.Add("", packageImport)
+						}
+					}
+				}
+			}
+			newField.Type = tempType
+		}
+	}
+
+	return
+}
+
+// CreateImport 创建一个导入项
+func CreateImport(alias, pkgPath string) *ast.ImportSpec {
+	if pkgPath == "" {
+		return nil
+	}
+	importSpec := &ast.ImportSpec{
+		Path: &ast.BasicLit{
+			Kind:  token.STRING,
+			Value: strconv.Quote(pkgPath), // 自动添加双引号，符合 Go 语法
+		},
+	}
+	if alias != "" {
+		importSpec.Name = ast.NewIdent(alias)
+	}
+	return importSpec
 }

@@ -14,6 +14,7 @@
 package dependmod
 
 import (
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/tool"
 	"go/ast"
 )
@@ -22,21 +23,11 @@ import (
 // key: 函数类型别名
 // value: 函数类型别名对应的AST节点
 var (
-	gLCLFuncTypeAliases       = tool.NewHashMap[string, *ast.FuncType]()
-	gCEFFuncTypeAliases       = tool.NewHashMap[string, *ast.FuncType]()
-	gWVWindowsFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
-	gWVDarwinFuncTypeAliases  = tool.NewHashMap[string, *ast.FuncType]()
-	gWVLinuxFuncTypeAliases   = tool.NewHashMap[string, *ast.FuncType]()
+	GLCLFuncTypeAliases       *dast.TFuncTypeAlias
+	GCEFFuncTypeAliases       *dast.TFuncTypeAlias
+	GWVWindowsFuncTypeAliases *dast.TFuncTypeAlias
+	GWVDarwinFuncTypeAliases  *dast.TFuncTypeAlias
+	GWVLinuxFuncTypeAliases   *dast.TFuncTypeAlias
 	// 全部
 	gAllFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
 )
-
-// GetLCLFuncTypeAlias 根据名称获取LCL函数类型别名的AST节点
-//
-//	name - 要查找的函数类型别名名称
-func GetLCLFuncTypeAlias(name string) *ast.FuncType {
-	if gLCLFuncTypeAliases == nil {
-		return nil
-	}
-	return gLCLFuncTypeAliases.Get(name)
-}
