@@ -141,6 +141,14 @@ func (m *TDesigningComponent) GetName() string {
 	return name
 }
 
+func (m *TDesigningComponent) GetMod() string {
+	if m.mod == "" {
+		// 默认 LCL
+		m.mod = consts.ModLCL
+	}
+	return m.mod
+}
+
 // 更新组件树节点信息
 // 在设计组件属性修改后同步修改组件树节点可见值
 func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeData) error {

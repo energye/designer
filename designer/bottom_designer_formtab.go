@@ -43,7 +43,7 @@ type FormTab struct {
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	componentMenu *TComponentMenu      // 组件菜单
 	recover       *TRecoverForm        // 恢复模式
-	recvMethods   []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表
+	recvMethods   []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
 }
 
 // UIFile 返回UI文件名 xxx.ui

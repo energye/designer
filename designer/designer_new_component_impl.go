@@ -53,6 +53,7 @@ type TDesigningComponent struct {
 	eventTree      lcl.ILazVirtualStringTree // 查看器 组件事件树
 	isLoadProperty bool                      // 是否加载完成属性到属性列表
 	isLoadEvent    bool                      // 是否加载完成属性到事件列表
+	mod            string                    // 组件所属依赖模块, lcl, cef, wv
 }
 
 // 组件属性树状态

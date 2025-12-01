@@ -19,6 +19,7 @@ import (
 	"go/format"
 	"go/token"
 	"log"
+	"strings"
 )
 
 // 函数信息
@@ -54,6 +55,14 @@ func ParseFields(fieldList *ast.FieldList) []TFieldInfo {
 	for _, field := range fieldList.List {
 		// 解析类型字符串
 		typStr := exprToString(field.Type)
+		_, isPtr := field.Type.(*ast.StarExpr)
+		if typStrIdx := strings.LastIndex(typStr, "."); typStrIdx != -1 {
+			// 去除包声明
+			typStr = typStr[typStrIdx+1:]
+			if isPtr {
+				typStr = "*" + typStr
+			}
+		}
 		if len(field.Names) == 0 {
 			// 无名称场景（如返回值 `(int, string)` 或参数 `func(int)`）
 			items = append(items, TFieldInfo{

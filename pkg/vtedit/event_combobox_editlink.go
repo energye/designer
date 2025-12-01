@@ -15,6 +15,8 @@ package vtedit
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer/dependmod"
+	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -103,7 +105,25 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 	}
 	methods := m.BindData.AffiliatedComponent.GetRecvMethods()
 	if methods != nil {
-		// TODO 过滤匹配出符合的事件类型方法
+		// 过滤匹配出符合的事件类型方法
+		methodType := m.BindData.EditNodeData.Metadata.Type
+		funcTypeAliases := dependmod.GetFuncTypeAliases(m.BindData.AffiliatedComponent.GetMod())
+		if funcTypeAliases != nil {
+			if funcType := funcTypeAliases.Funcs.Get(methodType); funcType != nil {
+				// 得到参数和返回值列表与 GetRecvMethods 匹配过滤
+				funcInfo := &dast.TFuncInfo{
+					Params:  dast.ParseFields(funcType.Params),
+					Results: dast.ParseFields(funcType.Results),
+				}
+				var tempMethods []*dast.TFuncInfo
+				for _, method := range methods {
+					if dast.IsFuncInfoMatch(method, funcInfo) {
+						tempMethods = append(tempMethods, method)
+					}
+				}
+				methods = tempMethods
+			}
+		}
 		for _, method := range methods {
 			comboBoxValue = append(comboBoxValue, &TEditLinkNodeData{StringValue: method.Name})
 		}

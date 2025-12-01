@@ -14,6 +14,7 @@
 package dependmod
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/tool"
 	"go/ast"
@@ -31,3 +32,19 @@ var (
 	// 全部
 	gAllFuncTypeAliases = tool.NewHashMap[string, *ast.FuncType]()
 )
+
+func GetFuncTypeAliases(mod consts.Mod) *dast.TFuncTypeAlias {
+	switch mod {
+	case consts.ModLCL:
+		return GLCLFuncTypeAliases
+	case consts.ModCEF:
+		return GCEFFuncTypeAliases
+	case consts.ModWVWindows:
+		return GWVWindowsFuncTypeAliases
+	case consts.ModWVDarwin:
+		return GWVDarwinFuncTypeAliases
+	case consts.ModWVLinux:
+		return GWVLinuxFuncTypeAliases
+	}
+	return nil
+}

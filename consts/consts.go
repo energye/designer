@@ -156,6 +156,17 @@ const (
 	DmWidget DependencyModule = "github.com/energye/widget"
 )
 
+// 模块类型
+type Mod = string
+
+const (
+	ModLCL       Mod = "lcl"
+	ModCEF       Mod = "cef"
+	ModWVWindows Mod = "wvWindows"
+	ModWVDarwin  Mod = "wvDarwin"
+	ModWVLinux   Mod = "wvLinux"
+)
+
 // TEventState 组件属性-事件属性绑定状态
 type TEventState int32
 

@@ -189,6 +189,7 @@ type IDesigningComponent interface {
 	GetRecvMethods() []*dast.TFuncInfo
 	GetClassName() string
 	GetName() string
+	GetMod() string
 }
 
 // 编辑的节点数据

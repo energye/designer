@@ -257,7 +257,6 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 				*cellText = data.EditNodeData.Name
 			} else if column == 1 {
 				*cellText = data.EditStringValue()
-				//data.EditNodeData.ComboBoxValue// 使用组合框的值
 			}
 		}
 	})
