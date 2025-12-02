@@ -221,46 +221,52 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 
 func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
 	//logs.Debug("IsDesignMsg", message.Msg)
-	//isDesign := sender.ComponentState().In(types.CsDesigning)
-	result := true
-	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
-	//_ = dispatchMsg
-	//sender.Dispatch(dispatchMsg)
-	switch message.Msg {
-	case messages.LM_PAINT:
-		//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
-		//m.paint(sender, paint)
-	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
-		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-		m.mouseDown(sender, key)
-	case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
-		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-		m.mouseUp(sender, key)
-	case messages.LM_MOUSEMOVE:
-		mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-		m.mouseMove(sender, mouse)
-	case messages.LM_SIZE:
-		size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
-		m.size(sender, size)
-	case messages.LM_MOVE:
-		move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
-		m.move(sender, move)
-	case messages.LM_ACTIVATE:
-		//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
-	case messages.LM_CLOSEQUERY:
-		//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
-	case messages.LM_SETCURSOR:
-		m.setCursor(sender, message)
-	case messages.LM_CONTEXTMENU:
-		logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
-		contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
-		m.popupMenu(sender, contextMenu)
-	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-		logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
-	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-		logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
-	default:
-		result = false
+	result := false
+	isDesign := sender.ComponentState().In(types.CsDesigning)
+	if isDesign {
+		result = true
+		dispatchMsg := (*uintptr)(unsafe.Pointer(message))
+		switch message.Msg {
+		case messages.LM_PAINT:
+			println("paint")
+			sender.Dispatch(dispatchMsg)
+			//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
+			//println(isDesign, message.Msg == messages.LM_PAINT, paint.DC, sender.Name())
+			//m.paint(sender, paint)
+		case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
+			println("down")
+			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+			m.mouseDown(sender, key)
+		case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
+			println("up")
+			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+			m.mouseUp(sender, key)
+		case messages.LM_MOUSEMOVE:
+			println("move")
+			mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+			m.mouseMove(sender, mouse)
+		case messages.LM_SIZE:
+			println("size")
+			size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
+			m.size(sender, size)
+		case messages.LM_MOVE:
+			move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
+			m.move(sender, move)
+		case messages.LM_ACTIVATE:
+			//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
+		case messages.LM_CLOSEQUERY:
+			//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
+		case messages.LM_SETCURSOR:
+			m.setCursor(sender, message)
+		case messages.LM_CONTEXTMENU:
+			logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
+			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
+			m.popupMenu(sender, contextMenu)
+		case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
+			logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
+		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
+			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
+		}
 	}
 	return result
 }
