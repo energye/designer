@@ -140,26 +140,47 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	if toolbar.selectComponent != nil && isAcceptsControl {
 		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
 		m.switchComponentEditing(m.FormRoot)
-		// 获取注册的组件创建函数
-		if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
+
+		if newDesComp := GetDesignerComponent(m, x, y, toolbar.selectComponent.name); newDesComp != nil {
 			// 创建设计组件
-			newComp := create(m, x, y)
-			newComp.SetParent(owner)
-			newComp.FormTab.switchComponentEditing(newComp)
-			newComp.DragEnd()
+			newDesComp.SetParent(owner)
+			newDesComp.FormTab.switchComponentEditing(newDesComp)
+			newDesComp.DragEnd()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
-			newComp.LoadPropertyToInspector()
+			newDesComp.LoadPropertyToInspector()
 			// 2. 添加到组件树
 			go lcl.RunOnMainThreadAsync(func(id uint32) {
-				owner.AddChild(newComp)
-				newComp.node.SetSelected(true) // 选中
+				owner.AddChild(newDesComp)
+				newDesComp.node.SetSelected(true) // 选中
 			})
 			// 放置对象创建全量UI
-			triggerUIGeneration(newComp, nil, event.CodeGenUI)
+			triggerUIGeneration(newDesComp, nil, event.CodeGenUI)
 		} else {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
+
+		// 获取注册的组件创建函数
+		//if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
+		//	// 创建设计组件
+		//	newComp := create(m, x, y)
+		//	newComp.SetParent(owner)
+		//	newComp.FormTab.switchComponentEditing(newComp)
+		//	newComp.DragEnd()
+		//	// 1. 加载属性到设计器
+		//	// 此步骤会初始化并填充设计组件实例
+		//	newComp.LoadPropertyToInspector()
+		//	// 2. 添加到组件树
+		//	go lcl.RunOnMainThreadAsync(func(id uint32) {
+		//		owner.AddChild(newComp)
+		//		newComp.node.SetSelected(true) // 选中
+		//	})
+		//	// 放置对象创建全量UI
+		//	triggerUIGeneration(newComp, nil, event.CodeGenUI)
+		//} else {
+		//	logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
+		//}
+
 		// 重置工具栏选项卡上的组件工具按钮按下
 		toolbar.ResetTabComponentDown()
 		return true

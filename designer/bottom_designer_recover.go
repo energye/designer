@@ -78,18 +78,30 @@ func (m *FormTab) Recover() {
 // 恢复设计的子组件
 func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
 	for _, child := range childList {
-		if create := GetRegisterComponent(child.ClassName); create != nil {
-			newComp := create(parent.FormTab, 0, 0)
-			newComp.SetParent(parent)
+		if newDesComp := GetDesignerComponent(parent.FormTab, 0, 0, child.ClassName); newDesComp != nil {
+			newDesComp.SetParent(parent)
 			// 1. 加载属性
-			newComp.GetProps()
+			newDesComp.GetProps()
 			// 2. 恢复组件属性
-			recoverDesignerComponentProperty(child.Properties, newComp)
+			recoverDesignerComponentProperty(child.Properties, newDesComp)
 			// 3. 添加到组件树
-			parent.AddChild(newComp)
+			parent.AddChild(newDesComp)
 			// 恢复子组件
-			recoverDesignerChildComponent(child.Child, newComp)
+			recoverDesignerChildComponent(child.Child, newDesComp)
 		}
+
+		//if create := GetRegisterComponent(child.ClassName); create != nil {
+		//	newComp := create(parent.FormTab, 0, 0)
+		//	newComp.SetParent(parent)
+		//	// 1. 加载属性
+		//	newComp.GetProps()
+		//	// 2. 恢复组件属性
+		//	recoverDesignerComponentProperty(child.Properties, newComp)
+		//	// 3. 添加到组件树
+		//	parent.AddChild(newComp)
+		//	// 恢复子组件
+		//	recoverDesignerChildComponent(child.Child, newComp)
+		//}
 	}
 }
 

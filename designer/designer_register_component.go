@@ -157,7 +157,7 @@ func initRegisterComponent2() {
 	AddRegisterComponent("TPageControl", NewLCLVisualRegisterComponent(lcl.NewPageControl))
 	AddRegisterComponent("THeaderControl", NewLCLVisualRegisterComponent(lcl.NewHeaderControl))
 	AddRegisterComponent("TImageList", NewLCLNonVisualRegisterComponent(lcl.NewImageList))
-	AddRegisterComponent("TPopupNotifier", NewLCLVisualRegisterComponent(lcl.NewPopupNotifier))
+	AddRegisterComponent("TPopupNotifier", NewLCLNonVisualRegisterComponent(lcl.NewPopupNotifier))
 	AddRegisterComponent("TDateTimePicker", NewLCLVisualRegisterComponent(lcl.NewDateTimePicker))
 	AddRegisterComponent("TRichMemo", NewLCLVisualRegisterComponent(lcl.NewRichMemo))
 

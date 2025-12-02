@@ -110,8 +110,7 @@ func (m *TEditNodeData) Build() {
 			if methods == nil {
 				logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 			}
-			var properties []lcl.ComponentProperties
-			properties = lcl.DesigningComponent().GetComponentProperties(object)
+			properties := lcl.DesigningComponent().GetComponentProperties(object)
 			m.EditNodeData.Class.Count = int32(len(properties))
 			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
 			for _, prop := range properties {

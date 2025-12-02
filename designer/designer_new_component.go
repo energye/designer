@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
+	"reflect"
 )
 
 // 组件设计创建管理
@@ -146,34 +147,63 @@ func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesign
 	return m
 }
 
-// NewDesignerComponent 创建一个新的设计器组件
+// GetDesignerComponent 创建一个新的设计器组件
 // designerForm: 设计器表单对象，用于承载组件
 // x: 组件在表单中的横坐标位置
 // y: 组件在表单中的纵坐标位置
 // component: 注册组件信息，包含组件的类型和其他元数据
-func NewDesignerComponent(designerForm *FormTab, x, y int32, component *TRegisterComponent) {
+func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *TDesigningComponent {
+	component := registerComponentsTest.Get(className)
 	if designerForm == nil || component == nil || x < 0 || y < 0 {
-		return
+		return nil
 	}
-	className := tool.RemoveT(component.ClassName)
+	fn := component.CreateFunc
+	method := reflect.ValueOf(fn)
+	if method.Kind() != reflect.Func {
+		return nil
+	}
+	var in []reflect.Value
+	compName := tool.RemoveT(className)
 	switch component.Type {
 	case consts.CtForm:
+		// TODO
+		_ = ""
 	case consts.CtVisual:
 		m := newVisualComponent(designerForm)
-
-		comp := lcl.NewPanel(designerForm.FormRoot.object)
-		comp.SetName(designerForm.GetComponentCaptionName(className))
-
+		m.mod = component.Mod
+		// NewXxx
+		in = []reflect.Value{reflect.ValueOf(designerForm.FormRoot.object)}
+		resultValues := method.Call(in)
+		// return
+		results := make([]any, len(resultValues))
+		for i, value := range resultValues {
+			results[i] = value.Interface()
+		}
+		// object
+		comp := results[0].(lcl.IControl)
+		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		setBaseProp(comp, x, y)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
 		m.SetObject(comp)
+		return m
 	case consts.CtNonVisual:
 		m := newNonVisualComponent(designerForm, x, y)
-		comp := lcl.NewPopupMenu(designerForm.FormRoot.object)
-		comp.SetName(designerForm.GetComponentCaptionName(className))
+		// NewXxx
+		in = []reflect.Value{reflect.ValueOf(designerForm.FormRoot.object)}
+		resultValues := method.Call(in)
+		// return
+		results := make([]any, len(resultValues))
+		for i, value := range resultValues {
+			results[i] = value.Interface()
+		}
+		// object
+		comp := results[0].(lcl.IComponent)
+		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
 		m.SetObject(comp)
+		return m
 	}
+	return nil
 }
