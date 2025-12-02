@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -38,6 +39,7 @@ func NewEditDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	comp := lcl.NewEdit(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
 	comp.SetText(comp.Name())
+	comp.SetReadOnly(true)
 	setBaseProp(comp, x, y)
 	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
@@ -112,6 +114,7 @@ func NewMemoDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
 	m := newVisualComponent(designerForm)
 	comp := lcl.NewMemo(designerForm.FormRoot.object)
 	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
+	comp.SetReadOnly(true)
 	setBaseProp(comp, x, y)
 	m.drag = newDrag(designerForm.scroll, consts.DsAll)
 	m.drag.SetRelation(m)
@@ -141,4 +144,36 @@ func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesign
 	m.drag.SetRelation(m)
 	m.SetObject(comp)
 	return m
+}
+
+// NewDesignerComponent 创建一个新的设计器组件
+// designerForm: 设计器表单对象，用于承载组件
+// x: 组件在表单中的横坐标位置
+// y: 组件在表单中的纵坐标位置
+// component: 注册组件信息，包含组件的类型和其他元数据
+func NewDesignerComponent(designerForm *FormTab, x, y int32, component *TRegisterComponent) {
+	if designerForm == nil || component == nil || x < 0 || y < 0 {
+		return
+	}
+	className := tool.RemoveT(component.ClassName)
+	switch component.Type {
+	case consts.CtForm:
+	case consts.CtVisual:
+		m := newVisualComponent(designerForm)
+
+		comp := lcl.NewPanel(designerForm.FormRoot.object)
+		comp.SetName(designerForm.GetComponentCaptionName(className))
+
+		setBaseProp(comp, x, y)
+		m.drag = newDrag(designerForm.scroll, consts.DsAll)
+		m.drag.SetRelation(m)
+		m.SetObject(comp)
+	case consts.CtNonVisual:
+		m := newNonVisualComponent(designerForm, x, y)
+		comp := lcl.NewPopupMenu(designerForm.FormRoot.object)
+		comp.SetName(designerForm.GetComponentCaptionName(className))
+		m.drag = newDrag(designerForm.scroll, consts.DsAll)
+		m.drag.SetRelation(m)
+		m.SetObject(comp)
+	}
 }

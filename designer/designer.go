@@ -327,4 +327,5 @@ func init() {
 	initConfigToolbar()
 	// 注册组件
 	initRegisterComponent()
+	initRegisterComponent2()
 }
