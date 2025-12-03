@@ -22,6 +22,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
 	uiBean "github.com/energye/designer/uigen/bean"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"sort"
@@ -65,9 +66,16 @@ type ComponentPropTreeState struct {
 // 设置组件模式为设计模式
 func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetComponentDesignMode(component, true)
-	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
 	lcl.DesigningComponent().SetComponentInlineMode(component, true)
-	lcl.DesigningComponent().SetWidgetSetDesigning(component)
+	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
+}
+
+func SetComponentDesignMode(component uintptr) {
+	api.SetComponentDesignMode(component, true)
+	api.SetComponentInlineMode(component, true)
+	api.SetComponentDesignInstanceMode(component, true)
+	api.SetWidgetSetDesigning(component)
 }
 
 func (m *TDesigningComponent) Free() {
@@ -168,6 +176,9 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	//comp.SetCursor(types.CrSize)
 	//comp.SetCaption(comp.Name())
 	//comp.SetShowHint(true)
+	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
+	//	lcl.AsCustomEdit(comp).SetReadOnly(false)
+	//}
 }
 
 // 返回当前组件实例指针
@@ -307,11 +318,8 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 func (m *TDesigningComponent) SetObject(object any) {
 	if m.ComponentType == consts.CtNonVisual {
 		m.objectNon = lcl.AsComponent(object)
-		//SetDesignMode(m.objectNonWrap.wrap)
-		SetDesignMode(m.objectNonWrap.icon) // 使用icon
 	} else {
 		m.object = lcl.AsWinControl(object)
-		SetDesignMode(m.object)
 	}
 	m.originObject = object
 }

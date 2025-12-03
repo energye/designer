@@ -53,7 +53,7 @@ func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent)
 }
 func (m *TNonVisualComponentWrap) Free() {
 	m.wrap.Free()
-	m.text.Free()
+	//m.text.Free() // 从父节点释放
 	m.icon.Free()
 	m.comp = nil
 }

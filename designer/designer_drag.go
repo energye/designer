@@ -330,10 +330,10 @@ func (m *drag) Follow() {
 // 设计组件鼠标移动
 func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState, X int32, Y int32) {
 	br := sender.BoundsRect()
-	hint := fmt.Sprintf(`%v
-	Left: %v Top: %v
-	Width: %v Height: %v`, sender.TreeName(), br.Left, br.Top, br.Width(), br.Height())
-	sender.SetHint(hint)
+	//hint := fmt.Sprintf(`%v
+	//Left: %v Top: %v
+	//Width: %v Height: %v`, sender.TreeName(), br.Left, br.Top, br.Width(), br.Height())
+	//message.Follow(hint)
 	if m.isDown {
 		m.Hide()
 		point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)

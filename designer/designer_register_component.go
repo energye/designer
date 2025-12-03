@@ -46,11 +46,11 @@ func initRegisterComponent() {
 
 // TRegisterComponent 注册组件信息
 type TRegisterComponent struct {
-	ClassName  string                    // 类名
-	CreateFunc any                       // 创建函数
-	Type       consts.ComponentType      // 类型
-	Mod        consts.Mod                // 模块
-	Default    tool.HashMap[string, any] // 默认属性, 反射调用API. key: 属性名, value: 属性值
+	ClassName string                    // 类名
+	Func      any                       // 创建函数
+	Type      consts.ComponentType      // 类型
+	Mod       consts.Mod                // 模块
+	Default   tool.HashMap[string, any] // 默认属性, 反射调用API. key: 属性名, value: 属性值
 }
 
 // 组件全局注册表
@@ -70,11 +70,11 @@ func AddRegisterComponent(key string, component *TRegisterComponent) {
 //   - type_: 组件类型，标识组件的分类
 //   - mod: 组件所属模块，定义组件的作用域
 //   - 返回值: 指向TRegisterComponent结构体的指针
-func NewRegisterComponent(createFunc any, type_ consts.ComponentType, mod consts.Mod) *TRegisterComponent {
+func NewRegisterComponent(func_ any, type_ consts.ComponentType, mod consts.Mod) *TRegisterComponent {
 	return &TRegisterComponent{
-		CreateFunc: createFunc,
-		Type:       type_,
-		Mod:        mod,
+		Func: func_,
+		Type: type_,
+		Mod:  mod,
 	}
 }
 
@@ -83,8 +83,8 @@ func NewRegisterComponent(createFunc any, type_ consts.ComponentType, mod consts
 //
 //   - createFunc: 组件创建函数，类型为any，用于实际创建组件实例
 //   - TRegisterComponent: 返回指向TRegisterComponent的指针，表示新创建的组件注册器
-func NewLCLVisualRegisterComponent(createFunc any) *TRegisterComponent {
-	return NewRegisterComponent(createFunc, consts.CtVisual, consts.ModLCL)
+func NewLCLVisualRegisterComponent(func_ any) *TRegisterComponent {
+	return NewRegisterComponent(func_, consts.CtVisual, consts.ModLCL)
 }
 
 // NewLCLNonVisualRegisterComponent 创建一个新的非可视化组件注册器
@@ -92,8 +92,8 @@ func NewLCLVisualRegisterComponent(createFunc any) *TRegisterComponent {
 //
 //   - createFunc: 组件创建函数，可以是任何类型的函数
 //   - TRegisterComponent: 返回一个新的组件注册器指针，用于后续的组件注册操作
-func NewLCLNonVisualRegisterComponent(createFunc any) *TRegisterComponent {
-	return NewRegisterComponent(createFunc, consts.CtNonVisual, consts.ModLCL)
+func NewLCLNonVisualRegisterComponent(func_ any) *TRegisterComponent {
+	return NewRegisterComponent(func_, consts.CtNonVisual, consts.ModLCL)
 }
 
 // initRegisterComponent2 初始化并注册所有可用的组件。
@@ -102,113 +102,113 @@ func NewLCLNonVisualRegisterComponent(createFunc any) *TRegisterComponent {
 func initRegisterComponent2() {
 	logs.Println("初始化注册组件")
 	// 标准组件
-	AddRegisterComponent("TMainMenu", NewLCLNonVisualRegisterComponent(lcl.NewMainMenu))
-	AddRegisterComponent("TPopupMenu", NewLCLNonVisualRegisterComponent(lcl.NewPopupMenu))
-	AddRegisterComponent("TButton", NewLCLVisualRegisterComponent(lcl.NewButton))
-	AddRegisterComponent("TLabel", NewLCLVisualRegisterComponent(lcl.NewLabel))
-	AddRegisterComponent("TEdit", NewLCLVisualRegisterComponent(lcl.NewEdit))
-	AddRegisterComponent("TMemo", NewLCLVisualRegisterComponent(lcl.NewMemo))
-	AddRegisterComponent("TToggleBox", NewLCLVisualRegisterComponent(lcl.NewToggleBox))
-	AddRegisterComponent("TCheckBox", NewLCLVisualRegisterComponent(lcl.NewCheckBox))
-	AddRegisterComponent("TRadioButton", NewLCLVisualRegisterComponent(lcl.NewRadioButton))
-	AddRegisterComponent("TListBox", NewLCLVisualRegisterComponent(lcl.NewListBox))
-	AddRegisterComponent("TComboBox", NewLCLVisualRegisterComponent(lcl.NewComboBox))
-	AddRegisterComponent("TScrollBar", NewLCLVisualRegisterComponent(lcl.NewScrollBar))
-	AddRegisterComponent("TGroupBox", NewLCLVisualRegisterComponent(lcl.NewGroupBox))
-	AddRegisterComponent("TRadioGroup", NewLCLVisualRegisterComponent(lcl.NewRadioGroup))
-	AddRegisterComponent("TCheckGroup", NewLCLVisualRegisterComponent(lcl.NewCheckGroup))
-	AddRegisterComponent("TPanel", NewLCLVisualRegisterComponent(lcl.NewPanel))
-	AddRegisterComponent("TFrame", NewLCLVisualRegisterComponent(lcl.NewFrame))
-	AddRegisterComponent("TActionList", NewLCLNonVisualRegisterComponent(lcl.NewActionList))
+	AddRegisterComponent("TMainMenu", NewLCLNonVisualRegisterComponent(lcl.TMainMenuClass))
+	AddRegisterComponent("TPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TPopupMenuClass))
+	AddRegisterComponent("TButton", NewLCLVisualRegisterComponent(lcl.TButtonClass))
+	AddRegisterComponent("TLabel", NewLCLVisualRegisterComponent(lcl.TLabelClass))
+	AddRegisterComponent("TEdit", NewLCLVisualRegisterComponent(lcl.TEditClass))
+	AddRegisterComponent("TMemo", NewLCLVisualRegisterComponent(lcl.TMemoClass))
+	AddRegisterComponent("TToggleBox", NewLCLVisualRegisterComponent(lcl.TToggleBoxClass))
+	AddRegisterComponent("TCheckBox", NewLCLVisualRegisterComponent(lcl.TCheckBoxClass))
+	AddRegisterComponent("TRadioButton", NewLCLVisualRegisterComponent(lcl.TRadioButtonClass))
+	AddRegisterComponent("TListBox", NewLCLVisualRegisterComponent(lcl.TListBoxClass))
+	AddRegisterComponent("TComboBox", NewLCLVisualRegisterComponent(lcl.TComboBoxClass))
+	AddRegisterComponent("TScrollBar", NewLCLVisualRegisterComponent(lcl.TScrollBarClass))
+	AddRegisterComponent("TGroupBox", NewLCLVisualRegisterComponent(lcl.TGroupBoxClass))
+	AddRegisterComponent("TRadioGroup", NewLCLVisualRegisterComponent(lcl.TRadioGroupClass))
+	AddRegisterComponent("TCheckGroup", NewLCLVisualRegisterComponent(lcl.TCheckGroupClass))
+	AddRegisterComponent("TPanel", NewLCLVisualRegisterComponent(lcl.TPanelClass))
+	AddRegisterComponent("TFrame", NewLCLVisualRegisterComponent(lcl.TFrameClass))
+	AddRegisterComponent("TActionList", NewLCLNonVisualRegisterComponent(lcl.TActionListClass))
 
 	// 附加组件
-	AddRegisterComponent("TBitBtn", NewLCLVisualRegisterComponent(lcl.NewBitBtn))
-	AddRegisterComponent("TSpeedButton", NewLCLVisualRegisterComponent(lcl.NewSpeedButton))
-	AddRegisterComponent("TStaticText", NewLCLVisualRegisterComponent(lcl.NewStaticText))
-	AddRegisterComponent("TImage", NewLCLVisualRegisterComponent(lcl.NewImage))
-	AddRegisterComponent("TShape", NewLCLVisualRegisterComponent(lcl.NewShape))
-	AddRegisterComponent("TBevel", NewLCLVisualRegisterComponent(lcl.NewBevel))
-	AddRegisterComponent("TPaintBox", NewLCLVisualRegisterComponent(lcl.NewPaintBox))
-	AddRegisterComponent("TLabeledEdit", NewLCLVisualRegisterComponent(lcl.NewLabeledEdit))
-	AddRegisterComponent("TSplitter", NewLCLVisualRegisterComponent(lcl.NewSplitter))
-	AddRegisterComponent("TTrayIcon", NewLCLNonVisualRegisterComponent(lcl.NewTrayIcon))
-	AddRegisterComponent("TControlBar", NewLCLVisualRegisterComponent(lcl.NewControlBar))
-	AddRegisterComponent("TFlowPanel", NewLCLVisualRegisterComponent(lcl.NewFlowPanel))
-	AddRegisterComponent("TMaskEdit", NewLCLVisualRegisterComponent(lcl.NewMaskEdit))
-	AddRegisterComponent("TCheckListBox", NewLCLVisualRegisterComponent(lcl.NewCheckListBox))
-	AddRegisterComponent("TScrollBox", NewLCLVisualRegisterComponent(lcl.NewScrollBox))
-	AddRegisterComponent("TApplicationProperties", NewLCLNonVisualRegisterComponent(lcl.NewApplicationProperties))
-	AddRegisterComponent("TStringGrid", NewLCLVisualRegisterComponent(lcl.NewStringGrid))
-	AddRegisterComponent("TDrawGrid", NewLCLVisualRegisterComponent(lcl.NewDrawGrid))
-	AddRegisterComponent("TPairSplitter", NewLCLVisualRegisterComponent(lcl.NewPairSplitter))
-	AddRegisterComponent("TColorBox", NewLCLVisualRegisterComponent(lcl.NewColorBox))
-	AddRegisterComponent("TColorListBox", NewLCLVisualRegisterComponent(lcl.NewColorListBox))
-	AddRegisterComponent("TValueListEditor", NewLCLVisualRegisterComponent(lcl.NewValueListEditor))
+	AddRegisterComponent("TBitBtn", NewLCLVisualRegisterComponent(lcl.TBitBtnClass))
+	AddRegisterComponent("TSpeedButton", NewLCLVisualRegisterComponent(lcl.TSpeedButtonClass))
+	AddRegisterComponent("TStaticText", NewLCLVisualRegisterComponent(lcl.TStaticTextClass))
+	AddRegisterComponent("TImage", NewLCLVisualRegisterComponent(lcl.TImageClass))
+	AddRegisterComponent("TShape", NewLCLVisualRegisterComponent(lcl.TShapeClass))
+	AddRegisterComponent("TBevel", NewLCLVisualRegisterComponent(lcl.TBevelClass))
+	AddRegisterComponent("TPaintBox", NewLCLVisualRegisterComponent(lcl.TPaintBoxClass))
+	AddRegisterComponent("TLabeledEdit", NewLCLVisualRegisterComponent(lcl.TLabeledEditClass))
+	AddRegisterComponent("TSplitter", NewLCLVisualRegisterComponent(lcl.TSplitterClass))
+	AddRegisterComponent("TTrayIcon", NewLCLNonVisualRegisterComponent(lcl.TTrayIconClass))
+	AddRegisterComponent("TControlBar", NewLCLVisualRegisterComponent(lcl.TControlBarClass))
+	AddRegisterComponent("TFlowPanel", NewLCLVisualRegisterComponent(lcl.TFlowPanelClass))
+	AddRegisterComponent("TMaskEdit", NewLCLVisualRegisterComponent(lcl.TMaskEditClass))
+	AddRegisterComponent("TCheckListBox", NewLCLVisualRegisterComponent(lcl.TCheckListBoxClass))
+	AddRegisterComponent("TScrollBox", NewLCLVisualRegisterComponent(lcl.TScrollBoxClass))
+	AddRegisterComponent("TApplicationProperties", NewLCLNonVisualRegisterComponent(lcl.TApplicationPropertiesClass))
+	AddRegisterComponent("TStringGrid", NewLCLVisualRegisterComponent(lcl.TStringGridClass))
+	AddRegisterComponent("TDrawGrid", NewLCLVisualRegisterComponent(lcl.TDrawGridClass))
+	AddRegisterComponent("TPairSplitter", NewLCLVisualRegisterComponent(lcl.TPairSplitterClass))
+	AddRegisterComponent("TColorBox", NewLCLVisualRegisterComponent(lcl.TColorBoxClass))
+	AddRegisterComponent("TColorListBox", NewLCLVisualRegisterComponent(lcl.TColorListBoxClass))
+	AddRegisterComponent("TValueListEditor", NewLCLVisualRegisterComponent(lcl.TValueListEditorClass))
 
 	// 通用组件
-	AddRegisterComponent("TTrackBar", NewLCLVisualRegisterComponent(lcl.NewTrackBar))
-	AddRegisterComponent("TProgressBar", NewLCLVisualRegisterComponent(lcl.NewProgressBar))
-	AddRegisterComponent("TTreeView", NewLCLVisualRegisterComponent(lcl.NewTreeView))
-	AddRegisterComponent("TListView", NewLCLVisualRegisterComponent(lcl.NewListView))
-	AddRegisterComponent("TStatusBar", NewLCLVisualRegisterComponent(lcl.NewStatusBar))
-	AddRegisterComponent("TToolBar", NewLCLVisualRegisterComponent(lcl.NewToolBar))
-	AddRegisterComponent("TCoolBar", NewLCLVisualRegisterComponent(lcl.NewCoolBar))
-	AddRegisterComponent("TUpDown", NewLCLVisualRegisterComponent(lcl.NewUpDown))
-	AddRegisterComponent("TPageControl", NewLCLVisualRegisterComponent(lcl.NewPageControl))
-	AddRegisterComponent("THeaderControl", NewLCLVisualRegisterComponent(lcl.NewHeaderControl))
-	AddRegisterComponent("TImageList", NewLCLNonVisualRegisterComponent(lcl.NewImageList))
-	AddRegisterComponent("TPopupNotifier", NewLCLNonVisualRegisterComponent(lcl.NewPopupNotifier))
-	AddRegisterComponent("TDateTimePicker", NewLCLVisualRegisterComponent(lcl.NewDateTimePicker))
-	AddRegisterComponent("TRichMemo", NewLCLVisualRegisterComponent(lcl.NewRichMemo))
+	AddRegisterComponent("TTrackBar", NewLCLVisualRegisterComponent(lcl.TTrackBarClass))
+	AddRegisterComponent("TProgressBar", NewLCLVisualRegisterComponent(lcl.TProgressBarClass))
+	AddRegisterComponent("TTreeView", NewLCLVisualRegisterComponent(lcl.TTreeViewClass))
+	AddRegisterComponent("TListView", NewLCLVisualRegisterComponent(lcl.TListViewClass))
+	AddRegisterComponent("TStatusBar", NewLCLVisualRegisterComponent(lcl.TStatusBarClass))
+	AddRegisterComponent("TToolBar", NewLCLVisualRegisterComponent(lcl.TToolBarClass))
+	AddRegisterComponent("TCoolBar", NewLCLVisualRegisterComponent(lcl.TCoolBarClass))
+	AddRegisterComponent("TUpDown", NewLCLVisualRegisterComponent(lcl.TUpDownClass))
+	AddRegisterComponent("TPageControl", NewLCLVisualRegisterComponent(lcl.TPageControlClass))
+	AddRegisterComponent("THeaderControl", NewLCLVisualRegisterComponent(lcl.THeaderControlClass))
+	AddRegisterComponent("TImageList", NewLCLNonVisualRegisterComponent(lcl.TImageListClass))
+	AddRegisterComponent("TPopupNotifier", NewLCLNonVisualRegisterComponent(lcl.TPopupNotifierClass))
+	AddRegisterComponent("TDateTimePicker", NewLCLVisualRegisterComponent(lcl.TDateTimePickerClass))
+	AddRegisterComponent("TRichMemo", NewLCLVisualRegisterComponent(lcl.TRichMemoClass))
 
 	// 对话框组件
-	AddRegisterComponent("TOpenDialog", NewLCLNonVisualRegisterComponent(lcl.NewOpenDialog))
-	AddRegisterComponent("TSaveDialog", NewLCLNonVisualRegisterComponent(lcl.NewSaveDialog))
-	AddRegisterComponent("TSelectDirectoryDialog", NewLCLNonVisualRegisterComponent(lcl.NewSelectDirectoryDialog))
-	AddRegisterComponent("TColorDialog", NewLCLNonVisualRegisterComponent(lcl.NewColorDialog))
-	AddRegisterComponent("TFontDialog", NewLCLNonVisualRegisterComponent(lcl.NewFontDialog))
-	AddRegisterComponent("TFindDialog", NewLCLNonVisualRegisterComponent(lcl.NewFindDialog))
-	AddRegisterComponent("TReplaceDialog", NewLCLNonVisualRegisterComponent(lcl.NewReplaceDialog))
-	AddRegisterComponent("TTaskDialog", NewLCLNonVisualRegisterComponent(lcl.NewTaskDialog))
-	AddRegisterComponent("TOpenPictureDialog", NewLCLNonVisualRegisterComponent(lcl.NewOpenPictureDialog))
-	AddRegisterComponent("TSavePictureDialog", NewLCLNonVisualRegisterComponent(lcl.NewSavePictureDialog))
-	AddRegisterComponent("TCalendarDialog", NewLCLNonVisualRegisterComponent(lcl.NewCalendarDialog))
-	AddRegisterComponent("TCalculatorDialog", NewLCLNonVisualRegisterComponent(lcl.NewCalculatorDialog))
-	AddRegisterComponent("TPrinterSetupDialog", NewLCLNonVisualRegisterComponent(lcl.NewPrinterSetupDialog))
-	AddRegisterComponent("TPrintDialog", NewLCLNonVisualRegisterComponent(lcl.NewPrintDialog))
-	AddRegisterComponent("TPageSetupDialog", NewLCLNonVisualRegisterComponent(lcl.NewPageSetupDialog))
+	AddRegisterComponent("TOpenDialog", NewLCLNonVisualRegisterComponent(lcl.TOpenDialogClass))
+	AddRegisterComponent("TSaveDialog", NewLCLNonVisualRegisterComponent(lcl.TSaveDialogClass))
+	AddRegisterComponent("TSelectDirectoryDialog", NewLCLNonVisualRegisterComponent(lcl.TSelectDirectoryDialogClass))
+	AddRegisterComponent("TColorDialog", NewLCLNonVisualRegisterComponent(lcl.TColorDialogClass))
+	AddRegisterComponent("TFontDialog", NewLCLNonVisualRegisterComponent(lcl.TFontDialogClass))
+	AddRegisterComponent("TFindDialog", NewLCLNonVisualRegisterComponent(lcl.TFindDialogClass))
+	AddRegisterComponent("TReplaceDialog", NewLCLNonVisualRegisterComponent(lcl.TReplaceDialogClass))
+	AddRegisterComponent("TTaskDialog", NewLCLNonVisualRegisterComponent(lcl.TTaskDialogClass))
+	AddRegisterComponent("TOpenPictureDialog", NewLCLNonVisualRegisterComponent(lcl.TOpenPictureDialogClass))
+	AddRegisterComponent("TSavePictureDialog", NewLCLNonVisualRegisterComponent(lcl.TSavePictureDialogClass))
+	AddRegisterComponent("TCalendarDialog", NewLCLNonVisualRegisterComponent(lcl.TCalendarDialogClass))
+	AddRegisterComponent("TCalculatorDialog", NewLCLNonVisualRegisterComponent(lcl.TCalculatorDialogClass))
+	AddRegisterComponent("TPrinterSetupDialog", NewLCLNonVisualRegisterComponent(lcl.TPrinterSetupDialogClass))
+	AddRegisterComponent("TPrintDialog", NewLCLNonVisualRegisterComponent(lcl.TPrintDialogClass))
+	AddRegisterComponent("TPageSetupDialog", NewLCLNonVisualRegisterComponent(lcl.TPageSetupDialogClass))
 
 	// 杂项组件
-	AddRegisterComponent("TColorButton", NewLCLVisualRegisterComponent(lcl.NewColorButton))
-	AddRegisterComponent("TSpinEdit", NewLCLVisualRegisterComponent(lcl.NewSpinEdit))
-	AddRegisterComponent("TFloatSpinEdit", NewLCLVisualRegisterComponent(lcl.NewFloatSpinEdit))
-	AddRegisterComponent("TCalendar", NewLCLVisualRegisterComponent(lcl.NewCalendar))
-	AddRegisterComponent("TEditButton", NewLCLVisualRegisterComponent(lcl.NewEditButton))
-	AddRegisterComponent("TFileNameEdit", NewLCLVisualRegisterComponent(lcl.NewFileNameEdit))
-	AddRegisterComponent("TDirectoryEdit", NewLCLVisualRegisterComponent(lcl.NewDirectoryEdit))
-	AddRegisterComponent("TDateEdit", NewLCLVisualRegisterComponent(lcl.NewDateEdit))
-	AddRegisterComponent("TTimeEdit", NewLCLVisualRegisterComponent(lcl.NewTimeEdit))
-	AddRegisterComponent("TComboBoxEx", NewLCLVisualRegisterComponent(lcl.NewComboBoxEx))
-	AddRegisterComponent("TButtonPanel", NewLCLVisualRegisterComponent(lcl.NewButtonPanel))
-	AddRegisterComponent("TCheckComboBox", NewLCLVisualRegisterComponent(lcl.NewCheckComboBox))
-	AddRegisterComponent("TLinkLabel", NewLCLVisualRegisterComponent(lcl.NewLinkLabel))
-	AddRegisterComponent("TXButton", NewLCLVisualRegisterComponent(lcl.NewXButton))
-	AddRegisterComponent("TImageButton", NewLCLVisualRegisterComponent(lcl.NewImageButton))
-	AddRegisterComponent("TATGauge", NewLCLVisualRegisterComponent(lcl.NewATGauge))
-	AddRegisterComponent("TOpenGLControl", NewLCLVisualRegisterComponent(lcl.NewOpenGLControl))
+	AddRegisterComponent("TColorButton", NewLCLVisualRegisterComponent(lcl.TColorButtonClass))
+	AddRegisterComponent("TSpinEdit", NewLCLVisualRegisterComponent(lcl.TSpinEditClass))
+	AddRegisterComponent("TFloatSpinEdit", NewLCLVisualRegisterComponent(lcl.TFloatSpinEditClass))
+	AddRegisterComponent("TCalendar", NewLCLVisualRegisterComponent(lcl.TCalendarClass))
+	AddRegisterComponent("TEditButton", NewLCLVisualRegisterComponent(lcl.TEditButtonClass))
+	AddRegisterComponent("TFileNameEdit", NewLCLVisualRegisterComponent(lcl.TFileNameEditClass))
+	AddRegisterComponent("TDirectoryEdit", NewLCLVisualRegisterComponent(lcl.TDirectoryEditClass))
+	AddRegisterComponent("TDateEdit", NewLCLVisualRegisterComponent(lcl.TDateEditClass))
+	AddRegisterComponent("TTimeEdit", NewLCLVisualRegisterComponent(lcl.TTimeEditClass))
+	AddRegisterComponent("TComboBoxEx", NewLCLVisualRegisterComponent(lcl.TComboBoxExClass))
+	AddRegisterComponent("TButtonPanel", NewLCLVisualRegisterComponent(lcl.TButtonPanelClass))
+	AddRegisterComponent("TCheckComboBox", NewLCLVisualRegisterComponent(lcl.TCheckComboBoxClass))
+	AddRegisterComponent("TLinkLabel", NewLCLVisualRegisterComponent(lcl.TLinkLabelClass))
+	AddRegisterComponent("TXButton", NewLCLVisualRegisterComponent(lcl.TXButtonClass))
+	AddRegisterComponent("TImageButton", NewLCLVisualRegisterComponent(lcl.TImageButtonClass))
+	AddRegisterComponent("TATGauge", NewLCLVisualRegisterComponent(lcl.TATGaugeClass))
+	AddRegisterComponent("TOpenGLControl", NewLCLVisualRegisterComponent(lcl.TOpenGLControlClass))
 
 	// 系统组件
-	AddRegisterComponent("TTimer", NewLCLNonVisualRegisterComponent(lcl.NewTimer))
+	AddRegisterComponent("TTimer", NewLCLNonVisualRegisterComponent(lcl.TTimerClass))
 
 	// Laz组件
-	AddRegisterComponent("TLazVirtualDrawTree", NewLCLVisualRegisterComponent(lcl.NewLazVirtualDrawTree))
-	AddRegisterComponent("TLazVirtualStringTree", NewLCLVisualRegisterComponent(lcl.NewLazVirtualStringTree))
-	AddRegisterComponent("TDividerBevel", NewLCLVisualRegisterComponent(lcl.NewDividerBevel))
-	AddRegisterComponent("TCheckBoxThemed", NewLCLVisualRegisterComponent(lcl.NewCheckBoxThemed))
-	AddRegisterComponent("TExtendedNotebook", NewLCLVisualRegisterComponent(lcl.NewExtendedNotebook))
-	AddRegisterComponent("TListFilterEdit", NewLCLVisualRegisterComponent(lcl.NewListFilterEdit))
-	AddRegisterComponent("TTreeFilterEdit", NewLCLVisualRegisterComponent(lcl.NewTreeFilterEdit))
-	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.NewVTHeaderPopupMenu))
+	AddRegisterComponent("TLazVirtualDrawTree", NewLCLVisualRegisterComponent(lcl.TLazVirtualDrawTreeClass))
+	AddRegisterComponent("TLazVirtualStringTree", NewLCLVisualRegisterComponent(lcl.TLazVirtualStringTreeClass))
+	AddRegisterComponent("TDividerBevel", NewLCLVisualRegisterComponent(lcl.TDividerBevelClass))
+	AddRegisterComponent("TCheckBoxThemed", NewLCLVisualRegisterComponent(lcl.TCheckBoxThemedClass))
+	AddRegisterComponent("TExtendedNotebook", NewLCLVisualRegisterComponent(lcl.TExtendedNotebookClass))
+	AddRegisterComponent("TListFilterEdit", NewLCLVisualRegisterComponent(lcl.TListFilterEditClass))
+	AddRegisterComponent("TTreeFilterEdit", NewLCLVisualRegisterComponent(lcl.TTreeFilterEditClass))
+	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass))
 
 }
 

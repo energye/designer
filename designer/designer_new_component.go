@@ -16,7 +16,9 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 	"reflect"
 )
 
@@ -157,12 +159,24 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	if designerForm == nil || component == nil || x < 0 || y < 0 {
 		return nil
 	}
-	fn := component.CreateFunc
+	fn := component.Func
 	method := reflect.ValueOf(fn)
 	if method.Kind() != reflect.Func {
 		return nil
 	}
-	var in []reflect.Value
+	newInstance := func() uintptr {
+		resultValues := method.Call(nil)
+		// result
+		results := make([]any, len(resultValues))
+		for i, value := range resultValues {
+			results[i] = value.Interface()
+		}
+		// object
+		class := results[0].(uintptr)
+		instance := api.NewInstanceByComponentClass(class)
+		SetComponentDesignMode(instance)
+		return instance
+	}
 	compName := tool.RemoveT(className)
 	switch component.Type {
 	case consts.CtForm:
@@ -171,16 +185,10 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	case consts.CtVisual:
 		m := newVisualComponent(designerForm)
 		m.mod = component.Mod
-		// NewXxx
-		in = []reflect.Value{reflect.ValueOf(designerForm.FormRoot.object)}
-		resultValues := method.Call(in)
-		// return
-		results := make([]any, len(resultValues))
-		for i, value := range resultValues {
-			results[i] = value.Interface()
-		}
-		// object
-		comp := results[0].(lcl.IControl)
+		instance := newInstance()
+		comp := lcl.AsWinControl(instance)
+		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
+		api.CreateObjectByComponent(instance, designerForm.FormRoot.object.Instance())
 		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		setBaseProp(comp, x, y)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
@@ -189,17 +197,13 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		return m
 	case consts.CtNonVisual:
 		m := newNonVisualComponent(designerForm, x, y)
-		// NewXxx
-		in = []reflect.Value{reflect.ValueOf(designerForm.FormRoot.object)}
-		resultValues := method.Call(in)
-		// return
-		results := make([]any, len(resultValues))
-		for i, value := range resultValues {
-			results[i] = value.Interface()
-		}
-		// object
-		comp := results[0].(lcl.IComponent)
+		m.mod = component.Mod
+		instance := newInstance()
+		comp := lcl.AsWinControl(instance)
+		//comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
+		api.CreateObjectByComponent(instance, designerForm.FormRoot.object.Instance())
 		comp.SetName(designerForm.GetComponentCaptionName(compName))
+		SetDesignMode(m.objectNonWrap.icon)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
 		m.SetObject(comp)

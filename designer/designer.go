@@ -16,6 +16,7 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -28,6 +29,8 @@ type TEngFormDesigner struct {
 	designer      lcl.IDesigner
 	componentList map[uintptr]*TDesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
 	canvas        lcl.ICanvas
+	LookupRoot    lcl.IComponent
+	Form          lcl.IComponent
 }
 
 // 创建一个窗体设计器
@@ -101,7 +104,8 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
-	instance := sender.Instance()
+	control := m.GetDesignControl(sender)
+	instance := control.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
 		shift, button := m.GetMouseMsgShift(message)
@@ -113,7 +117,8 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 
 func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseUp", message.Msg, sender.ToString())
-	instance := sender.Instance()
+	control := m.GetDesignControl(sender)
+	instance := control.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
 		shift, button := m.GetMouseMsgShift(message)
@@ -125,7 +130,8 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseMove", message.Msg, message, sender.ToString())
-	instance := sender.Instance()
+	control := m.GetDesignControl(sender)
+	instance := control.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
 		shift, _ := m.GetMouseMsgShift(message)
@@ -222,52 +228,54 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
 	//logs.Debug("IsDesignMsg", message.Msg)
 	result := false
-	isDesign := sender.ComponentState().In(types.CsDesigning)
-	if isDesign {
+	//isDesign := sender.ComponentState().In(types.CsDesigning)
+	//if isDesign {
+	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
+	switch message.Msg {
+	case messages.LM_PAINT:
+		//println("paint")
+		//paint := *(*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
+		//sender.Dispatch(dispatchMsg) // 有些问题
+		//println(isDesign, message.Msg == messages.LM_PAINT, paint.DC, sender.Name())
+		//m.paint(sender, paint)
+	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
+		println("down")
+		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+		m.mouseDown(sender, key)
+	case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
+		println("up")
+		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+		m.mouseUp(sender, key)
 		result = true
-		dispatchMsg := (*uintptr)(unsafe.Pointer(message))
-		switch message.Msg {
-		case messages.LM_PAINT:
-			println("paint")
-			sender.Dispatch(dispatchMsg)
-			//paint := (*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
-			//println(isDesign, message.Msg == messages.LM_PAINT, paint.DC, sender.Name())
-			//m.paint(sender, paint)
-		case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
-			println("down")
-			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-			m.mouseDown(sender, key)
-		case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
-			println("up")
-			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-			m.mouseUp(sender, key)
-		case messages.LM_MOUSEMOVE:
-			println("move")
-			mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-			m.mouseMove(sender, mouse)
-		case messages.LM_SIZE:
-			println("size")
-			size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
-			m.size(sender, size)
-		case messages.LM_MOVE:
-			move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
-			m.move(sender, move)
-		case messages.LM_ACTIVATE:
-			//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
-		case messages.LM_CLOSEQUERY:
-			//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
-		case messages.LM_SETCURSOR:
-			m.setCursor(sender, message)
-		case messages.LM_CONTEXTMENU:
-			logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
-			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
-			m.popupMenu(sender, contextMenu)
-		case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-			logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
-		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
-		}
+	case messages.LM_MOUSEMOVE:
+		//println("move")
+		mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
+		m.mouseMove(sender, mouse)
+	case messages.LM_SIZE:
+		//println("size")
+		size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
+		m.size(sender, size)
+	case messages.LM_MOVE:
+		move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
+		m.move(sender, move)
+	case messages.LM_ACTIVATE:
+		//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
+	case messages.LM_CLOSEQUERY:
+		//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
+	case messages.LM_SETCURSOR:
+		m.setCursor(sender, message)
+	case messages.LM_CONTEXTMENU:
+		logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
+		contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
+		m.popupMenu(sender, contextMenu)
+	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
+		logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
+		//result = true
+	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
+		logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
+		result = true
 	}
+	//}
 	return result
 }
 
@@ -307,6 +315,31 @@ func (m *TEngFormDesigner) onUniqueName(baseName string) string {
 
 func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 	println("onPrepareFreeDesigner")
+}
+
+func (m *TEngFormDesigner) GetDesignControl(control lcl.IControl) lcl.IControl {
+	if control == nil || control.Instance() == m.LookupRoot.Instance() || control.Owner().Instance() == m.LookupRoot.Instance() {
+		return control
+	}
+	if control.Instance() == m.Form.Instance() {
+		return control
+	}
+	owner := control.Owner()
+	isControl := api.IsObjectInstanceOf(owner.Instance(), lcl.TControlClass())
+	if isControl {
+		ownerControl := lcl.AsControl(owner)
+		if !ownerControl.ControlStyle().In(types.CsOwnedChildrenNotSelectable) {
+			return control
+		}
+		return m.GetDesignControl(ownerControl)
+	} else {
+		return control
+	}
+
+}
+
+func (m *TEngFormDesigner) GetDesignedComponent(component lcl.IComponent) lcl.IComponent {
+	return component
 }
 
 // 启用或禁用功能组件

@@ -33,10 +33,10 @@ func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
 	m.SetWidth(defaultWidth)
 	m.SetHeight(defaultHeight)
 	m.SetAlign(types.AlCustom)
-	m.SetShowInTaskBar(types.StNever)
-	m.SetControlStyle(m.ControlStyle().Include(types.CsNoDesignVisible))
 	m.SetBorderStyleToFormBorderStyle(types.BsNone)
-	m.SetFormStyle(types.FsNormal)
+	//m.SetShowInTaskBar(types.StNever)
+	//m.SetControlStyle(m.ControlStyle().Include(types.CsNoDesignVisible))
+	//m.SetFormStyle(types.FsNormal)
 }
 
 // 创建设计窗体
@@ -81,6 +81,8 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formRoot.SetOnMouseDown(m.designerOnMouseDown)
 	formRoot.SetOnMouseUp(m.designerOnMouseUp)
 	formRoot.SetParent(designerForm)
+	formDesigner.LookupRoot = formRoot
+	formDesigner.Form = designerForm
 	//SetDesignMode(FormRoot)
 
 	// 设计面板
