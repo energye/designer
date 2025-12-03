@@ -44,29 +44,37 @@ func initModuleTypeInfo() {
 	// LCL 模块的事件回调函数类型
 	lclSRCEventDef := filepath.Join(config.Config.FrameworkDirForLCL(), "lcl", "callback_event_def.go")
 	GLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
-	GLCLFuncTypeAliases.Mod = consts.ModLCL
-	GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
-
+	if GLCLFuncTypeAliases != nil {
+		GLCLFuncTypeAliases.Mod = consts.ModLCL
+		GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
+	}
 	// CEF 模块的事件回调函数类型
 	cefSRCEventDef := filepath.Join(config.Config.FrameworkDirForCEF(), "cef", "callback_event_def.go")
-	GCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef)
-	GCEFFuncTypeAliases.Mod = consts.ModCEF
-	GCEFFuncTypeAliases.Imports.Add(GCEFFuncTypeAliases.Mod, consts.DmCEF)
+	if GCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef); GCEFFuncTypeAliases != nil {
+		GCEFFuncTypeAliases.Mod = consts.ModCEF
+		GCEFFuncTypeAliases.Imports.Add(GCEFFuncTypeAliases.Mod, consts.DmCEF)
+	}
 
 	// WV 模块的事件回调函数类型
 	// Windows
 	wvWindowsSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "windows", "callback_event_def.go")
 	GWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliases(wvWindowsSRCEventDef)
-	GWVWindowsFuncTypeAliases.Mod = consts.ModWVWindows
-	GWVWindowsFuncTypeAliases.Imports.Add(GWVWindowsFuncTypeAliases.Mod, consts.DmWVWindows)
+	if GWVWindowsFuncTypeAliases != nil {
+		GWVWindowsFuncTypeAliases.Mod = consts.ModWVWindows
+		GWVWindowsFuncTypeAliases.Imports.Add(GWVWindowsFuncTypeAliases.Mod, consts.DmWVWindows)
+	}
 	//  macOS
 	wvDarwinSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "darwin", "callback_event_def.go")
 	GWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliases(wvDarwinSRCEventDef)
-	GWVDarwinFuncTypeAliases.Mod = consts.ModWVDarwin
-	GWVDarwinFuncTypeAliases.Imports.Add(GWVDarwinFuncTypeAliases.Mod, consts.DmWVMacOS)
+	if GWVDarwinFuncTypeAliases != nil {
+		GWVDarwinFuncTypeAliases.Mod = consts.ModWVDarwin
+		GWVDarwinFuncTypeAliases.Imports.Add(GWVDarwinFuncTypeAliases.Mod, consts.DmWVMacOS)
+	}
 	// Linux
 	wvLinuxSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "linux", "callback_event_def.go")
 	GWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliases(wvLinuxSRCEventDef)
-	GWVLinuxFuncTypeAliases.Mod = consts.ModWVLinux
-	GWVLinuxFuncTypeAliases.Imports.Add(GWVLinuxFuncTypeAliases.Mod, consts.DmWVLinux)
+	if GWVLinuxFuncTypeAliases != nil {
+		GWVLinuxFuncTypeAliases.Mod = consts.ModWVLinux
+		GWVLinuxFuncTypeAliases.Imports.Add(GWVLinuxFuncTypeAliases.Mod, consts.DmWVLinux)
+	}
 }
