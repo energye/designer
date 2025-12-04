@@ -112,9 +112,10 @@ const (
 type ComponentType int32
 
 const (
-	CtForm      ComponentType = iota // 窗体
-	CtNonVisual                      // 非可视组件
-	CtVisual                         // 可视组件
+	CtForm       ComponentType = iota // 窗体
+	CtNonVisual                       // 非可视组件
+	CtVisual                          // 可视组件
+	CtWrapVisual                      // 自定义包裹非常规可视组件
 )
 
 // 改变 Z 序

@@ -48,54 +48,39 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	m.FormRoot = dc
 
 	// 创建设计窗体实例
-	//newDesForm := lcl.NewForm(nil)
-	typeClass := lcl.TFormClass()
-	instance := api.NewInstanceByComponentClass(typeClass)
+	formInstance := api.NewInstanceByComponentClass(lcl.TFormClass())
 	//SetComponentDesignMode(instance)
-	api.CreateObjectByComponent(instance, 0)
-	newDesForm := lcl.AsForm(instance)
+	api.CreateObjectByComponent(formInstance, 0)
+	newDesForm := lcl.AsForm(formInstance)
 	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
-	//lcl.Application.NewForm(designerForm)  // 不使用原因：go debug 模式有问题
+	//newDesForm.SetControlStyle(newDesForm.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
 	designerForm.FormCreate(designerForm)
-
 	designerForm.SetName(m.name)
 	designerForm.SetCaption(m.name)
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
-	designerForm.SetDesigner(formDesigner.Designer())
-	//SetDesignMode(designerForm)
-	designerForm.SetParent(m.scroll)
-	//designerForm.SetVisible(true)
-	designerForm.SetOnMouseMove(m.designerOnMouseMove)
-	designerForm.SetOnMouseDown(m.designerOnMouseDown)
-	designerForm.SetOnMouseUp(m.designerOnMouseUp)
-	designerForm.Show()
-
-	//formRoot := lcl.NewPanel(designerForm)
-	//formRoot.SetBevelOuter(types.BvNone)
-	//formRoot.SetBorderStyleToBorderStyle(types.BsSingle)
-	//formRoot.SetDoubleBuffered(true)
-	//formRoot.SetParentColor(false)
-	//formRoot.SetColor(colors.ClBtnFace)
-	//formRoot.SetName(m.name)
-	//formRoot.SetCaption("")
-	//formRoot.SetAlign(types.AlClient)
-	//formRoot.SetShowHint(true)
-	////m.designerOnPaint(formRoot)
-	//formRoot.SetOnMouseMove(m.designerOnMouseMove)
-	//formRoot.SetOnMouseDown(m.designerOnMouseDown)
-	//formRoot.SetOnMouseUp(m.designerOnMouseUp)
-	//formRoot.SetParent(designerForm)
-
 	formDesigner.LookupRoot = designerForm // formRoot
 	formDesigner.Form = designerForm
-	//SetDesignMode(FormRoot)
+	designerForm.SetDesigner(formDesigner.Designer())
+	designerForm.SetParent(m.scroll)
+	designerForm.Show()
+
+	// 创建窗体设计面板, 放置实际设计的组件
+	designerFormBoxInstance := api.NewInstanceByComponentClass(lcl.TCustomPanelClass())
+	SetComponentDesignMode(designerFormBoxInstance)
+	api.CreateObjectByComponent(designerFormBoxInstance, formInstance)
+	designerFormBox := lcl.AsCustomPanel(designerFormBoxInstance)
+	//designerFormBox.SetControlStyle(designerFormBox.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
+	designerFormBox.SetAlign(types.AlClient)
+	designerFormBox.SetBevelOuter(types.BvNone)
+	designerFormBox.SetParent(designerForm)
 
 	// 设计面板
 	dc.originObject = designerForm
-	dc.object = designerForm
+	dc.object = designerFormBox
 	dc.FormTab = m
+	formDesigner.AddComponentToList(dc)
 
 	// 窗体拖拽大小
 	dc.drag = newDrag(m.scroll, consts.DsRightBottom)

@@ -82,7 +82,7 @@ func (m *TDesigningComponent) Free() {
 	if m.ComponentType == consts.CtNonVisual {
 		m.objectNonWrap.Free()
 	} else {
-		m.Object().Free()
+		m.Component().Free()
 	}
 
 	m.FormTab = nil
@@ -173,59 +173,36 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	if y != 0 {
 		comp.SetTop(y)
 	}
-	//comp.SetCursor(types.CrSize)
-	//comp.SetCaption(comp.Name())
-	//comp.SetShowHint(true)
-	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
-	//	lcl.AsCustomEdit(comp).SetReadOnly(false)
-	//}
 }
 
 // 返回当前组件实例指针
 func (m *TDesigningComponent) Instance() uintptr {
-	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNonWrap.Instance()
-	} else {
-		return m.object.Instance()
-	}
+	return m.Component().Instance()
 }
 func (m *TDesigningComponent) SetHint(hint string) {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.SetHint(hint)
-	} else {
-		m.object.SetHint(hint)
-	}
+	m.Control().SetHint(hint)
 }
 
 func (m *TDesigningComponent) ClassName() string {
-	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNon.ToString()
-	} else {
-		return m.object.ToString()
-	}
+	return m.Component().ToString()
 }
 
 func (m *TDesigningComponent) BoundsRect() types.TRect {
-	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNonWrap.BoundsRect()
-	} else {
-		return m.object.BoundsRect()
-	}
+	return m.Control().BoundsRect()
 }
 
 func (m *TDesigningComponent) SetBounds(x, y, w, h int32) {
+	control := m.Control()
 	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.SetLeftTop(x, y)
+		control.SetBounds(x, y, nonWrapW, nonWrapH)
 	} else {
-		m.object.SetBounds(x, y, w, h)
+		control.SetBounds(x, y, w, h)
 	}
 }
 
 func (m *TDesigningComponent) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
-	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNonWrap.ClientToParent(point, parent)
-	}
-	return m.object.ClientToParent(point, parent)
+	control := m.Control()
+	return control.ClientToParent(point, parent)
 }
 
 // 设计组件鼠标移动
@@ -342,15 +319,10 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 }
 
 // 设置组件父子关系
+// 只设计组件才会调用此函数
 func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 	// 设置父组件
 	control := parent.object
-	if parent.ComponentType == consts.CtForm {
-		if parent.object.ComponentCount() > 0 {
-			// 父组件是 Form 时, 获取设计窗体的Panel面板, 这个Panel是显示放置组件的
-			//control = lcl.AsWinControl(parent.object.Components(0).Instance())
-		}
-	}
 	if m.ComponentType == consts.CtNonVisual {
 		m.objectNonWrap.SetParent(control)
 	} else {
@@ -363,21 +335,12 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 
 // 返回组件类名
 func (m *TDesigningComponent) Name() string {
-	name := ""
-	if m.ComponentType == consts.CtNonVisual {
-		name = m.objectNon.Name()
-	} else {
-		name = m.object.Name()
-	}
+	name := m.Component().Name()
 	return name
 }
 
 func (m *TDesigningComponent) SetName(name string) {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNon.SetName(name)
-	} else {
-		m.object.SetName(name)
-	}
+	m.Component().SetName(name)
 }
 
 // 返回组件树节点名
@@ -391,27 +354,28 @@ func (m *TDesigningComponent) IconIndex() int32 {
 	return imageComponents.ImageIndex(name)
 }
 
-// 返回真实对象
-func (m *TDesigningComponent) Object() lcl.IObject {
+func (m *TDesigningComponent) Control() lcl.IControl {
+	if m.ComponentType == consts.CtNonVisual {
+		return m.objectNonWrap.icon
+	} else if m.ComponentType == consts.CtForm {
+		return m.originObject.(*TDesignerForm)
+	}
+	return m.object
+}
+
+func (m *TDesigningComponent) Component() lcl.IComponent {
 	if m.ComponentType == consts.CtNonVisual {
 		return m.objectNon
+	} else if m.ComponentType == consts.CtForm {
+		return m.originObject.(*TDesignerForm)
 	}
 	return m.object
 }
 
 func (m *TDesigningComponent) SetVisible(v bool) {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.icon.SetVisible(v)
-	} else {
-		m.object.SetVisible(v)
+	if control := m.Control(); control != nil {
+		control.SetVisible(v)
 	}
-}
-
-func (m *TDesigningComponent) WinControl() lcl.IWinControl {
-	if m.ComponentType == consts.CtNonVisual {
-		return nil
-	}
-	return m.object
 }
 
 // 获取当前组件对象属性
@@ -422,7 +386,7 @@ func (m *TDesigningComponent) GetProps() {
 		if methods == nil {
 			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 		}
-		properties := lcl.DesigningComponent().GetComponentProperties(m.Object())
+		properties := lcl.DesigningComponent().GetComponentProperties(m.Component())
 		logs.Debug("LoadComponent Count:", len(properties), "ClassName:", m.ClassName())
 		// 拆分 属性和事件
 		var (

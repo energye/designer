@@ -49,7 +49,8 @@ func (m *TNonVisualComponentWrap) Free() {
 }
 
 func (m *TNonVisualComponentWrap) TextFollowHide() {
-	m.text.SetVisible(false)
+	//m.text.SetVisible(false) // 注释: 因为需要一个中间组件才起作用
+	m.text.SetCaption("") // 设计模式使用空字串来隐藏
 }
 
 func (m *TNonVisualComponentWrap) SetImage() {

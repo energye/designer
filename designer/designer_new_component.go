@@ -164,6 +164,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	if method.Kind() != reflect.Func {
 		return nil
 	}
+	// 创建类实例, 并标记为设计模式
 	newInstance := func() uintptr {
 		resultValues := method.Call(nil)
 		// result
@@ -183,31 +184,39 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		// TODO
 		_ = ""
 	case consts.CtVisual:
+		// 创建常规可视对象设计组件
 		m := newVisualComponent(designerForm)
 		m.mod = component.Mod
 		instance := newInstance()
 		comp := lcl.AsWinControl(instance)
+		m.SetObject(comp)
 		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
-		api.CreateObjectByComponent(instance, designerForm.FormRoot.object.Instance())
+		// 创建对象, 所属为 表单
+		ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
+		api.CreateObjectByComponent(instance, ownerForm.Instance())
 		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		setBaseProp(comp, x, y)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
-		m.SetObject(comp)
 		return m
 	case consts.CtNonVisual:
+		// 创建非可视对象设计组件
 		m := newNonVisualComponent(designerForm, x, y)
 		m.mod = component.Mod
 		instance := newInstance()
 		comp := lcl.AsComponent(instance)
-		api.CreateObjectByComponent(instance, designerForm.FormRoot.object.Instance())
+		m.SetObject(comp)
+		// 创建对象, 所属为 表单
+		ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
+		api.CreateObjectByComponent(instance, ownerForm.Instance())
 		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		SetDesignMode(m.objectNonWrap.icon)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
-		m.SetObject(comp)
 		m.objectNonWrap.SetImage()
 		return m
+	case consts.CtWrapVisual:
+		// 不受控制的设计组件
 	}
 	return nil
 }

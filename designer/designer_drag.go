@@ -369,9 +369,6 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 		})
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 		message.Follow(msgContent)
-		if sender.object != nil && tool.IsWindows() {
-			lcl.Mouse.SetCapture(sender.object.Handle())
-		}
 		sender.DragBegin()
 	}
 }
@@ -385,8 +382,5 @@ func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton,
 	go sender.UpdateNodeDataPoint(br.Left, br.Top)
 	m.isDown = false
 	message.FollowHide()
-	if tool.IsWindows() {
-		lcl.Mouse.SetCapture(0)
-	}
 	sender.DragEnd()
 }
