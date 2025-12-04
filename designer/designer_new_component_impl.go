@@ -67,8 +67,8 @@ type ComponentPropTreeState struct {
 func SetDesignMode(component lcl.IComponent) {
 	lcl.DesigningComponent().SetComponentDesignMode(component, true)
 	lcl.DesigningComponent().SetComponentInlineMode(component, true)
-	//lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
-	//lcl.DesigningComponent().SetWidgetSetDesigning(component)
+	lcl.DesigningComponent().SetComponentDesignInstanceMode(component, true)
+	lcl.DesigningComponent().SetWidgetSetDesigning(component)
 }
 
 func SetComponentDesignMode(component uintptr) {
@@ -348,7 +348,7 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 	if parent.ComponentType == consts.CtForm {
 		if parent.object.ComponentCount() > 0 {
 			// 父组件是 Form 时, 获取设计窗体的Panel面板, 这个Panel是显示放置组件的
-			control = lcl.AsWinControl(parent.object.Components(0).Instance())
+			//control = lcl.AsWinControl(parent.object.Components(0).Instance())
 		}
 	}
 	if m.ComponentType == consts.CtNonVisual {
@@ -401,7 +401,7 @@ func (m *TDesigningComponent) Object() lcl.IObject {
 
 func (m *TDesigningComponent) SetVisible(v bool) {
 	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.wrap.SetVisible(v)
+		m.objectNonWrap.icon.SetVisible(v)
 	} else {
 		m.object.SetVisible(v)
 	}
@@ -409,7 +409,7 @@ func (m *TDesigningComponent) SetVisible(v bool) {
 
 func (m *TDesigningComponent) WinControl() lcl.IWinControl {
 	if m.ComponentType == consts.CtNonVisual {
-		return m.objectNonWrap.wrap
+		return nil
 	}
 	return m.object
 }

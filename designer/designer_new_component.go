@@ -199,14 +199,14 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m := newNonVisualComponent(designerForm, x, y)
 		m.mod = component.Mod
 		instance := newInstance()
-		comp := lcl.AsWinControl(instance)
-		//comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
+		comp := lcl.AsComponent(instance)
 		api.CreateObjectByComponent(instance, designerForm.FormRoot.object.Instance())
 		comp.SetName(designerForm.GetComponentCaptionName(compName))
 		SetDesignMode(m.objectNonWrap.icon)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
 		m.SetObject(comp)
+		m.objectNonWrap.SetImage()
 		return m
 	}
 	return nil

@@ -34,7 +34,7 @@ type TEngFormDesigner struct {
 }
 
 // 创建一个窗体设计器
-func NewEngFormDesigner(form *FormTab) *TEngFormDesigner {
+func NewEngFormDesigner(formTab *FormTab) *TEngFormDesigner {
 	m := new(TEngFormDesigner)
 	newDesigner := lcl.NewDesigner()
 	newDesigner.SetOnIsDesignMsg(m.onIsDesignMsg)
@@ -128,7 +128,7 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 	*message.Result() = 1
 }
 
-func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
+func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) bool {
 	//logs.Debug("Designer message mouseMove", message.Msg, message, sender.ToString())
 	control := m.GetDesignControl(sender)
 	instance := control.Instance()
@@ -138,6 +138,8 @@ func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMous
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		comp.OnMouseMove(sender, shift, x, y)
 	}
+	//*message.Result() = 1
+	return true
 }
 
 func (m *TEngFormDesigner) move(sender lcl.IControl, message *types.TLMMove) {
@@ -227,30 +229,32 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 
 func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
 	//logs.Debug("IsDesignMsg", message.Msg)
-	result := false
+	result := false // 标记行为 false: 不是自己处理, true: 是自己处理
 	//isDesign := sender.ComponentState().In(types.CsDesigning)
 	//if isDesign {
+	//result = true
 	dispatchMsg := (*uintptr)(unsafe.Pointer(message))
 	switch message.Msg {
 	case messages.LM_PAINT:
 		//println("paint")
-		//paint := *(*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
-		//sender.Dispatch(dispatchMsg) // 有些问题
-		//println(isDesign, message.Msg == messages.LM_PAINT, paint.DC, sender.Name())
-		//m.paint(sender, paint)
+		paint := *(*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
+		pintPtr := uintptr(unsafe.Pointer(&paint))
+		sender.Dispatch(&pintPtr)
+		//m.paint(sender, &paint)
+		result = true
 	case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
-		println("down")
+		//println("down")
 		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 		m.mouseDown(sender, key)
 	case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
-		println("up")
+		//println("up")
 		key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 		m.mouseUp(sender, key)
 		result = true
 	case messages.LM_MOUSEMOVE:
 		//println("move")
 		mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
-		m.mouseMove(sender, mouse)
+		result = m.mouseMove(sender, mouse)
 	case messages.LM_SIZE:
 		//println("size")
 		size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
@@ -270,12 +274,10 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		m.popupMenu(sender, contextMenu)
 	case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
 		logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
-		//result = true
 	case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 		logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
-		result = true
+		//case messages.LM_HSCROLL, messages.LM_VSCROLL:
 	}
-	//}
 	return result
 }
 
@@ -292,7 +294,7 @@ func (m *TEngFormDesigner) onNotification(component lcl.IComponent, operation ty
 }
 
 func (m *TEngFormDesigner) onPaintGrid() {
-	println("onPaintGrid")
+	//println("onPaintGrid")
 }
 
 func (m *TEngFormDesigner) onValidateRename(component lcl.IComponent, curName string, newName string) {

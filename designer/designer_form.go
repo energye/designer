@@ -16,9 +16,9 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 type TDesignerForm struct {
@@ -48,7 +48,12 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	m.FormRoot = dc
 
 	// 创建设计窗体实例
-	newDesForm := lcl.NewForm(nil)
+	//newDesForm := lcl.NewForm(nil)
+	typeClass := lcl.TFormClass()
+	instance := api.NewInstanceByComponentClass(typeClass)
+	//SetComponentDesignMode(instance)
+	api.CreateObjectByComponent(instance, 0)
+	newDesForm := lcl.AsForm(instance)
 	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
 	//lcl.Application.NewForm(designerForm)  // 不使用原因：go debug 模式有问题
 	designerForm.FormCreate(designerForm)
@@ -61,27 +66,29 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	designerForm.SetDesigner(formDesigner.Designer())
 	//SetDesignMode(designerForm)
 	designerForm.SetParent(m.scroll)
-	designerForm.SetVisible(true)
-	//designerForm.SetOnMouseMove(m.designerOnMouseMove)
-	//designerForm.SetOnMouseDown(m.designerOnMouseDown)
-	//designerForm.SetOnMouseUp(m.designerOnMouseUp)
+	//designerForm.SetVisible(true)
+	designerForm.SetOnMouseMove(m.designerOnMouseMove)
+	designerForm.SetOnMouseDown(m.designerOnMouseDown)
+	designerForm.SetOnMouseUp(m.designerOnMouseUp)
+	designerForm.Show()
 
-	formRoot := lcl.NewPanel(designerForm)
-	formRoot.SetBevelOuter(types.BvNone)
-	formRoot.SetBorderStyleToBorderStyle(types.BsSingle)
-	formRoot.SetDoubleBuffered(true)
-	formRoot.SetParentColor(false)
-	formRoot.SetColor(colors.ClBtnFace)
-	formRoot.SetName(m.name)
-	formRoot.SetCaption("")
-	formRoot.SetAlign(types.AlClient)
-	formRoot.SetShowHint(true)
-	//m.designerOnPaint(formRoot)
-	formRoot.SetOnMouseMove(m.designerOnMouseMove)
-	formRoot.SetOnMouseDown(m.designerOnMouseDown)
-	formRoot.SetOnMouseUp(m.designerOnMouseUp)
-	formRoot.SetParent(designerForm)
-	formDesigner.LookupRoot = formRoot
+	//formRoot := lcl.NewPanel(designerForm)
+	//formRoot.SetBevelOuter(types.BvNone)
+	//formRoot.SetBorderStyleToBorderStyle(types.BsSingle)
+	//formRoot.SetDoubleBuffered(true)
+	//formRoot.SetParentColor(false)
+	//formRoot.SetColor(colors.ClBtnFace)
+	//formRoot.SetName(m.name)
+	//formRoot.SetCaption("")
+	//formRoot.SetAlign(types.AlClient)
+	//formRoot.SetShowHint(true)
+	////m.designerOnPaint(formRoot)
+	//formRoot.SetOnMouseMove(m.designerOnMouseMove)
+	//formRoot.SetOnMouseDown(m.designerOnMouseDown)
+	//formRoot.SetOnMouseUp(m.designerOnMouseUp)
+	//formRoot.SetParent(designerForm)
+
+	formDesigner.LookupRoot = designerForm // formRoot
 	formDesigner.Form = designerForm
 	//SetDesignMode(FormRoot)
 

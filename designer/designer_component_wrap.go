@@ -26,7 +26,6 @@ var (
 
 // 非可视化组件
 type TNonVisualComponentWrap struct {
-	wrap lcl.IPanel
 	icon lcl.IImage
 	text lcl.ILabel
 	comp *TDesigningComponent
@@ -34,27 +33,18 @@ type TNonVisualComponentWrap struct {
 
 func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent) *TNonVisualComponentWrap {
 	m := new(TNonVisualComponentWrap)
-	wrap := lcl.NewPanel(owner)
-	wrap.SetWidth(nonWrapW)
-	wrap.SetHeight(nonWrapH)
-	wrap.SetCursor(types.CrSize)
-	wrap.SetShowHint(true)
 	icon := lcl.NewImage(owner)
-	icon.SetAlign(types.AlClient)
+	icon.SetAlign(types.AlCustom)
+	icon.SetWidth(nonWrapW)
+	icon.SetHeight(nonWrapH)
 	icon.SetImages(imageComponents.ImageList150())
-	icon.SetCursor(types.CrSize)
-	icon.SetParent(wrap)
 	text := lcl.NewLabel(owner)
-	m.wrap = wrap
 	m.icon = icon
 	m.text = text
 	m.comp = comp
 	return m
 }
 func (m *TNonVisualComponentWrap) Free() {
-	m.wrap.Free()
-	//m.text.Free() // 从父节点释放
-	m.icon.Free()
 	m.comp = nil
 }
 
@@ -62,11 +52,14 @@ func (m *TNonVisualComponentWrap) TextFollowHide() {
 	m.text.SetVisible(false)
 }
 
-func (m *TNonVisualComponentWrap) TextFollowShow() {
+func (m *TNonVisualComponentWrap) SetImage() {
 	m.icon.SetImageIndex(m.comp.IconIndex())
+}
+
+func (m *TNonVisualComponentWrap) TextFollowShow() {
 	caption := m.comp.Name()
 	m.text.SetCaption(caption)
-	br := m.wrap.BoundsRect()
+	br := m.icon.BoundsRect()
 	textWidth := m.text.Canvas().TextWidthWithUnicodestring(caption)
 	x := br.Left + br.Width()/2
 	y := br.Top + br.Height()
@@ -76,24 +69,24 @@ func (m *TNonVisualComponentWrap) TextFollowShow() {
 }
 
 func (m *TNonVisualComponentWrap) SetHint(hint string) {
-	m.wrap.SetHint(hint)
+	m.icon.SetHint(hint)
 }
 
 func (m *TNonVisualComponentWrap) SetParent(parent lcl.IWinControl) {
-	m.wrap.SetParent(parent)
+	m.icon.SetParent(parent)
 	m.text.SetParent(parent)
 }
 
 func (m *TNonVisualComponentWrap) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
-	return m.wrap.ClientToParent(point, parent)
+	return m.icon.ClientToParent(point, parent)
 }
 
 func (m *TNonVisualComponentWrap) SetLeftTop(x, y int32) {
-	m.wrap.SetBounds(x, y, nonWrapW, nonWrapH)
+	m.icon.SetBounds(x, y, nonWrapW, nonWrapH)
 }
 
 func (m *TNonVisualComponentWrap) BoundsRect() types.TRect {
-	return m.wrap.BoundsRect()
+	return m.icon.BoundsRect()
 }
 
 func (m *TNonVisualComponentWrap) Instance() uintptr {

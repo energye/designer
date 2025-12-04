@@ -404,7 +404,7 @@ func (m *reflector) callMethod() ([]any, error) {
 	)
 	if m.objectNonWrap != nil && tool.Equal(m.data.Name(), "Left", "Top") {
 		// 非可视化组件, 在修改位置时 Left, Top 使用包裹对象
-		object = reflect.ValueOf(m.objectNonWrap.wrap)
+		object = reflect.ValueOf(m.objectNonWrap.icon)
 	} else {
 		object = m.findObject()
 	}
