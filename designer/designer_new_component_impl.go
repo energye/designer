@@ -79,11 +79,16 @@ func SetComponentDesignMode(component uintptr) {
 }
 
 func (m *TDesigningComponent) Free() {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.Free()
-	} else {
-		comp := m.Component()
-		if comp != nil && comp.IsValid() {
+	// 如果是关闭不会进入下面判断
+	if !m.FormTab.IsClose {
+		// 在释放资源, 正常应该检查指针有效性, 但目前还无法检查
+		// 只能通过父组件释放后, 自动释放所有子组件.
+		// 但是这里需要一个标记在设计窗口关闭时不能在次主动释放子组件
+		// 因此只能在删除组件时单独使用
+		if m.ComponentType == consts.CtNonVisual {
+			m.objectNonWrap.Free()
+		} else {
+			comp := m.Component()
 			comp.Free()
 		}
 	}

@@ -33,6 +33,7 @@ type FormTab struct {
 	Id         int    // 唯一索引, 关联 forms key: index
 	name       string // 窗体名称, 临时: 在初始化时使用
 	IsDesigner bool   // 当前设计窗体Form是否正在设计
+	IsClose    bool   // 是否关闭
 	//sheet         lcl.ITabSheet        // tab sheet
 	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
@@ -285,13 +286,8 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	m.componentName = make(map[string]int)
-	// todo 先注释使用下面的
-	//if m.FormRoot.object != nil {
-	//	m.FormRoot.object.Free()
-	//	m.FormRoot.object = nil
-	//	m.FormRoot.originObject = nil
-	//}
-	m.FormRoot.Free() // 使用此代码释放
+	m.IsClose = true  // 标记关闭
+	m.FormRoot.Free() // 关闭从根节点释放
 	m.recover = nil
 	m.tree.Free()
 	m.componentMenu.Free()
