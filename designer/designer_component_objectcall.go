@@ -336,6 +336,10 @@ func (m *reflector) findMethodName() string {
 	switch m.data.Type() {
 	case consts.PdtCheckBox:
 		node := m.data.AffiliatedNode.ToGo()
+		if node == nil {
+			logs.Error("查找方法错误, 节点对象转换Go对象失败, 属性:", m.data.Name(), "类:", lcl.AsObject(m.object).ToString())
+			return ""
+		}
 		parentNode := node.Parent
 		// 有父节点 PdtCheckBoxList
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
@@ -367,6 +371,10 @@ func (m *reflector) findObject() (object reflect.Value) {
 	case consts.PdtCheckBox:
 		// checkbox 需要从父节点获得所属实际节点
 		node := m.data.AffiliatedNode.ToGo()
+		if node == nil {
+			logs.Error("查找对象错误, 节点对象转换Go对象失败, 属性:", m.data.Name(), "类:", lcl.AsObject(m.object).ToString())
+			return
+		}
 		parentNode := node.Parent
 		if pData := vtedit.GetPropertyNodeData(parentNode); pData != nil {
 			if pData.Type() == consts.PdtClass {
@@ -409,7 +417,9 @@ func (m *reflector) callMethod() ([]any, error) {
 		object = m.findObject()
 	}
 	methodName = m.findMethodName()
-
+	if methodName == "" {
+		return nil, fmt.Errorf("方法名称未找到 属性: %v 类: %v", m.data.Name(), lcl.AsObject(m.object).ToString())
+	}
 	method := m.findMethod(object, methodName)
 	if !method.IsValid() {
 		return nil, fmt.Errorf("方法 %v 未找到 属性: %v 类: %v", methodName, m.data.Name(), lcl.AsObject(m.object).ToString())

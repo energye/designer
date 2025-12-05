@@ -79,11 +79,14 @@ func SetComponentDesignMode(component uintptr) {
 }
 
 func (m *TDesigningComponent) Free() {
-	//if m.ComponentType == consts.CtNonVisual {
-	//	//m.objectNonWrap.Free()
-	//} else {
-	//	//m.object.Free()
-	//}
+	if m.ComponentType == consts.CtNonVisual {
+		m.objectNonWrap.Free()
+	} else {
+		comp := m.Component()
+		if comp != nil && comp.IsValid() {
+			comp.Free()
+		}
+	}
 
 	m.FormTab = nil
 	m.parent = nil

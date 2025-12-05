@@ -396,6 +396,6 @@ func init() {
 	// 初始化工具栏相关配置
 	initConfigToolbar()
 	// 注册组件
+	//initRegisterComponent()
 	initRegisterComponent()
-	initRegisterComponent2()
 }

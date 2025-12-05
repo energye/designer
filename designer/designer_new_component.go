@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -24,130 +25,130 @@ import (
 
 // 组件设计创建管理
 
-// 按钮 Button
-func NewButtonDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewButton(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("Button"))
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 编辑框 Edit
-func NewEditDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewEdit(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
-	comp.SetText(comp.Name())
-	comp.SetReadOnly(true)
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 多选框 CheckBox
-func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewCheckBox(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
-	comp.SetChecked(false)
-	setBaseProp(comp, x, y)
-	comp.SetOnChange(func(sender lcl.IObject) {
-		comp.SetChecked(false)
-	})
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 面板 Panel
-func NewPanelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewPanel(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 主菜单 MainMenu
-func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newNonVisualComponent(designerForm, x, y)
-	comp := lcl.NewMainMenu(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 弹出菜单 PopupMenu
-func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newNonVisualComponent(designerForm, x, y)
-	comp := lcl.NewPopupMenu(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 标签 Label
-func NewLabelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewLabel(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("Label"))
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 多行文本框 Memo
-func NewMemoDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewMemo(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
-	comp.SetReadOnly(true)
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 状态标记 ToggleBox
-func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewToggleBox(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
-
-// 虚拟树 LazVirtualStringTree
-func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
-	m := newVisualComponent(designerForm)
-	comp := lcl.NewLazVirtualStringTree(designerForm.FormRoot.object)
-	comp.SetName(designerForm.GetComponentCaptionName("LazVirtualStringTree"))
-	setBaseProp(comp, x, y)
-	m.drag = newDrag(designerForm.scroll, consts.DsAll)
-	m.drag.SetRelation(m)
-	m.SetObject(comp)
-	return m
-}
+//// 按钮 Button
+//func NewButtonDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewButton(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("Button"))
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 编辑框 Edit
+//func NewEditDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewEdit(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("Edit"))
+//	comp.SetText(comp.Name())
+//	comp.SetReadOnly(true)
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 多选框 CheckBox
+//func NewCheckBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewCheckBox(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("CheckBox"))
+//	comp.SetChecked(false)
+//	setBaseProp(comp, x, y)
+//	comp.SetOnChange(func(sender lcl.IObject) {
+//		comp.SetChecked(false)
+//	})
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 面板 Panel
+//func NewPanelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewPanel(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("Panel"))
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 主菜单 MainMenu
+//func NewMainMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newNonVisualComponent(designerForm, x, y)
+//	comp := lcl.NewMainMenu(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("MainMenu"))
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 弹出菜单 PopupMenu
+//func NewPopupMenuDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newNonVisualComponent(designerForm, x, y)
+//	comp := lcl.NewPopupMenu(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("PopupMenu"))
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 标签 Label
+//func NewLabelDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewLabel(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("Label"))
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 多行文本框 Memo
+//func NewMemoDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewMemo(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("Memo"))
+//	comp.SetReadOnly(true)
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 状态标记 ToggleBox
+//func NewToggleBoxDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewToggleBox(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("ToggleBox"))
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
+//
+//// 虚拟树 LazVirtualStringTree
+//func NewLazVirtualStringTreeDesigner(designerForm *FormTab, x, y int32) *TDesigningComponent {
+//	m := newVisualComponent(designerForm)
+//	comp := lcl.NewLazVirtualStringTree(designerForm.FormRoot.object)
+//	comp.SetName(designerForm.GetComponentCaptionName("LazVirtualStringTree"))
+//	setBaseProp(comp, x, y)
+//	m.drag = newDrag(designerForm.scroll, consts.DsAll)
+//	m.drag.SetRelation(m)
+//	m.SetObject(comp)
+//	return m
+//}
 
 // GetDesignerComponent 创建一个新的设计器组件
 // designerForm: 设计器表单对象，用于承载组件
@@ -159,10 +160,28 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	if designerForm == nil || component == nil || x < 0 || y < 0 {
 		return nil
 	}
-	fn := component.Func
-	method := reflect.ValueOf(fn)
+	method := reflect.ValueOf(component.Func)
 	if method.Kind() != reflect.Func {
+		logs.Error("获取设计组件, 创建类函数不是函数, 类名:", className)
 		return nil
+	}
+	asMethod := reflect.ValueOf(component.AsFunc)
+	if asMethod.Kind() != reflect.Func {
+		logs.Error("获取设计组件, 转换对象函数不是函数, 类名:", className)
+		return nil
+	}
+	callAsMethod := func(instance uintptr) any {
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(instance)
+		resultValues := asMethod.Call(in)
+		// result
+		results := make([]any, len(resultValues))
+		for i, value := range resultValues {
+			results[i] = value.Interface()
+		}
+		// object
+		object := results[0]
+		return object
 	}
 	// 创建类实例, 并标记为设计模式
 	newInstance := func() uintptr {
@@ -189,7 +208,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.mod = component.Mod
 		instance := newInstance()
 		comp := lcl.AsWinControl(instance)
-		m.SetObject(comp)
+		m.SetObject(callAsMethod(instance))
 		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
 		// 创建对象, 所属为 表单
 		ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
@@ -205,7 +224,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.mod = component.Mod
 		instance := newInstance()
 		comp := lcl.AsComponent(instance)
-		m.SetObject(comp)
+		m.SetObject(callAsMethod(instance))
 		// 创建对象, 所属为 表单
 		ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
 		api.CreateObjectByComponent(instance, ownerForm.Instance())
