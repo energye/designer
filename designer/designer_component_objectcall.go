@@ -48,6 +48,10 @@ func methodNameToSet(name string) string {
 // 恢复调用 api
 // property 当前恢复的属性
 func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vtedit.TEditNodeData) {
+	if property.Type() == consts.PdtMethod {
+		// 绑定事件方法不更新 API
+		return
+	}
 	if property == nil {
 		logs.Error("恢复属性-属性名节点数据不存在:", propertyName)
 	} else {
@@ -67,6 +71,10 @@ func (m *TDesigningComponent) doUpdateComponentBindEventToCode(updateNodeData *v
 
 // 执行更新组件属性到对象 api
 func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *vtedit.TEditNodeData) {
+	if updateNodeData.Type() == consts.PdtMethod {
+		// 绑定事件方法不更新 API
+		return
+	}
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
@@ -324,6 +332,8 @@ func (m *reflector) convertArgsValue() (args []any) {
 	case consts.PdtColorSelect:
 		// uint32
 		args = append(args, uint32(m.data.EditNodeData.IntValue))
+	case consts.PdtMethod:
+		// 绑定事件方法不更新 API
 	default:
 		logs.Error("更新组件属性失败 未实现的类型:", m.data.Type(), "属性名名称:", m.data.Name(), "类:", lcl.AsObject(m.object).ToString())
 		return nil
