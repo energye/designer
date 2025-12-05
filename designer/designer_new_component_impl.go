@@ -173,10 +173,14 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	if y != 0 {
 		comp.SetTop(y)
 	}
-	if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
-		customEdit := lcl.AsCustomEdit(comp)
-		customEdit.SetReadOnly(true)
-	}
+	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
+	//	customEdit := lcl.AsCustomEdit(comp)
+	//	//customEdit.SetReadOnly(true)
+	//}
+	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TWinControlClass()) {
+	//	winControl := lcl.AsWinControl(comp)
+	//	winControl.SetTabStop(false)
+	//}
 }
 
 // 返回当前组件实例指针

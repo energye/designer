@@ -33,21 +33,22 @@ const minDistance = 4
 
 // 拖拽控制
 type drag struct {
-	relation    *TDesigningComponent  // 关联设计的组件
-	ds          consts.DragShowStatus // 显示方向
-	isShow      bool                  // 是否显示
-	dx, dy      int32                 // 拖拽控制
-	dcl, dct    int32                 // 拖拽控制
-	isDown      bool                  // 拖拽控制
-	owner       lcl.IWinControl       // 拖拽控制所属组件, 非空表示未创建 ds(拖拽控制)空表示创建过
-	left        lcl.IPanel
-	top         lcl.IPanel
-	right       lcl.IPanel
-	bottom      lcl.IPanel
-	leftTop     lcl.IPanel
-	rightTop    lcl.IPanel
-	leftBottom  lcl.IPanel
-	rightBottom lcl.IPanel
+	relation           *TDesigningComponent  // 关联设计的组件
+	ds                 consts.DragShowStatus // 显示方向
+	isShow             bool                  // 是否显示
+	dx, dy             int32                 // 拖拽控制
+	dcl, dct           int32                 // 拖拽控制
+	dcx, dcy, dcw, dch int32                 // 拖拽控制
+	isDown             bool                  // 拖拽控制
+	owner              lcl.IWinControl       // 拖拽控制所属组件, 非空表示未创建 ds(拖拽控制)空表示创建过
+	left               lcl.IPanel
+	top                lcl.IPanel
+	right              lcl.IPanel
+	bottom             lcl.IPanel
+	leftTop            lcl.IPanel
+	rightTop           lcl.IPanel
+	leftBottom         lcl.IPanel
+	rightBottom        lcl.IPanel
 }
 
 func (m *drag) Free() {
@@ -95,50 +96,45 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	}
 	pnl.SetHint(hint)
 	pnl.SetParent(owner)
-	var (
-		isDown             bool
-		dx, dy             int32
-		dcx, dcy, dcw, dch int32
-	)
-	_, _ = dx, dy
-	_, _, _, _ = dcx, dcy, dcw, dch
+	//_, _ = dx, dy
+	//_, _, _, _ = dcx, dcy, dcw, dch
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-		if isDown {
+		if m.isDown {
 			switch d {
 			case consts.DLeft:
-				x := X - dx
-				w := dcw - x
-				m.relation.SetBounds(dcx+x, dcy, w, dch)
+				x := X - m.dx
+				w := m.dcw - x
+				m.relation.SetBounds(m.dcx+x, m.dcy, w, m.dch)
 			case consts.DTop:
-				y := Y - dy
-				h := dch - y
-				m.relation.SetBounds(dcx, dcy+y, dcw, h)
+				y := Y - m.dy
+				h := m.dch - y
+				m.relation.SetBounds(m.dcx, m.dcy+y, m.dcw, h)
 			case consts.DRight:
-				x := X - dx
-				m.relation.SetBounds(dcx, dcy, dcw+x, dch)
+				x := X - m.dx
+				m.relation.SetBounds(m.dcx, m.dcy, m.dcw+x, m.dch)
 			case consts.DBottom:
-				y := Y - dy
-				m.relation.SetBounds(dcx, dcy, dcw, dch+y)
+				y := Y - m.dy
+				m.relation.SetBounds(m.dcx, m.dcy, m.dcw, m.dch+y)
 			case consts.DLeftTop:
-				x := X - dx
-				w := dcw - x
-				y := Y - dy
-				h := dch - y
-				m.relation.SetBounds(dcx+x, dcy+y, w, h)
+				x := X - m.dx
+				w := m.dcw - x
+				y := Y - m.dy
+				h := m.dch - y
+				m.relation.SetBounds(m.dcx+x, m.dcy+y, w, h)
 			case consts.DRightTop:
-				y := Y - dy
-				h := dch - y
-				x := X - dx
-				m.relation.SetBounds(dcx, dcy+y, dcw+x, h)
+				y := Y - m.dy
+				h := m.dch - y
+				x := X - m.dx
+				m.relation.SetBounds(m.dcx, m.dcy+y, m.dcw+x, h)
 			case consts.DLeftBottom:
-				x := X - dx
-				w := dcw - x
-				y := Y - dy
-				m.relation.SetBounds(dcx+x, dcy, w, dch+y)
+				x := X - m.dx
+				w := m.dcw - x
+				y := Y - m.dy
+				m.relation.SetBounds(m.dcx+x, m.dcy, w, m.dch+y)
 			case consts.DRightBottom:
-				x := X - dx
-				y := Y - dy
-				m.relation.SetBounds(dcx, dcy, dcw+x, dch+y)
+				x := X - m.dx
+				y := Y - m.dy
+				m.relation.SetBounds(m.dcx, m.dcy, m.dcw+x, m.dch+y)
 			}
 			br := m.relation.BoundsRect()
 			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
@@ -151,11 +147,11 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		if !tool.IsLinux() {
 			m.Hide()
 		}
-		dx, dy = X, Y
+		m.dx, m.dy = X, Y
 		br := m.relation.BoundsRect()
-		dcx, dcy, dcw, dch = br.Left, br.Top, br.Width(), br.Height()
-		isDown = true
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", dcx, dcy, dcw, dch)
+		m.dcx, m.dcy, m.dcw, m.dch = br.Left, br.Top, br.Width(), br.Height()
+		m.isDown = true
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcx, m.dcy, m.dcw, m.dch)
 		message.Follow(msgContent)
 		m.relation.DragBegin()
 	})
@@ -166,7 +162,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		} else {
 			m.Follow()
 		}
-		isDown = false
+		m.isDown = false
 		message.FollowHide()
 		br := m.relation.BoundsRect()
 		go m.relation.UpdateNodeDataSize(br.Width(), br.Height())

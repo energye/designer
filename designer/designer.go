@@ -293,12 +293,14 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
 		//case messages.LM_HSCROLL, messages.LM_VSCROLL:
-		case messages.LM_ENTER, messages.LM_SETFOCUS:
-			//println("enter", sender.ToString(), m.Form.CanFocus(), m.Form.CanSetFocus())
-			if api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomComboBoxClass()) ||
-				api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomEditClass()) ||
-				api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomListBoxClass()) {
-				m.Form.SetFocus()
+		case messages.LM_SETFOCUS:
+			if m.MouseMoveComponent != nil && sender.Instance() == m.MouseMoveComponent.Instance() {
+				//println("enter", message.Msg, sender.ToString(), sender.Name(), m.Form.CanFocus(), m.Form.CanSetFocus())
+				if api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomComboBoxClass()) ||
+					api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomEditClass()) ||
+					api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomListBoxClass()) {
+					m.Form.SetFocus()
+				}
 			}
 		default:
 			// 其它让组件自动处理消息
@@ -310,6 +312,7 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 
 func (m *TEngFormDesigner) onUTF8KeyPress(uTF8Key *string) {
 	println("onUTF8KeyPress")
+	*uTF8Key = ""
 }
 
 func (m *TEngFormDesigner) onModified() {

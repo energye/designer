@@ -190,7 +190,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		instance := newInstance()
 		comp := lcl.AsWinControl(instance)
 		m.SetObject(comp)
-		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
+		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
 		// 创建对象, 所属为 表单
 		ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
 		api.CreateObjectByComponent(instance, ownerForm.Instance())
