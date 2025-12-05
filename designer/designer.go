@@ -29,7 +29,7 @@ type TEngFormDesigner struct {
 	designer           lcl.IDesigner
 	componentList      map[uintptr]*TDesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
 	canvas             lcl.ICanvas
-	Form               lcl.IComponent
+	Form               lcl.IWinControl
 	LookupRoot         lcl.IComponent
 	MouseMoveComponent lcl.IComponent
 	MouseDownComponent lcl.IComponent
@@ -108,8 +108,8 @@ func (m *TEngFormDesigner) RemoveComponentFormList(instance uintptr) {
 
 func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
 	//logs.Debug("Design Msg setCursor", message.Msg, sender.ToString())
-	//lcl.Screen.SetCursor(types.CrDefault)
-	//message.Result = 1
+	lcl.Screen.SetCursor(types.CrDefault)
+	message.Result = 1
 }
 
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
@@ -283,7 +283,7 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		case messages.LM_CLOSEQUERY:
 			//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 		case messages.LM_SETCURSOR:
-			m.setCursor(sender, message)
+			//m.setCursor(sender, message)
 		case messages.LM_CONTEXTMENU:
 			logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
@@ -293,6 +293,13 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
 		//case messages.LM_HSCROLL, messages.LM_VSCROLL:
+		case messages.LM_ENTER, messages.LM_SETFOCUS:
+			//println("enter", sender.ToString(), m.Form.CanFocus(), m.Form.CanSetFocus())
+			if api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomComboBoxClass()) ||
+				api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomEditClass()) ||
+				api.IsObjectInstanceOf(sender.Instance(), lcl.TCustomListBoxClass()) {
+				m.Form.SetFocus()
+			}
 		default:
 			// 其它让组件自动处理消息
 			result = false

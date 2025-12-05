@@ -79,11 +79,11 @@ func SetComponentDesignMode(component uintptr) {
 }
 
 func (m *TDesigningComponent) Free() {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.Free()
-	} else {
-		m.Component().Free()
-	}
+	//if m.ComponentType == consts.CtNonVisual {
+	//	//m.objectNonWrap.Free()
+	//} else {
+	//	//m.object.Free()
+	//}
 
 	m.FormTab = nil
 	m.parent = nil
@@ -172,6 +172,10 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	}
 	if y != 0 {
 		comp.SetTop(y)
+	}
+	if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
+		customEdit := lcl.AsCustomEdit(comp)
+		customEdit.SetReadOnly(true)
 	}
 }
 
