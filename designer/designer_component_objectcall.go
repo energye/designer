@@ -283,11 +283,11 @@ func (m *reflector) convertArgsValue() (args []any) {
 			for _, item := range dataList {
 				if item.Checked {
 					if v := mapper.GetLCL(item.Name); v == nil {
-						logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
+						logs.Error("更新组件属性失败 TSet集合取types值不存在 常量名:", item.Name)
 						return nil
 					} else {
 						if val, err := tool.StrToInt32(tool.IntToString(v)); err != nil {
-							logs.Error("[更新组件属性失败] TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
+							logs.Error("更新组件属性失败 TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
 						} else {
 							vals = append(vals, val)
 						}
@@ -306,11 +306,11 @@ func (m *reflector) convertArgsValue() (args []any) {
 		for _, item := range dataList {
 			if item.Checked {
 				if v := mapper.GetLCL(item.Name); v == nil {
-					logs.Error("[更新组件属性失败] TSet集合取types值不存在 常量名:", item.Name)
+					logs.Error("更新组件属性失败 TSet集合取types值不存在 常量名:", item.Name)
 					return nil
 				} else {
 					if val, err := tool.StrToInt32(tool.IntToString(v)); err != nil {
-						logs.Error("[更新组件属性失败] TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
+						logs.Error("更新组件属性失败 TSet集合取types值转换错误 常量名:", item.Name, "err:", err.Error())
 					} else {
 						set = set.Include(val)
 					}
@@ -325,7 +325,7 @@ func (m *reflector) convertArgsValue() (args []any) {
 		// uint32
 		args = append(args, uint32(m.data.EditNodeData.IntValue))
 	default:
-		logs.Error("[更新组件属性失败] 未实现的类型:", m.data.EditNodeData.Type)
+		logs.Error("更新组件属性失败 未实现的类型:", m.data.Type(), "属性名名称:", m.data.Name(), "类:", lcl.AsObject(m.object).ToString())
 		return nil
 	}
 	return
@@ -412,14 +412,14 @@ func (m *reflector) callMethod() ([]any, error) {
 
 	method := m.findMethod(object, methodName)
 	if !method.IsValid() {
-		return nil, fmt.Errorf("方法 %v 未找到", methodName)
+		return nil, fmt.Errorf("方法 %v 未找到 属性: %v 类: %v", methodName, m.data.Name(), lcl.AsObject(m.object).ToString())
 	}
 
 	args := m.convertArgsValue()
 
 	mType := method.Type()
 	if mType.NumIn() != len(args) {
-		return nil, fmt.Errorf("参数数量不匹配 需要: %v 实际: %v", mType.NumIn(), len(args))
+		return nil, fmt.Errorf("参数数量不匹配 需要: %v 实际: %v 属性: %v 类: %v", mType.NumIn(), len(args), m.data.Name(), lcl.AsObject(m.object).ToString())
 	}
 
 	// 准备参数
