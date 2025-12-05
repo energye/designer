@@ -257,15 +257,6 @@ func GetPropertyNodeData(node types.PVirtualNode) *TEditNodeData {
 	return nil
 }
 
-// 判断节点对象是否存在
-func IsExistNodeData(node types.PVirtualNode) bool {
-	if node == 0 {
-		return false
-	}
-	_, ok := propertyTreeDataList[node]
-	return ok
-}
-
 // 删除节点属性数据
 func DelPropertyNodeData(node types.PVirtualNode) {
 	delete(propertyTreeDataList, node)
