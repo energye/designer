@@ -22,14 +22,15 @@ import (
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
+	//_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-// go build -ldflags="-H windowsgui -s -w" -trimpath
+// go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
 func main() {
-	// go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
+	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelError
