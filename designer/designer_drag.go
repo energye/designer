@@ -301,9 +301,11 @@ func (m *drag) Follow() {
 	}
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
+		scrollX := m.relation.FormTab.scroll.HorzScrollBar().Position()
+		scrollY := m.relation.FormTab.scroll.VertScrollBar().Position()
 		// 转换为 form tab 的坐标
 		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.FormTab.scroll)
-		x, y := point.X, point.Y
+		x, y := point.X+scrollX, point.Y+scrollY
 		width, height := br.Width(), br.Height()
 		db := dragBorder / 2
 		if m.ds == consts.DsAll {
