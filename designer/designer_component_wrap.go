@@ -18,7 +18,7 @@ import (
 	"github.com/energye/lcl/types"
 )
 
-// 组件设计 非呈现组件的包裹
+// 组件设计 组件的包裹
 
 var (
 	nonWrapW, nonWrapH int32 = 38, 38
@@ -69,25 +69,13 @@ func (m *TNonVisualComponentWrap) TextFollowShow() {
 	m.text.SetVisible(true)
 }
 
-func (m *TNonVisualComponentWrap) SetHint(hint string) {
-	m.icon.SetHint(hint)
-}
-
 func (m *TNonVisualComponentWrap) SetParent(parent lcl.IWinControl) {
 	m.icon.SetParent(parent)
 	m.text.SetParent(parent)
 }
 
-func (m *TNonVisualComponentWrap) ClientToParent(point types.TPoint, parent lcl.IWinControl) types.TPoint {
-	return m.icon.ClientToParent(point, parent)
-}
-
 func (m *TNonVisualComponentWrap) SetLeftTop(x, y int32) {
 	m.icon.SetBounds(x, y, nonWrapW, nonWrapH)
-}
-
-func (m *TNonVisualComponentWrap) BoundsRect() types.TRect {
-	return m.icon.BoundsRect()
 }
 
 func (m *TNonVisualComponentWrap) Instance() uintptr {

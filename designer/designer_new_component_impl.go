@@ -173,6 +173,17 @@ func newNonVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
 	return m
 }
 
+// 创建自定义包裹非常规可视组件
+func newWrapVisualComponent(formTab *FormTab, x, y int32) *TDesigningComponent {
+	m := new(TDesigningComponent)
+	m.ComponentType = consts.CtWrapVisual
+	m.FormTab = formTab
+	objectWrap := NewNonVisualComponentWrap(formTab.FormRoot.object, m)
+	objectWrap.SetLeftTop(x, y)
+	m.objectNonWrap = objectWrap
+	return m
+}
+
 // 设置基础通用属性
 func setBaseProp(comp lcl.IControl, x, y int32) {
 	if x != 0 {
@@ -183,11 +194,6 @@ func setBaseProp(comp lcl.IControl, x, y int32) {
 	}
 	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TCustomEditClass()) {
 	//	customEdit := lcl.AsCustomEdit(comp)
-	//	//customEdit.SetReadOnly(true)
-	//}
-	//if api.IsObjectInstanceOf(comp.Instance(), lcl.TWinControlClass()) {
-	//	winControl := lcl.AsWinControl(comp)
-	//	winControl.SetTabStop(false)
 	//}
 }
 
