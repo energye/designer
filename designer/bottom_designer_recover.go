@@ -65,10 +65,10 @@ func (m *FormTab) Recover() {
 	defer m.FormRoot.SetVisible(true)
 	// 4. 添加到组件树
 	node := m.AddFormNode()
-	// 5. 恢复的默认切换至当前Form编辑状态
-	node.SetSelected(true)
-	// 6. 恢复子组件
+	// 5. 恢复子组件
 	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
+	// 6. 恢复的默认切换至当前Form编辑状态
+	node.SetSelected(true)
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
@@ -89,19 +89,6 @@ func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDes
 			// 恢复子组件
 			recoverDesignerChildComponent(child.Child, newDesComp)
 		}
-
-		//if create := GetRegisterComponent(child.ClassName); create != nil {
-		//	newComp := create(parent.FormTab, 0, 0)
-		//	newComp.SetParent(parent)
-		//	// 1. 加载属性
-		//	newComp.GetProps()
-		//	// 2. 恢复组件属性
-		//	recoverDesignerComponentProperty(child.Properties, newComp)
-		//	// 3. 添加到组件树
-		//	parent.AddChild(newComp)
-		//	// 恢复子组件
-		//	recoverDesignerChildComponent(child.Child, newComp)
-		//}
 	}
 }
 
@@ -123,6 +110,9 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 			propNodeData.SetEditValue(property.Value)
 			// 更新 api
 			component.recoverCallAPI(property.Name, propNodeData)
+			if component.ComponentType == consts.CtNonVisual {
+				component.objectNonWrap.TextFollowShow()
+			}
 		}
 	}
 }
