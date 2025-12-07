@@ -60,7 +60,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
-	formDesigner.LookupRoot = designerForm // formRoot
+	formDesigner.LookupRoot = dc // formRoot
 	formDesigner.Form = designerForm
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)

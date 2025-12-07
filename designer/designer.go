@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
@@ -30,9 +31,11 @@ type TEngFormDesigner struct {
 	componentList      map[uintptr]*TDesigningComponent // 设计中的组件列表, key: 组件实例ID, value: 设计组件
 	canvas             lcl.ICanvas
 	Form               lcl.IWinControl
-	LookupRoot         lcl.IComponent
+	LookupRoot         *TDesigningComponent
 	MouseMoveComponent lcl.IComponent
 	MouseDownComponent lcl.IComponent
+	MouseDownPos       types.TPoint
+	MouseUpPos         types.TPoint
 }
 
 // 创建一个窗体设计器
@@ -115,6 +118,10 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
 	m.MouseDownComponent = m.GetDesignControl(sender)
+	//if m.MouseDownComponent == nil {
+	m.MouseDownPos = m.GetMousePos() // int32(*message.XPos()), int32(*message.YPos())
+	m.GetComponentAtPos(m.MouseDownPos.X, m.MouseDownPos.Y)
+	//}
 	instance := m.MouseDownComponent.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -131,6 +138,11 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 	if control == nil {
 		control = m.GetDesignControl(sender)
 	}
+	//if control == nil {
+	m.MouseUpPos = m.GetMousePos() // int32(*message.XPos()), int32(*message.YPos())
+	//control = m.GetComponentAtPos(x, y)
+	m.GetComponentAtPos(m.MouseUpPos.X, m.MouseUpPos.Y)
+	//}
 	instance := control.Instance()
 	comp := m.GetComponentFormList(instance)
 	if comp != nil {
@@ -148,6 +160,11 @@ func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMous
 	if m.MouseMoveComponent == nil {
 		m.MouseMoveComponent = m.GetDesignControl(sender)
 	}
+	//if m.MouseMoveComponent == nil {
+	//x, y := int32(*message.XPos()), int32(*message.YPos())
+	//m.MouseMoveComponent = m.GetComponentAtPos(x, y)
+	//m.GetComponentAtPos(x, y)
+	//}
 
 	control := m.MouseMoveComponent
 	instance := control.Instance()
@@ -350,7 +367,7 @@ func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
 }
 
 func (m *TEngFormDesigner) GetDesignControl(control lcl.IControl) lcl.IControl {
-	if control == nil || control.Instance() == m.LookupRoot.Instance() /*|| control.Owner().Instance() == m.LookupRoot.Instance() */ {
+	if control == nil || control.Instance() == m.Form.Instance() /*|| control.Owner().Instance() == m.Form.Instance() */ {
 		return control
 	}
 	if control.Instance() == m.Form.Instance() {
@@ -367,6 +384,54 @@ func (m *TEngFormDesigner) GetDesignControl(control lcl.IControl) lcl.IControl {
 	} else {
 		return control
 	}
+}
+
+func (m *TEngFormDesigner) GetComponentAtPos(x, y int32) lcl.IComponent {
+	logs.Debug("GetComponentAtPos:", x, y)
+	root := m.LookupRoot
+	fmt.Println("ClientOrigin:", root.Control().ClientOrigin(), "MousePosition:", m.GetMousePos())
+	var iteratorChild func(*TDesigningComponent)
+	iteratorChild = func(component *TDesigningComponent) {
+		br := m.GetRelativeBounds(component)
+		fmt.Println("x,y:", x, y, "bounds:", br.Left, br.Top, br.Width(), br.Height(), component.Name(),
+			"PtInRect:", br.PtInRect(types.TPoint{X: x, Y: y}), m.GetRelativeBounds(component))
+		for _, child := range component.Child {
+			iteratorChild(child)
+		}
+	}
+	iteratorChild(root)
+	return nil
+}
+
+func (m *TEngFormDesigner) GetRelativeBounds(component *TDesigningComponent) (result types.TRect) {
+	topLeft := m.GetRelativeTopLeft(component)
+	result.Left = topLeft.X
+	result.Top = topLeft.Y
+	result.Right = result.Left + component.Control().Width()
+	result.Bottom = result.Top + component.Control().Height()
+	return
+}
+
+func (m *TEngFormDesigner) GetRelativeTopLeft(component *TDesigningComponent) (result types.TPoint) {
+	form := m.LookupRoot
+	parent := component.Parent()
+	if form == nil || parent == nil {
+		return types.NewPoint(0, 0)
+	}
+	result = parent.Control().ClientOrigin()
+	formOrigin := form.Control().ClientOrigin()
+	result.X = result.X - formOrigin.X + component.Control().Left()
+	result.Y = result.Y - formOrigin.Y + component.Control().Top()
+	return
+}
+
+func (m *TEngFormDesigner) GetMousePos() (result types.TPoint) {
+	form := m.LookupRoot
+	mousePos := lcl.Mouse.CursorPos()
+	formClientOrigin := form.Control().ClientOrigin()
+	result.X = mousePos.X - formClientOrigin.X
+	result.Y = mousePos.Y - formClientOrigin.Y
+	return
 }
 
 func (m *TEngFormDesigner) GetDesignedComponent(component lcl.IComponent) lcl.IComponent {
