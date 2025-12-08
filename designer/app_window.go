@@ -77,7 +77,7 @@ func UpdateDesignerTitle(title string) {
 	if title == "" {
 		title = fmt.Sprintf("%v %v", config.FormConfig.Title, config.FormConfig.Version)
 	} else {
-		title = fmt.Sprintf("%v %v - %v", config.FormConfig.Title, config.FormConfig.Version, title)
+		title = fmt.Sprintf("%v %v - %v", title, config.FormConfig.Title, config.FormConfig.Version)
 	}
 	lcl.RunOnMainThreadSync(func() {
 		logs.Debug("UpdateDesignerTitle:", title, mainWindow.IsValid())
