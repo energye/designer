@@ -53,23 +53,15 @@ type drag struct {
 
 func (m *drag) Free() {
 	m.relation = nil
-	if m.owner != nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left.Free()
-		m.top.Free()
-		m.right.Free()
-		m.bottom.Free()
-		m.leftTop.Free()
-		m.rightTop.Free()
-		m.leftBottom.Free()
-		m.rightBottom.Free()
-	} else {
-		m.right.Free()
-		m.bottom.Free()
-		m.rightBottom.Free()
-	}
+	m.owner = nil
+	m.left = nil
+	m.top = nil
+	m.right = nil
+	m.bottom = nil
+	m.leftTop = nil
+	m.rightTop = nil
+	m.leftBottom = nil
+	m.rightBottom = nil
 }
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
