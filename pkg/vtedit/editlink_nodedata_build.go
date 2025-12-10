@@ -15,6 +15,7 @@ package vtedit
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
@@ -114,14 +115,16 @@ func (m *TEditNodeData) Build() {
 			m.EditNodeData.Class.Count = int32(len(properties))
 			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
 			for _, prop := range properties {
+				if config.ComponentProperty.IsExclude(prop.Name) {
+					continue
+				}
 				newProp := prop
 				tool.FixPropInfo(methods, &newProp)
 				if newProp.Kind == consts.TkMethod {
 					continue // tkMethod 事件函数
 				}
 				newEditLinkNodeData := NewEditLinkNodeData(&newProp)
-				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(),
-					AffiliatedComponent: m.AffiliatedComponent, Parent: m}
+				newEditNodeData := &TEditNodeData{EditNodeData: newEditLinkNodeData, OriginNodeData: newEditLinkNodeData.Clone(), AffiliatedComponent: m.AffiliatedComponent, Parent: m}
 				m.Child = append(m.Child, newEditNodeData)
 				newEditNodeData.Build()
 			}

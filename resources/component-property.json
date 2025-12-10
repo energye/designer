@@ -2,6 +2,7 @@
   "common": {
     "exclude": [
       "Action",
+      "Control",
       "LCLVersion",
       "SessionProperties",
       "ActiveControl",

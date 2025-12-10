@@ -418,13 +418,15 @@ func (m *TDesigningComponent) GetProps() {
 			tempPropertyMap = make(map[string]struct{}) // 用于下面判断
 		)
 		for _, prop := range properties {
+			if config.ComponentProperty.IsExclude(prop.Name) {
+				continue
+			}
 			metadata := prop
 			tool.FixPropInfo(methods, &metadata)
-
-			if customMetadatas := configCompProp.GetCustomPropertyList(metadata.Name); customMetadatas != nil {
-				if len(customMetadatas) == 1 {
+			if customMetaDatas := configCompProp.GetCustomPropertyList(metadata.Name); customMetaDatas != nil {
+				if len(customMetaDatas) == 1 {
 					// 数组只有一个元素时, 将它做为元数据使用, 替换当前属性
-					customMetadata := customMetadatas[0]
+					customMetadata := customMetaDatas[0]
 					// Options 默认值设置
 					if customMetadata.Options == "" {
 						// 未配置options时, 使用源数据默认值
