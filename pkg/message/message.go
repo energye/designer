@@ -68,11 +68,12 @@ func Follow(content string) {
 	hintRect.SetHeight(h)
 	message.hintWindow.SetAlphaBlendValue(255)
 
-	message.hintWindow.SetBoundsRect(hintRect)
-	message.hintWindow.SetCaption(content)
-	message.hintWindow.Show()
-	message.hintWindow.Invalidate()
-	//message.hintWindow.ActivateHintWithRectString(hintRect, content)
+	//message.hintWindow.SetBoundsRect(hintRect)
+	//message.hintWindow.SetCaption(content)
+	//message.hintWindow.Show()
+	//message.hintWindow.Invalidate()
+
+	message.hintWindow.ActivateHintWithRectString(hintRect, content)
 }
 
 func FollowHide() {
@@ -92,6 +93,8 @@ func Info(title, content string, w, h int32) {
 	message.hintWindow.ActivateHintWithRectString(windowCenterRect, msg)
 }
 
+// OnShowTimer 处理显示定时器事件，控制提示窗口的渐显效果和自动隐藏
+// sender: 事件发送者对象
 func (m *TMessage) OnShowTimer(sender lcl.IObject) {
 	abv := m.hintWindow.AlphaBlendValue()
 	if abv >= 255 {
