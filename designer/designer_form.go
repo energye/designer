@@ -23,7 +23,7 @@ import (
 
 type TDesignerForm struct {
 	//lcl.TEngForm
-	*lcl.TForm
+	*lcl.TEngForm
 }
 
 func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
@@ -48,11 +48,11 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	m.FormRoot = dc
 
 	// 创建设计窗体实例
-	formInstance := api.NewInstanceByComponentClass(lcl.TFormClass())
+	formInstance := api.NewInstanceByComponentClass(lcl.TEngFormClass())
 	//SetComponentDesignMode(instance)
 	api.CreateObjectByComponent(formInstance, 0)
-	newDesForm := lcl.AsForm(formInstance)
-	designerForm := &TDesignerForm{TForm: newDesForm.(*lcl.TForm)}
+	newDesForm := lcl.AsEngForm(formInstance)
+	designerForm := &TDesignerForm{TEngForm: newDesForm.(*lcl.TEngForm)}
 	//newDesForm.SetControlStyle(newDesForm.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
 	designerForm.FormCreate(designerForm)
 	designerForm.SetName(m.name)
@@ -64,6 +64,14 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formDesigner.Form = designerForm
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
+	//designerForm.SetOnWndProc(func(message *types.TLMessage) {
+	//	switch message.Msg {
+	//	case messages.CM_HITTEST:
+	//		message.Result = 1
+	//		return
+	//	}
+	//	designerForm.InheritedWndProc(message)
+	//})
 	designerForm.Show()
 
 	// 创建窗体设计面板, 放置实际设计的组件
