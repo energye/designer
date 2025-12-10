@@ -121,7 +121,7 @@ func FixPropInfo(methods *ArrayMap[string, *TMethod], prop *lcl.ComponentPropert
 			return
 		}
 	}
-	logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
+	//logs.Warn("属性和对象方法不匹配, 当前属性名:", prop.Name, "属性类型:", prop.Type)
 	// 遍历对象方法列表, 匹配出所有属性名
 	type_ := strings.ToLower(RemoveT(prop.Type))
 	name_ := strings.ToLower(name)
