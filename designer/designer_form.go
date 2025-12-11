@@ -19,6 +19,7 @@ import (
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 )
 
 type TDesignerForm struct {
@@ -82,6 +83,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	//designerFormBox.SetControlStyle(designerFormBox.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
 	designerFormBox.SetAlign(types.AlClient)
 	designerFormBox.SetBevelOuter(types.BvNone)
+	designerFormBox.SetColor(colors.ClForm)
 	designerFormBox.SetParent(designerForm)
 
 	// 设计面板
