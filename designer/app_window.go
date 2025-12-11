@@ -15,6 +15,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -24,6 +25,7 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -155,9 +157,10 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 		WriteConsole(consoleText.String())
 		if true { // 一个开关, 动态配置
-			if len(os.Args) > 1 {
+			isEgp := strings.HasSuffix(os.Args[len(os.Args)-1], consts.EGPExt)
+			if isEgp {
 				// 自动打开 energy 项目
-				filePath := os.Args[1]
+				filePath := os.Args[len(os.Args)-1]
 				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 			} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
 				// 自动打开 最后一次打开的项目
@@ -167,13 +170,13 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 	})
 }
 
-func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
-	logs.Info("FormAfterCreate")
-}
+//func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
+//	logs.Info("FormAfterCreate")
+//}
 
-func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
-	logs.Info("CreateParams")
-}
+//func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
+//	logs.Info("CreateParams")
+//}
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	logs.Info("OnCloseQuery closing:", m.closing)
