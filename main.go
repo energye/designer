@@ -21,11 +21,14 @@ import (
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/lcl"
 	"os"
+	"runtime"
 	"strings"
 )
 
 // go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
 func main() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug

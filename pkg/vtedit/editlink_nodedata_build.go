@@ -73,7 +73,7 @@ func (m *TEditLinkNodeData) Build() {
 		m.IntValue = v
 		// TModalResult TCursor TGraphicsColor
 		switch m.Metadata.Type {
-		case "TGraphicsColor": // 颜色
+		case "TGraphicsColor", "TColor": // 颜色
 			m.Type = consts.PdtColorSelect
 		case "TCursor": // 指针样式-在配置文件转换
 		case "TModalResult": // 模态返回值-在配置文件转换
