@@ -16,19 +16,22 @@ package designer
 import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 )
 
 // 设置窗口图标
 func (m *TAppWindow) setWindowIcon() {
-	if iconData := resources.Images("icons/window-icon_64x64.png"); iconData != nil {
-		stream := lcl.NewMemoryStream()
-		lcl.StreamHelper.Write(stream, iconData)
-		stream.SetPosition(0)
-		png := lcl.NewPortableNetworkGraphic()
-		png.LoadFromStreamWithStream(stream)
-		lcl.Application.Icon().Assign(png)
-		png.Free()
-		stream.Free()
+	if !tool.IsDarwin() {
+		if iconData := resources.Images("icons/window-icon_64x64.png"); iconData != nil {
+			stream := lcl.NewMemoryStream()
+			lcl.StreamHelper.Write(stream, iconData)
+			stream.SetPosition(0)
+			png := lcl.NewPortableNetworkGraphic()
+			png.LoadFromStreamWithStream(stream)
+			lcl.Application.Icon().Assign(png)
+			png.Free()
+			stream.Free()
+		}
 	}
 }
 
