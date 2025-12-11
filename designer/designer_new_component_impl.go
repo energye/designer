@@ -206,7 +206,7 @@ func (m *TDesigningComponent) SetHint(hint string) {
 }
 
 func (m *TDesigningComponent) ClassName() string {
-	return m.Component().ToString()
+	return m.Component().ClassName()
 }
 
 func (m *TDesigningComponent) BoundsRect() types.TRect {
