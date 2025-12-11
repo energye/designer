@@ -30,7 +30,7 @@ const (
 
 var (
 	// Path 框架目录
-	Path = filepath.Join(exec.Dir, "frameworks")
+	Path = filepath.Join(exec.AppDir(), "frameworks")
 	// RuntimePath 运行时库目录
 	RuntimePath = filepath.Join(Path, "runtime")
 )
