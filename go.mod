@@ -3,8 +3,8 @@ module github.com/energye/designer
 go 1.20
 
 replace (
-	github.com/energye/lcl => C:\app\workspace\lcl
-	github.com/energye/widget => C:\app\workspace\widget
+	github.com/energye/lcl => ../lcl
+	github.com/energye/widget => ../widget
 )
 
 require (
