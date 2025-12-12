@@ -166,13 +166,13 @@ func init() {
 	_ = os.Mkdir(energyDir, os.ModePerm)
 
 	// config.json
-	Config = &TConfig{}
+	Config = &TConfig{Window: FormConfig.Window}
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.Window = FormConfig.Window
 		data, e := json.MarshalIndent(Config, "", "\t")
 		err.CheckErr(e)
-		e = os.WriteFile(configPath, data, os.ModePerm)
+		e = os.WriteFile(configPath, data, 0644)
 		err.CheckErr(e)
 		return
 	}
