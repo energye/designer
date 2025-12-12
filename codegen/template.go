@@ -122,9 +122,12 @@ package main
 import (
 	"github.com/energye/lcl/lcl" 
 	{{.WindowsSyso}}
+	"runtime"
 )
 
 func main() {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	lcl.Init(nil, nil)
 	lcl.Application.Initialize()
 	lcl.Application.SetMainFormOnTaskBar(true)

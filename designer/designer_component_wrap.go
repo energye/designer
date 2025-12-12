@@ -45,7 +45,11 @@ func NewNonVisualComponentWrap(owner lcl.IWinControl, comp *TDesigningComponent)
 	return m
 }
 func (m *TNonVisualComponentWrap) Free() {
-	m.comp = nil
+	if m.comp != nil {
+		m.comp = nil
+		m.icon.Free()
+		m.text.Free()
+	}
 }
 
 func (m *TNonVisualComponentWrap) TextFollowHide() {
