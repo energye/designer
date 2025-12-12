@@ -26,7 +26,7 @@ import (
 
 // 拖拽控制
 
-var dragBorder int32 = 4
+var dragBorder int32 = 6
 
 // 最小移动距离阈值
 const minDistance = 4
@@ -293,11 +293,9 @@ func (m *drag) Follow() {
 	}
 	if m.relation != nil {
 		br := m.relation.BoundsRect()
-		scrollX := m.relation.FormTab.scroll.HorzScrollBar().Position()
-		scrollY := m.relation.FormTab.scroll.VertScrollBar().Position()
 		// 转换为 form tab 的坐标
-		point := m.relation.ClientToParent(types.TPoint{X: 0, Y: 0}, m.relation.FormTab.scroll)
-		x, y := point.X+scrollX, point.Y+scrollY
+		point := m.GetTopLeft(m.relation)
+		x, y := point.X, point.Y
 		width, height := br.Width(), br.Height()
 		db := dragBorder / 2
 		if m.ds == consts.DsAll {
@@ -316,6 +314,18 @@ func (m *drag) Follow() {
 		}
 	}
 }
+func (m *drag) GetTopLeft(component *TDesigningComponent) (result types.TPoint) {
+	form := m.relation.FormTab.FormRoot
+	parent := component.Parent()
+	if form == nil || parent == nil {
+		return types.NewPoint(0, 0)
+	}
+	result = parent.Control().ClientOrigin()
+	formOrigin := form.Control().ClientOrigin()
+	result.X = result.X - formOrigin.X + component.Control().Left()
+	result.Y = result.Y - formOrigin.Y + component.Control().Top()
+	return
+}
 
 // 设计组件鼠标移动
 func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState, X int32, Y int32) {
@@ -324,7 +334,7 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 	//Left: %v Top: %v
 	//Width: %v Height: %v`, sender.TreeName(), br.Left, br.Top, br.Width(), br.Height())
 	//message.Follow(hint)
-	if m.isDown {
+	if m.isDown && sender.ComponentType != consts.CtForm {
 		m.Hide()
 		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		point := lcl.Mouse.CursorPos()
