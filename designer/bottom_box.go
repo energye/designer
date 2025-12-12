@@ -63,7 +63,7 @@ func (m *TAppWindow) createBottomBox() *BottomBox {
 	box.leftBox.SetDoubleBuffered(true)
 	box.leftBox.SetWidth(leftBoxWidth)
 	box.leftBox.SetHeight(box.box.Height())
-	box.leftBox.Constraints().SetMinWidth(50)
+	box.leftBox.Constraints().SetMinWidth(255)
 	box.leftBox.SetAlign(types.AlLeft)
 	SetComponentDefaultColor(box.leftBox)
 	box.leftBox.SetParent(box.box)

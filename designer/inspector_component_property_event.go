@@ -28,9 +28,29 @@ import (
 // 初始化组件属性树事件
 func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree := m.propertyTree
+	columns := tree.Header().Columns()
+	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
+	valueColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(1)
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
 	})
+	tree.SetOnMouseWheel(func(sender lcl.IObject, shift types.TShiftState, wheelDelta int32, mousePos types.TPoint, handled *bool) {
+		tree.UpdateScrollBars(true)
+	})
+	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
+		tree.GetMaxColumnWidth(column, false)
+	})
+	tree.SetOnAfterGetMaxColumnWidth(func(sender lcl.IVTHeader, column int32, maxWidth *int32) {
+		width := tree.Width() - 20
+		*maxWidth = width - 50
+		newWidth := width - nameColumn.Width()
+		valueColumn.SetWidth(newWidth)
+		nameColumn.SetMaxWidth(*maxWidth)
+		newWidth = width - valueColumn.Width()
+		nameColumn.SetWidth(newWidth)
+		valueColumn.SetMaxWidth(*maxWidth)
+	})
+
 	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
 		tree.EndEditNode()
 		tree.SetFocusedNode(node)
@@ -188,8 +208,27 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 // 初始化组件事件树事件
 func (m *TDesigningComponent) initComponentEventTreeEvent() {
 	tree := m.eventTree
+	columns := tree.Header().Columns()
+	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
+	valueColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(1)
 	tree.SetOnScroll(func(sender lcl.IBaseVirtualTree, deltaX int32, deltaY int32) {
 		tree.EndEditNode()
+	})
+	tree.SetOnMouseWheel(func(sender lcl.IObject, shift types.TShiftState, wheelDelta int32, mousePos types.TPoint, handled *bool) {
+		tree.UpdateScrollBars(true)
+	})
+	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
+		tree.GetMaxColumnWidth(column, false)
+	})
+	tree.SetOnAfterGetMaxColumnWidth(func(sender lcl.IVTHeader, column int32, maxWidth *int32) {
+		width := tree.Width() - 20
+		*maxWidth = width - 50
+		newWidth := width - nameColumn.Width()
+		valueColumn.SetWidth(newWidth)
+		nameColumn.SetMaxWidth(*maxWidth)
+		newWidth = width - valueColumn.Width()
+		nameColumn.SetWidth(newWidth)
+		valueColumn.SetMaxWidth(*maxWidth)
 	})
 	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
 		tree.EndEditNode()

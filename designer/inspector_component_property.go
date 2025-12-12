@@ -78,6 +78,7 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	SetComponentDefaultColor(tree)
 	tree.SetDefaultNodeHeight(28)
 	tree.SetIndent(8)
+	tree.Font().SetSize(10)
 
 	// options
 	propTreeOptions := tree.TreeOptions()
@@ -98,17 +99,19 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	columns := header.Columns()
 	columns.Clear()
 	propNameCol := columns.AddToVirtualTreeColumn()
-	propNameCol.SetText("名")
+	propNameCol.SetText("Name")
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	propNameCol.SetWidth(125)
+	propNameCol.SetMinWidth(50)
 	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
-	propValueCol.SetText("值")
+	propValueCol.SetText("Value")
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-	if tool.IsLinux() {
+	if tool.IsLinux() || tool.IsDarwin() {
 		width := int32(135) // tree.Width() - 65
 		propValueCol.SetWidth(width)
+		propValueCol.SetMinWidth(50)
 	}
 }
