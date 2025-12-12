@@ -20,6 +20,7 @@ import (
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool"
 	"os"
 	"runtime"
 	"strings"
@@ -27,6 +28,7 @@ import (
 
 // go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
 func main() {
+	setMacOSEnv()
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
@@ -38,4 +40,21 @@ func main() {
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
 	designer.Run()
+}
+
+func setMacOSEnv() {
+	if !tool.IsDarwin() {
+		return
+	}
+	commonGoPaths := []string{
+		"/usr/local/go/bin",
+		"/opt/homebrew/bin",
+	}
+	currentPath := os.Getenv("PATH")
+	for _, p := range commonGoPaths {
+		if !strings.Contains(currentPath, p) {
+			currentPath = p + ":" + currentPath
+		}
+	}
+	os.Setenv("PATH", currentPath)
 }
