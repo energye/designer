@@ -87,9 +87,12 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	switch nodeData.EventState {
 	case consts.EsUpdate:
 		// A > B 忽略
+		logs.Debug("doUpdateEvent 绑定事件忽略 Update")
 	case consts.EsDelete:
 		// 忽略
+		logs.Debug("doUpdateEvent 绑定事件忽略 Delete")
 	case consts.EsAdd:
+		logs.Debug("doUpdateEvent 绑定事件添加 Add")
 		// > A
 		// 模块类型别名集合 TODO 多模块时需要动态控制 lcl, cef, wv
 		funcTypeAliases := dependmod.GetFuncTypeAliases(uiGenData.Component.GetMod())
