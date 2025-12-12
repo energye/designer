@@ -161,27 +161,6 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
 		}
 
-		// 获取注册的组件创建函数
-		//if create := GetRegisterComponent(toolbar.selectComponent.name); create != nil {
-		//	// 创建设计组件
-		//	newComp := create(m, x, y)
-		//	newComp.SetParent(owner)
-		//	newComp.FormTab.switchComponentEditing(newComp)
-		//	newComp.DragEnd()
-		//	// 1. 加载属性到设计器
-		//	// 此步骤会初始化并填充设计组件实例
-		//	newComp.LoadPropertyToInspector()
-		//	// 2. 添加到组件树
-		//	go lcl.RunOnMainThreadAsync(func(id uint32) {
-		//		owner.AddChild(newComp)
-		//		newComp.node.SetSelected(true) // 选中
-		//	})
-		//	// 放置对象创建全量UI
-		//	triggerUIGeneration(newComp, nil, event.CodeGenUI)
-		//} else {
-		//	logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
-		//}
-
 		// 重置工具栏选项卡上的组件工具按钮按下
 		toolbar.ResetTabComponentDown()
 		return true
@@ -289,8 +268,12 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	m.IsClose = true  // 标记关闭
 	m.FormRoot.Free() // 关闭从根节点释放
 	m.recover = nil
-	m.tree.Free()
-	m.componentMenu.Free()
+	if m.tree != nil && m.tree.IsValid() {
+		m.tree.Free()
+	}
+	if m.componentMenu != nil {
+		m.componentMenu.Free()
+	}
 	// 在设计器列表删除当前窗体
 	delete(designer.designerForms, m.Id)
 	if len(designer.tab.Pages()) == 0 {
