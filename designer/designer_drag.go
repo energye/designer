@@ -136,7 +136,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 		logs.Debug("DRAG OnMouseDown direction:", d)
-		if !tool.IsLinux() {
+		if tool.IsWindows() {
 			m.Hide()
 		}
 		m.dx, m.dy = X, Y
@@ -149,7 +149,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	})
 	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 		logs.Debug("DRAG OnMouseUP direction:", d)
-		if !tool.IsLinux() {
+		if tool.IsWindows() {
 			m.Show()
 		} else {
 			m.Follow()
