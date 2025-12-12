@@ -55,6 +55,10 @@ func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vted
 	if property == nil {
 		logs.Error("恢复属性-属性名节点数据不存在:", propertyName)
 	} else {
+		switch rs := m.CheckCanUpdateProp(property); rs {
+		case err.RsIgnoreProp:
+			return
+		}
 		ref := &reflector{object: m.originObject, data: property, objectNonWrap: m.objectNonWrap}
 		_, err := ref.callMethod()
 		if err != nil {
@@ -76,6 +80,10 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 		return
 	}
 	logs.Debug("更新组件:", m.ClassName(), "属性:", updateNodeData.Name(), "IsModify:", updateNodeData.IsModify())
+	if !m.node.IsValid() {
+		// 无效节点对象
+		return
+	}
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
 		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
@@ -183,12 +191,7 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 
 // 检查是否允许更新属性
 func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNodeData) err.ResultStatus {
-	if !m.node.IsValid() {
-		// 无效节点对象
-		return err.RsNotValid
-	}
-	data := updateNodeData.EditNodeData
-	propName := strings.ToLower(data.Name)
+	propName := strings.ToLower(updateNodeData.Name())
 	switch propName {
 	case "name":
 		// 在当前设计面板只有唯一一个组件的名
