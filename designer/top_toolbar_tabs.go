@@ -129,7 +129,7 @@ func (m *TopToolbar) createComponentTabs() {
 		//sheet.SetOnClose(func(sender lcl.IObject) {
 		//	//borderSet()
 		//})
-		go compTab.BindToolBtnEvent()
+		compTab.BindToolBtnEvent()
 	}
 	// 创建组件选项卡
 	newComponentTab(config.FormConfig.ComponentTabs.Standard)

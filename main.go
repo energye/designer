@@ -27,6 +27,7 @@ import (
 )
 
 // go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
+// go build -ldflags="-H windowsgui" -trimpath -o build/designer.exe
 func main() {
 	setMacOSEnv()
 	runtime.LockOSThread()

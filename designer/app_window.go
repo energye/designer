@@ -82,7 +82,7 @@ func UpdateDesignerTitle(title string) {
 		title = fmt.Sprintf("%v %v - %v", title, config.FormConfig.Title, config.FormConfig.Version)
 	}
 	lcl.RunOnMainThreadSync(func() {
-		logs.Debug("UpdateDesignerTitle:", title, mainWindow.IsValid())
+		logs.Println("UpdateDesignerTitle:", title)
 		mainWindow.SetCaption(title)
 	})
 }
@@ -100,6 +100,7 @@ func SwitchAllTheme(dark bool) {
 }
 
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
+	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
 	cfg := config.FormConfig
 	// 属性
