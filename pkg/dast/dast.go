@@ -94,6 +94,35 @@ func PackageImportToHashMap(importSpec []*ast.ImportSpec) *tool.HashMap[string, 
 	return imports
 }
 
+// GetAllFuncTypeAliasesByCode 在Go源文件中获取所有函数类型别名
+func GetAllFuncTypeAliasesByCode(filename string, code []byte) *TFuncTypeAlias {
+	node := MustFile(filename, code)
+	if node == nil {
+		return nil
+	}
+	funcs := &TFuncTypeAlias{Funcs: tool.NewHashMap[string, *ast.FuncType]()}
+	funcs.Imports = PackageImportToHashMap(node.Imports)
+	for _, decl := range node.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok || genDecl.Tok != token.TYPE {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			funcType, ok := typeSpec.Type.(*ast.FuncType)
+			if !ok {
+				continue
+			}
+			lowerType := strings.ToLower(typeSpec.Name.Name)
+			funcs.Funcs.Add(lowerType, funcType)
+		}
+	}
+	return funcs
+}
+
 // GetAllFuncTypeAliases 在Go源文件中获取所有函数类型别名
 func GetAllFuncTypeAliases(filename string) *TFuncTypeAlias {
 	node := MustFile(filename, nil)

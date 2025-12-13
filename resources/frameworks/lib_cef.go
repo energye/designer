@@ -61,3 +61,14 @@ func extractCEF(outputPath string) {
 	}
 	cmd.Command("go", "mod", "tidy")
 }
+
+// CEF 从嵌入的 cef.zip 文件中读取指定文件的内容
+//
+//	targetFileName - 要读取的目标文件名
+func CEF(targetFileName string) (data []byte, err error) {
+	zipData, err := cef.ReadFile("cef/cef.zip")
+	if err != nil {
+		return nil, err
+	}
+	return readFileForZIPData(zipData, targetFileName)
+}

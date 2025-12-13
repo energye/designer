@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -89,8 +88,6 @@ func LoadProject(path, egpFilePath string) {
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 	// 加载完后设置窗口标题
 	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, gPath))
-	// 初始化依赖模块信息 ast
-	dependmod.InitDependencyModule()
 }
 
 // LoadUI 加载UI布局文件

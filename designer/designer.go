@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/misc"
@@ -461,6 +462,7 @@ func init() {
 	// 初始化工具栏相关配置
 	initConfigToolbar()
 	// 注册组件
-	//initRegisterComponent()
 	initRegisterComponent()
+	// 初始化依赖模块信息 ast
+	dependmod.InitDependencyModule()
 }

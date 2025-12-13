@@ -15,9 +15,9 @@ package dependmod
 
 import (
 	"github.com/energye/designer/consts"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/resources/frameworks"
 	"path/filepath"
 )
 
@@ -28,53 +28,78 @@ import (
 // 作用:
 //   事件绑定修改源码文件时使用
 // 调用时机:
-//   1. 设计器打开后 2. 项目创建后
-//     检查 frameworks/src 源码是否已安装, 然后加载
+//   应用启动期间
 //
 
 // InitDependencyModule 初始化模块类型信息
-// 每次调用都会重置
 func InitDependencyModule() {
-	logs.Println("初始化模块类型信息")
 	go initModuleTypeInfo()
 }
 
 // 初始化模块类型信息
 func initModuleTypeInfo() {
+	logs.Println("初始化模块类型信息")
 	// LCL 模块的事件回调函数类型
-	lclSRCEventDef := filepath.Join(config.Config.FrameworkDirForLCL(), "lcl", "callback_event_def.go")
-	GLCLFuncTypeAliases = dast.GetAllFuncTypeAliases(lclSRCEventDef)
+	lclSRCEventDefData, err := frameworks.LCL("lcl/callback_event_def.go")
+	if err != nil {
+		logs.Error("initModuleTypeInfo", err.Error())
+		return
+	}
+	lclSRCEventDef := filepath.Join("lcl", "callback_event_def.go")
+	GLCLFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(lclSRCEventDef, lclSRCEventDefData)
 	if GLCLFuncTypeAliases != nil {
 		GLCLFuncTypeAliases.Mod = consts.ModLCL
 		GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
 	}
+
 	// CEF 模块的事件回调函数类型
-	cefSRCEventDef := filepath.Join(config.Config.FrameworkDirForCEF(), "cef", "callback_event_def.go")
-	if GCEFFuncTypeAliases = dast.GetAllFuncTypeAliases(cefSRCEventDef); GCEFFuncTypeAliases != nil {
+	cefSRCEventDefData, err := frameworks.CEF("cef/callback_event_def.go")
+	if err != nil {
+		logs.Error("initModuleTypeInfo", err.Error())
+		return
+	}
+	cefSRCEventDef := filepath.Join("cef", "callback_event_def.go")
+	if GCEFFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(cefSRCEventDef, cefSRCEventDefData); GCEFFuncTypeAliases != nil {
 		GCEFFuncTypeAliases.Mod = consts.ModCEF
 		GCEFFuncTypeAliases.Imports.Add(GCEFFuncTypeAliases.Mod, consts.DmCEF)
 	}
 
 	// WV 模块的事件回调函数类型
 	// Windows
-	wvWindowsSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "windows", "callback_event_def.go")
-	GWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliases(wvWindowsSRCEventDef)
+	wvWindowsSRCEventDefData, err := frameworks.WV("windows/callback_event_def.go")
+	if err != nil {
+		logs.Error("initModuleTypeInfo", err.Error())
+		return
+	}
+	wvWindowsSRCEventDef := filepath.Join("windows", "callback_event_def.go")
+	GWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvWindowsSRCEventDef, wvWindowsSRCEventDefData)
 	if GWVWindowsFuncTypeAliases != nil {
 		GWVWindowsFuncTypeAliases.Mod = consts.ModWVWindows
 		GWVWindowsFuncTypeAliases.Imports.Add(GWVWindowsFuncTypeAliases.Mod, consts.DmWVWindows)
 	}
 	//  macOS
-	wvDarwinSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "darwin", "callback_event_def.go")
-	GWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliases(wvDarwinSRCEventDef)
+	wvDarwinSRCEventDefData, err := frameworks.WV("darwin/callback_event_def.go")
+	if err != nil {
+		logs.Error("initModuleTypeInfo", err.Error())
+		return
+	}
+	wvDarwinSRCEventDef := filepath.Join("darwin", "callback_event_def.go")
+	GWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvDarwinSRCEventDef, wvDarwinSRCEventDefData)
 	if GWVDarwinFuncTypeAliases != nil {
 		GWVDarwinFuncTypeAliases.Mod = consts.ModWVDarwin
 		GWVDarwinFuncTypeAliases.Imports.Add(GWVDarwinFuncTypeAliases.Mod, consts.DmWVMacOS)
 	}
 	// Linux
-	wvLinuxSRCEventDef := filepath.Join(config.Config.FrameworkDirForWV(), "linux", "callback_event_def.go")
-	GWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliases(wvLinuxSRCEventDef)
+	wvLinuxSRCEventDefData, err := frameworks.WV("linux/callback_event_def.go")
+	if err != nil {
+		logs.Error("initModuleTypeInfo", err.Error())
+		return
+	}
+	wvLinuxSRCEventDef := filepath.Join("linux", "callback_event_def.go")
+	GWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvLinuxSRCEventDef, wvLinuxSRCEventDefData)
 	if GWVLinuxFuncTypeAliases != nil {
 		GWVLinuxFuncTypeAliases.Mod = consts.ModWVLinux
 		GWVLinuxFuncTypeAliases.Imports.Add(GWVLinuxFuncTypeAliases.Mod, consts.DmWVLinux)
 	}
+	logs.Println("初始化模块类型信息 结束")
 }

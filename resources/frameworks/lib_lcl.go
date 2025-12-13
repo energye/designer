@@ -40,3 +40,14 @@ func extractLCL(outputPath string) {
 		err.CheckErr(e)
 	}
 }
+
+// LCL 从嵌入的lcl.zip文件中读取指定文件的内容
+//
+//	targetFileName - 要读取的目标文件名
+func LCL(targetFileName string) (data []byte, err error) {
+	zipData, err := lcl.ReadFile("lcl/lcl.zip")
+	if err != nil {
+		return nil, err
+	}
+	return readFileForZIPData(zipData, targetFileName)
+}

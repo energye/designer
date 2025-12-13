@@ -14,9 +14,13 @@
 package frameworks
 
 import (
+	"archive/zip"
+	"bytes"
+	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/exec"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -69,4 +73,30 @@ func ExtractWV(enable bool) {
 		_ = os.MkdirAll(WVLocalPath, os.ModePerm)
 		extractWV(WVLocalPath)
 	}
+}
+
+// readFileForZIPData 从ZIP数据中读取指定文件的内容
+//
+//	zipData: ZIP格式的字节数据
+//	targetFileName: 要读取的目标文件名
+func readFileForZIPData(zipData []byte, targetFileName string) (data []byte, err error) {
+	zipReader, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range zipReader.File {
+		if !file.FileInfo().IsDir() && file.Name == targetFileName {
+			srcFile, err := file.Open()
+			if err != nil {
+				return nil, err
+			}
+			data, err = io.ReadAll(srcFile)
+			if err != nil {
+				return nil, fmt.Errorf("读取文件[%s]内容失败: %w", targetFileName, err)
+			}
+			_ = srcFile.Close()
+			break
+		}
+	}
+	return
 }
