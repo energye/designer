@@ -47,6 +47,16 @@ func ExtractLibrary() {
 	lib.ExtractLibrary(RuntimePath)
 }
 
+// ExtractFrameworks 提取所有启用的框架
+// 该函数会根据启用的标志位，依次提取LCL、CEF和WV框架
+func ExtractFrameworks() {
+	go func() {
+		ExtractLCL(EnableLCL)
+		ExtractCEF(EnableCEF)
+		ExtractWV(EnableWV)
+	}()
+}
+
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
 func ExtractLCL(enable bool) {
 	if enable {

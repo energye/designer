@@ -17,11 +17,9 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/tool/exec"
@@ -46,7 +44,7 @@ import (
 
 var (
 	createProjectFormWidth  = int32(525)
-	createProjectFormHeight = int32(455)
+	createProjectFormHeight = int32(355)
 	minGoVersion            = "1.20"
 )
 
@@ -94,15 +92,15 @@ type TCreateProjectForm struct {
 	modErrorLabel lcl.ILabel
 	modText       lcl.ILabel
 	modBox        lcl.IComboBox
-	modLocalBox   lcl.IPanel
-	modRemoteBox  lcl.IPanel
+	//modLocalBox   lcl.IPanel
+	//modRemoteBox  lcl.IPanel
 
-	modLocalDirText    lcl.ILabel
-	modLocalDirEdit    lcl.IEdit
-	modLocalDirBtn     *wg.TButton
-	modLCLCheckBox     lcl.ICheckBox
-	modCEFCheckBox     lcl.ICheckBox
-	modWebviewCheckBox lcl.ICheckBox
+	//modLocalDirText    lcl.ILabel
+	//modLocalDirEdit    lcl.IEdit
+	//modLocalDirBtn     *wg.TButton
+	//modLCLCheckBox     lcl.ICheckBox
+	//modCEFCheckBox     lcl.ICheckBox
+	//modWebviewCheckBox lcl.ICheckBox
 
 	// 操作按钮
 	cancelBtn *wg.TButton
@@ -303,87 +301,87 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modBox.SetParent(m.box)
 		m.modBox.SetOnChange(m.modBoxChange)
 
-		m.modLocalBox = lcl.NewPanel(m)
-		m.modLocalBox.SetBevelOuter(types.BvNone)
-		m.modLocalBox.SetTop(baseTop + 95)
-		m.modLocalBox.SetHeight(100)
-		m.modLocalBox.SetWidth(createProjectFormWidth)
-		m.modLocalBox.SetVisible(true)
-		m.modLocalBox.SetParent(m.box)
+		//m.modLocalBox = lcl.NewPanel(m)
+		//m.modLocalBox.SetBevelOuter(types.BvNone)
+		//m.modLocalBox.SetTop(baseTop + 95)
+		//m.modLocalBox.SetHeight(100)
+		//m.modLocalBox.SetWidth(createProjectFormWidth)
+		//m.modLocalBox.SetVisible(true)
+		//m.modLocalBox.SetParent(m.box)
+		//
+		//m.modRemoteBox = lcl.NewPanel(m)
+		//m.modRemoteBox.SetBevelOuter(types.BvNone)
+		//m.modRemoteBox.SetTop(baseTop + 95)
+		//m.modRemoteBox.SetHeight(100)
+		//m.modRemoteBox.SetWidth(createProjectFormWidth)
+		//m.modRemoteBox.SetVisible(false)
+		//m.modRemoteBox.SetParent(m.box)
 
-		m.modRemoteBox = lcl.NewPanel(m)
-		m.modRemoteBox.SetBevelOuter(types.BvNone)
-		m.modRemoteBox.SetTop(baseTop + 95)
-		m.modRemoteBox.SetHeight(100)
-		m.modRemoteBox.SetWidth(createProjectFormWidth)
-		m.modRemoteBox.SetVisible(false)
-		m.modRemoteBox.SetParent(m.box)
-
-		m.modLocalDirText = lcl.NewLabel(m)
-		m.modLocalDirText.SetLeft(left)
-		m.modLocalDirText.SetTop(5)
-		m.modLocalDirText.SetCaption("框架目录")
-		m.modLocalDirText.SetFont(fontLabel)
-		m.modLocalDirText.SetParent(m.modLocalBox)
-
-		m.modLocalDirEdit = lcl.NewEdit(m)
-		m.modLocalDirEdit.SetLeft(120)
-		m.modLocalDirEdit.SetTop(0)
-		m.modLocalDirEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
-		m.modLocalDirEdit.SetFont(fontText)
-		m.modLocalDirEdit.SetReadOnly(true)
-		m.modLocalDirEdit.SetDoubleBuffered(true)
-		m.modLocalDirEdit.SetText(frameworks.Path)
-		m.modLocalDirEdit.SetParent(m.modLocalBox)
-
-		m.modLocalDirBtn = wg.NewButton(m)
-		m.modLocalDirBtn.SetIconFormBytes(resources.Images("actions/add.png"))
-		m.modLocalDirBtn.SetRadius(3)
-		modLocalDirRect := types.TRect{Left: m.modLocalDirEdit.Left() + m.modLocalDirEdit.Width() + 5, Top: 0}
-		modLocalDirRect.SetWidth(60)
-		if tool.IsLinux {
-			modLocalDirRect.SetHeight(35)
-		} else {
-			modLocalDirRect.SetHeight(30)
-		}
-		m.modLocalDirBtn.SetHint("默认 ENERGY Designer 安装目录")
-		m.modLocalDirBtn.SetShowHint(true)
-		m.modLocalDirBtn.SetBoundsRect(modLocalDirRect)
-		m.modLocalDirBtn.SetParent(m.modLocalBox)
-		m.modLocalDirBtn.SetOnClick(m.modLocalDirBtnClick)
-
-		m.modLCLCheckBox = lcl.NewCheckBox(m)
-		m.modLCLCheckBox.SetFont(fontText)
-		m.modLCLCheckBox.SetLeft(left)
-		m.modLCLCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
-		m.modLCLCheckBox.SetCaption("LCL (Native UI)")
-		m.modLCLCheckBox.SetHint("Lazarus Component Library")
-		m.modLCLCheckBox.SetShowHint(true)
-		m.modLCLCheckBox.SetChecked(true)
-		m.modLCLCheckBox.SetEnabled(frameworks.EnableLCL)
-		m.modLCLCheckBox.SetParent(m.modLocalBox)
-
-		m.modCEFCheckBox = lcl.NewCheckBox(m)
-		m.modCEFCheckBox.SetFont(fontText)
-		m.modCEFCheckBox.SetLeft(left + 150)
-		m.modCEFCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
-		m.modCEFCheckBox.SetCaption("CEF (Web UI)")
-		m.modCEFCheckBox.SetHint("Chromium Embedded Framework")
-		m.modCEFCheckBox.SetShowHint(true)
-		m.modCEFCheckBox.SetChecked(true)
-		m.modCEFCheckBox.SetEnabled(frameworks.EnableCEF)
-		m.modCEFCheckBox.SetParent(m.modLocalBox)
-
-		m.modWebviewCheckBox = lcl.NewCheckBox(m)
-		m.modWebviewCheckBox.SetFont(fontText)
-		m.modWebviewCheckBox.SetLeft(left + 285)
-		m.modWebviewCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
-		m.modWebviewCheckBox.SetCaption("WebView (Web UI)")
-		m.modWebviewCheckBox.SetHint("System Runtime Framework")
-		m.modWebviewCheckBox.SetShowHint(true)
-		m.modWebviewCheckBox.SetChecked(true)
-		m.modWebviewCheckBox.SetEnabled(frameworks.EnableWV)
-		m.modWebviewCheckBox.SetParent(m.modLocalBox)
+		//m.modLocalDirText = lcl.NewLabel(m)
+		//m.modLocalDirText.SetLeft(left)
+		//m.modLocalDirText.SetTop(5)
+		//m.modLocalDirText.SetCaption("框架目录")
+		//m.modLocalDirText.SetFont(fontLabel)
+		//m.modLocalDirText.SetParent(m.modLocalBox)
+		//
+		//m.modLocalDirEdit = lcl.NewEdit(m)
+		//m.modLocalDirEdit.SetLeft(120)
+		//m.modLocalDirEdit.SetTop(0)
+		//m.modLocalDirEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
+		//m.modLocalDirEdit.SetFont(fontText)
+		//m.modLocalDirEdit.SetReadOnly(true)
+		//m.modLocalDirEdit.SetDoubleBuffered(true)
+		//m.modLocalDirEdit.SetText(frameworks.Path)
+		//m.modLocalDirEdit.SetParent(m.modLocalBox)
+		//
+		//m.modLocalDirBtn = wg.NewButton(m)
+		//m.modLocalDirBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+		//m.modLocalDirBtn.SetRadius(3)
+		//modLocalDirRect := types.TRect{Left: m.modLocalDirEdit.Left() + m.modLocalDirEdit.Width() + 5, Top: 0}
+		//modLocalDirRect.SetWidth(60)
+		//if tool.IsLinux {
+		//	modLocalDirRect.SetHeight(35)
+		//} else {
+		//	modLocalDirRect.SetHeight(30)
+		//}
+		//m.modLocalDirBtn.SetHint("默认 ENERGY Designer 安装目录")
+		//m.modLocalDirBtn.SetShowHint(true)
+		//m.modLocalDirBtn.SetBoundsRect(modLocalDirRect)
+		//m.modLocalDirBtn.SetParent(m.modLocalBox)
+		//m.modLocalDirBtn.SetOnClick(m.modLocalDirBtnClick)
+		//
+		//m.modLCLCheckBox = lcl.NewCheckBox(m)
+		//m.modLCLCheckBox.SetFont(fontText)
+		//m.modLCLCheckBox.SetLeft(left)
+		//m.modLCLCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		//m.modLCLCheckBox.SetCaption("LCL (Native UI)")
+		//m.modLCLCheckBox.SetHint("Lazarus Component Library")
+		//m.modLCLCheckBox.SetShowHint(true)
+		//m.modLCLCheckBox.SetChecked(true)
+		//m.modLCLCheckBox.SetEnabled(frameworks.EnableLCL)
+		//m.modLCLCheckBox.SetParent(m.modLocalBox)
+		//
+		//m.modCEFCheckBox = lcl.NewCheckBox(m)
+		//m.modCEFCheckBox.SetFont(fontText)
+		//m.modCEFCheckBox.SetLeft(left + 150)
+		//m.modCEFCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		//m.modCEFCheckBox.SetCaption("CEF (Web UI)")
+		//m.modCEFCheckBox.SetHint("Chromium Embedded Framework")
+		//m.modCEFCheckBox.SetShowHint(true)
+		//m.modCEFCheckBox.SetChecked(true)
+		//m.modCEFCheckBox.SetEnabled(frameworks.EnableCEF)
+		//m.modCEFCheckBox.SetParent(m.modLocalBox)
+		//
+		//m.modWebviewCheckBox = lcl.NewCheckBox(m)
+		//m.modWebviewCheckBox.SetFont(fontText)
+		//m.modWebviewCheckBox.SetLeft(left + 285)
+		//m.modWebviewCheckBox.SetTop(modLocalDirRect.Top + modLocalDirRect.Height() + 20)
+		//m.modWebviewCheckBox.SetCaption("WebView (Web UI)")
+		//m.modWebviewCheckBox.SetHint("System Runtime Framework")
+		//m.modWebviewCheckBox.SetShowHint(true)
+		//m.modWebviewCheckBox.SetChecked(true)
+		//m.modWebviewCheckBox.SetEnabled(frameworks.EnableWV)
+		//m.modWebviewCheckBox.SetParent(m.modLocalBox)
 	}
 	{
 		m.cancelBtn = wg.NewButton(m)
@@ -392,7 +390,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
 		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 250, Top: baseTop + 200}
+		cancelBtnRect := types.TRect{Left: 250, Top: baseTop + 100}
 		cancelBtnRect.SetWidth(100)
 		cancelBtnRect.SetHeight(40)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -477,15 +475,15 @@ func (m *TCreateProjectForm) checkGoVersion() {
 	cmd.Command("go", "version")
 }
 
-// 项目存放目录选择
-func (m *TCreateProjectForm) modLocalDirBtnClick(sender lcl.IObject) {
-	m.selectDir.SetTitle("框架安装目录")
-	m.selectDir.SetInitialDir(m.modLocalDirEdit.Text())
-	if m.selectDir.Execute() {
-		dir := m.selectDir.FileName()
-		m.modLocalDirEdit.SetText(dir)
-	}
-}
+// 框架存放目录选择
+//func (m *TCreateProjectForm) modLocalDirBtnClick(sender lcl.IObject) {
+//	m.selectDir.SetTitle("框架安装目录")
+//	m.selectDir.SetInitialDir(m.modLocalDirEdit.Text())
+//	if m.selectDir.Execute() {
+//		dir := m.selectDir.FileName()
+//		m.modLocalDirEdit.SetText(dir)
+//	}
+//}
 
 // 项目存放目录选择
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
@@ -528,10 +526,10 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		}
 	}
 	// 框架安装目录
-	frameworkDir := m.modLocalDirEdit.Text()
-	enableLCL := m.modLCLCheckBox.Checked()
-	enableCEF := m.modCEFCheckBox.Checked()
-	enableWV := m.modWebviewCheckBox.Checked()
+	//frameworkDir := m.modLocalDirEdit.Text()
+	//enableLCL := m.modLCLCheckBox.Checked()
+	//enableCEF := m.modCEFCheckBox.Checked()
+	//enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 	// 检查创建项目
@@ -543,17 +541,17 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		designer.ResetDesigner()
 		go func() {
 			// 更新设计器配置框架目录
-			if config.UpdateFrameworkDir(frameworkDir) {
-				config.UpdateConfig()
-				// 更新框架目录
-				frameworks.Path = config.Config.FrameworkDir
-			}
-			// 释放 LCL 库
-			frameworks.ExtractLCL(enableLCL)
-			// 释放 CEF 库
-			frameworks.ExtractCEF(enableCEF)
-			// 释放 WebView 库
-			frameworks.ExtractWV(enableWV)
+			//if config.UpdateFrameworkDir(frameworkDir) {
+			//	config.UpdateConfig()
+			//	// 更新框架目录
+			//	frameworks.Path = config.Config.FrameworkDir
+			//}
+			//// 释放 LCL 库
+			//frameworks.ExtractLCL(enableLCL)
+			//// 释放 CEF 库
+			//frameworks.ExtractCEF(enableCEF)
+			//// 释放 WebView 库
+			//frameworks.ExtractWV(enableWV)
 			// 运行创建项目
 			if doRunCreate(projectName, projectDir) {
 				// go.mod
