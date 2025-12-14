@@ -381,8 +381,13 @@ func (m *TConfigProjectForm) initComponents() {
 		setTabPageStyle(m.platformTabPageLinux)
 		m.initLinuxOptions()
 
-		m.platformTabPageWindows.SetActive(true)
-
+		if tool.IsWindows {
+			m.platformTabPageWindows.SetActive(true)
+		} else if tool.IsDarwin {
+			m.platformTabPageMacOS.SetActive(true)
+		} else if tool.IsLinux {
+			m.platformTabPageLinux.SetActive(true)
+		}
 	}
 
 	{

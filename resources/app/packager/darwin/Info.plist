@@ -1,8 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
+        <key>NSPrincipalClass</key>
+        <string>TCrCocoaApplication</string>
         <key>CFBundleExecutable</key>
-        <string>{{.Executable}}</string>
+        <string>{{.PList.Executable}}</string>
         <key>CFBundleName</key>
         <string>{{.PList.BundleName}}</string>
         <key>CFBundleDisplayName</key>
@@ -26,16 +29,14 @@
         <key>LSUIElement</key>
         <{{.PList.LSUIElement}}/>
         <key>LSMinimumSystemVersion</key>
-        <string>10.13.0</string>
-        <key>NSHighResolutionCapable</key>
-        <string>true</string>
+        <string>10.15</string>
         <key>NSAppTransportSecurity</key>
         <dict>
             <key>NSAllowsArbitraryLoads</key>
             <true/>
         </dict>
-        <key>NSPrincipalClass</key>
-        <string>TCrCocoaApplication</string>
+        <key>NSDarkModeAware</key>
+        <true/>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleInfoDictionaryVersion</key>
@@ -53,7 +54,6 @@
                 <array>
                     <string>fold</string>
                     <string>disk</string>
-                    <string>****</string>
                 </array>
             </dict>
         </array>
