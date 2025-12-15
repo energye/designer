@@ -49,20 +49,38 @@ func (m *TConfigProjectForm) saveProjectConfig() {
 	gProject.AppOption.Copyright = m.AppCopyright()
 	gProject.AppOption.Version = m.AppVersion()
 	gProject.AppOption.Icon = m.appIconData
-	gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
-	gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
-	gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
-	gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
-	gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
-	gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
-	gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
-	gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
-	gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
-	gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
+	{
+		// windows manifest
+		gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
+		gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
+		gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
+		gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
+		gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
+		gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
+		gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
+		gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
+		gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
+		gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
+		gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
+		gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
+		gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
+		gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
+	}
+	{
+		// macOS plist.info
+		gProject.AppOption.MacOS.Plist.CFBundleExecutable = m.AppBundleExecutable() // 从构建配置里获取
+		gProject.AppOption.MacOS.Plist.CFBundleName = m.AppBundleName()
+		gProject.AppOption.MacOS.Plist.CFBundleDisplayName = gProject.AppOption.Title
+		gProject.AppOption.MacOS.Plist.CFBundleLocalizations = m.AppBundleLocalizations()
+		gProject.AppOption.MacOS.Plist.CFBundleIdentifier = gProject.AppOption.Id
+		gProject.AppOption.MacOS.Plist.CFBundleVersion = gProject.AppOption.Version
+		gProject.AppOption.MacOS.Plist.CFBundleShortVersionString = gProject.AppOption.Version
+		gProject.AppOption.MacOS.Plist.CFBundleGetInfoString = gProject.AppOption.Desc
+		gProject.AppOption.MacOS.Plist.CFBundleIconFile = gProject.Name + ".icns"
+		gProject.AppOption.MacOS.Plist.NSHumanReadableCopyright = gProject.AppOption.Copyright
+		gProject.AppOption.MacOS.Plist.LSUIElement = m.AppLSUIElement()
+		gProject.AppOption.MacOS.Plist.LSMinimumSystemVersion = m.AppLSMinimumSystemVersion()
+	}
 	go func() {
 		// 更新项目配置文件
 		if err := WriteEGPConfig(gPath, gProject); err != nil {

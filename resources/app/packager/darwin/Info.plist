@@ -29,7 +29,7 @@
         <key>LSUIElement</key>
         <{{.PList.LSUIElement}}/>
         <key>LSMinimumSystemVersion</key>
-        <string>10.15</string>
+        <string>{{.PList.LSMinimumSystemVersion}}/string>
         <key>NSAppTransportSecurity</key>
         <dict>
             <key>NSAllowsArbitraryLoads</key>

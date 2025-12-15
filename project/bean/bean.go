@@ -97,15 +97,31 @@ type TAppWindows struct {
 }
 
 type TAppMacOS struct {
+	Plist struct {
+		CFBundleExecutable         string   `json:"cf_bundle_executable"`
+		CFBundleName               string   `json:"cf_bundle_name"`
+		CFBundleDisplayName        string   `json:"cf_bundle_display_name"`
+		CFBundleLocalizations      []string `json:"cf_bundle_localizations"`
+		CFBundleIdentifier         string   `json:"cf_bundle_identifier"`
+		CFBundleVersion            string   `json:"cf_bundle_version"`
+		CFBundleShortVersionString string   `json:"cf_bundle_short_version_string"`
+		CFBundleGetInfoString      string   `json:"cf_bundle_get_info_string"`
+		CFBundleIconFile           string   `json:"cf_bundle_icon_file"`
+		NSHumanReadableCopyright   string   `json:"cf_bundle_human_readable_copyright"`
+		LSUIElement                bool     `json:"cf_bundle_ui_element"`
+		LSMinimumSystemVersion     string   `json:"ls_minimum_system_version"`
+	}
 }
 
 type TAppLinux struct {
 }
 
 var (
-	CompatibilityOSList = tool.NewArrayMap[winres.SupportedOS, string]()
-	DPIList             = tool.NewArrayMap[winres.DPIAwareness, string]()
-	RunLevelList        = tool.NewArrayMap[winres.ExecutionLevel, string]()
+	CompatibilityOSList        = tool.NewArrayMap[winres.SupportedOS, string]()
+	DPIList                    = tool.NewArrayMap[winres.DPIAwareness, string]()
+	RunLevelList               = tool.NewArrayMap[winres.ExecutionLevel, string]()
+	LSUIElementList            = tool.NewArrayMap[MacOSUIElementList, string]()
+	LSMinimumSystemVersionList = tool.NewArrayMap[LSMinimumSystemVersion, string]()
 )
 
 // InitAppOption 初始化应用程序选项，设置默认值
@@ -120,18 +136,32 @@ func (m *TProject) InitAppOption() {
 	m.AppOption.Lang = "zh_CN"
 	//m.AppOption.Icon = resources.Images("icons/window-icon_256x256.png") // 默认内置图标
 
-	// windows 默认值
-	m.AppOption.Windows.Manifest.CompatibilityOS = int32(winres.WinVistaAndAbove)
-	m.AppOption.Windows.Manifest.DPI = int32(winres.DPIAware)
-	m.AppOption.Windows.Manifest.RunLevel = int32(winres.AsInvoker)
-	m.AppOption.Windows.Manifest.HighResolutionScrollingAware = true
-	m.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = true
-	m.AppOption.Windows.Manifest.LongPathAware = true
-	m.AppOption.Windows.Manifest.GDIScaling = true
-	m.AppOption.Windows.Manifest.UseCommonControlsV6 = true
-
-	// macos 默认值
-
+	{
+		// windows 默认值
+		m.AppOption.Windows.Manifest.CompatibilityOS = int32(winres.WinVistaAndAbove)
+		m.AppOption.Windows.Manifest.DPI = int32(winres.DPIAware)
+		m.AppOption.Windows.Manifest.RunLevel = int32(winres.AsInvoker)
+		m.AppOption.Windows.Manifest.HighResolutionScrollingAware = true
+		m.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = true
+		m.AppOption.Windows.Manifest.LongPathAware = true
+		m.AppOption.Windows.Manifest.GDIScaling = true
+		m.AppOption.Windows.Manifest.UseCommonControlsV6 = true
+	}
+	{
+		// macos 默认值
+		m.AppOption.MacOS.Plist.CFBundleExecutable = m.AppOption.Title
+		m.AppOption.MacOS.Plist.CFBundleName = m.AppOption.Title
+		m.AppOption.MacOS.Plist.CFBundleDisplayName = m.AppOption.Title
+		m.AppOption.MacOS.Plist.CFBundleLocalizations = []string{m.AppOption.Lang}
+		m.AppOption.MacOS.Plist.CFBundleIdentifier = m.AppOption.Id
+		m.AppOption.MacOS.Plist.CFBundleVersion = m.AppOption.Version
+		m.AppOption.MacOS.Plist.CFBundleShortVersionString = m.AppOption.Version
+		m.AppOption.MacOS.Plist.CFBundleGetInfoString = m.AppOption.Desc
+		m.AppOption.MacOS.Plist.CFBundleIconFile = m.Name + ".icns"
+		m.AppOption.MacOS.Plist.NSHumanReadableCopyright = m.AppOption.Copyright
+		m.AppOption.MacOS.Plist.LSUIElement = false
+		m.AppOption.MacOS.Plist.LSMinimumSystemVersion = "11.0"
+	}
 	// linux 默认值
 }
 
@@ -160,4 +190,10 @@ func init() {
 	RunLevelList.Add(winres.AsInvoker, "AsInvoker (当前用户)")
 	RunLevelList.Add(winres.HighestAvailable, "HighestAvailable (最高可用权限)")
 	RunLevelList.Add(winres.RequireAdministrator, "RequireAdministrator (要求管理员)")
+
+	LSUIElementList.Add(MacOSUIElementListNo, "false (常规前台应用)")
+	LSUIElementList.Add(MacOSUIElementListYes, "true (后台应用, 无 Dock 图标)")
+
+	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_10_15, "10.15 (Intel)")
+	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_11_0, "11.0 (Apple Silicon)")
 }

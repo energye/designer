@@ -99,6 +99,14 @@ type TConfigProjectForm struct {
 	useCommonControlsV6Box               lcl.ICheckBox
 
 	// macos
+	CFBundleNameText           lcl.ILabel
+	CFBundleNameEdit           lcl.IEdit
+	CFBundleLocalizationsText  lcl.ILabel
+	CFBundleLocalizationsEdit  lcl.IEdit
+	LSUIElementText            lcl.ILabel
+	LSUIElementBox             lcl.IComboBoxEx
+	LSMinimumSystemVersionText lcl.ILabel
+	LSMinimumSystemVersionBox  lcl.IComboBoxEx
 
 	// linux
 
@@ -573,4 +581,45 @@ func (m *TConfigProjectForm) AppVersion() string {
 		appVersion = gProject.AppOption.Version
 	}
 	return appVersion
+}
+
+func (m *TConfigProjectForm) AppBundleName() string {
+	bundleName := m.CFBundleNameEdit.Text()
+	if bundleName == "" {
+		bundleName = gProject.AppOption.Title
+	}
+	return bundleName
+}
+
+// AppBundleExecutable 从构建配置里获取
+//
+//	macOS 应用的主可执行文件名称
+func (m *TConfigProjectForm) AppBundleExecutable() string {
+	bundleExecutable := gProject.AppOption.Title
+	// TODO 需要在构建配置里获取
+	return bundleExecutable
+}
+
+func (m *TConfigProjectForm) AppBundleLocalizations() []string {
+	locals := m.CFBundleLocalizationsEdit.Text()
+	bundleLocalizations := tool.Split(locals, ",")
+	if len(bundleLocalizations) == 0 {
+		bundleLocalizations = []string{gProject.AppOption.Lang}
+	}
+	return bundleLocalizations
+}
+
+func (m *TConfigProjectForm) AppLSUIElement() bool {
+	LSUIElement := m.LSUIElementBox.ItemIndex() != int32(bean.MacOSUIElementListNo)
+	return LSUIElement
+}
+
+func (m *TConfigProjectForm) AppLSMinimumSystemVersion() string {
+	switch bean.LSMinimumSystemVersion(m.LSMinimumSystemVersionBox.ItemIndex()) {
+	case bean.LSMinimumSystemVersion_10_15:
+		return "10.15"
+	case bean.LSMinimumSystemVersion_11_0:
+		return "11.0"
+	}
+	return "10.15"
 }
