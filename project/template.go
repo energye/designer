@@ -40,7 +40,7 @@ func main() {
 	// 设置应用程序图标
 	SetIcon(lcl.Application)
 	// 创建所有窗体
-	lcl.Application.NewForms({{.GoFormNames}})
+	lcl.Application.NewForms(app.Forms...)
 	// 启动应用程序消息循环
 	lcl.Application.Run()
 }
