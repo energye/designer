@@ -36,7 +36,7 @@ var (
 
 // 运行项目(环境)配置窗口
 func runEnvConfig() {
-	// 显示运行项目(应用)配置窗口
+	// 显示运行项目(环境)配置窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewEnvForm()
 		form.ShowModal()
@@ -77,6 +77,11 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	m.SetCaption("环境配置")
 	m.SetWidth(envFormWidth)
 	m.SetHeight(envFormHeight)
+	constr := m.Constraints()
+	constr.SetMaxWidth(envFormWidth)
+	constr.SetMaxHeight(envFormHeight)
+	constr.SetMinWidth(envFormWidth)
+	constr.SetMinHeight(envFormHeight)
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
