@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options/project"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/uigen/bean"
 	"os"
@@ -28,7 +28,7 @@ import (
 func runGenerateCode(uiGenData designer.TUIGenerationData) error {
 	logs.Debug("运行 UI 布局代码生成")
 	formTab := uiGenData.Component.FormTab
-	uiFilePath := filepath.Join(project.LayoutsPath(), formTab.UIFile())
+	uiFilePath := filepath.Join(options.LayoutsPath(), formTab.UIFile())
 	// 读取并解析UI文件
 	data, err := os.ReadFile(uiFilePath)
 	if err != nil {

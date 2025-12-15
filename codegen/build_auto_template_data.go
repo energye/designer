@@ -16,7 +16,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options/project"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -68,7 +68,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	}
 
 	// 写入文件
-	goUIFilePath := filepath.Join(project.CodePath(), formTab.GOFile())
+	goUIFilePath := filepath.Join(options.CodePath(), formTab.GOFile())
 	if err := os.WriteFile(goUIFilePath, formatted, 0644); err != nil {
 		return fmt.Errorf("写入自动代码文件失败: %w", err)
 	}
@@ -78,7 +78,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 
 // 构建自动代码模板数据
 func buildAutoTemplateData(component *bean.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet[string]()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: options.Project().Package, Imports: tool.NewHashSet[string]()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,

@@ -17,7 +17,7 @@ import (
 	"encoding/json"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
-	projBean "github.com/energye/designer/options/project/bean"
+	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	uiBean "github.com/energye/designer/uigen/bean"

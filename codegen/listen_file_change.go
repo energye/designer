@@ -16,7 +16,7 @@ package codegen
 import (
 	"context"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options/project"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -79,8 +79,8 @@ func runListenFileChange() {
 
 // DetectFileChange 检测文件
 func detectFileChange() {
-	projPath := project.Path()
-	proj := project.Project()
+	projPath := options.Path()
+	proj := options.Project()
 	if proj == nil || projPath == "" {
 		return
 	}
@@ -91,8 +91,8 @@ func detectFileChange() {
 	})
 
 	// 重新定位文件信息
-	appCodePath := project.CodePath()
-	for _, form := range project.Project().UIForms {
+	appCodePath := options.CodePath()
+	for _, form := range options.Project().UIForms {
 		userFile := filepath.Join(appCodePath, form.GOUserFile)
 		if fi := gFileInfo.Get(form.Name); fi != nil {
 			fi.Exist = true

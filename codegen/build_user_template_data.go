@@ -16,7 +16,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options/project"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -32,7 +32,7 @@ import (
 // 生成用户代码文件
 // 生成条件: 文件未创建, 绑定事件, self 修改
 func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
-	goUIUserFilePath := filepath.Join(project.CodePath(), formTab.GOUserFile())
+	goUIUserFilePath := filepath.Join(options.CodePath(), formTab.GOUserFile())
 	// 检查文件是否已存在
 	// 如果文件已存在，不覆盖
 	if _, err := os.Stat(goUIUserFilePath); err == nil {
@@ -79,7 +79,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 
 // 构建用户代码模板数据
 func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: project.Project().Package, Imports: tool.NewHashSet[string]()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: options.Project().Package, Imports: tool.NewHashSet[string]()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
