@@ -98,18 +98,20 @@ type TAppWindows struct {
 
 type TAppMacOS struct {
 	PList struct {
-		CFBundleExecutable         string   `json:"cf_bundle_executable"`
-		CFBundleName               string   `json:"cf_bundle_name"`
-		CFBundleDisplayName        string   `json:"cf_bundle_display_name"`
-		CFBundleLocalizations      []string `json:"cf_bundle_localizations"`
-		CFBundleIdentifier         string   `json:"cf_bundle_identifier"`
-		CFBundleVersion            string   `json:"cf_bundle_version"`
-		CFBundleShortVersionString string   `json:"cf_bundle_short_version_string"`
-		CFBundleGetInfoString      string   `json:"cf_bundle_get_info_string"`
-		CFBundleIconFile           string   `json:"cf_bundle_icon_file"`
-		NSHumanReadableCopyright   string   `json:"cf_bundle_human_readable_copyright"`
-		LSUIElement                bool     `json:"cf_bundle_ui_element"`
-		LSMinimumSystemVersion     string   `json:"ls_minimum_system_version"`
+		CFBundleExecutable          string   `json:"cf_bundle_executable"`
+		CFBundleName                string   `json:"cf_bundle_name"`
+		CFBundleDisplayName         string   `json:"cf_bundle_display_name"`
+		CFBundleLocalizations       []string `json:"cf_bundle_localizations"`
+		CFBundleIdentifier          string   `json:"cf_bundle_identifier"`
+		CFBundleVersion             string   `json:"cf_bundle_version"`
+		CFBundleShortVersionString  string   `json:"cf_bundle_short_version_string"`
+		CFBundleGetInfoString       string   `json:"cf_bundle_get_info_string"`
+		CFBundleIconFile            string   `json:"cf_bundle_icon_file"`
+		NSHumanReadableCopyright    string   `json:"cf_bundle_human_readable_copyright"`
+		LSUIElementIndex            int32    `json:"ls_ui_element"`
+		LSMinimumSystemVersionIndex int32    `json:"ls_minimum_system_version"`
+		LSUIElement                 bool     `json:"-"`
+		LSMinimumSystemVersion      string   `json:"-"`
 	}
 }
 
@@ -159,8 +161,8 @@ func (m *TProject) InitAppOption() {
 		m.AppOption.MacOS.PList.CFBundleGetInfoString = m.AppOption.Desc
 		m.AppOption.MacOS.PList.CFBundleIconFile = m.Name + ".icns"
 		m.AppOption.MacOS.PList.NSHumanReadableCopyright = m.AppOption.Copyright
-		m.AppOption.MacOS.PList.LSUIElement = false
-		m.AppOption.MacOS.PList.LSMinimumSystemVersion = "10.15"
+		m.AppOption.MacOS.PList.LSUIElementIndex = int32(MacOSUIElementListNo)
+		m.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = int32(LSMinimumSystemVersion_10_15)
 	}
 	// linux 默认值
 }

@@ -15,10 +15,14 @@ package project
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/project/bean"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 func (m *TConfigProjectForm) initMacOSOptions() {
@@ -64,6 +68,7 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleNameEdit.SetShowHint(true)
 	m.CFBundleNameEdit.SetTextHint("应用的短显示名称, 默认: 构建二进制文件名")
 	m.CFBundleNameEdit.SetHint("应用的短显示名称, 默认: 构建二进制文件名")
+	m.CFBundleNameEdit.SetText(gProject.AppOption.MacOS.PList.CFBundleName)
 	m.CFBundleNameEdit.SetParent(m.platformTabPageMacOS)
 
 	m.CFBundleLocalizationsText = lcl.NewLabel(m)
@@ -77,6 +82,7 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleLocalizationsEdit.SetShowHint(true)
 	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
 	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
+	m.CFBundleLocalizationsEdit.SetText(strings.Join(gProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
 	m.CFBundleLocalizationsEdit.SetParent(m.platformTabPageMacOS)
 
 	m.LSUIElementText = lcl.NewLabel(m)
@@ -107,31 +113,42 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.LSMinimumSystemVersionBox.SetHint("支持最低系统版本")
 	m.LSMinimumSystemVersionBox.SetParent(m.platformTabPageMacOS)
 
-	m.plistDataInit()
+	m.pListDataInit()
 }
 
-func (m *TConfigProjectForm) plistDataInit() {
+func (m *TConfigProjectForm) pListDataInit() {
 	LSUIElementBoxItems := m.LSUIElementBox.Items()
 	bean.LSUIElementList.Iterate(func(key bean.MacOSUIElementList, value string) bool {
 		LSUIElementBoxItems.Add(value)
 		return false
 	})
-	m.LSUIElementBox.SetItemIndex(int32(bean.MacOSUIElementListNo))
+	m.LSUIElementBox.SetItemIndex(gProject.AppOption.MacOS.PList.LSUIElementIndex)
 
 	LSMinimumSystemVersionItems := m.LSMinimumSystemVersionBox.Items()
 	bean.LSMinimumSystemVersionList.Iterate(func(key bean.LSMinimumSystemVersion, value string) bool {
 		LSMinimumSystemVersionItems.Add(value)
 		return false
 	})
-	m.LSMinimumSystemVersionBox.SetItemIndex(int32(bean.LSMinimumSystemVersion_10_15))
+	m.LSMinimumSystemVersionBox.SetItemIndex(gProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex)
 }
 
 // 保存或更新 macOS 配置并生成程序信息
 func saveOrUpdateMacOSPList() {
-	infoPListTemplate := app.Packager("darwin/Info.plist")
-	if infoPListTemplate == nil {
-		logs.Error("macOS 配置并生成程序信息 info.plist 模板获取失败, 模板内容为 nil")
+	pListInfoTemplate := app.Packager("darwin/Info.plist")
+	if pListInfoTemplate == nil {
+		logs.Error("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
 		return
 	}
-	//gProject.AppOption.MacOS
+	pListInfo, err := tool.RenderTemplate(string(pListInfoTemplate), gProject.AppOption.MacOS)
+	if err != nil {
+		logs.Error("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
+		return
+	}
+	// 保存到 resources/Info.plist
+	resourcesPath := ResourcePath()
+	pListOutFile := "Info.plist"
+	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0666)
+	if err != nil {
+		logs.Error("macOS 应用配置-保存配置-WriteFile: ", err.Error())
+	}
 }

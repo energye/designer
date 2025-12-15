@@ -200,7 +200,7 @@ func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 	return targetFile, err
 }
 
-func RenderTemplate(templateText string, data map[string]any) ([]byte, error) {
+func RenderTemplate(templateText string, data any) ([]byte, error) {
 	tmpl, err := template.New("RenderTemplate").Parse(templateText)
 	if err != nil {
 		return nil, err

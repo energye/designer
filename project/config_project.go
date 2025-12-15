@@ -68,18 +68,20 @@ func (m *TConfigProjectForm) saveProjectConfig() {
 	}
 	{
 		// macOS plist.info
-		gProject.AppOption.MacOS.Plist.CFBundleExecutable = m.AppBundleExecutable() // 从构建配置里获取
-		gProject.AppOption.MacOS.Plist.CFBundleName = m.AppBundleName()
-		gProject.AppOption.MacOS.Plist.CFBundleDisplayName = gProject.AppOption.Title
-		gProject.AppOption.MacOS.Plist.CFBundleLocalizations = m.AppBundleLocalizations()
-		gProject.AppOption.MacOS.Plist.CFBundleIdentifier = gProject.AppOption.Id
-		gProject.AppOption.MacOS.Plist.CFBundleVersion = gProject.AppOption.Version
-		gProject.AppOption.MacOS.Plist.CFBundleShortVersionString = gProject.AppOption.Version
-		gProject.AppOption.MacOS.Plist.CFBundleGetInfoString = gProject.AppOption.Desc
-		gProject.AppOption.MacOS.Plist.CFBundleIconFile = gProject.Name + ".icns"
-		gProject.AppOption.MacOS.Plist.NSHumanReadableCopyright = gProject.AppOption.Copyright
-		gProject.AppOption.MacOS.Plist.LSUIElement = m.AppLSUIElement()
-		gProject.AppOption.MacOS.Plist.LSMinimumSystemVersion = m.AppLSMinimumSystemVersion()
+		gProject.AppOption.MacOS.PList.CFBundleExecutable = m.AppBundleExecutable() // 从构建配置里获取
+		gProject.AppOption.MacOS.PList.CFBundleName = m.AppBundleName()
+		gProject.AppOption.MacOS.PList.CFBundleDisplayName = gProject.AppOption.Title
+		gProject.AppOption.MacOS.PList.CFBundleLocalizations = m.AppBundleLocalizations()
+		gProject.AppOption.MacOS.PList.CFBundleIdentifier = gProject.AppOption.Id
+		gProject.AppOption.MacOS.PList.CFBundleVersion = gProject.AppOption.Version
+		gProject.AppOption.MacOS.PList.CFBundleShortVersionString = gProject.AppOption.Version
+		gProject.AppOption.MacOS.PList.CFBundleGetInfoString = gProject.AppOption.Desc
+		gProject.AppOption.MacOS.PList.CFBundleIconFile = gProject.Name + ".icns"
+		gProject.AppOption.MacOS.PList.NSHumanReadableCopyright = gProject.AppOption.Copyright
+		gProject.AppOption.MacOS.PList.LSUIElementIndex = m.LSUIElementBox.ItemIndex()
+		gProject.AppOption.MacOS.PList.LSUIElement = m.AppLSUIElement()
+		gProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = m.LSMinimumSystemVersionBox.ItemIndex()
+		gProject.AppOption.MacOS.PList.LSMinimumSystemVersion = m.AppLSMinimumSystemVersion()
 	}
 	go func() {
 		// 更新项目配置文件
