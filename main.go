@@ -22,7 +22,6 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
 	"os"
-	"runtime"
 	"strings"
 )
 
@@ -32,8 +31,6 @@ func main() {
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	setMacOSEnv()
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelError
 	frameworks.ExtractLibrary()
