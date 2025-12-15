@@ -108,31 +108,3 @@ func (m *T{{$Form.Form.Name}}) On{{.Name}}Click(sender lcl.IObject) {
 }
 {{end}}
 `
-
-// app/run 文件代码模板
-// app/run.go 不存在项目目录时创建
-const runCodeTemplate = `// ==============================================================================
-// 📚 应用启动入口文件
-// 📌 该文件不存在时自动创建
-// ✏️ 可在此文件中添加业务逻辑
-// ==============================================================================
-
-package main
-
-import (
-	"github.com/energye/lcl/lcl" 
-	{{.WindowsSyso}}
-	"runtime"
-)
-
-func main() {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-	lcl.Init(nil, nil)
-	lcl.Application.Initialize()
-	lcl.Application.SetMainFormOnTaskBar(true)
-	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms({{.Forms}})
-	lcl.Application.Run()
-}
-`
