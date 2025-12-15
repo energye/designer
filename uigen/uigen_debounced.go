@@ -16,9 +16,9 @@ package uigen
 import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/project"
+	projBean "github.com/energye/designer/options/project/bean"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/project"
-	projBean "github.com/energye/designer/project/bean"
 	"os"
 	"path/filepath"
 	"sync"

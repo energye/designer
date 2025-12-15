@@ -16,8 +16,8 @@ package project
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/options/project/bean"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/project/bean"
 	"os"
 	"path/filepath"
 	"time"

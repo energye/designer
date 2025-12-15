@@ -14,10 +14,10 @@
 package project
 
 import (
+	"github.com/energye/designer/options/project/bean"
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/project/bean"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"

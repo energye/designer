@@ -16,7 +16,7 @@ package project
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/project/bean"
+	"github.com/energye/designer/options/project/bean"
 	"path/filepath"
 )
 

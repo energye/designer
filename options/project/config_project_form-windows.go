@@ -16,12 +16,12 @@ package project
 import (
 	"bytes"
 	"fmt"
+	"github.com/energye/designer/options/project/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winicon"
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/pkg/winres/version"
-	"github.com/energye/designer/project/bean"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"

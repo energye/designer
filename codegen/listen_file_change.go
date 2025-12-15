@@ -16,10 +16,10 @@ package codegen
 import (
 	"context"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/options/project"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/project"
 	"go/ast"
 	"os"
 	"path/filepath"

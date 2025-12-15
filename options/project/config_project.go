@@ -15,9 +15,9 @@ package project
 
 import (
 	"bytes"
+	"github.com/energye/designer/options/project/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/project/bean"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"image/png"

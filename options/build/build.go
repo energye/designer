@@ -11,14 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package internal
+package build
 
-// 内部调用
-
-import (
-	_ "github.com/energye/designer/codegen"
-	_ "github.com/energye/designer/event"
-	_ "github.com/energye/designer/options/project"
-	_ "github.com/energye/designer/preview"
-	_ "github.com/energye/designer/uigen"
-)
+// 构建配置
