@@ -588,7 +588,7 @@ func (m *TConfigProjectForm) AppVersion() string {
 func (m *TConfigProjectForm) AppBundleName() string {
 	bundleName := m.CFBundleNameEdit.Text()
 	if bundleName == "" {
-		bundleName = gProject.AppOption.Title
+		bundleName = gProject.Name
 	}
 	return bundleName
 }
@@ -597,7 +597,7 @@ func (m *TConfigProjectForm) AppBundleName() string {
 //
 //	macOS 应用的主可执行文件名称
 func (m *TConfigProjectForm) AppBundleExecutable() string {
-	bundleExecutable := gProject.AppOption.Title
+	bundleExecutable := gProject.Name
 	// TODO 需要在构建配置里获取
 	return bundleExecutable
 }

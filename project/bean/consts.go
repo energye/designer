@@ -16,13 +16,13 @@ package bean
 type MacOSUIElementList int32
 
 const (
-	MacOSUIElementListNo MacOSUIElementList = iota
-	MacOSUIElementListYes
+	MacOSUIElementListNo  MacOSUIElementList = iota // false (常规前台应用)
+	MacOSUIElementListYes                           // true (后台应用, 无 Dock 图标)
 )
 
 type LSMinimumSystemVersion int32
 
 const (
-	LSMinimumSystemVersion_10_15 LSMinimumSystemVersion = iota
-	LSMinimumSystemVersion_11_0
+	LSMinimumSystemVersion_10_15 LSMinimumSystemVersion = iota // 10.15 (Intel)
+	LSMinimumSystemVersion_11_0                                // 11.0 (Apple Silicon)
 )

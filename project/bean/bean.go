@@ -151,8 +151,8 @@ func (m *TProject) InitAppOption() {
 	}
 	{
 		// macos 默认值
-		m.AppOption.MacOS.PList.CFBundleExecutable = m.AppOption.Title
-		m.AppOption.MacOS.PList.CFBundleName = m.AppOption.Title
+		m.AppOption.MacOS.PList.CFBundleExecutable = m.Name
+		m.AppOption.MacOS.PList.CFBundleName = m.Name
 		m.AppOption.MacOS.PList.CFBundleDisplayName = m.AppOption.Title
 		m.AppOption.MacOS.PList.CFBundleLocalizations = []string{m.AppOption.Lang}
 		m.AppOption.MacOS.PList.CFBundleIdentifier = m.AppOption.Id
@@ -162,7 +162,9 @@ func (m *TProject) InitAppOption() {
 		m.AppOption.MacOS.PList.CFBundleIconFile = m.Name + ".icns"
 		m.AppOption.MacOS.PList.NSHumanReadableCopyright = m.AppOption.Copyright
 		m.AppOption.MacOS.PList.LSUIElementIndex = int32(MacOSUIElementListNo)
+		m.AppOption.MacOS.PList.LSUIElement = false
 		m.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = int32(LSMinimumSystemVersion_10_15)
+		m.AppOption.MacOS.PList.LSMinimumSystemVersion = "10.15"
 	}
 	// linux 默认值
 }
