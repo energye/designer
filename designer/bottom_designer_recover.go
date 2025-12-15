@@ -140,7 +140,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 				}
 				continue
 			}
-			uiFilePath := filepath.Join(path, project.Package, tempUIForm.UIFile)
+			uiFilePath := filepath.Join(path, consts.LayoutsDir, tempUIForm.UIFile)
 			data, err := os.ReadFile(uiFilePath)
 			if err != nil {
 				wg.Done()

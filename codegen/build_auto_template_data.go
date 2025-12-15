@@ -68,7 +68,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	}
 
 	// 写入文件
-	goUIFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOFile())
+	goUIFilePath := filepath.Join(project.CodePath(), formTab.GOFile())
 	if err := os.WriteFile(goUIFilePath, formatted, 0644); err != nil {
 		return fmt.Errorf("写入自动代码文件失败: %w", err)
 	}

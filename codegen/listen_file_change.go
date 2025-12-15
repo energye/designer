@@ -91,7 +91,7 @@ func detectFileChange() {
 	})
 
 	// 重新定位文件信息
-	appCodePath := filepath.Join(projPath, proj.Package)
+	appCodePath := project.CodePath()
 	for _, form := range project.Project().UIForms {
 		userFile := filepath.Join(appCodePath, form.GOUserFile)
 		if fi := gFileInfo.Get(form.Name); fi != nil {

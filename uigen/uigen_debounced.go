@@ -58,7 +58,7 @@ func runDebouncedGenerate(uiGenData designer.TUIGenerationData, type_ event.Type
 		// 尝试更新文件名
 		isUpdateSelf := tryRenameFileName(formTab)
 
-		uiFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.UIFile())
+		uiFilePath := filepath.Join(project.LayoutsPath(), formTab.UIFile())
 		// 执行UI生成
 		err := generateUIFile(formTab.FormRoot, uiFilePath)
 		if err != nil {
@@ -103,17 +103,17 @@ func tryRenameFileName(tempFormTab *designer.FormTab) bool {
 	// 判断 UI 文件名是否相同, 如果不相同则更改当前窗体的文件名
 	if uiForm != nil && uiForm.UIFile != uiFileName {
 		// 修改 xxx.ui 布局文件名
-		oldUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.UIFile)
-		newUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiFileName)
+		oldUIFilePath := filepath.Join(project.LayoutsPath(), uiForm.UIFile)
+		newUIFilePath := filepath.Join(project.LayoutsPath(), uiFileName)
 		if err := os.Rename(oldUIFilePath, newUIFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
 			return false
 		}
 		uiForm.UIFile = uiFileName
 
-		// 修改 xxx.ui.go 布局文件名
-		oldGoUIFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.GOFile)
-		newGoUIFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.GOFile())
+		// 修改 xxx.ui.go 布局代码文件名
+		oldGoUIFilePath := filepath.Join(project.CodePath(), uiForm.GOFile)
+		newGoUIFilePath := filepath.Join(project.CodePath(), tempFormTab.GOFile())
 		if err := os.Rename(oldGoUIFilePath, newGoUIFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
 			return false
@@ -121,8 +121,8 @@ func tryRenameFileName(tempFormTab *designer.FormTab) bool {
 		uiForm.GOFile = tempFormTab.GOFile()
 
 		// 修改 xxx.go 用户代码文件名
-		oldGoUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, uiForm.GOUserFile)
-		newGoUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, tempFormTab.GOUserFile())
+		oldGoUIUserFilePath := filepath.Join(project.CodePath(), uiForm.GOUserFile)
+		newGoUIUserFilePath := filepath.Join(project.CodePath(), tempFormTab.GOUserFile())
 		if err := os.Rename(oldGoUIUserFilePath, newGoUIUserFilePath); err != nil {
 			logs.Error("UI布局文件重命名错误:", err.Error())
 			return false

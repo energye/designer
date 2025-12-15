@@ -18,6 +18,9 @@ const AppPackageName = "app"
 // 项目配置文件扩展名
 const EGPExt = ".egp"
 
+// 布局文件存放目录名
+const LayoutsDir = "layouts"
+
 // UI布局文件扩展名
 const UIExt = ".ui"
 

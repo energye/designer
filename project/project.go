@@ -14,6 +14,7 @@
 package project
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/project/bean"
 	"path/filepath"
@@ -54,6 +55,16 @@ func SetGlobalProject(path string, project *bean.TProject) {
 // 返回当前项目路径
 func Path() string {
 	return gPath
+}
+
+// 返回当前项目布局文件存放目录
+func LayoutsPath() string {
+	return filepath.Join(Path(), consts.LayoutsDir)
+}
+
+// 返回当前项目代码存放目录
+func CodePath() string {
+	return filepath.Join(Path(), gProject.Package)
 }
 
 // 返回当前项目对象

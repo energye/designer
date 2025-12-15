@@ -32,7 +32,7 @@ import (
 // 生成用户代码文件
 // 生成条件: 文件未创建, 绑定事件, self 修改
 func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) error {
-	goUIUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	goUIUserFilePath := filepath.Join(project.CodePath(), formTab.GOUserFile())
 	// 检查文件是否已存在
 	// 如果文件已存在，不覆盖
 	if _, err := os.Stat(goUIUserFilePath); err == nil {

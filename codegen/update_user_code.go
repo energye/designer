@@ -40,7 +40,7 @@ import (
 //	仅修改 xxx.go 用户文件, 其它文件需手动修改
 func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
-	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	goUserFilePath := filepath.Join(project.CodePath(), formTab.GOUserFile())
 	newFormName := "T" + formTab.FormRoot.Name()
 	oldFormName := "T" + uiGenData.Component.FormTab.OldFormName
 	logs.Debug("NewFormName:", newFormName, "OldFormName:", oldFormName, "FilePath:", goUserFilePath)
@@ -79,7 +79,7 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 		return
 	}
 	formTab := uiGenData.Component.FormTab
-	goUserFilePath := filepath.Join(project.Path(), project.Project().Package, formTab.GOUserFile())
+	goUserFilePath := filepath.Join(project.CodePath(), formTab.GOUserFile())
 	formName := "T" + formTab.FormRoot.Name() // T + [FormName]
 	nodeData := uiGenData.NodeData.EditNodeData
 	bindEventFuncName := uiGenData.NodeData.EditStringValue()
