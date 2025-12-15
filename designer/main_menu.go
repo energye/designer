@@ -236,6 +236,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.buildOption.SetShortCut(api.TextToShortCut("Ctrl+F9"))
 	m.buildOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建选项")
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.BuildConfig}})
 	})
 	m.setting.Add(m.buildOption)
 
@@ -245,6 +246,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.environmentOption.SetShortCut(api.TextToShortCut("Ctrl+F10"))
 	m.environmentOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("环境配置")
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.EnvConfig}})
 	})
 	m.setting.Add(m.environmentOption)
 

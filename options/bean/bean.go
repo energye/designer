@@ -27,7 +27,6 @@ type TProject struct {
 	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
 	ActiveUIForm int          `json:"active_ui_form"` // 当前激活设计的窗体Id
 	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
-	EnvOption    TEnvOption   `json:"env_option"`     // 环境配置
 	AppOption    TAppOption   `json:"app_option"`     // 应用配置
 	Data         any          `json:"-"`              // 其它数据
 }
@@ -46,11 +45,6 @@ type TUIForm struct {
 type TBuildOption struct {
 	GoArgument string `json:"go_argument"` // 构建参数
 	Output     string `json:"output"`      // 构建输出目录
-}
-
-// TEnvOption 环境配置
-type TEnvOption struct {
-	GoRoot string `json:"go_root"` // Go 安装目录
 }
 
 // TAppOption 应用配置

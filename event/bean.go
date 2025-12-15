@@ -22,6 +22,8 @@ const (
 	ProjectLoad                   // 项目加载
 	ProjectUpdateForm             // 项目配置更新 Form 信息
 	ProjectConfig                 // 项目(应用)配置
+	EnvConfig                     // 项目(环境)配置
+	BuildConfig                   // 项目(构建)配置
 )
 
 // 代码生成模块, 数据载体类型

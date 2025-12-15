@@ -77,12 +77,19 @@ type Tab struct {
 
 // TConfig energy 配置文件
 type TConfig struct {
-	Window       Window `json:"window"`       // 窗口配置
-	FrameworkDir string `json:"framework"`    // 框架目录
-	Mod          TMod   `json:"mod"`          // 模块配置
-	Registry     string `json:"registry"`     // 远程服务配置地址
-	Proxy        string `json:"proxy"`        // 代理地址
-	LastProject  string `json:"last_project"` // 最后打开项目
+	Window       Window           `json:"window"`       // 窗口配置
+	FrameworkDir string           `json:"framework"`    // 框架目录
+	Mod          TMod             `json:"mod"`          // 模块配置
+	Registry     string           `json:"registry"`     // 远程服务配置地址
+	Proxy        string           `json:"proxy"`        // 代理地址
+	LastProject  string           `json:"last_project"` // 最后打开项目
+	Env          map[string]*TEnv `json:"env"`          // 环境配置
+}
+
+// TEnv 环境配置
+type TEnv struct {
+	GoRoot            []string `json:"go_root"`              // Go SDK
+	GoRootSelectIndex int32    `json:"go_root_select_index"` // Go SDK select index
 }
 
 type TMod struct {
@@ -151,6 +158,34 @@ func UpdateConfig() bool {
 	e = os.WriteFile(configPath, data, os.ModePerm)
 	err.CheckErr(e)
 	return true
+}
+
+// UpdateEnvGoRoot 更新环境配置
+func UpdateEnvGoRoot(envName string, goRoot string) {
+	if Config.Env == nil {
+		Config.Env = make(map[string]*TEnv)
+	}
+	if env := Config.Env[envName]; env != nil {
+		selectIndex := -1
+		for i, item := range env.GoRoot {
+			if item == goRoot {
+				selectIndex = i
+				break
+			}
+		}
+		if selectIndex == -1 {
+			env.GoRoot = append(env.GoRoot, goRoot)
+			env.GoRootSelectIndex = int32(len(env.GoRoot)) - 1
+		} else {
+			env.GoRootSelectIndex = int32(selectIndex)
+		}
+	} else {
+		env = &TEnv{
+			GoRoot:            []string{goRoot},
+			GoRootSelectIndex: 0,
+		}
+		Config.Env[envName] = env
+	}
 }
 
 func init() {

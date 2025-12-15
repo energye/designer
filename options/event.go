@@ -17,7 +17,11 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/tool/command"
+	"path/filepath"
 )
+
+var cmdGoRoot string
 
 func init() {
 	event.On(event.Project, func(trigger event.TTrigger) {
@@ -37,10 +41,34 @@ func init() {
 				runUpdate(formTab)
 			case event.ProjectConfig:
 				// 项目(应用)配置
-				runConfigApp()
+				runAppConfig()
+			case event.EnvConfig:
+				// 项目(环境)配置
+				runEnvConfig()
+			case event.BuildConfig:
+				// 项目(构建)配置
+				runBuildConfig()
 			}
 		}
 	}, func() {
 		logs.Println("停止项目配置更新生成器")
 	})
+	// 获取Go Root目录
+	go func() {
+		result := false
+		cmd := command.NewCMD()
+		cmd.IsPrint = false
+		cmd.HideWindow = true
+		cmd.Console = func(data string, level command.Level) {
+			if !result {
+				logs.Debug(level, data)
+				_, err := filepath.Abs(data)
+				if err == nil {
+					cmdGoRoot = data
+				}
+			}
+			result = true
+		}
+		cmd.Command("go", "env", "GOROOT")
+	}()
 }

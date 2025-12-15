@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"path/filepath"
 )
 
@@ -49,6 +50,9 @@ func SetGlobalProject(path string, project *bean.TProject) {
 	} else {
 		designer.SetAppEGPPath(filepath.Join(path, project.EGPName))
 		designer.SetEnableFuncComponent(true)
+		if env := config.Config.Env[project.Name]; env != nil {
+			_ = SetGoRootPath(env.GoRoot[env.GoRootSelectIndex])
+		}
 	}
 }
 

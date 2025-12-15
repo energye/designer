@@ -29,7 +29,7 @@ import (
 // 项目(应用)配置
 
 // 运行项目(应用)配置窗口
-func runConfigApp() {
+func runAppConfig() {
 	// 显示运行项目(应用)配置窗口
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		form := NewConfigProjectForm()

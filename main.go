@@ -16,6 +16,7 @@ package main
 import (
 	"github.com/energye/designer/designer"
 	_ "github.com/energye/designer/internal"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/designer/resources/frameworks"
@@ -30,7 +31,6 @@ import (
 func main() {
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
-	setMacOSEnv()
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelError
 	frameworks.ExtractLibrary()
@@ -40,19 +40,15 @@ func main() {
 	designer.Run()
 }
 
+// 不使用了, 项目新建后, 手动设置一次环境
 func setMacOSEnv() {
 	if !tool.IsDarwin() {
 		return
 	}
 	commonGoPaths := []string{
-		"/usr/local/go/bin",
-		"/opt/homebrew/bin",
+		"/usr/local/go",
 	}
-	currentPath := os.Getenv("PATH")
 	for _, p := range commonGoPaths {
-		if !strings.Contains(currentPath, p) {
-			currentPath = p + ":" + currentPath
-		}
+		_ = options.SetGoRootPath(p)
 	}
-	os.Setenv("PATH", currentPath)
 }
