@@ -97,7 +97,7 @@ type TAppWindows struct {
 }
 
 type TAppMacOS struct {
-	Plist struct {
+	PList struct {
 		CFBundleExecutable         string   `json:"cf_bundle_executable"`
 		CFBundleName               string   `json:"cf_bundle_name"`
 		CFBundleDisplayName        string   `json:"cf_bundle_display_name"`
@@ -149,18 +149,18 @@ func (m *TProject) InitAppOption() {
 	}
 	{
 		// macos 默认值
-		m.AppOption.MacOS.Plist.CFBundleExecutable = m.AppOption.Title
-		m.AppOption.MacOS.Plist.CFBundleName = m.AppOption.Title
-		m.AppOption.MacOS.Plist.CFBundleDisplayName = m.AppOption.Title
-		m.AppOption.MacOS.Plist.CFBundleLocalizations = []string{m.AppOption.Lang}
-		m.AppOption.MacOS.Plist.CFBundleIdentifier = m.AppOption.Id
-		m.AppOption.MacOS.Plist.CFBundleVersion = m.AppOption.Version
-		m.AppOption.MacOS.Plist.CFBundleShortVersionString = m.AppOption.Version
-		m.AppOption.MacOS.Plist.CFBundleGetInfoString = m.AppOption.Desc
-		m.AppOption.MacOS.Plist.CFBundleIconFile = m.Name + ".icns"
-		m.AppOption.MacOS.Plist.NSHumanReadableCopyright = m.AppOption.Copyright
-		m.AppOption.MacOS.Plist.LSUIElement = false
-		m.AppOption.MacOS.Plist.LSMinimumSystemVersion = "11.0"
+		m.AppOption.MacOS.PList.CFBundleExecutable = m.AppOption.Title
+		m.AppOption.MacOS.PList.CFBundleName = m.AppOption.Title
+		m.AppOption.MacOS.PList.CFBundleDisplayName = m.AppOption.Title
+		m.AppOption.MacOS.PList.CFBundleLocalizations = []string{m.AppOption.Lang}
+		m.AppOption.MacOS.PList.CFBundleIdentifier = m.AppOption.Id
+		m.AppOption.MacOS.PList.CFBundleVersion = m.AppOption.Version
+		m.AppOption.MacOS.PList.CFBundleShortVersionString = m.AppOption.Version
+		m.AppOption.MacOS.PList.CFBundleGetInfoString = m.AppOption.Desc
+		m.AppOption.MacOS.PList.CFBundleIconFile = m.Name + ".icns"
+		m.AppOption.MacOS.PList.NSHumanReadableCopyright = m.AppOption.Copyright
+		m.AppOption.MacOS.PList.LSUIElement = false
+		m.AppOption.MacOS.PList.LSMinimumSystemVersion = "10.15"
 	}
 	// linux 默认值
 }

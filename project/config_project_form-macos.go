@@ -16,6 +16,7 @@ package project
 import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/project/bean"
+	"github.com/energye/designer/resources/app"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -123,4 +124,14 @@ func (m *TConfigProjectForm) plistDataInit() {
 		return false
 	})
 	m.LSMinimumSystemVersionBox.SetItemIndex(int32(bean.LSMinimumSystemVersion_10_15))
+}
+
+// 保存或更新 macOS 配置并生成程序信息
+func saveOrUpdateMacOSPList() {
+	infoPListTemplate := app.Packager("darwin/Info.plist")
+	if infoPListTemplate == nil {
+		logs.Error("macOS 配置并生成程序信息 info.plist 模板获取失败, 模板内容为 nil")
+		return
+	}
+	//gProject.AppOption.MacOS
 }

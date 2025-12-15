@@ -5,27 +5,27 @@
         <key>NSPrincipalClass</key>
         <string>TCrCocoaApplication</string>
         <key>CFBundleExecutable</key>
-        <string>{{.PList.Executable}}</string>
+        <string>{{.PList.CFBundleExecutable}}</string>
         <key>CFBundleName</key>
-        <string>{{.PList.BundleName}}</string>
+        <string>{{.PList.CFBundleName}}</string>
         <key>CFBundleDisplayName</key>
-        <string>{{.PList.BundleDisplayName}}</string>
+        <string>{{.PList.CFBundleDisplayName}}</string>
         <key>CFBundleLocalizations</key>
-        <array>{{range $i,$value := .PList.Locals }}
+        <array>{{range $i,$value := .PList.CFBundleLocalizations }}
             <string>{{$value}}</string>{{end}}
         </array>
         <key>CFBundleIdentifier</key>
-        <string>{{.PList.BundleIdentifier}}</string>
+        <string>{{.PList.CFBundleIdentifier}}</string>
         <key>CFBundleVersion</key>
-        <string>{{.PList.BundleVersion}}</string>
+        <string>{{.PList.CFBundleVersion}}</string>
         <key>CFBundleShortVersionString</key>
-        <string>{{.PList.BundleShortVersionString}}</string>
+        <string>{{.PList.CFBundleShortVersionString}}</string>
         <key>CFBundleGetInfoString</key>
-        <string>{{.PList.Comments}}</string>
+        <string>{{.PList.CFBundleGetInfoString}}</string>
         <key>CFBundleIconFile</key>
-        <string>{{.PList.Icon}}</string>
+        <string>{{.PList.CFBundleIconFile}}</string>
         <key>NSHumanReadableCopyright</key>
-        <string>{{.PList.Copyright}}</string>
+        <string>{{.PList.NSHumanReadableCopyright}}</string>
         <key>LSUIElement</key>
         <{{.PList.LSUIElement}}/>
         <key>LSMinimumSystemVersion</key>

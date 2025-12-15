@@ -16,14 +16,14 @@ package app
 import "embed"
 
 var (
-	// 构建应用程序资源
-	//go:embed build
-	build embed.FS
+	// 打包应用程序内置资源
+	//go:embed packager
+	packager embed.FS
 )
 
-// Build 构建应用程序资源
-func Build(name string) []byte {
-	data, err := build.ReadFile("build/" + name)
+// Packager 打包应用程序资源
+func Packager(name string) []byte {
+	data, err := packager.ReadFile("packager/" + name)
 	if err != nil {
 		return nil
 	}

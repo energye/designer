@@ -134,6 +134,8 @@ func doRunCreate(name, dir string) bool {
 		createProjectDir()
 		// 创建 windows 应用程序清单配置
 		saveOrUpdateWindowsManifest()
+		// 创建 macOS 应用程序清单配置
+		saveOrUpdateMacOSPList()
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功
