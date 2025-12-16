@@ -68,6 +68,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
 	m.font.SetSize(fontSize)
+	m.SetColor(colors.ClWhite)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	{

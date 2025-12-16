@@ -86,6 +86,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	m.SetDoubleBuffered(true)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	m.WorkAreaCenter()
+	m.SetColor(colors.ClWhite)
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
 	m.font.SetSize(fontSize)
