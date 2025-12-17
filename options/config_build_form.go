@@ -16,6 +16,7 @@ package options
 import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -47,6 +48,16 @@ type TBuildForm struct {
 	buildTabPagePackage *wg.TPage
 
 	// 基础配置
+	windowsCheckBox     lcl.ICheckBox
+	macOSCheckBox       lcl.ICheckBox
+	linuxCheckBox       lcl.ICheckBox
+	x86_64CheckBox      lcl.ICheckBox
+	aarch64CheckBox     lcl.ICheckBox
+	i386CheckBox        lcl.ICheckBox
+	armCheckBox         lcl.ICheckBox
+	loongarch64CheckBox lcl.ICheckBox
+	outputEdit          lcl.IEdit
+	selectOutputDirBtn  *wg.TButton
 
 	// 构建打包
 
@@ -179,6 +190,92 @@ func (m *TBuildForm) initConfigComponent() {
 	platformTitle.SetTop(35)
 	platformTitle.SetFont(titleFontTwo)
 	platformTitle.SetParent(m.buildTabPageConfig)
+
+	m.windowsCheckBox = lcl.NewCheckBox(m)
+	m.windowsCheckBox.SetCaption("Windows")
+	m.windowsCheckBox.SetLeft(20)
+	m.windowsCheckBox.SetTop(60)
+	m.windowsCheckBox.SetFont(m.font)
+	m.windowsCheckBox.SetParent(m.buildTabPageConfig)
+	m.macOSCheckBox = lcl.NewCheckBox(m)
+	m.macOSCheckBox.SetCaption("macOS")
+	m.macOSCheckBox.SetLeft(120)
+	m.macOSCheckBox.SetTop(60)
+	m.macOSCheckBox.SetFont(m.font)
+	m.macOSCheckBox.SetParent(m.buildTabPageConfig)
+	m.linuxCheckBox = lcl.NewCheckBox(m)
+	m.linuxCheckBox.SetCaption("Linux")
+	m.linuxCheckBox.SetLeft(210)
+	m.linuxCheckBox.SetTop(60)
+	m.linuxCheckBox.SetFont(m.font)
+	m.linuxCheckBox.SetParent(m.buildTabPageConfig)
+
+	archTitle := lcl.NewLabel(m)
+	archTitle.SetCaption("架构")
+	archTitle.SetLeft(10)
+	archTitle.SetTop(95)
+	archTitle.SetFont(titleFontTwo)
+	archTitle.SetParent(m.buildTabPageConfig)
+
+	m.x86_64CheckBox = lcl.NewCheckBox(m)
+	m.x86_64CheckBox.SetCaption("x86_64")
+	m.x86_64CheckBox.SetLeft(20)
+	m.x86_64CheckBox.SetTop(120)
+	m.x86_64CheckBox.SetFont(m.font)
+	m.x86_64CheckBox.SetParent(m.buildTabPageConfig)
+	m.aarch64CheckBox = lcl.NewCheckBox(m)
+	m.aarch64CheckBox.SetCaption("aarch64")
+	m.aarch64CheckBox.SetLeft(120)
+	m.aarch64CheckBox.SetTop(120)
+	m.aarch64CheckBox.SetFont(m.font)
+	m.aarch64CheckBox.SetParent(m.buildTabPageConfig)
+	m.i386CheckBox = lcl.NewCheckBox(m)
+	m.i386CheckBox.SetCaption("i386")
+	m.i386CheckBox.SetLeft(210)
+	m.i386CheckBox.SetTop(120)
+	m.i386CheckBox.SetFont(m.font)
+	m.i386CheckBox.SetParent(m.buildTabPageConfig)
+	m.armCheckBox = lcl.NewCheckBox(m)
+	m.armCheckBox.SetCaption("arm")
+	m.armCheckBox.SetLeft(300)
+	m.armCheckBox.SetTop(120)
+	m.armCheckBox.SetFont(m.font)
+	m.armCheckBox.SetParent(m.buildTabPageConfig)
+	m.loongarch64CheckBox = lcl.NewCheckBox(m)
+	m.loongarch64CheckBox.SetCaption("loongarch64")
+	m.loongarch64CheckBox.SetLeft(390)
+	m.loongarch64CheckBox.SetTop(120)
+	m.loongarch64CheckBox.SetFont(m.font)
+	m.loongarch64CheckBox.SetEnabled(false)
+	m.loongarch64CheckBox.SetParent(m.buildTabPageConfig)
+
+	outputTitle := lcl.NewLabel(m)
+	outputTitle.SetCaption("输出目录")
+	outputTitle.SetLeft(10)
+	outputTitle.SetTop(155)
+	outputTitle.SetFont(titleFontTwo)
+	outputTitle.SetParent(m.buildTabPageConfig)
+
+	m.outputEdit = lcl.NewEdit(m)
+	m.outputEdit.SetBounds(20, 185, 480, 30)
+	m.outputEdit.SetFont(m.font)
+	m.outputEdit.SetTextHint("构建二进制输出目录, 默认: ./build")
+	m.outputEdit.SetText("./build")
+	m.outputEdit.SetParent(m.buildTabPageConfig)
+
+	m.selectOutputDirBtn = wg.NewButton(m)
+	m.selectOutputDirBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+	m.selectOutputDirBtn.SetRadius(3)
+	selectOutputDirRect := types.TRect{Left: m.outputEdit.Left() + m.outputEdit.Width() + 5, Top: 185}
+	selectOutputDirRect.SetWidth(30)
+	if tool.IsLinux {
+		selectOutputDirRect.SetHeight(35)
+	} else {
+		selectOutputDirRect.SetHeight(30)
+	}
+	m.selectOutputDirBtn.SetBoundsRect(selectOutputDirRect)
+	m.selectOutputDirBtn.SetParent(m.buildTabPageConfig)
+	m.selectOutputDirBtn.SetOnClick(m.selectOutputDirClick)
 }
 
 func (m *TBuildForm) initBuildComponent() {
@@ -199,4 +296,12 @@ func (m *TBuildForm) closeClick(sender lcl.IObject) {
 
 func (m *TBuildForm) saveClick(sender lcl.IObject) {
 
+}
+
+func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
+	m.selectDir.SetTitle("选择输出目录")
+	if m.selectDir.Execute() {
+		output := m.selectDir.FileName()
+		m.outputEdit.SetText(output)
+	}
 }
