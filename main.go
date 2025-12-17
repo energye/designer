@@ -27,6 +27,7 @@ import (
 )
 
 // go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
+// go build -ldflags="-H windowsgui -s -w -buildid=" -trimpath -o build/designer.exe
 // go build -ldflags="-H windowsgui" -trimpath -o build/designer.exe
 func main() {
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15

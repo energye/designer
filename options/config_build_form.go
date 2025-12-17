@@ -65,6 +65,19 @@ type TBuildForm struct {
 	disableDebugCheckBox    lcl.ICheckBox
 
 	// 构建打包
+	winMsiCheckBox             lcl.ICheckBox
+	winExeCheckBox             lcl.ICheckBox
+	winDefaultInstallEdit      lcl.IEdit
+	winDesktopShortcutCheckBox lcl.ICheckBox
+	winAddStartMenuCheckBox    lcl.ICheckBox
+
+	macDMGCheckBox  lcl.ICheckBox
+	macPKGCheckBox  lcl.ICheckBox
+	macCertCheckBox lcl.ICheckBox
+	macCertComboBox lcl.IComboBox
+
+	linuxDEBCheckBox lcl.ICheckBox
+	dependsEdit      lcl.IEdit
 
 	// 操作按钮
 	saveBtn  *wg.TButton
@@ -355,7 +368,155 @@ func (m *TBuildForm) initConfigComponent() {
 }
 
 func (m *TBuildForm) initBuildComponent() {
+	titleFont := lcl.NewFont()
+	titleFont.SetName("微软雅黑")
+	titleFont.SetSize(12)
+	titleFont.SetStyle(types.NewSet(types.FsBold))
 
+	titleFontTwo := lcl.NewFont()
+	titleFontTwo.SetName("微软雅黑")
+	titleFontTwo.SetSize(10)
+	titleFontTwo.SetStyle(types.NewSet(types.FsBold))
+
+	windowsPackageTitle := lcl.NewLabel(m)
+	windowsPackageTitle.SetFont(titleFont)
+	windowsPackageTitle.SetCaption("Windows 打包配置")
+	windowsPackageTitle.SetTop(5)
+	windowsPackageTitle.SetLeft(10)
+	windowsPackageTitle.SetParent(m.buildTabPagePackage)
+
+	windowsPackageFmtTitle := lcl.NewLabel(m)
+	windowsPackageFmtTitle.SetCaption("打包格式")
+	windowsPackageFmtTitle.SetLeft(10)
+	windowsPackageFmtTitle.SetTop(35)
+	windowsPackageFmtTitle.SetFont(titleFontTwo)
+	windowsPackageFmtTitle.SetParent(m.buildTabPagePackage)
+
+	m.winMsiCheckBox = lcl.NewCheckBox(m)
+	m.winMsiCheckBox.SetCaption("MSI 安装包")
+	m.winMsiCheckBox.SetLeft(20)
+	m.winMsiCheckBox.SetTop(60)
+	m.winMsiCheckBox.SetFont(m.font)
+	m.winMsiCheckBox.SetParent(m.buildTabPagePackage)
+	m.winExeCheckBox = lcl.NewCheckBox(m)
+	m.winExeCheckBox.SetCaption("EXE 安装包")
+	m.winExeCheckBox.SetLeft(210)
+	m.winExeCheckBox.SetTop(60)
+	m.winExeCheckBox.SetFont(m.font)
+	m.winExeCheckBox.SetParent(m.buildTabPagePackage)
+
+	winDefaultInstallTitle := lcl.NewLabel(m)
+	winDefaultInstallTitle.SetCaption("默认安装路径")
+	winDefaultInstallTitle.SetLeft(10)
+	winDefaultInstallTitle.SetTop(90)
+	winDefaultInstallTitle.SetFont(titleFontTwo)
+	winDefaultInstallTitle.SetParent(m.buildTabPagePackage)
+
+	m.winDefaultInstallEdit = lcl.NewEdit(m)
+	m.winDefaultInstallEdit.SetBounds(20, 115, 515, 30)
+	m.winDefaultInstallEdit.SetFont(m.font)
+	m.winDefaultInstallEdit.SetTextHint("Windows 应用的默认安装路径 如: C:\\Program Files")
+	m.winDefaultInstallEdit.SetParent(m.buildTabPagePackage)
+
+	m.winDesktopShortcutCheckBox = lcl.NewCheckBox(m)
+	m.winDesktopShortcutCheckBox.SetCaption("创建桌面快捷方式")
+	m.winDesktopShortcutCheckBox.SetLeft(20)
+	m.winDesktopShortcutCheckBox.SetTop(155)
+	m.winDesktopShortcutCheckBox.SetFont(m.font)
+	m.winDesktopShortcutCheckBox.SetParent(m.buildTabPagePackage)
+
+	m.winAddStartMenuCheckBox = lcl.NewCheckBox(m)
+	m.winAddStartMenuCheckBox.SetCaption("添加到开始菜单")
+	m.winAddStartMenuCheckBox.SetLeft(210)
+	m.winAddStartMenuCheckBox.SetTop(155)
+	m.winAddStartMenuCheckBox.SetFont(m.font)
+	m.winAddStartMenuCheckBox.SetParent(m.buildTabPagePackage)
+
+	macOSPackageTitle := lcl.NewLabel(m)
+	macOSPackageTitle.SetFont(titleFont)
+	macOSPackageTitle.SetCaption("macOS 打包配置")
+	macOSPackageTitle.SetTop(190)
+	macOSPackageTitle.SetLeft(10)
+	macOSPackageTitle.SetParent(m.buildTabPagePackage)
+
+	macOSPackageFmtTitle := lcl.NewLabel(m)
+	macOSPackageFmtTitle.SetCaption("打包格式")
+	macOSPackageFmtTitle.SetLeft(10)
+	macOSPackageFmtTitle.SetTop(220)
+	macOSPackageFmtTitle.SetFont(titleFontTwo)
+	macOSPackageFmtTitle.SetParent(m.buildTabPagePackage)
+
+	m.macDMGCheckBox = lcl.NewCheckBox(m)
+	m.macDMGCheckBox.SetCaption("DMG 镜像")
+	m.macDMGCheckBox.SetLeft(20)
+	m.macDMGCheckBox.SetTop(250)
+	m.macDMGCheckBox.SetFont(m.font)
+	m.macDMGCheckBox.SetParent(m.buildTabPagePackage)
+
+	m.macPKGCheckBox = lcl.NewCheckBox(m)
+	m.macPKGCheckBox.SetCaption("PKG 安装包")
+	m.macPKGCheckBox.SetLeft(210)
+	m.macPKGCheckBox.SetTop(250)
+	m.macPKGCheckBox.SetFont(m.font)
+	m.macPKGCheckBox.SetParent(m.buildTabPagePackage)
+
+	m.macCertCheckBox = lcl.NewCheckBox(m)
+	m.macCertCheckBox.SetCaption("签名")
+	m.macCertCheckBox.SetLeft(20)
+	m.macCertCheckBox.SetTop(280)
+	m.macCertCheckBox.SetFont(m.font)
+	m.macCertCheckBox.SetParent(m.buildTabPagePackage)
+	m.macCertCheckBox.SetOnChange(func(sender lcl.IObject) {
+		m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
+	})
+
+	m.macCertComboBox = lcl.NewComboBox(m)
+	m.macCertComboBox.SetBounds(85, 280, 450, 30)
+	m.macCertComboBox.SetFont(m.font)
+	m.macCertComboBox.SetTextHint(`选择用于签名的证书`)
+	m.macCertComboBox.SetShowHint(true)
+	m.macCertComboBox.SetDoubleBuffered(true)
+	m.macCertComboBox.SetStyle(types.CsDropDownList)
+	m.macCertComboBox.SetBorderStyle(types.BsSingle)
+	m.macCertComboBox.SetVisible(false)
+	m.macCertComboBox.Items().Add("-- 选择证书 --")
+	m.macCertComboBox.SetItemIndex(0)
+	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
+	m.macCertComboBox.SetParent(m.buildTabPagePackage)
+
+	linuxPackageTitle := lcl.NewLabel(m)
+	linuxPackageTitle.SetFont(titleFont)
+	linuxPackageTitle.SetCaption("Linux 打包配置")
+	linuxPackageTitle.SetTop(320)
+	linuxPackageTitle.SetLeft(10)
+	linuxPackageTitle.SetParent(m.buildTabPagePackage)
+
+	linuxPackageFmtTitle := lcl.NewLabel(m)
+	linuxPackageFmtTitle.SetCaption("打包格式")
+	linuxPackageFmtTitle.SetLeft(10)
+	linuxPackageFmtTitle.SetTop(350)
+	linuxPackageFmtTitle.SetFont(titleFontTwo)
+	linuxPackageFmtTitle.SetParent(m.buildTabPagePackage)
+
+	m.linuxDEBCheckBox = lcl.NewCheckBox(m)
+	m.linuxDEBCheckBox.SetCaption("DEB 包")
+	m.linuxDEBCheckBox.SetLeft(20)
+	m.linuxDEBCheckBox.SetTop(375)
+	m.linuxDEBCheckBox.SetFont(m.font)
+	m.linuxDEBCheckBox.SetParent(m.buildTabPagePackage)
+
+	dependsTitle := lcl.NewLabel(m)
+	dependsTitle.SetCaption("依赖项")
+	dependsTitle.SetLeft(10)
+	dependsTitle.SetTop(410)
+	dependsTitle.SetFont(titleFontTwo)
+	dependsTitle.SetParent(m.buildTabPagePackage)
+
+	m.dependsEdit = lcl.NewEdit(m)
+	m.dependsEdit.SetBounds(20, 440, 515, 30)
+	m.dependsEdit.SetFont(m.font)
+	m.dependsEdit.SetTextHint("用逗号分隔的依赖项列表, 如: libc6 (>= 2.14)")
+	m.dependsEdit.SetParent(m.buildTabPagePackage)
 }
 
 func (m *TBuildForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
@@ -379,5 +540,17 @@ func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
 	if m.selectDir.Execute() {
 		output := m.selectDir.FileName()
 		m.outputEdit.SetText(output)
+	}
+}
+
+func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
+	// 签名证书： cer crt pem p12 pfx
+	if m.macCertComboBox.ItemIndex() == 0 {
+		m.selectDir.SetTitle("选择签名证书")
+		if m.selectDir.Execute() {
+			output := m.selectDir.FileName()
+			m.macCertComboBox.Items().Add(output)
+			m.macCertComboBox.SetText(output)
+		}
 	}
 }
