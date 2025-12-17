@@ -341,6 +341,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.codeObfuscationCheckBox.SetFont(m.font)
 	m.codeObfuscationCheckBox.SetShowHint(true)
 	m.codeObfuscationCheckBox.SetHint("对 Go 代码进行简单混淆")
+	m.codeObfuscationCheckBox.SetEnabled(false)
 	m.codeObfuscationCheckBox.SetParent(m.buildTabPageConfig)
 	m.disableDebugCheckBox = lcl.NewCheckBox(m)
 	m.disableDebugCheckBox.SetCaption("禁止调试")
@@ -349,6 +350,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.disableDebugCheckBox.SetFont(m.font)
 	m.disableDebugCheckBox.SetShowHint(true)
 	m.disableDebugCheckBox.SetHint("提高二进制文件的反编译难度")
+	m.disableDebugCheckBox.SetEnabled(false)
 	m.disableDebugCheckBox.SetParent(m.buildTabPageConfig)
 }
 
