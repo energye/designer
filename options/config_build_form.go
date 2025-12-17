@@ -58,6 +58,7 @@ type TBuildForm struct {
 	loongarch64CheckBox     lcl.ICheckBox
 	outputEdit              lcl.IEdit
 	selectOutputDirBtn      *wg.TButton
+	buildFileNameEdit       lcl.IEdit
 	buildModeDebug          lcl.IRadioButton
 	buildModeRelease        lcl.IRadioButton
 	buildArgsEdit           lcl.IEdit
@@ -169,7 +170,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.saveBtn.SetOnClick(m.saveClick)
 
 		m.buildBtn = wg.NewButton(m)
-		m.buildBtn.SetText("开始构建")
+		m.buildBtn.SetText("开始打包")
 		m.buildBtn.SetFont(btnFont)
 		m.buildBtn.Font().SetColor(colors.ClWhite)
 		m.buildBtn.SetRadius(3)
@@ -275,7 +276,7 @@ func (m *TBuildForm) initConfigComponent() {
 	outputTitle.SetParent(m.buildTabPageConfig)
 
 	m.outputEdit = lcl.NewEdit(m)
-	m.outputEdit.SetBounds(20, 185, 480, 30)
+	m.outputEdit.SetBounds(20, 185, 260, 30)
 	m.outputEdit.SetFont(m.font)
 	m.outputEdit.SetTextHint("构建二进制输出目录, 默认: ./build")
 	m.outputEdit.SetText("./build")
@@ -294,6 +295,19 @@ func (m *TBuildForm) initConfigComponent() {
 	m.selectOutputDirBtn.SetBoundsRect(selectOutputDirRect)
 	m.selectOutputDirBtn.SetParent(m.buildTabPageConfig)
 	m.selectOutputDirBtn.SetOnClick(m.selectOutputDirClick)
+
+	buildFileNameTitle := lcl.NewLabel(m)
+	buildFileNameTitle.SetCaption("可执行文件名称")
+	buildFileNameTitle.SetLeft(m.outputEdit.Left() + m.outputEdit.Width() + selectOutputDirRect.Width() + 20)
+	buildFileNameTitle.SetTop(155)
+	buildFileNameTitle.SetFont(titleFontTwo)
+	buildFileNameTitle.SetParent(m.buildTabPageConfig)
+
+	m.buildFileNameEdit = lcl.NewEdit(m)
+	m.buildFileNameEdit.SetBounds(buildFileNameTitle.Left()+10, 185, 195, 30)
+	m.buildFileNameEdit.SetFont(m.font)
+	m.buildFileNameEdit.SetTextHint(`构建的二进制文件名`)
+	m.buildFileNameEdit.SetParent(m.buildTabPageConfig)
 
 	compileArgsTitle := lcl.NewLabel(m)
 	compileArgsTitle.SetFont(titleFont)
