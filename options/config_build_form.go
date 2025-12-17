@@ -48,16 +48,21 @@ type TBuildForm struct {
 	buildTabPagePackage *wg.TPage
 
 	// 基础配置
-	windowsCheckBox     lcl.ICheckBox
-	macOSCheckBox       lcl.ICheckBox
-	linuxCheckBox       lcl.ICheckBox
-	x86_64CheckBox      lcl.ICheckBox
-	aarch64CheckBox     lcl.ICheckBox
-	i386CheckBox        lcl.ICheckBox
-	armCheckBox         lcl.ICheckBox
-	loongarch64CheckBox lcl.ICheckBox
-	outputEdit          lcl.IEdit
-	selectOutputDirBtn  *wg.TButton
+	windowsCheckBox         lcl.ICheckBox
+	macOSCheckBox           lcl.ICheckBox
+	linuxCheckBox           lcl.ICheckBox
+	x86_64CheckBox          lcl.ICheckBox
+	aarch64CheckBox         lcl.ICheckBox
+	i386CheckBox            lcl.ICheckBox
+	armCheckBox             lcl.ICheckBox
+	loongarch64CheckBox     lcl.ICheckBox
+	outputEdit              lcl.IEdit
+	selectOutputDirBtn      *wg.TButton
+	buildModeDebug          lcl.IRadioButton
+	buildModeRelease        lcl.IRadioButton
+	buildArgsEdit           lcl.IEdit
+	codeObfuscationCheckBox lcl.ICheckBox
+	disableDebugCheckBox    lcl.ICheckBox
 
 	// 构建打包
 
@@ -223,18 +228,18 @@ func (m *TBuildForm) initConfigComponent() {
 	m.x86_64CheckBox.SetTop(120)
 	m.x86_64CheckBox.SetFont(m.font)
 	m.x86_64CheckBox.SetParent(m.buildTabPageConfig)
-	m.aarch64CheckBox = lcl.NewCheckBox(m)
-	m.aarch64CheckBox.SetCaption("aarch64")
-	m.aarch64CheckBox.SetLeft(120)
-	m.aarch64CheckBox.SetTop(120)
-	m.aarch64CheckBox.SetFont(m.font)
-	m.aarch64CheckBox.SetParent(m.buildTabPageConfig)
 	m.i386CheckBox = lcl.NewCheckBox(m)
 	m.i386CheckBox.SetCaption("i386")
-	m.i386CheckBox.SetLeft(210)
+	m.i386CheckBox.SetLeft(120)
 	m.i386CheckBox.SetTop(120)
 	m.i386CheckBox.SetFont(m.font)
 	m.i386CheckBox.SetParent(m.buildTabPageConfig)
+	m.aarch64CheckBox = lcl.NewCheckBox(m)
+	m.aarch64CheckBox.SetCaption("aarch64")
+	m.aarch64CheckBox.SetLeft(210)
+	m.aarch64CheckBox.SetTop(120)
+	m.aarch64CheckBox.SetFont(m.font)
+	m.aarch64CheckBox.SetParent(m.buildTabPageConfig)
 	m.armCheckBox = lcl.NewCheckBox(m)
 	m.armCheckBox.SetCaption("arm")
 	m.armCheckBox.SetLeft(300)
@@ -276,6 +281,75 @@ func (m *TBuildForm) initConfigComponent() {
 	m.selectOutputDirBtn.SetBoundsRect(selectOutputDirRect)
 	m.selectOutputDirBtn.SetParent(m.buildTabPageConfig)
 	m.selectOutputDirBtn.SetOnClick(m.selectOutputDirClick)
+
+	compileArgsTitle := lcl.NewLabel(m)
+	compileArgsTitle.SetFont(titleFont)
+	compileArgsTitle.SetCaption("编译参数")
+	compileArgsTitle.SetTop(225)
+	compileArgsTitle.SetLeft(10)
+	compileArgsTitle.SetParent(m.buildTabPageConfig)
+
+	buildModeTitle := lcl.NewLabel(m)
+	buildModeTitle.SetFont(titleFontTwo)
+	buildModeTitle.SetCaption("编译模式")
+	buildModeTitle.SetTop(255)
+	buildModeTitle.SetLeft(10)
+	buildModeTitle.SetParent(m.buildTabPageConfig)
+
+	m.buildModeDebug = lcl.NewRadioButton(m)
+	m.buildModeDebug.SetCaption("调试模式")
+	m.buildModeDebug.SetLeft(20)
+	m.buildModeDebug.SetTop(280)
+	m.buildModeDebug.SetFont(m.font)
+	m.buildModeDebug.SetChecked(true)
+	m.buildModeDebug.SetShowHint(true)
+	m.buildModeDebug.SetHint("调试模式保留调试信息")
+	m.buildModeDebug.SetParent(m.buildTabPageConfig)
+	m.buildModeRelease = lcl.NewRadioButton(m)
+	m.buildModeRelease.SetCaption("发布模式")
+	m.buildModeRelease.SetLeft(210)
+	m.buildModeRelease.SetTop(280)
+	m.buildModeRelease.SetFont(m.font)
+	m.buildModeRelease.SetShowHint(true)
+	m.buildModeRelease.SetHint("发布模式优化体积, 去除调试信息和符号")
+	m.buildModeRelease.SetParent(m.buildTabPageConfig)
+
+	buildArgsTitle := lcl.NewLabel(m)
+	buildArgsTitle.SetFont(titleFontTwo)
+	buildArgsTitle.SetCaption("构建参数")
+	buildArgsTitle.SetTop(315)
+	buildArgsTitle.SetLeft(10)
+	buildArgsTitle.SetParent(m.buildTabPageConfig)
+
+	m.buildArgsEdit = lcl.NewEdit(m)
+	m.buildArgsEdit.SetBounds(20, 345, 515, 30)
+	m.buildArgsEdit.SetFont(m.font)
+	m.buildArgsEdit.SetTextHint(`传递给 go build 额外参数 如: -tags xxx -ldflags "-xxx"`)
+	m.buildArgsEdit.SetParent(m.buildTabPageConfig)
+
+	decompileTitle := lcl.NewLabel(m)
+	decompileTitle.SetFont(titleFontTwo)
+	decompileTitle.SetCaption("反编译防护")
+	decompileTitle.SetTop(390)
+	decompileTitle.SetLeft(10)
+	decompileTitle.SetParent(m.buildTabPageConfig)
+
+	m.codeObfuscationCheckBox = lcl.NewCheckBox(m)
+	m.codeObfuscationCheckBox.SetCaption("代码混淆")
+	m.codeObfuscationCheckBox.SetLeft(20)
+	m.codeObfuscationCheckBox.SetTop(420)
+	m.codeObfuscationCheckBox.SetFont(m.font)
+	m.codeObfuscationCheckBox.SetShowHint(true)
+	m.codeObfuscationCheckBox.SetHint("对 Go 代码进行简单混淆")
+	m.codeObfuscationCheckBox.SetParent(m.buildTabPageConfig)
+	m.disableDebugCheckBox = lcl.NewCheckBox(m)
+	m.disableDebugCheckBox.SetCaption("禁止调试")
+	m.disableDebugCheckBox.SetLeft(210)
+	m.disableDebugCheckBox.SetTop(420)
+	m.disableDebugCheckBox.SetFont(m.font)
+	m.disableDebugCheckBox.SetShowHint(true)
+	m.disableDebugCheckBox.SetHint("提高二进制文件的反编译难度")
+	m.disableDebugCheckBox.SetParent(m.buildTabPageConfig)
 }
 
 func (m *TBuildForm) initBuildComponent() {
