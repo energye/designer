@@ -43,8 +43,34 @@ type TUIForm struct {
 
 // TBuildOption 构建配置
 type TBuildOption struct {
-	GoArgument string `json:"go_argument"` // 构建参数
-	Output     string `json:"output"`      // 构建输出目录
+	// 基础配置
+	PlatformWindows  bool   `json:"windows"`
+	PlatformMacOS    bool   `json:"macos"`
+	PlatformLinux    bool   `json:"linux"`
+	ArchX86_64       bool   `json:"arch_x86_64"`
+	ArchI386         bool   `json:"arch_i386"`
+	ArchAarch64      bool   `json:"arch_aarch64"`
+	ArchArm          bool   `json:"arch_arm"`
+	ArchLoongarch64  bool   `json:"arch_loongarch64"`
+	Output           string `json:"output"`
+	BuildFileName    string `json:"build_file_name"`
+	BuildModeDebug   bool   `json:"build_mode_debug"`
+	BuildModeRelease bool   `json:"build_mode_release"`
+	GoArgs           string `json:"go_args"`
+	CodeObfuscation  bool   `json:"code_obfuscation"`
+	DisableDebug     bool   `json:"disable_debug"`
+	// 打包配置
+	WinMsi             bool     `json:"win_msi"`
+	WinExe             bool     `json:"win_exe"`
+	WinDefaultInstall  string   `json:"win_default_install"`
+	WinDesktopShortcut bool     `json:"win_desktop_shortcut"`
+	WinAddStartMenu    bool     `json:"win_add_start_menu"`
+	MacDMG             bool     `json:"mac_dmg"`
+	MacPKG             bool     `json:"mac_pkg"`
+	MacCert            bool     `json:"mac_cert"`
+	MacCertList        []string `json:"mac_cert_list"`
+	LinuxDEB           bool     `json:"linux_deb"`
+	Depends            string   `json:"depends"`
 }
 
 // TAppOption 应用配置
