@@ -16,6 +16,7 @@ package lib
 import (
 	"archive/zip"
 	"bytes"
+	"fmt"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
@@ -24,9 +25,8 @@ import (
 
 // ExtractLibrary 从内置资源中提取库文件到指定输出路径
 //
-//		outputPath: 库文件的输出目录路径
-//		libPath: 提取后的库文件完整路径
-//	 说明:
+//   - outputPath: 库文件的输出目录路径
+//   - libPath: 提取后的库文件完整路径
 func ExtractLibrary(outputPath string) (libPath string) {
 	libPath = filepath.Join(outputPath, libname.GetDLLName())
 	if tool.IsExist(libPath) {
