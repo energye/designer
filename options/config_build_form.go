@@ -14,6 +14,7 @@
 package options
 
 import (
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -42,6 +43,7 @@ type TBuildForm struct {
 	closing   bool
 	font      lcl.IFont
 	selectDir lcl.ISelectDirectoryDialog
+	openFile  lcl.IOpenDialog
 
 	buildTab            *wg.TTab
 	buildTabPageConfig  *wg.TPage
@@ -59,8 +61,8 @@ type TBuildForm struct {
 	outputEdit              lcl.IEdit
 	selectOutputDirBtn      *wg.TButton
 	buildFileNameEdit       lcl.IEdit
-	buildModeDebug          lcl.IRadioButton
-	buildModeRelease        lcl.IRadioButton
+	buildModeDebugRdo       lcl.IRadioButton
+	buildModeReleaseRdo     lcl.IRadioButton
 	buildArgsEdit           lcl.IEdit
 	codeObfuscationCheckBox lcl.ICheckBox
 	disableDebugCheckBox    lcl.ICheckBox
@@ -109,6 +111,13 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.SetColor(colors.ClWhite)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+	m.openFile = lcl.NewOpenDialog(m)
+
+	{
+		m.openFile.SetTitle("打开证书")
+		m.openFile.SetFilter(config.DialogFilter.MacCertFilter())
+		m.openFile.SetFilterIndex(1)
+	}
 
 	{
 		m.buildTab = wg.NewTab(m)
@@ -332,25 +341,25 @@ func (m *TBuildForm) initConfigComponent() {
 	buildModeTitle.SetLeft(10)
 	buildModeTitle.SetParent(m.buildTabPageConfig)
 
-	m.buildModeDebug = lcl.NewRadioButton(m)
-	m.buildModeDebug.SetCaption("调试模式")
-	m.buildModeDebug.SetLeft(20)
-	m.buildModeDebug.SetTop(280)
-	m.buildModeDebug.SetFont(m.font)
-	m.buildModeDebug.SetChecked(true)
-	m.buildModeDebug.SetShowHint(true)
-	m.buildModeDebug.SetHint("调试模式保留调试信息")
-	m.buildModeDebug.SetChecked(gProject.BuildOption.BuildModeDebug)
-	m.buildModeDebug.SetParent(m.buildTabPageConfig)
-	m.buildModeRelease = lcl.NewRadioButton(m)
-	m.buildModeRelease.SetCaption("发布模式")
-	m.buildModeRelease.SetLeft(210)
-	m.buildModeRelease.SetTop(280)
-	m.buildModeRelease.SetFont(m.font)
-	m.buildModeRelease.SetShowHint(true)
-	m.buildModeRelease.SetHint("发布模式优化体积, 去除调试信息和符号")
-	m.buildModeRelease.SetChecked(gProject.BuildOption.BuildModeRelease)
-	m.buildModeRelease.SetParent(m.buildTabPageConfig)
+	m.buildModeDebugRdo = lcl.NewRadioButton(m)
+	m.buildModeDebugRdo.SetCaption("调试模式")
+	m.buildModeDebugRdo.SetLeft(20)
+	m.buildModeDebugRdo.SetTop(280)
+	m.buildModeDebugRdo.SetFont(m.font)
+	m.buildModeDebugRdo.SetChecked(true)
+	m.buildModeDebugRdo.SetShowHint(true)
+	m.buildModeDebugRdo.SetHint("调试模式保留调试信息")
+	m.buildModeDebugRdo.SetChecked(gProject.BuildOption.BuildModeDebug)
+	m.buildModeDebugRdo.SetParent(m.buildTabPageConfig)
+	m.buildModeReleaseRdo = lcl.NewRadioButton(m)
+	m.buildModeReleaseRdo.SetCaption("发布模式")
+	m.buildModeReleaseRdo.SetLeft(210)
+	m.buildModeReleaseRdo.SetTop(280)
+	m.buildModeReleaseRdo.SetFont(m.font)
+	m.buildModeReleaseRdo.SetShowHint(true)
+	m.buildModeReleaseRdo.SetHint("发布模式优化体积, 去除调试信息和符号")
+	m.buildModeReleaseRdo.SetChecked(gProject.BuildOption.BuildModeRelease)
+	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
 
 	buildArgsTitle := lcl.NewLabel(m)
 	buildArgsTitle.SetFont(titleFontTwo)
@@ -519,6 +528,9 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
 	m.macCertComboBox.Items().Add("-- 选择证书 --")
 	m.macCertComboBox.SetItemIndex(0)
+	for _, item := range gProject.BuildOption.MacCertList {
+		m.macCertComboBox.Items().Add(item)
+	}
 	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
 	m.macCertComboBox.SetParent(m.buildTabPagePackage)
 
@@ -590,18 +602,27 @@ func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
-	// 签名证书： cer crt pem p12 pfx
 	if m.macCertComboBox.ItemIndex() == 0 {
-		m.selectDir.SetTitle("选择签名证书")
-		if m.selectDir.Execute() {
-			output := m.selectDir.FileName()
-			m.macCertComboBox.Items().Add(output)
-			m.macCertComboBox.SetText(output)
+		if m.openFile.Execute() {
+			output := m.openFile.FileName()
+			isAdd := true
+			items := m.macCertComboBox.Items()
+			for i := int32(0); i < items.Count(); i++ {
+				if items.Strings(i) == output {
+					isAdd = false
+					break
+				}
+			}
+			if isAdd {
+				m.macCertComboBox.Items().Add(output)
+				m.macCertComboBox.SetText(output)
+			}
 		}
 	}
 }
 
 func (m *TBuildForm) saveClick(sender lcl.IObject) {
+	logs.Debug("编译配置-保存")
 	// 基础配置
 	gProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
 	gProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
@@ -613,8 +634,8 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	gProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
 	gProject.BuildOption.Output = m.outputEdit.Text()
 	gProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
-	gProject.BuildOption.BuildModeDebug = m.buildModeDebug.Checked()
-	gProject.BuildOption.BuildModeRelease = m.buildModeRelease.Checked()
+	gProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
+	gProject.BuildOption.BuildModeRelease = m.buildModeReleaseRdo.Checked()
 	gProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
 	gProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	gProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
@@ -634,6 +655,13 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	gProject.BuildOption.MacCertList = macCertList
 	gProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	gProject.BuildOption.Depends = m.dependsEdit.Text()
+	go func() {
+		// 更新项目配置文件
+		if err := WriteEGPConfig(gPath, gProject); err != nil {
+			logs.Error("保存-写入项目配置文件失败")
+			return
+		}
+	}()
 }
 
 func (m *TBuildForm) buildClick(sender lcl.IObject) {

@@ -25,8 +25,12 @@ var DialogFilter = &dialogFilter{}
 
 type dialogFilter struct {
 	Image []string `json:"image"`
-	File  []string `json:"file"`
+	File  File     `json:"file"`
 	UI    []string `json:"ui"`
+}
+
+type File struct {
+	MacCert []string `json:"mac_cert"`
 }
 
 func init() {
@@ -36,7 +40,7 @@ func init() {
 		return
 	}
 	err := json.Unmarshal(data, DialogFilter)
-	if data == nil {
+	if err != nil {
 		logs.Error("加载弹窗过滤配置错误:", err.Error())
 		return
 	}
@@ -53,9 +57,9 @@ func (m *dialogFilter) ImageFilter() string {
 	return buf.String()
 }
 
-func (m *dialogFilter) FileFilter() string {
+func (m *dialogFilter) UIFilter() string {
 	buf := bytes.Buffer{}
-	for i, item := range m.File {
+	for i, item := range m.UI {
 		if i > 0 {
 			buf.WriteString("|")
 		}
@@ -64,9 +68,9 @@ func (m *dialogFilter) FileFilter() string {
 	return buf.String()
 }
 
-func (m *dialogFilter) UIFilter() string {
+func (m *dialogFilter) MacCertFilter() string {
 	buf := bytes.Buffer{}
-	for i, item := range m.UI {
+	for i, item := range m.File.MacCert {
 		if i > 0 {
 			buf.WriteString("|")
 		}
