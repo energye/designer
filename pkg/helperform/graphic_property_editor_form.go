@@ -67,6 +67,7 @@ func (m *TGraphicPropertyEditorForm) FormCreate(sender lcl.IObject) {
 	//m.SetShowInTaskBar(types.StNever)
 	m.SetWidth(950)
 	m.SetHeight(450)
+	m.SetColor(colors.ClWhite)
 	m.WorkAreaCenter()
 	//m.SetPopupParent(m.form)
 	//m.SetPopupMode(types.PmExplicit)
