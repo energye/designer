@@ -189,6 +189,37 @@ func (m *TProject) InitAppOption() {
 	// linux 默认值
 }
 
+func (m *TProject) InitBuildOption() {
+	// 基础配置
+	m.BuildOption.PlatformWindows = true
+	m.BuildOption.PlatformMacOS = true
+	m.BuildOption.PlatformLinux = true
+	m.BuildOption.ArchX86_64 = true
+	m.BuildOption.ArchI386 = true
+	m.BuildOption.ArchAarch64 = true
+	m.BuildOption.ArchArm = true
+	m.BuildOption.ArchLoongarch64 = false
+	m.BuildOption.Output = "./build"
+	m.BuildOption.BuildFileName = m.Name
+	m.BuildOption.BuildModeDebug = false
+	m.BuildOption.BuildModeRelease = false
+	m.BuildOption.GoArgs = ""
+	m.BuildOption.CodeObfuscation = false
+	m.BuildOption.DisableDebug = false
+	// 打包配置
+	m.BuildOption.WinMsi = false
+	m.BuildOption.WinExe = true
+	m.BuildOption.WinDefaultInstall = ""
+	m.BuildOption.WinDesktopShortcut = true
+	m.BuildOption.WinAddStartMenu = true
+	m.BuildOption.MacDMG = false
+	m.BuildOption.MacPKG = true
+	m.BuildOption.MacCert = false
+	m.BuildOption.MacCertList = nil
+	m.BuildOption.LinuxDEB = true
+	m.BuildOption.Depends = ""
+}
+
 // 模板调用 返回当前项目的所有窗体名称
 func (m *TProject) GoFormNames() string {
 	buf := tool.Buffer{}

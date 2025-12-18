@@ -120,7 +120,8 @@ func doRunCreate(name, dir string) bool {
 	newProject.EGPName = name + consts.EGPExt
 	newProject.Main = "main.go"
 	newProject.Package = consts.AppPackageName
-	newProject.InitAppOption() // 初始化应用配置数据
+	newProject.InitAppOption()   // 初始化应用配置数据
+	newProject.InitBuildOption() // 初始化构建配置
 	// 创建并写入项目配置文件
 	if err := WriteEGPConfig(dir, newProject); err != nil {
 		logs.Error("创建项目, 写入项目配置失败:", err.Error())
