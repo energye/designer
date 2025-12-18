@@ -16,7 +16,6 @@ package lib
 import (
 	"archive/zip"
 	"bytes"
-	"fmt"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
