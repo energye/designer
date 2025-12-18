@@ -71,7 +71,10 @@ func Error(v ...any) {
 }
 
 func GetTID() uintptr {
-	return api.CurrentThreadId()
+	if api.LibLoaded() {
+		return api.CurrentThreadId()
+	}
+	return 0
 }
 
 func windowIsValid() string {
