@@ -79,6 +79,7 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	tree.SetDefaultNodeHeight(28)
 	tree.SetIndent(8)
 	tree.Font().SetSize(10)
+	tree.ScrollBarOptions().SetScrollBars(types.SsVertical)
 
 	// options
 	propTreeOptions := tree.TreeOptions()
