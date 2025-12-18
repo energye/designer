@@ -527,10 +527,10 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertComboBox.SetBorderStyle(types.BsSingle)
 	m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
 	m.macCertComboBox.Items().Add("-- 选择证书 --")
-	m.macCertComboBox.SetItemIndex(0)
 	for _, item := range gProject.BuildOption.MacCertList {
 		m.macCertComboBox.Items().Add(item)
 	}
+	m.macCertComboBox.SetItemIndex(gProject.BuildOption.MacCertListIndex)
 	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
 	m.macCertComboBox.SetParent(m.buildTabPagePackage)
 
@@ -622,7 +622,7 @@ func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) saveClick(sender lcl.IObject) {
-	logs.Debug("编译配置-保存")
+	logs.Debug("构建配置-保存")
 	// 基础配置
 	gProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
 	gProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
@@ -653,6 +653,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		macCertList = append(macCertList, m.macCertComboBox.Items().Strings(i))
 	}
 	gProject.BuildOption.MacCertList = macCertList
+	gProject.BuildOption.MacCertListIndex = m.macCertComboBox.ItemIndex()
 	gProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	gProject.BuildOption.Depends = m.dependsEdit.Text()
 	go func() {
@@ -665,5 +666,5 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) buildClick(sender lcl.IObject) {
-
+	configBuildPackage()
 }

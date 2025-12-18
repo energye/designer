@@ -69,6 +69,7 @@ type TBuildOption struct {
 	MacPKG             bool     `json:"mac_pkg"`
 	MacCert            bool     `json:"mac_cert"`
 	MacCertList        []string `json:"mac_cert_list"`
+	MacCertListIndex   int32    `json:"mac_cert_list_index"`
 	LinuxDEB           bool     `json:"linux_deb"`
 	Depends            string   `json:"depends"`
 }
