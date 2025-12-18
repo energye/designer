@@ -201,7 +201,7 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.ArchLoongarch64 = false
 	m.BuildOption.Output = "./build"
 	m.BuildOption.BuildFileName = m.Name
-	m.BuildOption.BuildModeDebug = false
+	m.BuildOption.BuildModeDebug = true
 	m.BuildOption.BuildModeRelease = false
 	m.BuildOption.GoArgs = ""
 	m.BuildOption.CodeObfuscation = false

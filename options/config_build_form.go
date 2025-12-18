@@ -180,7 +180,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.buildBtn.SetBoundsRect(buildBtnRect)
 		m.buildBtn.SetColor(colors.RGBToColor(46, 204, 113))
 		m.buildBtn.SetParent(m.buildTab)
-		m.buildBtn.SetOnClick(m.saveClick)
+		m.buildBtn.SetOnClick(m.buildClick)
 	}
 	//(&hook.TWindowHook{Form: m}).Hook()
 }
@@ -581,10 +581,6 @@ func (m *TBuildForm) closeClick(sender lcl.IObject) {
 	m.Close()
 }
 
-func (m *TBuildForm) saveClick(sender lcl.IObject) {
-
-}
-
 func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
 	m.selectDir.SetTitle("选择输出目录")
 	if m.selectDir.Execute() {
@@ -603,4 +599,43 @@ func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
 			m.macCertComboBox.SetText(output)
 		}
 	}
+}
+
+func (m *TBuildForm) saveClick(sender lcl.IObject) {
+	// 基础配置
+	gProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
+	gProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
+	gProject.BuildOption.PlatformLinux = m.linuxCheckBox.Checked()
+	gProject.BuildOption.ArchX86_64 = m.x86_64CheckBox.Checked()
+	gProject.BuildOption.ArchI386 = m.i386CheckBox.Checked()
+	gProject.BuildOption.ArchAarch64 = m.aarch64CheckBox.Checked()
+	gProject.BuildOption.ArchArm = m.armCheckBox.Checked()
+	gProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
+	gProject.BuildOption.Output = m.outputEdit.Text()
+	gProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
+	gProject.BuildOption.BuildModeDebug = m.buildModeDebug.Checked()
+	gProject.BuildOption.BuildModeRelease = m.buildModeRelease.Checked()
+	gProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
+	gProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
+	gProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
+	// 打包配置
+	gProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
+	gProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
+	gProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
+	gProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
+	gProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
+	gProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
+	gProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
+	gProject.BuildOption.MacCert = m.macCertCheckBox.Checked()
+	var macCertList []string
+	for i := int32(1); i < m.macCertComboBox.Items().Count(); i++ {
+		macCertList = append(macCertList, m.macCertComboBox.Items().Strings(i))
+	}
+	gProject.BuildOption.MacCertList = macCertList
+	gProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
+	gProject.BuildOption.Depends = m.dependsEdit.Text()
+}
+
+func (m *TBuildForm) buildClick(sender lcl.IObject) {
+
 }
