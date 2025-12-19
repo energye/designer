@@ -11,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build darwin
-// +build darwin
+//go:build linux && loong64
+// +build linux,loong64
 
 package lib
 
 import "embed"
 
-//go:embed darwin/libenergy.zip
+//go:embed linux/libenergy-linux-loong64.zip
 var lib embed.FS
 
 const (
-	path = "darwin/libenergy.zip"
+	path = "linux/libenergy-linux-loong64.zip"
 )

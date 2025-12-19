@@ -11,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build windows
-// +build windows
+//go:build darwin && arm64
+// +build darwin,arm64
 
 package lib
 
 import "embed"
 
-//go:embed windows/libenergy.zip
+//go:embed darwin/libenergy-macos-arm64.zip
 var lib embed.FS
 
 const (
-	path = "windows/libenergy.zip"
+	path = "darwin/libenergy-macos-arm64.zip"
 )

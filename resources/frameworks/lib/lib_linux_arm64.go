@@ -11,16 +11,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build linux
-// +build linux
+//go:build linux && arm64
+// +build linux,arm64
 
 package lib
 
 import "embed"
 
-//go:embed linux/libenergy.zip
+//go:embed linux/libenergy-linux-arm64.zip
 var lib embed.FS
 
 const (
-	path = "linux/libenergy.zip"
+	path = "linux/libenergy-linux-arm64.zip"
 )
