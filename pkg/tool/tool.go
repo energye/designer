@@ -180,7 +180,7 @@ func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
 	defer srcFile.Close()
 	targetFile = filepath.Join(targetFile, zipFile.Name)
 	if zipFile.Mode().IsDir() {
-		return targetFile, os.MkdirAll(targetFile, zipFile.Mode())
+		return targetFile, os.MkdirAll(targetFile, 0755)
 	}
 	dstFile, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
 	if err != nil {
