@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build linux && amd64
-// +build linux,amd64
+//go:build linux && i386
+// +build linux,i386
 
 package lib
 
@@ -20,9 +20,13 @@ import (
 	"embed"
 )
 
-//go:embed linux/libenergy-linux-amd64-gtk2.zip
+//go:embed linux/libenergy-linux-i386.zip
 var lib embed.FS
 
 const (
-	path = "linux/libenergy-linux-amd64-gtk2.zip"
+	path = "linux/libenergy-linux-i386.zip"
 )
+
+func Lib() {
+
+}
