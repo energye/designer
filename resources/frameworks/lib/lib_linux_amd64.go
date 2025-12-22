@@ -18,9 +18,9 @@ package lib
 
 import "embed"
 
-//go:embed linux/libenergy-linux-amd64.zip
+//go:embed linux/libenergy-linux-amd64-gtk2.zip
 var lib embed.FS
 
 const (
-	path = "linux/libenergy-linux-amd64.zip"
+	path = "linux/libenergy-linux-amd64-gtk2.zip"
 )
