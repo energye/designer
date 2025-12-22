@@ -18,9 +18,14 @@ package lib
 
 import "embed"
 
-//go:embed linux/libenergy-linux-arm.zip
-var lib embed.FS
+var (
+	//go:embed linux/libenergy-linux-arm-gtk2.zip
+	lib embed.FS
+	//go:embed linux/libenergy-linux-arm-gtk3.zip
+	libGtk3 embed.FS
+)
 
 const (
-	path = "linux/libenergy-linux-arm.zip"
+	path     = "linux/libenergy-linux-arm-gtk2.zip"
+	pathGtk3 = "linux/libenergy-linux-arm-gtk3.zip"
 )

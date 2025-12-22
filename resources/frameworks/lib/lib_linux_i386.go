@@ -16,15 +16,16 @@
 
 package lib
 
-import (
-	"embed"
+var (
+	//go:embed linux/libenergy-linux-i386-gtk2.zip
+	lib embed.FS
+	//go:embed linux/libenergy-linux-i386-gtk3.zip
+	libGtk3 embed.FS
 )
 
-//go:embed linux/libenergy-linux-i386.zip
-var lib embed.FS
-
 const (
-	path = "linux/libenergy-linux-i386.zip"
+	path     = "linux/libenergy-linux-i386-gtk2.zip"
+	pathGtk3 = "linux/libenergy-linux-i386-gtk3.zip"
 )
 
 func Lib() {
