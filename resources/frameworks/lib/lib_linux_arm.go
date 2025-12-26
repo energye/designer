@@ -19,13 +19,13 @@ package lib
 import "embed"
 
 var (
-	//go:embed linux/libenergy-linux-arm-gtk2.zip
+	//go:embed libenergy-linux-armhf-gtk2.zip
 	lib embed.FS
-	//go:embed linux/libenergy-linux-arm-gtk3.zip
+	//go:embed libenergy-linux-armhf-gtk3.zip
 	libGtk3 embed.FS
 )
 
 const (
-	path     = "linux/libenergy-linux-arm-gtk2.zip"
-	pathGtk3 = "linux/libenergy-linux-arm-gtk3.zip"
+	path     = "linux/libenergy-linux-armhf-gtk2.zip"
+	pathGtk3 = "linux/libenergy-linux-armhf-gtk3.zip"
 )
