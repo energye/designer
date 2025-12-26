@@ -11,16 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build windows && 386
-// +build windows,386
+//go:build (windows && 386) || liball
 
 package lib
 
 import "embed"
 
 //go:embed windows/libenergy-windows-i386.zip
-var lib embed.FS
+var libI386Win32 embed.FS
 
 const (
-	path = "windows/libenergy-windows-i386.zip"
+	pathI386Win32 = "windows/libenergy-windows-i386.zip"
 )
+
+func init() {
+	libs.Add(pathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-i386-win32.dll"})
+}

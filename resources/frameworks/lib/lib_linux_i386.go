@@ -11,19 +11,25 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build linux && i386
-// +build linux,i386
+//go:build (linux && i386) || liball
 
 package lib
 
+import "embed"
+
 var (
 	//go:embed linux/libenergy-linux-i386-gtk2.zip
-	lib embed.FS
+	libI386GTK2 embed.FS
 	//go:embed linux/libenergy-linux-i386-gtk3.zip
-	libGtk3 embed.FS
+	libI386GTK3 embed.FS
 )
 
 const (
-	path     = "linux/libenergy-linux-i386-gtk2.zip"
-	pathGtk3 = "linux/libenergy-linux-i386-gtk3.zip"
+	pathI386Gtk2 = "linux/libenergy-linux-i386-gtk2.zip"
+	pathI386Gtk3 = "linux/libenergy-linux-i386-gtk3.zip"
 )
+
+func init() {
+	libs.Add(pathI386Gtk2, &EmbedFS{Lib: &libI386GTK2, OutputFilename: "libenergy-i386-gtk2.so"})
+	libs.Add(pathI386Gtk3, &EmbedFS{Lib: &libI386GTK3, OutputFilename: "libenergy-i386-gtk3.so"})
+}

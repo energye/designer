@@ -16,29 +16,39 @@ package lib
 import (
 	"archive/zip"
 	"bytes"
+	"embed"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/lcl/api/libname"
 	"path/filepath"
 )
+
+var libs = tool.NewHashMap[string, *EmbedFS]()
+
+type EmbedFS struct {
+	Lib            *embed.FS
+	OutputFilename string
+}
 
 // ExtractLibrary 从内置资源中提取库文件到指定输出路径
 //
 //   - outputPath: 库文件的输出目录路径
 //   - libPath: 提取后的库文件完整路径
 func ExtractLibrary(outputPath string) (libPath string) {
-	libPath = filepath.Join(outputPath, libname.GetDLLName())
-	if tool.IsExist(libPath) {
-		return
-	}
-	libByte, e := lib.ReadFile(path)
-	err.CheckErr(e)
-	zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
-	err.CheckErr(e)
-	for _, file := range zipReader.File {
-		_, e := tool.ExtractFile(file, outputPath)
+	libs.Iterate(func(path string, lib *EmbedFS) bool {
+		libPath = filepath.Join(outputPath, lib.OutputFilename)
+		if tool.IsExist(libPath) {
+			return false
+		}
+		libByte, e := lib.Lib.ReadFile(path)
 		err.CheckErr(e)
-		break // 只有一个文件
-	}
+		zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
+		err.CheckErr(e)
+		for _, file := range zipReader.File {
+			_, e := tool.ExtractFile(file, outputPath, lib.OutputFilename)
+			err.CheckErr(e)
+			break // 只有一个文件
+		}
+		return false
+	})
 	return
 }

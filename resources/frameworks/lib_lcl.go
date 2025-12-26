@@ -36,7 +36,7 @@ func extractLCL(outputPath string) {
 	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	err.CheckErr(e)
 	for _, file := range zipReader.File {
-		_, e := tool.ExtractFile(file, outputPath)
+		_, e := tool.ExtractFile(file, outputPath, "")
 		err.CheckErr(e)
 	}
 }

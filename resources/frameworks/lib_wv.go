@@ -41,7 +41,7 @@ func extractWV(outputPath string) {
 	zipReader, e := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
 	err.CheckErr(e)
 	for _, file := range zipReader.File {
-		_, e := tool.ExtractFile(file, outputPath)
+		_, e := tool.ExtractFile(file, outputPath, "")
 		err.CheckErr(e)
 	}
 	replace := fmt.Sprintf(`replace (

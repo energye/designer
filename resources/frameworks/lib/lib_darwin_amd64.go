@@ -11,16 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build darwin && amd64
-// +build darwin,amd64
+//go:build (darwin && amd64) || liball
 
 package lib
 
 import "embed"
 
 //go:embed darwin/libenergy-macos-amd64.zip
-var lib embed.FS
+var libAMD64Cocoa embed.FS
 
 const (
-	path = "darwin/libenergy-macos-amd64.zip"
+	pathAMD64Cocoa = "darwin/libenergy-macos-amd64.zip"
 )
+
+func init() {
+	libs.Add(pathAMD64Cocoa, &EmbedFS{Lib: &libAMD64Cocoa, OutputFilename: "libenergy-amd64-cocoa.dylib"})
+}

@@ -172,32 +172,36 @@ func IsMainThread() bool {
 //	zipFile: 要提取的zip文件对象
 //	targetFile: 目标文件路径
 //	error: 提取过程中发生的错误，如果成功则返回nil
-func ExtractFile(zipFile *zip.File, targetFile string) (string, error) {
+func ExtractFile(zipFile *zip.File, outputPath, outputFilename string) (string, error) {
 	srcFile, err := zipFile.Open()
 	if err != nil {
 		return "", err
 	}
 	defer srcFile.Close()
-	targetFile = filepath.Join(targetFile, zipFile.Name)
-	if zipFile.Mode().IsDir() {
-		return targetFile, os.MkdirAll(targetFile, 0755)
+	if outputFilename == "" {
+		outputPath = filepath.Join(outputPath, zipFile.Name)
+	} else {
+		outputPath = filepath.Join(outputPath, outputFilename)
 	}
-	dstFile, err := os.OpenFile(targetFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
+	if zipFile.Mode().IsDir() {
+		return outputPath, os.MkdirAll(outputPath, 0755)
+	}
+	dstFile, err := os.OpenFile(outputPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
 	if err != nil {
 		if runtime.GOOS == "windows" {
 			if pathErr, ok := err.(*os.PathError); ok {
 				if errno, ok := pathErr.Err.(syscall.Errno); ok && errno == 32 {
 					// 文件正在使用中, 路过提取
-					logs.Error("File is busy, skipping extraction:", targetFile)
-					return targetFile, nil
+					logs.Error("File is busy, skipping extraction:", outputPath)
+					return outputPath, nil
 				}
 			}
 		}
-		return targetFile, err
+		return outputPath, err
 	}
 	defer dstFile.Close()
 	_, err = io.Copy(dstFile, srcFile)
-	return targetFile, err
+	return outputPath, err
 }
 
 func RenderTemplate(templateText string, data any) ([]byte, error) {

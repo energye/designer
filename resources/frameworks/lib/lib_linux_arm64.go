@@ -11,8 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build linux && arm64
-// +build linux,arm64
+//go:build (linux && arm64) || liball
 
 package lib
 
@@ -20,12 +19,17 @@ import "embed"
 
 var (
 	//go:embed linux/libenergy-linux-arm64-gtk2.zip
-	lib embed.FS
+	libARM64GTK2 embed.FS
 	//go:embed linux/libenergy-linux-arm64-gtk3.zip
-	libGtk3 embed.FS
+	libARM64GTK3 embed.FS
 )
 
 const (
-	path     = "linux/libenergy-linux-arm64-gtk2.zip"
-	pathGtk3 = "linux/libenergy-linux-arm64-gtk3.zip"
+	pathARM64Gtk2 = "linux/libenergy-linux-arm64-gtk2.zip"
+	pathARM64Gtk3 = "linux/libenergy-linux-arm64-gtk3.zip"
 )
+
+func init() {
+	libs.Add(pathARM64Gtk2, &EmbedFS{Lib: &libARM64GTK2, OutputFilename: "libenergy-arm64-gtk2.so"})
+	libs.Add(pathARM64Gtk3, &EmbedFS{Lib: &libARM64GTK3, OutputFilename: "libenergy-arm64-gtk3.so"})
+}
