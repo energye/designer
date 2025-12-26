@@ -27,7 +27,3 @@ const (
 	path     = "linux/libenergy-linux-i386-gtk2.zip"
 	pathGtk3 = "linux/libenergy-linux-i386-gtk3.zip"
 )
-
-func Lib() {
-
-}
