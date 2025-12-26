@@ -683,6 +683,8 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	gProject.BuildOption.ArchAarch64 = m.aarch64CheckBox.Checked()
 	gProject.BuildOption.ArchArm = m.armCheckBox.Checked()
 	gProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
+	gProject.BuildOption.UIWin32_64 = m.uiWin32Box.Checked()
+	gProject.BuildOption.UICocoa = m.uiCocoaBox.Checked()
 	gProject.BuildOption.UIGtk2 = m.uiGtk2Box.Checked()
 	gProject.BuildOption.UIGtk3 = m.uiGtk3Box.Checked()
 	gProject.BuildOption.Output = m.outputEdit.Text()
