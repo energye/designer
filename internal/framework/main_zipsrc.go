@@ -10,10 +10,10 @@ import (
 func main() {
 	// 压缩源文件夹所在的根目录
 	// 其中包含 lcl cef wv
-	zipSrcRoot := "E:\\app\\workspace"
+	zipSrcRoot := "/home/yanghy/app/workspace"
 	// 压缩后复制的框架目标目录
 	// 其中包含 lcl cef wv
-	descFrameworksDir := "E:\\app\\workspace\\designer\\resources\\frameworks"
+	descFrameworksDir := zipSrcRoot + "/designer/resources/frameworks"
 	// 开始压缩文件
 	lcl, cef, wv := genzip.ZipSRC(zipSrcRoot)
 	fmt.Println(lcl, cef, wv)
