@@ -41,10 +41,10 @@ var (
 
 // ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
-func ExtractLibrary() {
+func ExtractLibrary() string {
 	_ = os.MkdirAll(RuntimePath, os.ModePerm)
 	// 释放LCL框架文件
-	lib.ExtractLibrary(RuntimePath)
+	return lib.ExtractLibrary(RuntimePath)
 }
 
 // ExtractFrameworks 提取所有启用的框架

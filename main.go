@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/designer/resources/frameworks"
+	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
 	"os"
@@ -34,7 +35,7 @@ func main() {
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelError
-	frameworks.ExtractLibrary()
+	libname.LibName = frameworks.ExtractLibrary()
 	lcl.Init(nil, nil)
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
