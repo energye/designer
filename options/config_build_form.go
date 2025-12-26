@@ -303,7 +303,7 @@ func (m *TBuildForm) initConfigComponent() {
 	widgetTitle.SetParent(m.buildTabPageConfig)
 
 	m.uiWin32Box = lcl.NewCheckBox(m)
-	m.uiWin32Box.SetCaption("*Win32/64")
+	m.uiWin32Box.SetCaption("✱Win32/64")
 	m.uiWin32Box.SetLeft(20)
 	m.uiWin32Box.SetTop(nextTop(25))
 	m.uiWin32Box.SetFont(m.font)
@@ -312,7 +312,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiWin32Box.SetParent(m.buildTabPageConfig)
 
 	m.uiCocoaBox = lcl.NewCheckBox(m)
-	m.uiCocoaBox.SetCaption("*Cocoa")
+	m.uiCocoaBox.SetCaption("✱Cocoa")
 	m.uiCocoaBox.SetLeft(120)
 	m.uiCocoaBox.SetTop(m.uiWin32Box.Top())
 	m.uiCocoaBox.SetFont(m.font)
