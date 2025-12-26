@@ -25,5 +25,5 @@ const (
 )
 
 func init() {
-	libs.Add(pathAMD64Cocoa, &EmbedFS{Lib: &libAMD64Cocoa, OutputFilename: "libenergy-amd64-cocoa.dylib"})
+	libs.Add(pathAMD64Cocoa, &EmbedFS{Lib: &libAMD64Cocoa, OutputFilename: "libenergy-darwin-amd64-cocoa.dylib"})
 }

@@ -30,6 +30,6 @@ const (
 )
 
 func init() {
-	libs.Add(pathI386Gtk2, &EmbedFS{Lib: &libI386GTK2, OutputFilename: "libenergy-i386-gtk2.so"})
-	libs.Add(pathI386Gtk3, &EmbedFS{Lib: &libI386GTK3, OutputFilename: "libenergy-i386-gtk3.so"})
+	libs.Add(pathI386Gtk2, &EmbedFS{Lib: &libI386GTK2, OutputFilename: "libenergy-linux-i386-gtk2.so"})
+	libs.Add(pathI386Gtk3, &EmbedFS{Lib: &libI386GTK3, OutputFilename: "libenergy-linux-i386-gtk3.so"})
 }

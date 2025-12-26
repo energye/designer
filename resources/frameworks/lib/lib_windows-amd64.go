@@ -25,5 +25,5 @@ const (
 )
 
 func init() {
-	libs.Add(pathAMD64Win64, &EmbedFS{Lib: &libAMD64Win64, OutputFilename: "libenergy-amd64-win64.dll"})
+	libs.Add(pathAMD64Win64, &EmbedFS{Lib: &libAMD64Win64, OutputFilename: "libenergy-windows-amd64-win32.dll"})
 }

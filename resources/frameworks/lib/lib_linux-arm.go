@@ -30,6 +30,6 @@ const (
 )
 
 func init() {
-	libs.Add(pathARMGtk2, &EmbedFS{Lib: &libARMGTK2, OutputFilename: "libenergy-arm-gtk2.so"})
-	libs.Add(pathARMGtk3, &EmbedFS{Lib: &libARMGTK3, OutputFilename: "libenergy-arm-gtk3.so"})
+	libs.Add(pathARMGtk2, &EmbedFS{Lib: &libARMGTK2, OutputFilename: "libenergy-linux-arm-gtk2.so"})
+	libs.Add(pathARMGtk3, &EmbedFS{Lib: &libARMGTK3, OutputFilename: "libenergy-linux-arm-gtk3.so"})
 }

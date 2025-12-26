@@ -25,5 +25,5 @@ const (
 )
 
 func init() {
-	libs.Add(pathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-i386-win32.dll"})
+	libs.Add(pathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-windows-i386-win32.dll"})
 }

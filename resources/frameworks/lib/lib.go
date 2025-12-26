@@ -17,9 +17,11 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
+	"fmt"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"path/filepath"
+	"runtime"
 )
 
 var libs = tool.NewHashMap[string, *EmbedFS]()
@@ -35,8 +37,11 @@ type EmbedFS struct {
 //   - libPath: 提取后的库文件完整路径
 func ExtractLibrary(outputPath string) (libPath string) {
 	libs.Iterate(func(path string, lib *EmbedFS) bool {
-		libPath = filepath.Join(outputPath, lib.OutputFilename)
-		if tool.IsExist(libPath) {
+		tempPath := filepath.Join(outputPath, lib.OutputFilename)
+		if DefaultLibName(lib.OutputFilename) {
+			libPath = tempPath
+		}
+		if tool.IsExist(tempPath) {
 			return false
 		}
 		libByte, e := lib.Lib.ReadFile(path)
@@ -51,4 +56,25 @@ func ExtractLibrary(outputPath string) (libPath string) {
 		return false
 	})
 	return
+}
+
+func DefaultLibName(filename string) bool {
+	name := "libenergy-%s-%s-%s.%s"
+	os := runtime.GOOS
+	arch := runtime.GOARCH
+	ws := ""
+	ext := ""
+	switch os {
+	case "darwin":
+		ws = "cocoa"
+		ext = "dylib"
+	case "linux":
+		ws = "gtk2"
+		ext = "so"
+	case "windows":
+		arch = "win32"
+		ext = "dll"
+	}
+	name = fmt.Sprintf(name, os, arch, ws, ext)
+	return tool.Equal(filename, name)
 }

@@ -25,5 +25,5 @@ const (
 )
 
 func init() {
-	libs.Add(pathARM64Cocoa, &EmbedFS{Lib: &libARM64Cocoa, OutputFilename: "libenergy-arm64-cocoa.dylib"})
+	libs.Add(pathARM64Cocoa, &EmbedFS{Lib: &libARM64Cocoa, OutputFilename: "libenergy-darwin-arm64-cocoa.dylib"})
 }

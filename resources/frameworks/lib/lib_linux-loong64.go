@@ -30,6 +30,6 @@ const (
 )
 
 func init() {
-	libs.Add(pathLoong64Gtk2, &EmbedFS{Lib: &libLoong64GTK2, OutputFilename: "libenergy-loong64-gtk2.so"})
-	libs.Add(pathLoong64Gtk3, &EmbedFS{Lib: &libLoong64GTK3, OutputFilename: "libenergy-loong64-gtk3.so"})
+	libs.Add(pathLoong64Gtk2, &EmbedFS{Lib: &libLoong64GTK2, OutputFilename: "libenergy-linux-loong64-gtk2.so"})
+	libs.Add(pathLoong64Gtk3, &EmbedFS{Lib: &libLoong64GTK3, OutputFilename: "libenergy-linux-loong64-gtk3.so"})
 }
