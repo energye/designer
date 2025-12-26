@@ -52,6 +52,10 @@ type TBuildOption struct {
 	ArchAarch64      bool   `json:"arch_aarch64"`
 	ArchArm          bool   `json:"arch_arm"`
 	ArchLoongarch64  bool   `json:"arch_loongarch64"`
+	UIWin32_64       bool   `json:"ui_win_32_64"`
+	UICocoa          bool   `json:"ui_cocoa"`
+	UIGtk2           bool   `json:"ui_gtk_2"`
+	UIGtk3           bool   `json:"ui_gtk_3"`
 	Output           string `json:"output"`
 	BuildFileName    string `json:"build_file_name"`
 	BuildModeDebug   bool   `json:"build_mode_debug"`
@@ -200,6 +204,10 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.ArchAarch64 = true
 	m.BuildOption.ArchArm = true
 	m.BuildOption.ArchLoongarch64 = false
+	m.BuildOption.UIWin32_64 = true
+	m.BuildOption.UICocoa = true
+	m.BuildOption.UIGtk2 = true
+	m.BuildOption.UIGtk3 = false
 	m.BuildOption.Output = "./build"
 	m.BuildOption.BuildFileName = m.Name
 	m.BuildOption.BuildModeDebug = true

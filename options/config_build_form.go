@@ -58,6 +58,10 @@ type TBuildForm struct {
 	i386CheckBox            lcl.ICheckBox
 	armCheckBox             lcl.ICheckBox
 	loongarch64CheckBox     lcl.ICheckBox
+	uiWin32Box              lcl.ICheckBox
+	uiCocoaBox              lcl.ICheckBox
+	uiGtk2Box               lcl.ICheckBox
+	uiGtk3Box               lcl.ICheckBox
 	outputEdit              lcl.IEdit
 	selectOutputDirBtn      *wg.TButton
 	buildFileNameEdit       lcl.IEdit
@@ -213,7 +217,7 @@ func (m *TBuildForm) initConfigComponent() {
 
 	targetPlatformTitle := lcl.NewLabel(m)
 	targetPlatformTitle.SetFont(titleFont)
-	targetPlatformTitle.SetCaption("目标平台与架构")
+	targetPlatformTitle.SetCaption("平台与架构")
 	targetPlatformTitle.SetTop(nextTop(5))
 	targetPlatformTitle.SetLeft(10)
 	targetPlatformTitle.SetParent(m.buildTabPageConfig)
@@ -291,12 +295,46 @@ func (m *TBuildForm) initConfigComponent() {
 	m.loongarch64CheckBox.SetChecked(gProject.BuildOption.ArchLoongarch64)
 	m.loongarch64CheckBox.SetParent(m.buildTabPageConfig)
 
-	//widgetTitle := lcl.NewLabel(m)
-	//widgetTitle.SetCaption("UI")
-	//widgetTitle.SetLeft(10)
-	//widgetTitle.SetTop(nextTop(30))
-	//widgetTitle.SetFont(titleFontTwo)
-	//widgetTitle.SetParent(m.buildTabPageConfig)
+	widgetTitle := lcl.NewLabel(m)
+	widgetTitle.SetCaption("UI")
+	widgetTitle.SetLeft(10)
+	widgetTitle.SetTop(nextTop(30))
+	widgetTitle.SetFont(titleFontTwo)
+	widgetTitle.SetParent(m.buildTabPageConfig)
+
+	m.uiWin32Box = lcl.NewCheckBox(m)
+	m.uiWin32Box.SetCaption("*Win32/64")
+	m.uiWin32Box.SetLeft(20)
+	m.uiWin32Box.SetTop(nextTop(25))
+	m.uiWin32Box.SetFont(m.font)
+	//m.uiWin32Box.SetChecked(gProject.BuildOption.UIWin32_64)
+	m.uiWin32Box.SetChecked(true)
+	m.uiWin32Box.SetParent(m.buildTabPageConfig)
+
+	m.uiCocoaBox = lcl.NewCheckBox(m)
+	m.uiCocoaBox.SetCaption("*Cocoa")
+	m.uiCocoaBox.SetLeft(120)
+	m.uiCocoaBox.SetTop(m.uiWin32Box.Top())
+	m.uiCocoaBox.SetFont(m.font)
+	//m.uiCocoaBox.SetChecked(gProject.BuildOption.UICocoa)
+	m.uiCocoaBox.SetChecked(true)
+	m.uiCocoaBox.SetParent(m.buildTabPageConfig)
+
+	m.uiGtk2Box = lcl.NewCheckBox(m)
+	m.uiGtk2Box.SetCaption("GTK2")
+	m.uiGtk2Box.SetLeft(210)
+	m.uiGtk2Box.SetTop(m.uiWin32Box.Top())
+	m.uiGtk2Box.SetFont(m.font)
+	m.uiGtk2Box.SetChecked(gProject.BuildOption.UIGtk2)
+	m.uiGtk2Box.SetParent(m.buildTabPageConfig)
+
+	m.uiGtk3Box = lcl.NewCheckBox(m)
+	m.uiGtk3Box.SetCaption("GTK3")
+	m.uiGtk3Box.SetLeft(300)
+	m.uiGtk3Box.SetTop(m.uiWin32Box.Top())
+	m.uiGtk3Box.SetFont(m.font)
+	m.uiGtk3Box.SetChecked(gProject.BuildOption.UIGtk3)
+	m.uiGtk3Box.SetParent(m.buildTabPageConfig)
 
 	outputTitle := lcl.NewLabel(m)
 	outputTitle.SetCaption("输出目录")
@@ -342,7 +380,7 @@ func (m *TBuildForm) initConfigComponent() {
 
 	compileArgsTitle := lcl.NewLabel(m)
 	compileArgsTitle.SetFont(titleFont)
-	compileArgsTitle.SetCaption("编译参数")
+	compileArgsTitle.SetCaption("编译")
 	compileArgsTitle.SetTop(nextTop(50))
 	compileArgsTitle.SetLeft(10)
 	compileArgsTitle.SetParent(m.buildTabPageConfig)
@@ -645,6 +683,8 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	gProject.BuildOption.ArchAarch64 = m.aarch64CheckBox.Checked()
 	gProject.BuildOption.ArchArm = m.armCheckBox.Checked()
 	gProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
+	gProject.BuildOption.UIGtk2 = m.uiGtk2Box.Checked()
+	gProject.BuildOption.UIGtk3 = m.uiGtk3Box.Checked()
 	gProject.BuildOption.Output = m.outputEdit.Text()
 	gProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
 	gProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
