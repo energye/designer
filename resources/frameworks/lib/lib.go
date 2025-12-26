@@ -17,11 +17,10 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
-	"fmt"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/api/libname"
 	"path/filepath"
-	"runtime"
 )
 
 var libs = tool.NewHashMap[string, *EmbedFS]()
@@ -59,22 +58,6 @@ func ExtractLibrary(outputPath string) (libPath string) {
 }
 
 func DefaultLibName(filename string) bool {
-	name := "libenergy-%s-%s-%s.%s"
-	os := runtime.GOOS
-	arch := runtime.GOARCH
-	ws := ""
-	ext := ""
-	switch os {
-	case "darwin":
-		ws = "cocoa"
-		ext = "dylib"
-	case "linux":
-		ws = "gtk2"
-		ext = "so"
-	case "windows":
-		arch = "win32"
-		ext = "dll"
-	}
-	name = fmt.Sprintf(name, os, arch, ws, ext)
+	name := libname.GetDLLName()
 	return tool.Equal(filename, name)
 }
