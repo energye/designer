@@ -48,7 +48,7 @@ func (m *TFloatEditLink) Create() {
 	m.edit.SetAutoSize(false)
 	m.edit.SetDoubleBuffered(true)
 	oldText := m.edit.Text()
-	m.edit.SetOnKeyPress(func(sender lcl.IObject, key *uint16) {
+	m.edit.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) {
 		logs.Debug("TFloatEditLink OnKeyPress key:", *key)
 		if *key == keys.VkReturn {
 			lcl.RunOnMainThreadAsync(func(id uint32) {
