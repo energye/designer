@@ -156,6 +156,8 @@ const (
 	DmWVMacOS DependencyModule = "github.com/energye/wv"
 	// DmWVLinux Webview Linux 模块
 	DmWVLinux DependencyModule = "github.com/energye/wv"
+	// DmEnergy Energy 模块
+	DmEnergy DependencyModule = "github.com/energye/energy"
 	// DmWidget 自定义组件 模块
 	DmWidget DependencyModule = "github.com/energye/widget"
 )
@@ -169,6 +171,7 @@ const (
 	ModWVWindows Mod = "wvWindows"
 	ModWVDarwin  Mod = "wvDarwin"
 	ModWVLinux   Mod = "wvLinux"
+	ModEnergy    Mod = "wvEnergy"
 )
 
 // TEventState 组件属性-事件属性绑定状态
