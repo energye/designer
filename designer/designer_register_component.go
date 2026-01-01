@@ -17,7 +17,6 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -214,7 +213,8 @@ func initRegisterComponent() {
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
 	// Web组件
-	AddRegisterComponent("TWebview", NewRegisterComponent(wv.NewBrowserWindow, nil, consts.CtVisual, consts.ModEnergy))
+	AddRegisterComponent("TWebview", NewLCLVisualRegisterComponent(lcl.TImageButtonClass, lcl.AsImageButton))
+	//AddRegisterComponent("TWebview", NewRegisterComponent(wv.NewBrowserWindow, nil, consts.CtVisual, consts.ModEnergy))
 }
 
 //
