@@ -27,9 +27,10 @@ import (
 
 // 启用的模块依赖配置
 const (
-	EnableLCL = true
-	EnableCEF = true
-	EnableWV  = true
+	EnableLCL    = true
+	EnableCEF    = true
+	EnableWV     = true
+	EnableENERGY = true
 )
 
 var (
@@ -54,34 +55,44 @@ func ExtractFrameworks() {
 		ExtractLCL(EnableLCL)
 		ExtractCEF(EnableCEF)
 		ExtractWV(EnableWV)
+		ExtractENERGY(EnableENERGY)
 	}()
 }
 
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
 func ExtractLCL(enable bool) {
 	if enable {
-		// LCLLocalPath LCL 框架源码路径
-		LCLLocalPath := config.Config.FrameworkDirForLCL()
-		_ = os.MkdirAll(LCLLocalPath, os.ModePerm)
-		extractLCL(LCLLocalPath)
+		// LocalPath LCL 框架源码路径
+		LocalPath := config.Config.FrameworkDirForLCL()
+		_ = os.MkdirAll(LocalPath, os.ModePerm)
+		extractLCL(LocalPath)
 	}
 }
 
 // ExtractCEF 根据enable参数决定是否执行 CEF 库提取操作
 func ExtractCEF(enable bool) {
 	if enable {
-		CEFLocalPath := config.Config.FrameworkDirForCEF()
-		_ = os.MkdirAll(CEFLocalPath, os.ModePerm)
-		extractCEF(CEFLocalPath)
+		LocalPath := config.Config.FrameworkDirForCEF()
+		_ = os.MkdirAll(LocalPath, os.ModePerm)
+		extractCEF(LocalPath)
 	}
 }
 
 // ExtractWV 根据enable参数决定是否执行 WebView 库提取操作
 func ExtractWV(enable bool) {
 	if enable {
-		WVLocalPath := config.Config.FrameworkDirForWV()
-		_ = os.MkdirAll(WVLocalPath, os.ModePerm)
-		extractWV(WVLocalPath)
+		LocalPath := config.Config.FrameworkDirForWV()
+		_ = os.MkdirAll(LocalPath, os.ModePerm)
+		extractWV(LocalPath)
+	}
+}
+
+// ExtractENERGY 根据enable参数决定是否执行 energy 库提取操作
+func ExtractENERGY(enable bool) {
+	if enable {
+		LocalPath := config.Config.FrameworkDirForENERGY()
+		_ = os.MkdirAll(LocalPath, os.ModePerm)
+		extractENERGY(LocalPath)
 	}
 }
 

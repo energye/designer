@@ -121,6 +121,11 @@ func (m *TConfig) FrameworkDirForWV() string {
 	return filepath.Join(src, "wv@"+version)
 }
 
+func (m *TConfig) FrameworkDirForENERGY() string {
+	src, version := m.FrameworkDirForSrcVersion()
+	return filepath.Join(src, "energy@"+version)
+}
+
 // UpdateWindow 更新窗体配置
 // 在窗体改变大小时调用, 窗体关闭时
 func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
