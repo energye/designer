@@ -15,15 +15,19 @@
 
 package lib
 
-import "embed"
-
-//go:embed windows/libenergy-windows-i386.zip
-var libI386Win32 embed.FS
+var (
+	//go:embed windows/libenergy-windows-i386.zip
+	libI386Win32 embed.FS
+	//go:embed windows/WebView2Loader-i386.zip
+	libWV2I386Win32 embed.FS
+)
 
 const (
-	pathI386Win32 = "windows/libenergy-windows-i386.zip"
+	pathI386Win32    = "windows/libenergy-windows-i386.zip"
+	pathWV2I386Win32 = "windows/WebView2Loader-i386.zip"
 )
 
 func init() {
 	libs.Add(pathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-windows-i386-win32.dll"})
+	libs.Add(pathWV2I386Win32, &EmbedFS{Lib: &libWV2I386Win32, OutputFilename: "WebView2Loader-i386.dll"})
 }

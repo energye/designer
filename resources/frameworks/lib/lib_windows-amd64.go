@@ -17,13 +17,19 @@ package lib
 
 import "embed"
 
-//go:embed windows/libenergy-windows-amd64.zip
-var libAMD64Win64 embed.FS
+var (
+	//go:embed windows/libenergy-windows-amd64.zip
+	libAMD64Win64 embed.FS
+	//go:embed windows/WebView2Loader-amd64.zip
+	libWV2AMD64Win64 embed.FS
+)
 
 const (
-	pathAMD64Win64 = "windows/libenergy-windows-amd64.zip"
+	pathAMD64Win64    = "windows/libenergy-windows-amd64.zip"
+	pathWV2AMD64Win64 = "windows/WebView2Loader-amd64.zip"
 )
 
 func init() {
 	libs.Add(pathAMD64Win64, &EmbedFS{Lib: &libAMD64Win64, OutputFilename: "libenergy-windows-amd64-win32.dll"})
+	libs.Add(pathWV2AMD64Win64, &EmbedFS{Lib: &libWV2AMD64Win64, OutputFilename: "WebView2Loader-amd64.dll"})
 }
