@@ -18,7 +18,7 @@ func main() {
 	descFrameworksDir := zipSrcRoot + "/designer/resources/frameworks"
 	// 开始压缩文件
 	lcl, cef, wv, energy := genzip.ZipSRC(zipSrcRoot)
-	fmt.Println(lcl, cef, wv)
+	fmt.Println(lcl, cef, wv, energy)
 	// 开始移动文件到框架目录
 	moveZipToFrameworks(lcl, filepath.Join(descFrameworksDir, "lcl"))
 	moveZipToFrameworks(cef, filepath.Join(descFrameworksDir, "cef"))
