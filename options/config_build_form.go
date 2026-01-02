@@ -93,7 +93,7 @@ type TBuildForm struct {
 
 func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TBuildForm FormCreate")
-	fontSize := int32(12)
+	fontSize := int32(10)
 	if tool.IsLinux {
 		fontSize = 10
 	}
