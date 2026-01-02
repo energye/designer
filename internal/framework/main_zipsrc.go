@@ -8,19 +8,22 @@ import (
 )
 
 func main() {
+	wd, _ := os.Getwd()
+	fmt.Println("wd:", wd)
 	// 压缩源文件夹所在的根目录
 	// 其中包含 lcl cef wv
-	zipSrcRoot := "/home/yanghy/app/workspace"
+	zipSrcRoot := filepath.Join(wd, "../") // "/home/yanghy/app/workspace"
 	// 压缩后复制的框架目标目录
 	// 其中包含 lcl cef wv
 	descFrameworksDir := zipSrcRoot + "/designer/resources/frameworks"
 	// 开始压缩文件
-	lcl, cef, wv := genzip.ZipSRC(zipSrcRoot)
+	lcl, cef, wv, energy := genzip.ZipSRC(zipSrcRoot)
 	fmt.Println(lcl, cef, wv)
 	// 开始移动文件到框架目录
 	moveZipToFrameworks(lcl, filepath.Join(descFrameworksDir, "lcl"))
 	moveZipToFrameworks(cef, filepath.Join(descFrameworksDir, "cef"))
 	moveZipToFrameworks(wv, filepath.Join(descFrameworksDir, "wv"))
+	moveZipToFrameworks(energy, filepath.Join(descFrameworksDir, "energy"))
 }
 
 // 压缩包复制到框架目录
