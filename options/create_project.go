@@ -16,6 +16,7 @@ package options
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -58,19 +59,35 @@ func createProjectDir() {
 	// 本地模式
 	localModule := tool.Buffer{}
 	localModule.WriteString("replace github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
+	localModule.WriteString("replace github.com/energye/energy/v3", " => ", config.Config.FrameworkDirForENERGY(), "\n")
+	switch data.GUIRenderFramework {
+	case bean.GUIRenderFramework_WV:
+		localModule.WriteString("replace github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
+	case bean.GUIRenderFramework_CEF:
+		localModule.WriteString("replace github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
+	}
 	data.Data = localModule.String()
 
 	// 文件创建
-	files := []struct {
+	type TFile struct {
 		path string // 文件目录
 		name string // 文件名
 		data string // 文件内容
-	}{
+	}
+	files := []TFile{
 		{appCodePath, consts.FormListFileName, buildTemplateData(appCodeTemplate, &data)},
 		{resourcesPath, "resources.go", buildTemplateData(resourcesGoTemplate, &data)},
-		{resourcesEmbedPath, "embed.md", "## "},
+		{resourcesEmbedPath, "embed.md", ""},
 		{appRoot, "go.mod", buildTemplateData(goModTemplate, &data)},
-		{appRoot, "main.go", buildTemplateData(runCodeTemplate, &data)},
+		//{appRoot, "main.go", buildTemplateData(runCodeTemplate, &data)},
+	}
+	switch data.GUIRenderFramework {
+	case bean.GUIRenderFramework_LCL:
+		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)})
+	case bean.GUIRenderFramework_WV:
+		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runWVCodeTemplate, &data)})
+	case bean.GUIRenderFramework_CEF:
+		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)})
 	}
 	for _, file := range files {
 		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0666); err != nil {

@@ -14,7 +14,7 @@
 package options
 
 // main.go 文件代码模板
-const runCodeTemplate = `// ==============================================================================
+const runLCLCodeTemplate = `// ==============================================================================
 // 📚 应用启动入口文件
 // 📌 该文件在创建项目时创建
 // ✏️ 可在此文件中添加业务逻辑
@@ -23,7 +23,7 @@ const runCodeTemplate = `// ====================================================
 package main
 
 import (
-	"github.com/energye/lcl/lcl" 
+	"github.com/energye/energy/v3/lcl"
 	"{{.Name}}/app"
 	. "{{.Name}}/resources"
 )
@@ -31,18 +31,37 @@ import (
 func main() {
 	// 使用默认参数初始化LCL库
 	lcl.Init(nil, nil)
-	// 初始化应用程序实例
-	lcl.Application.Initialize()
-	// 配置应用程序设置，使主窗体在Windows任务栏上显示
-	lcl.Application.SetMainFormOnTaskBar(true)
-	// 启用自动缩放功能以支持高DPI显示器
-	lcl.Application.SetScaled(true)
 	// 设置应用程序图标
-	SetIcon(lcl.Application)
-	// 创建所有窗体
-	lcl.Application.NewForms(app.Forms...)
+	SetIcon()
 	// 启动应用程序消息循环
-	lcl.Application.Run()
+	lcl.Run(app.Forms...)
+}
+`
+
+// main.go 文件代码模板
+const runWVCodeTemplate = `// ==============================================================================
+// 📚 应用启动入口文件
+// 📌 该文件在创建项目时创建
+// ✏️ 可在此文件中添加业务逻辑
+// ==============================================================================
+
+package main
+
+import (
+	"github.com/energye/energy/v3/application"
+	"github.com/energye/energy/v3/wv"
+	"{{.Name}}/app"
+	. "{{.Name}}/resources"
+)
+
+func main() {
+	// 使用默认参数初始化LCL库
+	wvApp := wv.Init(nil, nil)
+	wvApp.SetOptions(application.Options{DefaultURL: "about:blank"})
+	// 设置应用程序图标
+	SetIcon()
+	// 启动应用程序消息循环
+	wv.Run(app.Forms...)
 }
 `
 
@@ -99,15 +118,13 @@ func Embed(fileName string) []byte {
 
 // SetIcon 设置应用程序图标
 // 函数签名不能修改
-//
-//	app - 应用程序接口对象, 用于设置图标
-func SetIcon(app lcl.IApp) {
+func SetIcon() {
 	stream := lcl.NewMemoryStream()
 	lcl.StreamHelper.Write(stream, Embed("icon.png"))
 	stream.SetPosition(0)
 	png := lcl.NewPortableNetworkGraphic()
 	png.LoadFromStreamWithStream(stream)
-	app.Icon().Assign(png)
+	lcl.Application.Icon().Assign(png)
 	png.Free()
 	stream.Free()
 }

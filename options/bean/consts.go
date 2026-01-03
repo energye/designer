@@ -26,3 +26,11 @@ const (
 	LSMinimumSystemVersion_10_15 LSMinimumSystemVersion = iota // 10.15 (Intel)
 	LSMinimumSystemVersion_11_0                                // 11.0 (Apple Silicon)
 )
+
+type GUIRenderFramework = string
+
+const (
+	GUIRenderFramework_LCL GUIRenderFramework = "LCL"
+	GUIRenderFramework_WV  GUIRenderFramework = "WV"
+	GUIRenderFramework_CEF GUIRenderFramework = "CEF"
+)

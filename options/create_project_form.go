@@ -319,7 +319,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.guiRenderFrameworkBox.SetReadOnly(true)
 		m.guiRenderFrameworkBox.SetStyle(types.CsDropDownList)
 		m.guiRenderFrameworkBox.SetBorderStyle(types.BsSingle)
-		bean.GUIRenderFramework.Iterate(func(gui string, guiDesc string) bool {
+		bean.GUIRenderFrameworks.Iterate(func(gui string, guiDesc string) bool {
 			m.guiRenderFrameworkBox.Items().Add(guiDesc)
 			return false
 		})
@@ -559,7 +559,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	projectDir := m.projPathEdit.Text()
 	guiRenderFramework := m.guiRenderFrameworkBox.Text()
 	guiRenderFrameworkGUI := ""
-	bean.GUIRenderFramework.Iterate(func(gui, guiDesc string) bool {
+	bean.GUIRenderFrameworks.Iterate(func(gui, guiDesc string) bool {
 		if guiRenderFramework == guiDesc {
 			guiRenderFrameworkGUI = gui
 			return true
