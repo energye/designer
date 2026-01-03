@@ -19,11 +19,23 @@ var (
 	// 打包应用程序内置资源
 	//go:embed packager
 	packager embed.FS
+	// 打包应用程序内置资源
+	//go:embed initialize
+	initialize embed.FS
 )
 
 // Packager 打包应用程序资源
 func Packager(name string) []byte {
 	data, err := packager.ReadFile("packager/" + name)
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+// Initialize 应用初始化
+func Initialize(name string) []byte {
+	data, err := packager.ReadFile("initialize/" + name)
 	if err != nil {
 		return nil
 	}
