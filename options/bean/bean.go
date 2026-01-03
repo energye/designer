@@ -20,15 +20,16 @@ import (
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name         string       `json:"name"`           // 项目名 "Your Application"
-	EGPName      string       `json:"egp_name"`       // 项目配置文件名 "xxx.egp"
-	Package      string       `json:"package"`        // 项目(应用)包名 package "app"
-	Main         string       `json:"main"`           // 主程序入口文件或相对文件目录名 "main.go"
-	UIForms      []TUIForm    `json:"ui_forms"`       // 窗体信息
-	ActiveUIForm int          `json:"active_ui_form"` // 当前激活设计的窗体Id
-	BuildOption  TBuildOption `json:"build_option"`   // 构建配置
-	AppOption    TAppOption   `json:"app_option"`     // 应用配置
-	Data         any          `json:"-"`              // 其它数据
+	Name               string       `json:"name"`                 // 项目名 "Your Application"
+	EGPName            string       `json:"egp_name"`             // 项目配置文件名 "xxx.egp"
+	Package            string       `json:"package"`              // 项目(应用)包名 package "app"
+	Main               string       `json:"main"`                 // 主程序入口文件或相对文件目录名 "main.go"
+	GUIRenderFramework string       `json:"gui_render_framework"` // GUI 渲染框架  lcl, webview, cef
+	UIForms            []TUIForm    `json:"ui_forms"`             // 窗体信息
+	ActiveUIForm       int          `json:"active_ui_form"`       // 当前激活设计的窗体Id
+	BuildOption        TBuildOption `json:"build_option"`         // 构建配置
+	AppOption          TAppOption   `json:"app_option"`           // 应用配置
+	Data               any          `json:"-"`                    // 其它数据
 }
 
 // TUIForm 窗体信息
@@ -149,6 +150,7 @@ var (
 	RunLevelList               = tool.NewArrayMap[winres.ExecutionLevel, string]()
 	LSUIElementList            = tool.NewArrayMap[MacOSUIElementList, string]()
 	LSMinimumSystemVersionList = tool.NewArrayMap[LSMinimumSystemVersion, string]()
+	GUIRenderFramework         = tool.NewArrayMap[string, string]()
 )
 
 // InitAppOption 初始化应用程序选项，设置默认值
@@ -260,4 +262,8 @@ func init() {
 
 	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_10_15, "10.15 (Intel)")
 	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_11_0, "11.0 (Apple Silicon)")
+
+	GUIRenderFramework.Add("LCL", "LCL (Native - Lazarus LCL)")
+	GUIRenderFramework.Add("WV", "WV (Web - WebView2, WebKit2)")
+	GUIRenderFramework.Add("CEF", "CEF (Web - Chromium Embedded Framework)")
 }

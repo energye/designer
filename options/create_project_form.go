@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -44,7 +45,7 @@ import (
 
 var (
 	createProjectFormWidth  = int32(525)
-	createProjectFormHeight = int32(355)
+	createProjectFormHeight = int32(395)
 	minGoVersion            = "1.20"
 )
 
@@ -92,6 +93,10 @@ type TCreateProjectForm struct {
 	modErrorLabel lcl.ILabel
 	modText       lcl.ILabel
 	modBox        lcl.IComboBox
+
+	// GUI 渲染框架
+	guiRenderFrameworkText lcl.ILabel
+	guiRenderFrameworkBox  lcl.IComboBox
 	//modLocalBox   lcl.IPanel
 	//modRemoteBox  lcl.IPanel
 
@@ -301,6 +306,26 @@ func (m *TCreateProjectForm) initComponents() {
 		m.modBox.SetParent(m.box)
 		m.modBox.SetOnChange(m.modBoxChange)
 
+		m.guiRenderFrameworkText = lcl.NewLabel(m)
+		m.guiRenderFrameworkText.SetLeft(left - 30)
+		m.guiRenderFrameworkText.SetTop(baseTop + 95)
+		m.guiRenderFrameworkText.SetCaption("GUI 渲染框架")
+		m.guiRenderFrameworkText.SetFont(fontLabel)
+		m.guiRenderFrameworkText.SetParent(m.box)
+
+		m.guiRenderFrameworkBox = lcl.NewComboBox(m)
+		m.guiRenderFrameworkBox.SetBounds(120, baseTop+90, textWidth, 36)
+		m.guiRenderFrameworkBox.SetFont(fontText)
+		m.guiRenderFrameworkBox.SetReadOnly(true)
+		m.guiRenderFrameworkBox.SetStyle(types.CsDropDownList)
+		m.guiRenderFrameworkBox.SetBorderStyle(types.BsSingle)
+		bean.GUIRenderFramework.Iterate(func(gui string, guiDesc string) bool {
+			m.guiRenderFrameworkBox.Items().Add(guiDesc)
+			return false
+		})
+		m.guiRenderFrameworkBox.SetItemIndex(0)
+		m.guiRenderFrameworkBox.SetParent(m.box)
+
 		//m.modLocalBox = lcl.NewPanel(m)
 		//m.modLocalBox.SetBevelOuter(types.BvNone)
 		//m.modLocalBox.SetTop(baseTop + 95)
@@ -390,7 +415,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.cancelBtn.Font().SetColor(colors.ClWhite)
 		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 250, Top: baseTop + 100}
+		cancelBtnRect := types.TRect{Left: 250, Top: baseTop + 145}
 		cancelBtnRect.SetWidth(100)
 		cancelBtnRect.SetHeight(40)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -532,6 +557,15 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	//enableWV := m.modWebviewCheckBox.Checked()
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
+	guiRenderFramework := m.guiRenderFrameworkBox.Text()
+	guiRenderFrameworkGUI := ""
+	bean.GUIRenderFramework.Iterate(func(gui, guiDesc string) bool {
+		if guiRenderFramework == guiDesc {
+			guiRenderFrameworkGUI = gui
+			return true
+		}
+		return false
+	})
 	// 检查创建项目
 	if checkCreate(projectDir) {
 		// 触发文件修改监听事件
@@ -553,7 +587,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			//// 释放 WebView 库
 			//frameworks.ExtractWV(enableWV)
 			// 运行创建项目
-			if doRunCreate(projectName, projectDir) {
+			if doRunCreate(projectName, projectDir, guiRenderFrameworkGUI) {
 				// go.mod
 				event.ConsoleWriteInfo("go mod tidy")
 				cmd := command.NewCMD()

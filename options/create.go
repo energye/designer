@@ -111,7 +111,7 @@ func checkCreate(dir string) bool {
 }
 
 // 运行创建项目
-func doRunCreate(name, dir string) bool {
+func doRunCreate(name, dir, guiRenderFramework string) bool {
 	// 开始创建项目
 	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
@@ -119,6 +119,7 @@ func doRunCreate(name, dir string) bool {
 	newProject.Name = name
 	newProject.EGPName = name + consts.EGPExt
 	newProject.Main = "main.go"
+	newProject.GUIRenderFramework = guiRenderFramework
 	newProject.Package = consts.AppPackageName
 	newProject.InitAppOption()   // 初始化应用配置数据
 	newProject.InitBuildOption() // 初始化构建配置
