@@ -308,13 +308,13 @@ func (m *TCreateProjectForm) initComponents() {
 
 		m.guiRenderFrameworkText = lcl.NewLabel(m)
 		m.guiRenderFrameworkText.SetLeft(left - 30)
-		m.guiRenderFrameworkText.SetTop(baseTop + 95)
+		m.guiRenderFrameworkText.SetTop(baseTop + 100)
 		m.guiRenderFrameworkText.SetCaption("GUI 渲染框架")
 		m.guiRenderFrameworkText.SetFont(fontLabel)
 		m.guiRenderFrameworkText.SetParent(m.box)
 
 		m.guiRenderFrameworkBox = lcl.NewComboBox(m)
-		m.guiRenderFrameworkBox.SetBounds(120, baseTop+90, textWidth, 36)
+		m.guiRenderFrameworkBox.SetBounds(120, baseTop+95, textWidth, 36)
 		m.guiRenderFrameworkBox.SetFont(fontText)
 		m.guiRenderFrameworkBox.SetReadOnly(true)
 		m.guiRenderFrameworkBox.SetStyle(types.CsDropDownList)
