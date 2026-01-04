@@ -263,7 +263,7 @@ func init() {
 	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_10_15, "10.15 (Intel)")
 	LSMinimumSystemVersionList.Add(LSMinimumSystemVersion_11_0, "11.0 (Apple Silicon)")
 
-	GUIRenderFrameworks.Add(GUIRenderFramework_LCL, "LCL (Native - Lazarus LCL)")
+	GUIRenderFrameworks.Add(GUIRenderFramework_LCL, "LCL (Native - Lazarus Component Library)")
 	GUIRenderFrameworks.Add(GUIRenderFramework_WV, "WV (Web - WebView2, WebKit2)")
 	GUIRenderFrameworks.Add(GUIRenderFramework_CEF, "CEF (Web - Chromium Embedded Framework)")
 }
