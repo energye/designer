@@ -137,7 +137,9 @@ func UpdateHistoryProject(egpFilePath string) {
 	config.UpdateHistoryProject(egpFilePath)
 	config.UpdateConfig()
 	// 更新设计器菜单-文件-历史项目
-	mainWindow.mainMenu.fileHistoryProjectMenu()
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		mainWindow.mainMenu.fileHistoryProjectMenu()
+	})
 }
 
 // SetDesignerCount

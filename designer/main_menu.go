@@ -115,6 +115,7 @@ func (m *TMainMenu) macOS() {
 func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	create := lcl.NewMenuItem(owner)
 	create.SetCaption("新建(&N)")
+	create.SetImageIndex(imageMenu.ImageIndex("menu_project_create.png"))
 	m.file.Add(create)
 
 	m.createProject = lcl.NewMenuItem(owner)
@@ -169,6 +170,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	m.history = lcl.NewMenuItem(owner)
 	m.history.SetCaption("历史项目")
+	m.history.SetImageIndex(imageMenu.ImageIndex("menu_project_history.png"))
 	m.file.Add(m.history)
 	m.fileHistoryProjectMenu()
 
