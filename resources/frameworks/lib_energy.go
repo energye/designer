@@ -17,8 +17,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
+	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/err"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/command"
+	"os"
 	"path/filepath"
 )
 
@@ -28,17 +33,41 @@ var energy embed.FS
 // 释放 ENERGY 框架源码库
 func extractENERGY(outputPath string) {
 	// 存在 go.mod 文件则不进行解压
-	if tool.IsExist(filepath.Join(outputPath, "go.mod")) {
+	gomod := filepath.Join(outputPath, "go.mod")
+	if tool.IsExist(gomod) {
 		return
 	}
-	data, e := energy.ReadFile("energy/energy.zip")
+	zipData, e := energy.ReadFile("energy/energy.zip")
 	err.CheckErr(e)
-	zipReader, e := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	zipReader, e := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
 	err.CheckErr(e)
 	for _, file := range zipReader.File {
 		_, e := tool.ExtractFile(file, outputPath, "")
 		err.CheckErr(e)
 	}
+	replace := fmt.Sprintf(`
+require (
+	golang.org/x/sys v0.30.0
+)
+
+replace (
+	github.com/energye/lcl => %v
+	github.com/energye/wv => %v
+	github.com/energye/cef => %v
+)
+`, config.Config.FrameworkDirForLCL(), config.Config.FrameworkDirForWV(), config.Config.FrameworkDirForCEF())
+	data, e := renderModLocalTemplate("github.com/energye/energy/v3", replace)
+	err.CheckErr(e)
+	e = os.WriteFile(gomod, data, 0666)
+	err.CheckErr(e)
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = outputPath
+	cmd.Console = func(data string, level command.Level) {
+		logs.Debug("go mod tidy:", data)
+	}
+	cmd.Command("go", "mod", "tidy")
 }
 
 // ENERGY 从嵌入的energy.zip文件中读取指定文件的内容
