@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-	// 使用默认参数初始化LCL库
+	// 全局初始化
 	lcl.Init(nil, nil)
 	// 设置应用程序图标
 	SetIcon()
@@ -55,7 +55,7 @@ import (
 )
 
 func main() {
-	// 使用默认参数初始化LCL库
+	// 全局初始化
 	wvApp := wv.Init(nil, nil)
 	wvApp.SetOptions(application.Options{DefaultURL: "about:blank"})
 	// 设置应用程序图标
