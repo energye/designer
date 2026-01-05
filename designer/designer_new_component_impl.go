@@ -36,6 +36,7 @@ type TDesigningComponent struct {
 	FormTab        *FormTab                  // 所属设计窗体
 	id             int                       // id 标识
 	originObject   any                       // 原始组件对象
+	className      string                    // 组件类名
 	object         lcl.IWinControl           // 组件 对象 可视
 	objectNon      lcl.IComponent            // 组件 对象 非可视
 	objectNonWrap  *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
@@ -206,6 +207,9 @@ func (m *TDesigningComponent) SetHint(hint string) {
 }
 
 func (m *TDesigningComponent) ClassName() string {
+	if m.className != "" {
+		return m.className
+	}
 	return m.Component().ClassName()
 }
 
@@ -338,6 +342,10 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 	m.loadEventList()
 	logs.Debug("加载组件属性完成", m.ClassName())
 
+}
+
+func (m *TDesigningComponent) Mod() string {
+	return m.mod
 }
 
 // 设置组件父子关系

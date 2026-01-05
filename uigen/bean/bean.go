@@ -19,6 +19,7 @@ import "github.com/energye/designer/consts"
 type TUIComponent struct {
 	Name       string               `json:"name"`            // 组件名称
 	ClassName  string               `json:"class_name"`      // 组件类名
+	Mod        string               `json:"mod"`             // 组件所属模块
 	Type       consts.ComponentType `json:"type"`            // 组件类型
 	Properties []TProperty          `json:"properties"`      // 组件属性列表
 	Child      []TUIComponent       `json:"child,omitempty"` // 组件子组件列表

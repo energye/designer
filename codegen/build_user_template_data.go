@@ -83,6 +83,7 @@ func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
+		Mod:        component.Mod,
 		Type:       component.Type,
 		Properties: uiPropertiesToTemplateProperties(component.Properties),
 		Children:   make([]*TComponentData, 0),

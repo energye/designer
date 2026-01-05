@@ -97,7 +97,7 @@ func NewLCLVisualRegisterComponent(func_, asFunc any) *TRegisterComponent {
 //   - asFunc - 作为函数使用的对象，用于类型转换或接口实现
 //   - *TRegisterComponent - 返回注册组件的指针，用于后续的组件管理操作
 func NewEnergyCustomVisualRegisterComponent(func_, asFunc any) *TRegisterComponent {
-	return NewRegisterComponent(func_, asFunc, consts.CtCustomVisual, consts.ModEnergy)
+	return NewRegisterComponent(func_, asFunc, consts.CtCustomVisual, consts.ModWVEnergy)
 }
 
 // NewLCLNonVisualRegisterComponent 创建一个新的非可视化组件注册器
@@ -224,8 +224,8 @@ func initRegisterComponent() {
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
 	// Web组件
-	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(wv.NewWebview, nil))
-	//AddRegisterComponent("TWebview", NewRegisterComponent(wv.NewBrowserWindow, nil, consts.CtVisual, consts.ModEnergy))
+	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(wv.TWebviewDesigner, nil))
+	//AddRegisterComponent("TWebview", NewLCLVisualRegisterComponent(lcl.TPanelClass, lcl.AsPanel))
 }
 
 //

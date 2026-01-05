@@ -119,7 +119,7 @@ const (
 	CtNonVisual                         // 非可视组件
 	CtVisual                            // 可视组件
 	CtWrapVisual                        // 自定义包裹非常规可视组件
-	CtCustomVisual                      // 可视组件
+	CtCustomVisual                      // 可视组件, 继承自 TWinControl
 )
 
 // 改变 Z 序
@@ -130,17 +130,6 @@ const (
 	CLevelBack                          //
 	CLevelForwardOne                    //
 	CLevelBackOne                       //
-)
-
-// 组件所属模块 LCL, CEF, Webview2, Webkit2, Webkit2
-type ComponentModule int32
-
-const (
-	CmLCL       ComponentModule = iota // LCL
-	CmCEF                              // CEF
-	CmWVWindows                        // Webview2 Windows
-	CmWVMacOS                          // Webkit2 MacOS
-	CmWVLinux                          // Webkit2 Linux
 )
 
 // DependencyModule 依赖模块
@@ -172,7 +161,8 @@ const (
 	ModWVWindows Mod = "wvWindows"
 	ModWVDarwin  Mod = "wvDarwin"
 	ModWVLinux   Mod = "wvLinux"
-	ModEnergy    Mod = "wvEnergy"
+	ModWVEnergy  Mod = "wvEnergy"
+	ModCEFEnergy Mod = "cefEnergy"
 )
 
 // TEventState 组件属性-事件属性绑定状态

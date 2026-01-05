@@ -64,6 +64,7 @@ func buildUITree(component *designer.TDesigningComponent) bean.TUIComponent {
 	uiComp := bean.TUIComponent{
 		Name:       component.Name(),
 		ClassName:  component.ClassName(),
+		Mod:        component.Mod(),
 		Properties: make([]bean.TProperty, 0),
 		Child:      make([]bean.TUIComponent, 0),
 		Type:       component.ComponentType,

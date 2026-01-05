@@ -35,17 +35,28 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	if designerForm == nil || component == nil || x < 0 || y < 0 {
 		return nil
 	}
-	method := reflect.ValueOf(component.Func)
-	if method.Kind() != reflect.Func {
-		logs.Error("获取设计组件, 创建类函数不是函数, 类名:", className)
-		return nil
+	var (
+		method   reflect.Value
+		asMethod reflect.Value
+	)
+	if component.Func != nil {
+		method = reflect.ValueOf(component.Func)
+		if method.Kind() != reflect.Func {
+			logs.Error("获取设计组件, 创建类函数不是函数, 类名:", className)
+			return nil
+		}
 	}
-	asMethod := reflect.ValueOf(component.AsFunc)
-	if asMethod.Kind() != reflect.Func {
-		logs.Error("获取设计组件, 转换对象函数不是函数, 类名:", className)
-		return nil
+	if component.AsFunc != nil {
+		asMethod = reflect.ValueOf(component.AsFunc)
+		if asMethod.Kind() != reflect.Func {
+			logs.Error("获取设计组件, 转换对象函数不是函数, 类名:", className)
+			return nil
+		}
 	}
 	callAsMethod := func(instance uintptr) any {
+		if component.AsFunc == nil {
+			return 0
+		}
 		in := make([]reflect.Value, 1)
 		in[0] = reflect.ValueOf(instance)
 		resultValues := asMethod.Call(in)
@@ -59,8 +70,11 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		return object
 	}
 	// 创建类实例, 并标记为设计模式
-	newInstance := func() uintptr {
-		resultValues := method.Call(nil)
+	newInstance := func(in []reflect.Value) uintptr {
+		if component.Func == nil {
+			return 0
+		}
+		resultValues := method.Call(in)
 		// result
 		results := make([]any, len(resultValues))
 		for i, value := range resultValues {
@@ -82,7 +96,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		// 创建常规可视对象设计组件
 		m := newVisualComponent(designerForm)
 		m.mod = component.Mod
-		instance := newInstance()
+		instance := newInstance(nil)
 		comp := lcl.AsWinControl(instance)
 		m.SetObject(callAsMethod(instance))
 		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
@@ -97,7 +111,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		// 创建非可视对象设计组件
 		m := newNonVisualComponent(designerForm, x, y)
 		m.mod = component.Mod
-		instance := newInstance()
+		instance := newInstance(nil)
 		comp := lcl.AsComponent(instance)
 		m.SetObject(callAsMethod(instance))
 		// 创建对象, 所属为 表单
@@ -123,7 +137,30 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	//m.drag.SetRelation(m)
 	//return m
 	case consts.CtCustomVisual:
-
+		// 创建常规可视对象设计组件
+		m := newVisualComponent(designerForm)
+		m.mod = component.Mod
+		m.className = className
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(ownerForm)
+		resultValues := method.Call(in)
+		// result
+		results := make([]any, len(resultValues))
+		for i, value := range resultValues {
+			results[i] = value.Interface()
+		}
+		object, ok := results[0].(lcl.IWinControl)
+		if !ok {
+			return nil
+		}
+		SetComponentDesignMode(object.Instance())
+		m.SetObject(results[0])
+		object.SetControlStyle(object.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
+		object.SetName(designerForm.GetComponentCaptionName(compName))
+		setBaseProp(object, x, y)
+		m.drag = newDrag(designerForm.scroll, consts.DsAll)
+		m.drag.SetRelation(m)
+		return m
 	}
 	return nil
 }

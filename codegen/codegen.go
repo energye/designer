@@ -33,6 +33,8 @@ const (
 	wvTypesLinux   = `cefTypes "github.com/energye/wv/types/linux"`   // gtk webkit2 linux 类型
 	wvTypesDarwin  = `cefTypes "github.com/energye/wv/types/darwin"`  // cocoa webkit2 darwin 类型
 	energyWindow   = `"github.com/energye/energy/v3/window"`          // energy window
+	wvEnergy       = `"github.com/energye/energy/v3/wv"`
+	cefEnergy      = `"github.com/energye/energy/v3/cef"`
 )
 
 // 窗体数据
@@ -45,13 +47,13 @@ type TFormData struct {
 
 // 组件数据
 type TComponentData struct {
-	Name            string                 // 组件名称
-	ClassName       string                 // 组件类名
-	ComponentModule consts.ComponentModule // 组件所属模块
-	Type            consts.ComponentType   // 组件类型
-	Properties      []TPropertyData        // 组件属性
-	Parent          *TComponentData        // 组件所属父类
-	Children        []*TComponentData      // 子组件列表
+	Name       string               // 组件名称
+	ClassName  string               // 组件类名
+	Mod        string               // 组件所属模块
+	Type       consts.ComponentType // 组件类型
+	Properties []TPropertyData      // 组件属性
+	Parent     *TComponentData      // 组件所属父类
+	Children   []*TComponentData    // 子组件列表
 }
 
 // 基础信息
@@ -72,7 +74,15 @@ type TPropertyData struct {
 
 // 模板调用函数 - 返回组件在Go定义的接口名
 func (m *TComponentData) GoIntfName() string {
-	intfName := "lcl.I" + tool.RemoveT(m.ClassName)
+	var intfName string
+	switch m.Mod {
+	case consts.ModLCL:
+		intfName = "lcl.I" + tool.RemoveT(m.ClassName)
+	case consts.ModWVEnergy:
+		intfName = "wv.I" + tool.RemoveT(m.ClassName)
+	case consts.ModCEFEnergy:
+		intfName = "cef.I" + tool.RemoveT(m.ClassName)
+	}
 	return intfName
 }
 
@@ -81,7 +91,14 @@ func (m *TComponentData) GoNewObject() string {
 	// m.{{$comp.GoFieldName}} =
 	newObject := tool.Buffer{}
 	newObject.WriteString("m.", m.GoFieldName(), " = ")
-	newObject.WriteString("lcl.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+	switch m.Mod {
+	case consts.ModLCL:
+		newObject.WriteString("lcl.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+	case consts.ModWVEnergy:
+		newObject.WriteString("wv.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+	case consts.ModCEFEnergy:
+		newObject.WriteString("cef.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+	}
 	return newObject.String()
 }
 
@@ -131,6 +148,12 @@ func (m *TFormData) IncludePackage() {
 				m.Imports.Add(lclTypes)
 				// 其它 ...
 			}
+		}
+		switch comp.Mod {
+		case consts.ModWVEnergy:
+			m.Imports.Add(wvEnergy)
+		case consts.ModCEFEnergy:
+			m.Imports.Add(cefEnergy)
 		}
 		for _, childComp := range comp.Children {
 			findPackages(childComp)
@@ -214,6 +237,7 @@ func (m *TComponentData) buildComponents(component *bean.TUIComponent) []*TCompo
 	rootComponent := &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
+		Mod:        component.Mod,
 		Type:       component.Type,
 		Properties: uiPropertiesToTemplateProperties(component.Properties),
 		Children:   make([]*TComponentData, 0),
@@ -230,6 +254,7 @@ func (m *TComponentData) buildChildComponents(uiParent *bean.TUIComponent, templ
 		childTemplate := &TComponentData{
 			Name:       child.Name,
 			ClassName:  child.ClassName,
+			Mod:        child.Mod,
 			Type:       child.Type,
 			Properties: uiPropertiesToTemplateProperties(child.Properties),
 			Parent:     templateParent,
