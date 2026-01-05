@@ -22,6 +22,7 @@ import (
 	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
+	"sort"
 )
 
 // 设计器配置
@@ -173,6 +174,7 @@ func UpdateHistoryProject(projectEGPPath string) bool {
 	}
 	if isAdd {
 		Config.HistoryProject = append(Config.HistoryProject, projectEGPPath)
+		sort.Strings(Config.HistoryProject)
 	}
 	return true
 }
