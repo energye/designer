@@ -88,6 +88,8 @@ func LoadProject(path, egpFilePath string) {
 	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
 	// 加载完后设置窗口标题
 	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, gPath))
+	// 更新打开项目历史记录
+	designer.UpdateHistoryProject(egpFilePath)
 }
 
 // LoadUI 加载UI布局文件

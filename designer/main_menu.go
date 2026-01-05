@@ -36,6 +36,7 @@ type TMainMenu struct {
 	createProject lcl.IMenuItem
 	createWindow  lcl.IMenuItem
 	open          lcl.IMenuItem
+	history       lcl.IMenuItem
 	//save          lcl.IMenuItem
 
 	build      lcl.IMenuItem
@@ -166,6 +167,11 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	//})
 	//m.file.Add(saveAllWindow)
 
+	m.history = lcl.NewMenuItem(owner)
+	m.history.SetCaption("历史项目")
+	m.file.Add(m.history)
+	m.fileHistoryProjectMenu()
+
 	exitWindow := lcl.NewMenuItem(owner)
 	exitWindow.SetCaption("退出(&Q)")
 	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))
@@ -175,6 +181,20 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 		mainWindow.Close()
 	})
 	m.file.Add(exitWindow)
+}
+
+func (m *TMainMenu) fileHistoryProjectMenu() {
+	m.history.Clear()
+	for _, project := range config.Config.HistoryProject {
+		egpFilePath := project
+		item := lcl.NewMenuItem(m.history)
+		item.SetCaption(egpFilePath)
+		item.SetOnClick(func(sender lcl.IObject) {
+			logs.Debug("打开项目: %s", egpFilePath)
+			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: egpFilePath}})
+		})
+		m.history.Add(item)
+	}
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {

@@ -15,6 +15,7 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
@@ -129,6 +130,14 @@ func ResetDesigner() {
 	}
 	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
 	SetDesignerCount(0)
+}
+
+func UpdateHistoryProject(egpFilePath string) {
+	// 更新打开项目历史记录
+	config.UpdateHistoryProject(egpFilePath)
+	config.UpdateConfig()
+	// 更新设计器菜单-文件-历史项目
+	mainWindow.mainMenu.fileHistoryProjectMenu()
 }
 
 // SetDesignerCount

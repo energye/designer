@@ -77,13 +77,14 @@ type Tab struct {
 
 // TConfig energy 配置文件
 type TConfig struct {
-	Window       Window           `json:"window"`       // 窗口配置
-	FrameworkDir string           `json:"framework"`    // 框架目录
-	Mod          TMod             `json:"mod"`          // 模块配置
-	Registry     string           `json:"registry"`     // 远程服务配置地址
-	Proxy        string           `json:"proxy"`        // 代理地址
-	LastProject  string           `json:"last_project"` // 最后打开项目
-	Env          map[string]*TEnv `json:"env"`          // 环境配置
+	Window         Window           `json:"window"`          // 窗口配置
+	FrameworkDir   string           `json:"framework"`       // 框架目录
+	Mod            TMod             `json:"mod"`             // 模块配置
+	Registry       string           `json:"registry"`        // 远程服务配置地址
+	Proxy          string           `json:"proxy"`           // 代理地址
+	LastProject    string           `json:"last_project"`    // 最后打开项目
+	HistoryProject []string         `json:"history_project"` // 历史项目列表
+	Env            map[string]*TEnv `json:"env"`             // 环境配置
 }
 
 // TEnv 环境配置
@@ -153,6 +154,26 @@ func UpdateLastProject(projectEGPPath string) bool {
 		return false
 	}
 	Config.LastProject = projectEGPPath
+	return true
+}
+
+// UpdateHistoryProject 更新设计器打开的历史项目
+func UpdateHistoryProject(projectEGPPath string) bool {
+	if !tool.IsExist(projectEGPPath) {
+		return false
+	}
+	projectEGPPath = filepath.ToSlash(projectEGPPath)
+	isAdd := true
+	for _, hp := range Config.HistoryProject {
+		hp = filepath.ToSlash(hp)
+		if tool.Equal(projectEGPPath, hp) {
+			isAdd = false
+			break
+		}
+	}
+	if isAdd {
+		Config.HistoryProject = append(Config.HistoryProject, projectEGPPath)
+	}
 	return true
 }
 
