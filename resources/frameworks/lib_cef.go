@@ -47,7 +47,7 @@ func extractCEF(outputPath string) {
 	}
 	replace := fmt.Sprintf(`replace (
 	github.com/energye/lcl => %v
-)`, config.Config.FrameworkDirForLCL())
+)`, config.Config.FrameworkDirForLCLRelativePath())
 	data, e := renderModLocalTemplate("github.com/energye/cef", replace)
 	err.CheckErr(e)
 	e = os.WriteFile(gomod, data, 0666)

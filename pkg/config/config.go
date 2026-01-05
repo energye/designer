@@ -113,9 +113,19 @@ func (m *TConfig) FrameworkDirForLCL() string {
 	return filepath.Join(src, "lcl@"+version)
 }
 
+func (m *TConfig) FrameworkDirForLCLRelativePath() string {
+	_, version := m.FrameworkDirForSrcVersion()
+	return "../lcl@" + version
+}
+
 func (m *TConfig) FrameworkDirForCEF() string {
 	src, version := m.FrameworkDirForSrcVersion()
 	return filepath.Join(src, "cef@"+version)
+}
+
+func (m *TConfig) FrameworkDirForCEFRelativePath() string {
+	_, version := m.FrameworkDirForSrcVersion()
+	return "../cef@" + version
 }
 
 func (m *TConfig) FrameworkDirForWV() string {
@@ -123,9 +133,19 @@ func (m *TConfig) FrameworkDirForWV() string {
 	return filepath.Join(src, "wv@"+version)
 }
 
+func (m *TConfig) FrameworkDirForWVRelativePath() string {
+	_, version := m.FrameworkDirForSrcVersion()
+	return "../wv@" + version
+}
+
 func (m *TConfig) FrameworkDirForENERGY() string {
 	src, version := m.FrameworkDirForSrcVersion()
 	return filepath.Join(src, "energy@"+version)
+}
+
+func (m *TConfig) FrameworkDirForENERGYRelativePath() string {
+	_, version := m.FrameworkDirForSrcVersion()
+	return "../energy@" + version
 }
 
 // UpdateWindow 更新窗体配置

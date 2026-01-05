@@ -55,7 +55,7 @@ replace (
 	github.com/energye/wv => %v
 	github.com/energye/cef => %v
 )
-`, config.Config.FrameworkDirForLCL(), config.Config.FrameworkDirForWV(), config.Config.FrameworkDirForCEF())
+`, config.Config.FrameworkDirForLCLRelativePath(), config.Config.FrameworkDirForWVRelativePath(), config.Config.FrameworkDirForCEFRelativePath())
 	data, e := renderModLocalTemplate("github.com/energye/energy/v3", replace)
 	err.CheckErr(e)
 	e = os.WriteFile(gomod, data, 0666)
