@@ -45,6 +45,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 		UserFile: formTab.GOUserFile(),
 	}
 	data.Imports.Add(lcl)
+	data.Imports.Add(energyWindow)
 	data.IncludePackage()
 
 	// 解析模板

@@ -32,6 +32,7 @@ const (
 	wvTypesWindows = `cefTypes "github.com/energye/wv/types/windows"` // webview2 windows 类型
 	wvTypesLinux   = `cefTypes "github.com/energye/wv/types/linux"`   // gtk webkit2 linux 类型
 	wvTypesDarwin  = `cefTypes "github.com/energye/wv/types/darwin"`  // cocoa webkit2 darwin 类型
+	energyWindow   = `"github.com/energye/energy/v3/window"`          // energy window
 )
 
 // 窗体数据
