@@ -225,7 +225,6 @@ func initRegisterComponent() {
 
 	// Web组件
 	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(wv.TWebviewDesigner, nil))
-	//AddRegisterComponent("TWebview", NewLCLVisualRegisterComponent(lcl.TPanelClass, lcl.AsPanel))
 }
 
 //
