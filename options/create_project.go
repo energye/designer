@@ -59,13 +59,9 @@ func createProjectDir() {
 	// 本地模式
 	localModule := tool.Buffer{}
 	localModule.WriteString("replace github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
+	localModule.WriteString("replace github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
+	localModule.WriteString("replace github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
 	localModule.WriteString("replace github.com/energye/energy/v3", " => ", config.Config.FrameworkDirForENERGY(), "\n")
-	switch data.GUIRenderFramework {
-	case bean.GUIRenderFramework_WV:
-		localModule.WriteString("replace github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
-	case bean.GUIRenderFramework_CEF:
-		localModule.WriteString("replace github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
-	}
 	data.Data = localModule.String()
 
 	// 文件创建
