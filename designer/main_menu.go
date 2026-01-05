@@ -287,6 +287,7 @@ func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 	_, _, _, _, _, v := api.LCLVersion()
 	about := lcl.NewMenuItem(owner)
 	about.SetCaption("关于")
+	about.SetImageIndex(imageMenu.ImageIndex("menu_project_about.png"))
 	about.SetOnClick(func(sender lcl.IObject) {
 		versionInfo := api.PasStr("ENERGY Designer " + config.FormConfig.Version + "\nLCL " + v)
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
