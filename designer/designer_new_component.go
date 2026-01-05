@@ -77,7 +77,6 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 	ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
 	switch component.Type {
 	case consts.CtForm:
-		// TODO
 		_ = ""
 	case consts.CtVisual:
 		// 创建常规可视对象设计组件
@@ -110,19 +109,21 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.objectNonWrap.SetImage()
 		return m
 	case consts.CtWrapVisual:
-		// 创建自定义包裹非常规可视组件
-		//m := newWrapVisualComponent(designerForm, x, y)
-		//m.mod = component.Mod
-		//instance := newInstance()
-		//comp := lcl.AsWinControl(instance)
-		//m.SetObject(callAsMethod(instance))
-		//comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
-		//api.CreateObjectByComponent(instance, ownerForm.Instance())
-		//comp.SetName(designerForm.GetComponentCaptionName(compName))
-		//setBaseProp(comp, x, y)
-		//m.drag = newDrag(designerForm.scroll, consts.DsAll)
-		//m.drag.SetRelation(m)
-		//return m
+	// 创建自定义包裹非常规可视组件
+	//m := newWrapVisualComponent(designerForm, x, y)
+	//m.mod = component.Mod
+	//instance := newInstance()
+	//comp := lcl.AsWinControl(instance)
+	//m.SetObject(callAsMethod(instance))
+	//comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
+	//api.CreateObjectByComponent(instance, ownerForm.Instance())
+	//comp.SetName(designerForm.GetComponentCaptionName(compName))
+	//setBaseProp(comp, x, y)
+	//m.drag = newDrag(designerForm.scroll, consts.DsAll)
+	//m.drag.SetRelation(m)
+	//return m
+	case consts.CtCustomVisual:
+
 	}
 	return nil
 }

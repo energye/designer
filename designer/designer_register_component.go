@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -87,6 +88,16 @@ func NewRegisterComponent(func_, asFunc any, type_ consts.ComponentType, mod con
 //   - TRegisterComponent: 返回指向TRegisterComponent的指针，表示新创建的组件注册器
 func NewLCLVisualRegisterComponent(func_, asFunc any) *TRegisterComponent {
 	return NewRegisterComponent(func_, asFunc, consts.CtVisual, consts.ModLCL)
+}
+
+// NewEnergyCustomVisualRegisterComponent 创建一个新的 energy 自定义视觉注册组件
+// 该函数用于注册具有自定义视觉效果的能量相关组件
+//
+//   - func_ - 要注册的函数对象，通常为组件的构造函数或初始化函数
+//   - asFunc - 作为函数使用的对象，用于类型转换或接口实现
+//   - *TRegisterComponent - 返回注册组件的指针，用于后续的组件管理操作
+func NewEnergyCustomVisualRegisterComponent(func_, asFunc any) *TRegisterComponent {
+	return NewRegisterComponent(func_, asFunc, consts.CtCustomVisual, consts.ModEnergy)
 }
 
 // NewLCLNonVisualRegisterComponent 创建一个新的非可视化组件注册器
@@ -213,7 +224,7 @@ func initRegisterComponent() {
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
 	// Web组件
-	AddRegisterComponent("TWebview", NewLCLVisualRegisterComponent(lcl.TImageButtonClass, lcl.AsImageButton))
+	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(wv.NewWebview, nil))
 	//AddRegisterComponent("TWebview", NewRegisterComponent(wv.NewBrowserWindow, nil, consts.CtVisual, consts.ModEnergy))
 }
 

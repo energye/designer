@@ -115,10 +115,11 @@ const (
 type ComponentType int32
 
 const (
-	CtForm       ComponentType = iota // 窗体
-	CtNonVisual                       // 非可视组件
-	CtVisual                          // 可视组件
-	CtWrapVisual                      // 自定义包裹非常规可视组件
+	CtForm         ComponentType = iota // 窗体
+	CtNonVisual                         // 非可视组件
+	CtVisual                            // 可视组件
+	CtWrapVisual                        // 自定义包裹非常规可视组件
+	CtCustomVisual                      // 可视组件
 )
 
 // 改变 Z 序
@@ -157,7 +158,7 @@ const (
 	// DmWVLinux Webview Linux 模块
 	DmWVLinux DependencyModule = "github.com/energye/wv"
 	// DmEnergy Energy 模块
-	DmEnergy DependencyModule = "github.com/energye/energy"
+	DmEnergy DependencyModule = "github.com/energye/energy/v3"
 	// DmWidget 自定义组件 模块
 	DmWidget DependencyModule = "github.com/energye/widget"
 )
