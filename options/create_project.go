@@ -58,10 +58,12 @@ func createProjectDir() {
 	data := *gProject
 	// 本地模式
 	localModule := tool.Buffer{}
-	localModule.WriteString("replace github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
-	localModule.WriteString("replace github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
-	localModule.WriteString("replace github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
-	localModule.WriteString("replace github.com/energye/energy/v3", " => ", config.Config.FrameworkDirForENERGY(), "\n")
+	localModule.WriteString("replace (", "\n")
+	localModule.WriteString("  github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
+	localModule.WriteString("  github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
+	localModule.WriteString("  github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
+	localModule.WriteString("  github.com/energye/energy/v3", " => ", config.Config.FrameworkDirForENERGY(), "\n")
+	localModule.WriteString(")", "\n")
 	data.Data = localModule.String()
 
 	// 文件创建
