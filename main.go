@@ -16,13 +16,11 @@ package main
 import (
 	"github.com/energye/designer/designer"
 	_ "github.com/energye/designer/internal"
-	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/pkg/syso"
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/tool"
 	"os"
 	"strings"
 )
@@ -41,17 +39,4 @@ func main() {
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
 	designer.Run()
-}
-
-// 不使用了, 项目新建后, 手动设置一次环境
-func setMacOSEnv() {
-	if !tool.IsDarwin() {
-		return
-	}
-	commonGoPaths := []string{
-		"/usr/local/go",
-	}
-	for _, p := range commonGoPaths {
-		_ = options.SetGoRootPath(p)
-	}
 }
