@@ -25,14 +25,12 @@ package main
 import (
 	"github.com/energye/energy/v3/lcl"
 	"{{.Name}}/app"
-	. "{{.Name}}/resources"
+	_ "{{.Name}}/resources"
 )
 
 func main() {
 	// 全局初始化
 	lcl.Init(nil, nil)
-	// 设置应用程序图标
-	SetIcon()
 	// 启动应用程序消息循环
 	lcl.Run(app.Forms...)
 }
@@ -51,15 +49,13 @@ import (
 	"github.com/energye/energy/v3/application"
 	"github.com/energye/energy/v3/wv"
 	"{{.Name}}/app"
-	. "{{.Name}}/resources"
+	_ "{{.Name}}/resources"
 )
 
 func main() {
 	// 全局初始化
 	wvApp := wv.Init(nil, nil)
 	wvApp.SetOptions(application.Options{DefaultURL: "about:blank"})
-	// 设置应用程序图标
-	SetIcon()
 	// 启动应用程序消息循环
 	wv.Run(app.Forms...)
 }
@@ -103,6 +99,7 @@ package resources
 
 import (
 	"embed"
+	engLCL "github.com/energye/energy/v3/lcl"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -127,5 +124,9 @@ func SetIcon() {
 	lcl.Application.Icon().Assign(png)
 	png.Free()
 	stream.Free()
+}
+
+func init() {
+	engLCL.SetOnBeforeRun(SetIcon)
 }
 `
