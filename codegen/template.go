@@ -32,6 +32,7 @@ package {{$Form.PackageName}}
 
 import (
 	{{$Form.GoGetImports}}
+	"github.com/energye/lcl/types"
 )
 
 type T{{$Form.Form.Name}} struct {
