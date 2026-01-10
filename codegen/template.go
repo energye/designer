@@ -56,6 +56,26 @@ func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
 	m.OnFormCreate(sender)
 }
 
+// OnShow 窗口显示事件
+func (m *T{{$Form.Form.Name}}) OnShow(sender lcl.IObject) {
+	m.TWindow.OnShow(sender)
+	m.OnFormShow(sender)
+}
+
+// OnCloseQuery 窗体关闭前询问事件
+func (m *T{{$Form.Form.Name}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+	if !m.OnFormCloseQuery(sender, canClose) {
+		m.TWindow.OnCloseQuery(sender, canClose)
+	}
+}
+
+// OnClose 仅当 OnCloseQuery 中 CanClose 被设置为 True 后会触发
+func (m *T{{$Form.Form.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+	if !m.OnFormClose(sender, closeAction) {
+		m.TWindow.OnClose(sender, closeAction)
+	}
+}
+
 // initComponents 初始化组件
 func (m *T{{$Form.Form.Name}}) initComponents() {
     // 组件初始化和设置属性
@@ -91,19 +111,21 @@ func (m *T{{$Form.Form.Name}}) OnFormCreate(sender lcl.IObject) {
 	// TODO 在此处添加窗体初始化代码
 }
 
-// OnShow 窗体显示事件
-func (m *T{{$Form.Form.Name}}) OnShow(sender lcl.IObject) {
+// OnFormShow 窗体显示事件
+func (m *T{{$Form.Form.Name}}) OnFormShow(sender lcl.IObject) {
 	// TODO 在此处添加窗体显示事件代码
 }
 
-// OnCloseQuery 窗体关闭前询问事件
-func (m *T{{$Form.Form.Name}}) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+// OnFormCloseQuery 窗体关闭前询问事件
+func (m *T{{$Form.Form.Name}}) OnFormCloseQuery(sender lcl.IObject, canClose *bool) bool {
 	// TODO 在此处添加窗体关闭前询问代码
+	return false
 }
 
-// OnClose 仅当 OnCloseQuery 中 CanClose 被设置为 True 后会触发
-func (m *T{{$Form.Form.Name}}) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
+// OnFormClose 仅当 OnCloseQuery 中 CanClose 被设置为 True 后会触发
+func (m *T{{$Form.Form.Name}}) OnFormClose(sender lcl.IObject, closeAction *types.TCloseAction) bool {
 	// TODO 在此处添加窗体关闭代码
+	return false
 }
 
 {{range $Form.Form.Children}}
