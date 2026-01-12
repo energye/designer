@@ -17,8 +17,8 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 )
 
 // 组件设计注册
@@ -224,14 +224,14 @@ func initRegisterComponent() {
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
 	// Web组件
-	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(wv.TWebviewDesigner, nil))
+	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(TWebviewDesigner, nil))
 }
 
-//
-//// 获取注册的设计组件
-//func GetRegisterComponent(name string) TNewComponent {
-//	if cb, ok := registerComponents[name]; ok {
-//		return cb
-//	}
-//	return nil
-//}
+func TWebviewDesigner(owner lcl.IComponent) lcl.IPanel {
+	m := lcl.NewPanel(owner)
+	m.SetParentColor(true)
+	m.SetParentDoubleBuffered(true)
+	m.SetBevelInner(types.BvNone)
+	m.SetBevelOuter(types.BvNone)
+	return m
+}
