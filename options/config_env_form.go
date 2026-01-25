@@ -104,7 +104,8 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.goRootBox.SetWidth(440)
 		m.goRootBox.SetFont(m.font)
 		m.goRootBox.SetDoubleBuffered(true)
-		m.goRootBox.SetStyle(types.CsDropDownList)
+		//m.goRootBox.SetStyle(types.CsDropDownList)
+		m.goRootBox.SetReadOnly(true)
 		m.goRootBox.SetBorderStyle(types.BsSingle)
 		m.goRootBox.SetParent(m)
 		// 优先从配置
