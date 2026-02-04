@@ -34,6 +34,9 @@ type common struct {
 }
 
 // 自定义属性列表
+//   - key: 组件类名或组件属性名（通用）
+//     key - 是组件类名：类的属性采用这个配置里有的属性名
+//     key - 组件属性名：所有类的这个属性采用这个配置
 type propertyList map[string][]lcl.ComponentProperties
 
 // 获取指定组件的自定义属性配置
