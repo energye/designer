@@ -113,7 +113,7 @@ func (m *TEditNodeData) Build() {
 			}
 			properties := lcl.DesigningComponent().GetComponentProperties(object)
 			m.EditNodeData.Class.Count = int32(len(properties))
-			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties))
+			logs.Debug("TkClass LoadComponent", object.ToString(), "Count:", len(properties), "组件名:", m.Name())
 			for _, prop := range properties {
 				if config.ComponentProperty.IsExclude(prop.Name) {
 					continue

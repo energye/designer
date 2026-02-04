@@ -393,6 +393,10 @@ func (m *TDesigningComponent) Control() lcl.IControl {
 	return m.object
 }
 
+func (m *TDesigningComponent) OriginObject() any {
+	return m.originObject
+}
+
 func (m *TDesigningComponent) Component() lcl.IComponent {
 	if m.ComponentType == consts.CtNonVisual {
 		return m.objectNon
@@ -416,6 +420,7 @@ func (m *TDesigningComponent) GetProps() {
 		if methods == nil {
 			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 		}
+
 		var (
 			className       = m.ClassName()
 			properties      []lcl.ComponentProperties
@@ -424,8 +429,12 @@ func (m *TDesigningComponent) GetProps() {
 			configCompProp  = config.ComponentProperty
 			tempPropertyMap = make(map[string]struct{}) // 用于下面判断
 		)
-		properties = lcl.DesigningComponent().GetComponentProperties(m.Component())
-		logs.Debug("GetProps LoadComponent Count:", len(properties), "ClassName:", className)
+		if customComp, ok := m.originObject.(lcl.ICustomComponent); ok {
+			properties = customComp.Published()
+		} else {
+			properties = lcl.DesigningComponent().GetComponentProperties(m.Component())
+		}
+		logs.Debug("GetProps LoadComponent Count:", len(properties), "ClassName:", className, "Mod:", m.Mod())
 		for _, prop := range properties {
 			if config.ComponentProperty.IsExclude(prop.Name) {
 				continue
@@ -640,7 +649,7 @@ func (m *TDesigningComponent) PrevSibling() *TDesigningComponent {
 // namePaths: 属性名路径, [Font, Style] [Header, Font, Style]
 func (m *TDesigningComponent) FindNodeDataByNamePaths(property uiBean.TProperty) (result *vtedit.TEditNodeData) {
 	namePaths := tool.Split(property.Name, ".") // 属性名路径 Font.Style
-	if len(namePaths) == 0 || m.PropertyList == nil || m.EventList == nil {
+	if len(namePaths) == 0 {
 		return nil
 	}
 	propName := namePaths[0]

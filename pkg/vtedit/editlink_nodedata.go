@@ -190,6 +190,7 @@ type IDesigningComponent interface {
 	GetClassName() string
 	GetName() string
 	GetMod() string
+	OriginObject() any
 }
 
 // 编辑的节点数据

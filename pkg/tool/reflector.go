@@ -45,6 +45,9 @@ func collectMethods(t reflect.Type, level int, methods *ArrayMap[string, *TMetho
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
+	if t.Kind() != reflect.Struct {
+		return
+	}
 	structName := t.Name()
 	// 收集当前类型的Method
 	numMethod := originalType.NumMethod()
