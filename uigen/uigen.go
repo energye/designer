@@ -56,7 +56,7 @@ func generateUIFile(formComponent *designer.TDesigningComponent, filePath string
 
 // 默认生成属性
 var defaultGenerateProperty = map[string]struct{}{
-	"Left": {}, "Top": {}, "Width": {}, "Height": {}, "Caption": {},
+	"Left": {}, "Top": {}, "Width": {}, "Height": {}, "Caption": {}, "Name": {},
 }
 
 // buildUITree 构建UI树结构
