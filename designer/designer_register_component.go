@@ -14,12 +14,10 @@
 package designer
 
 import (
-	"encoding/json"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/types"
 )
 
 // 组件设计注册
@@ -205,52 +203,5 @@ func initRegisterComponent() {
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
 	// Web组件
-	//AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(TWebviewDesigner, nil))
 	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(NewDesignerWebview, nil))
-}
-
-func TWebviewDesigner(owner lcl.IComponent) lcl.IPanel {
-	m := lcl.NewPanel(owner)
-	m.SetParentColor(true)
-	m.SetParentDoubleBuffered(true)
-	m.SetBevelInner(types.BvNone)
-	m.SetBevelOuter(types.BvNone)
-	return m
-}
-
-type TDesignerWebview struct {
-	lcl.ICustomPanel
-}
-
-func (m *TDesignerWebview) Published() (props []lcl.ComponentProperties) {
-	propStrList := tool.NewArray[string]()
-	propStrList.Add(`{"name":"Align","value":"alCustom","kind":"tkEnumeration","type":"TAlign","options":"alNone,alTop,alBottom,alLeft,alRight,alClient,alCustom"}`)
-	propStrList.Add(`{"name":"Anchors","value":"akTop,akLeft","kind":"tkSet","type":"TAnchors","options":"akTop,akLeft,akRight,akBottom"}`)
-	propStrList.Add(`{"name":"Caption","value":"` + m.Caption() + `","kind":"tkAString","type":"TTranslateString","options":""}`)
-	propStrList.Add(`{"name":"Width","value":"170","kind":"tkInteger","type":"LongInt","options":""}`)
-	propStrList.Add(`{"name":"Height","value":"50","kind":"tkInteger","type":"LongInt","options":""}`)
-	propStrList.Add(`{"name":"Top","value":"0","kind":"tkInteger","type":"LongInt","options":""}`)
-	propStrList.Add(`{"name":"Left","value":"0","kind":"tkInteger","type":"LongInt","options":""}`)
-	propStrList.Add(`{"name":"Name","value":"` + m.Name() + `","kind":"tkAString","type":"AnsiString","options":""}`)
-	//propStrList.Add(`{"name":"Visible","value":"1","kind":"tkBool","type":"Boolean","options":""}`)
-
-	props = make([]lcl.ComponentProperties, propStrList.Len())
-	for i, prop := range propStrList.Values() {
-		var propItem lcl.ComponentProperties
-		if err := json.Unmarshal([]byte(prop), &propItem); err == nil {
-			props[i] = propItem
-		}
-	}
-	return
-}
-
-func NewDesignerWebview(owner lcl.IComponent) *TDesignerWebview {
-	m := &TDesignerWebview{}
-	m.ICustomPanel = lcl.NewCustomPanel(owner)
-	m.SetParentColor(true)
-	m.SetParentDoubleBuffered(true)
-	m.SetBevelInner(types.BvNone)
-	m.SetBevelOuter(types.BvNone)
-	m.SetBorderStyleToBorderStyle(types.BsSingle)
-	return m
 }
