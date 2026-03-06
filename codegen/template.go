@@ -46,7 +46,6 @@ var {{$Form.Form.Name}} T{{$Form.Form.Name}}
 
 // FormCreate 窗体创建接口实现. 自动调用
 func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
-	m.TWindow.FormCreate(sender) // 优先调用
 	// 设置窗体属性
 	{{$formComp := $Form.Form}}
 	{{- range $propIndex, $prop := $formComp.Properties -}}
@@ -56,11 +55,12 @@ func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
 	m.initComponents()
     // 调用用户创建窗体事件
 	m.OnFormCreate(sender)
+	m.TWindow.FormCreate(sender)
 }
 
 // OnShow 窗口显示事件
 func (m *T{{$Form.Form.Name}}) OnShow(sender lcl.IObject) {
-	m.TWindow.OnShow(sender) // 优先调用
+	m.TWindow.OnShow(sender)
 	m.OnFormShow(sender)
 }
 
