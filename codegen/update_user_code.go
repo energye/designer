@@ -75,7 +75,7 @@ func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 //	xxx.ui => 事件记录
 func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	if uiGenData.NodeData == nil {
-		logs.Error("执行更新绑定事件-事件节点数据为 nil")
+		logs.Error("UserCode-doUpdateEvent 执行更新绑定事件-事件节点数据为 nil")
 		return
 	}
 	formTab := uiGenData.Component.FormTab
@@ -87,12 +87,12 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 	switch nodeData.EventState {
 	case consts.EsUpdate:
 		// A > B 忽略
-		logs.Debug("doUpdateEvent 绑定事件忽略 Update")
+		logs.Debug("UserCode-doUpdateEvent 绑定事件忽略 Update")
 	case consts.EsDelete:
 		// 忽略
-		logs.Debug("doUpdateEvent 绑定事件忽略 Delete")
+		logs.Debug("UserCode-doUpdateEvent 绑定事件忽略 Delete")
 	case consts.EsAdd:
-		logs.Debug("doUpdateEvent 绑定事件添加 Add")
+		logs.Debug("UserCode-doUpdateEvent 绑定事件添加 Add")
 		// > A
 		// 模块类型别名集合 TODO 多模块时需要动态控制 lcl, cef, wv
 		funcTypeAliases := dependmod.GetFuncTypeAliases(uiGenData.Component.GetMod())
@@ -100,11 +100,11 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 		lowerType := strings.ToLower(nodeData.Metadata.Type)
 		funcType := funcTypeAliases.Funcs.Get(lowerType)
 		if funcType == nil {
-			logs.Error("doUpdateEvent 获取函数类型别名返回 nil", lowerType)
+			logs.Error("UserCode-doUpdateEvent 获取函数类型别名返回 nil", lowerType)
 		} else {
 			s, err := os.Stat(goUserFilePath)
 			if err != nil {
-				logs.Error("doUpdateEvent 获取代码文件信息失败.", err.Error())
+				logs.Error("UserCode-doUpdateEvent 获取代码文件信息失败.", err.Error())
 				return
 			}
 			// 创建新方法
@@ -147,12 +147,12 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 				})
 			})
 			if err != nil {
-				logs.Error("doUpdateEvent 创建方法失败.", bindEventFuncName, err.Error())
+				logs.Error("UserCode-doUpdateEvent 创建方法失败.", bindEventFuncName, err.Error())
 				return
 			}
 			err = os.WriteFile(goUserFilePath, newCode, s.Mode())
 			if err != nil {
-				logs.Error("doUpdateEvent 创建方法失败.", bindEventFuncName, goUserFilePath, err.Error())
+				logs.Error("UserCode-doUpdateEvent 创建方法失败.", bindEventFuncName, goUserFilePath, err.Error())
 				return
 			}
 			// 成功, 立即更新一次文件改变监听

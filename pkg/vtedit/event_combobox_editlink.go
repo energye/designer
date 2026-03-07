@@ -45,7 +45,7 @@ func NewEventComboBoxEditLink(bindData *TEditNodeData) *TEventComboBoxEditLink {
 }
 
 func (m *TEventComboBoxEditLink) CreateEdit() {
-	logs.Debug("TEventComboBoxEditLink CreateEdit")
+	logs.Debug("TEventComboBoxEditLink-CreateEdit")
 	m.combobox = lcl.NewComboBox(nil)
 	m.combobox.SetVisible(false)
 	m.combobox.SetBorderStyle(types.BsSingle)
@@ -72,8 +72,8 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 	m.combobox.SetOnDblClick(func(sender lcl.IObject) {
 		compName := m.BindData.AffiliatedComponent.GetName()
 		propName := m.BindData.Name()
-		logs.Debug("自动创建绑定事件名", compName, propName)
 		bindEventName := compName + propName
+		logs.Debug("TEventComboBoxEditLink-CreateEdit 自动创建绑定事件名, 组件名:", compName, "属性名:", propName, "=> 事件名:", bindEventName)
 		// 验证当前列表是否已有该事件
 		items := m.combobox.Items()
 		count := m.combobox.Items().Count()
@@ -84,6 +84,7 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 				break
 			}
 		}
+		logs.Debug("TEventComboBoxEditLink-CreateEdit itemIndex:", itemIndex)
 		if itemIndex == -1 {
 			// 添加
 			m.combobox.SetItemIndex(-1)
@@ -136,22 +137,29 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 }
 
 func (m *TEventComboBoxEditLink) SetValue(index int32, value string) {
+	value = strings.TrimSpace(value)
 	m.BindData.EditNodeData.SetEditValue(value)
-	if index == -1 && value == "" {
-		// 删除
+	isEmpty := value == "" || value == defaultText
+	if isEmpty {
+		// -1 删除
 		m.BindData.EditNodeData.Index = -1
 		m.BindData.EditNodeData.EventState = consts.EsDelete
 		return
 	}
-	if index == -1 && value != "" {
-		// -1 新增
+	items := m.combobox.Items()
+	count := m.combobox.Items().Count()
+	isExist := false
+	for i := int32(0); i < count; i++ {
+		if items.Strings(i) == value {
+			isExist = true
+			break
+		}
+	}
+	if !isEmpty && !isExist {
+		// > 0 新增
 		m.BindData.EditNodeData.ComboBoxValue = append(m.BindData.EditNodeData.ComboBoxValue, &TEditLinkNodeData{StringValue: value})
 		m.BindData.EditNodeData.Index = int32(len(m.BindData.EditNodeData.ComboBoxValue)) - 1
 		m.BindData.EditNodeData.EventState = consts.EsAdd
-	} else if index == 0 || value == "" {
-		// 0 (none) 删除
-		m.BindData.EditNodeData.Index = -1
-		m.BindData.EditNodeData.EventState = consts.EsDelete
 	} else {
 		// 1-n 更新
 		m.BindData.EditNodeData.Index = index
@@ -181,11 +189,12 @@ func (m *TEventComboBoxEditLink) CancelEdit() bool {
 }
 
 func (m *TEventComboBoxEditLink) EndEdit() bool {
+	itemIndex := m.combobox.ItemIndex()
 	value := m.combobox.Text()
-	logs.Debug("TEventComboBoxEditLink EndEdit", "value:", value, "m.stopping:", m.stopping)
+	logs.Debug("TEventComboBoxEditLink-EndEdit", "itemIndex:", itemIndex, "value:", value, "m.stopping:", m.stopping)
 	if !m.stopping {
 		m.stopping = true
-		m.SetValue(m.combobox.ItemIndex(), m.combobox.Text())
+		m.SetValue(itemIndex, value)
 		m.combobox.Hide()
 		if m.VTree != nil {
 			m.VTree.EndEditNode()
