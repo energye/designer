@@ -102,9 +102,7 @@ func (m *TEventComboBoxEditLink) CreateEdit() {
 
 	// 动态添加下拉项, 需要过滤匹配
 	items := m.combobox.Items()
-	comboBoxValue := []*TEditLinkNodeData{
-		{StringValue: defaultText},
-	}
+	comboBoxValue := []*TEditLinkNodeData{{StringValue: defaultText}}
 	methods := m.BindData.AffiliatedComponent.GetRecvMethods()
 	if methods != nil {
 		// 过滤匹配出符合的事件类型方法
@@ -146,11 +144,9 @@ func (m *TEventComboBoxEditLink) SetValue(index int32, value string) {
 		m.BindData.EditNodeData.EventState = consts.EsDelete
 		return
 	}
-	items := m.combobox.Items()
-	count := m.combobox.Items().Count()
 	isExist := false
-	for i := int32(0); i < count; i++ {
-		if items.Strings(i) == value {
+	for _, item := range m.BindData.EditNodeData.ComboBoxValue {
+		if item.StringValue == value {
 			isExist = true
 			break
 		}
