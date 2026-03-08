@@ -159,13 +159,13 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMinHeight(configProjectFormHeight + addSize)
 		m.WorkAreaCenter()
 		// 初始时设置图标
-		m.appIconData = gProject.AppOption.Icon
+		m.appIconData = bean.GProject.AppOption.Icon
 		go func() {
 			// 预览
-			if gProject.AppOption.Icon.Data != nil {
+			if bean.GProject.AppOption.Icon.Data != nil {
 				// 预览图标过大, 需要绽放
-				tempIconData := gProject.AppOption.Icon.Data
-				if gProject.AppOption.Icon.W > 128 || gProject.AppOption.Icon.H > 128 {
+				tempIconData := bean.GProject.AppOption.Icon.Data
+				if bean.GProject.AppOption.Icon.W > 128 || bean.GProject.AppOption.Icon.H > 128 {
 					tempIconData = tool.Scale(tempIconData, 128, 128)
 				}
 				lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -210,7 +210,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 340, 30)
 		m.appTitleEdit.SetFont(m.font)
 		m.appTitleEdit.SetTextHint("my energy app")
-		m.appTitleEdit.SetText(gProject.AppOption.Title)
+		m.appTitleEdit.SetText(bean.GProject.AppOption.Title)
 		m.appTitleEdit.SetParent(m.box)
 	}
 
@@ -224,7 +224,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIdEdit.SetBounds(textLeft, baseTop+35, 340, 30)
 		m.appIdEdit.SetFont(m.font)
 		m.appIdEdit.SetTextHint("company.product.app")
-		m.appIdEdit.SetText(gProject.AppOption.Id)
+		m.appIdEdit.SetText(bean.GProject.AppOption.Id)
 		m.appIdEdit.SetParent(m.box)
 
 		m.appDescText = lcl.NewLabel(m)
@@ -236,7 +236,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appDescEdit.SetBounds(textLeft, baseTop+75, 340, 30)
 		m.appDescEdit.SetFont(m.font)
 		m.appDescEdit.SetTextHint("your application description.")
-		m.appDescEdit.SetText(gProject.AppOption.Desc)
+		m.appDescEdit.SetText(bean.GProject.AppOption.Desc)
 		m.appDescEdit.SetParent(m.box)
 
 		m.appVersionText = lcl.NewLabel(m)
@@ -248,7 +248,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 100, 30)
 		m.appVersionEdit.SetFont(m.font)
 		m.appVersionEdit.SetTextHint("1.2.3.4")
-		m.appVersionEdit.SetText(gProject.AppOption.Version)
+		m.appVersionEdit.SetText(bean.GProject.AppOption.Version)
 		m.appVersionEdit.SetParent(m.box)
 
 		m.appCopyrightText = lcl.NewLabel(m)
@@ -260,7 +260,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appCopyrightEdit.SetBounds(m.appCopyrightText.Left()+35, baseTop+115, 195, 30)
 		m.appCopyrightEdit.SetFont(m.font)
 		m.appCopyrightEdit.SetTextHint("Copyright (C)")
-		m.appCopyrightEdit.SetText(gProject.AppOption.Copyright)
+		m.appCopyrightEdit.SetText(bean.GProject.AppOption.Copyright)
 		m.appCopyrightEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
@@ -548,7 +548,7 @@ func (m *TConfigProjectForm) appIconBtnClick(sender lcl.IObject, button types.TM
 func (m *TConfigProjectForm) AppTitle() string {
 	title := m.appTitleEdit.Text()
 	if title == "" {
-		title = gProject.AppOption.Title
+		title = bean.GProject.AppOption.Title
 	}
 	return title
 }
@@ -556,7 +556,7 @@ func (m *TConfigProjectForm) AppTitle() string {
 func (m *TConfigProjectForm) AppCopyright() string {
 	copyright := m.appCopyrightEdit.Text()
 	if copyright == "" {
-		copyright = gProject.AppOption.Copyright
+		copyright = bean.GProject.AppOption.Copyright
 	}
 	return copyright
 }
@@ -564,7 +564,7 @@ func (m *TConfigProjectForm) AppCopyright() string {
 func (m *TConfigProjectForm) AppId() string {
 	id := m.appIdEdit.Text()
 	if id == "" {
-		id = gProject.AppOption.Id
+		id = bean.GProject.AppOption.Id
 	}
 	return id
 }
@@ -572,7 +572,7 @@ func (m *TConfigProjectForm) AppId() string {
 func (m *TConfigProjectForm) AppDesc() string {
 	desc := m.appDescEdit.Text()
 	if desc == "" {
-		desc = gProject.AppOption.Desc
+		desc = bean.GProject.AppOption.Desc
 	}
 	return desc
 }
@@ -580,7 +580,7 @@ func (m *TConfigProjectForm) AppDesc() string {
 func (m *TConfigProjectForm) AppVersion() string {
 	appVersion := m.appVersionEdit.Text()
 	if appVersion == "" {
-		appVersion = gProject.AppOption.Version
+		appVersion = bean.GProject.AppOption.Version
 	}
 	return appVersion
 }
@@ -588,7 +588,7 @@ func (m *TConfigProjectForm) AppVersion() string {
 func (m *TConfigProjectForm) AppBundleName() string {
 	bundleName := m.CFBundleNameEdit.Text()
 	if bundleName == "" {
-		bundleName = gProject.Name
+		bundleName = bean.GProject.Name
 	}
 	return bundleName
 }
@@ -597,7 +597,7 @@ func (m *TConfigProjectForm) AppBundleName() string {
 //
 //	macOS 应用的主可执行文件名称
 func (m *TConfigProjectForm) AppBundleExecutable() string {
-	bundleExecutable := gProject.Name
+	bundleExecutable := bean.GProject.Name
 	// TODO 需要在构建配置里获取
 	return bundleExecutable
 }
@@ -606,7 +606,7 @@ func (m *TConfigProjectForm) AppBundleLocalizations() []string {
 	locals := m.CFBundleLocalizationsEdit.Text()
 	bundleLocalizations := tool.Split(locals, ",")
 	if len(bundleLocalizations) == 0 {
-		bundleLocalizations = []string{gProject.AppOption.Lang}
+		bundleLocalizations = []string{bean.GProject.AppOption.Lang}
 	}
 	return bundleLocalizations
 }

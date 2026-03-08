@@ -15,6 +15,7 @@ package options
 
 import (
 	"errors"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -109,7 +110,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.goRootBox.SetBorderStyle(types.BsSingle)
 		m.goRootBox.SetParent(m)
 		// 优先从配置
-		env := config.Config.Env[gProject.Name]
+		env := config.Config.Env[bean.GProject.Name]
 		if env != nil && len(env.GoRoot) > 0 {
 			goRoot := env.GoRoot
 			for _, option := range goRoot {
@@ -189,7 +190,7 @@ func (m *TEnvForm) saveClick(sender lcl.IObject) {
 		err := SetGoRootPath(goRoot)
 		if err == nil {
 			// 更新到 .energy 配置文件
-			config.UpdateEnvGoRoot(gProject.Name, goRoot)
+			config.UpdateEnvGoRoot(bean.GProject.Name, goRoot)
 			config.UpdateConfig()
 		}
 	}

@@ -28,8 +28,8 @@ import (
 // 2. 更新 app/app.go 代码文件
 func runUpdate(formTab *designer.FormTab) {
 	logs.Debug("运行项目更新")
-	uiForms := gProject.UIForms // 窗体列表
-	isExist := false            // 是否存在
+	uiForms := bean.GProject.UIForms // 窗体列表
+	isExist := false                 // 是否存在
 	for i := range uiForms {
 		// 更新
 		// TODO 删除和其它功能待增加
@@ -56,17 +56,17 @@ func runUpdate(formTab *designer.FormTab) {
 			UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
 		})
 	}
-	gProject.ActiveUIForm = formTab.Id
-	gProject.UIForms = uiForms
+	bean.GProject.ActiveUIForm = formTab.Id
+	bean.GProject.UIForms = uiForms
 	// 1. 更新 TUIForm 配置
-	if err := WriteEGPConfig(gPath, gProject); err != nil {
+	if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
 		logs.Error("项目更新, 写入项目配置失败:", err.Error())
 		return
 	}
 	// 2. 更新 app/app.go 代码文件
-	appRoot := gPath
+	appRoot := bean.GPath
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName, consts.FormListFileName)
-	code := buildTemplateData(appCodeTemplate, gProject)
+	code := buildTemplateData(appCodeTemplate, bean.GProject)
 	if err := os.WriteFile(appCodePath, []byte(code), 0666); err != nil {
 		logs.Error("创建项目文件失败:", err.Error())
 	}

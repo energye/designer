@@ -14,6 +14,7 @@
 package options
 
 import (
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -234,21 +235,21 @@ func (m *TBuildForm) initConfigComponent() {
 	m.windowsCheckBox.SetLeft(20)
 	m.windowsCheckBox.SetTop(nextTop(25))
 	m.windowsCheckBox.SetFont(m.font)
-	m.windowsCheckBox.SetChecked(gProject.BuildOption.PlatformWindows)
+	m.windowsCheckBox.SetChecked(bean.GProject.BuildOption.PlatformWindows)
 	m.windowsCheckBox.SetParent(m.buildTabPageConfig)
 	m.macOSCheckBox = lcl.NewCheckBox(m)
 	m.macOSCheckBox.SetCaption("macOS")
 	m.macOSCheckBox.SetLeft(120)
 	m.macOSCheckBox.SetTop(m.windowsCheckBox.Top())
 	m.macOSCheckBox.SetFont(m.font)
-	m.macOSCheckBox.SetChecked(gProject.BuildOption.PlatformMacOS)
+	m.macOSCheckBox.SetChecked(bean.GProject.BuildOption.PlatformMacOS)
 	m.macOSCheckBox.SetParent(m.buildTabPageConfig)
 	m.linuxCheckBox = lcl.NewCheckBox(m)
 	m.linuxCheckBox.SetCaption("Linux")
 	m.linuxCheckBox.SetLeft(210)
 	m.linuxCheckBox.SetTop(m.windowsCheckBox.Top())
 	m.linuxCheckBox.SetFont(m.font)
-	m.linuxCheckBox.SetChecked(gProject.BuildOption.PlatformLinux)
+	m.linuxCheckBox.SetChecked(bean.GProject.BuildOption.PlatformLinux)
 	m.linuxCheckBox.SetParent(m.buildTabPageConfig)
 
 	archTitle := lcl.NewLabel(m)
@@ -263,28 +264,28 @@ func (m *TBuildForm) initConfigComponent() {
 	m.x86_64CheckBox.SetLeft(20)
 	m.x86_64CheckBox.SetTop(nextTop(25))
 	m.x86_64CheckBox.SetFont(m.font)
-	m.x86_64CheckBox.SetChecked(gProject.BuildOption.ArchX86_64)
+	m.x86_64CheckBox.SetChecked(bean.GProject.BuildOption.ArchX86_64)
 	m.x86_64CheckBox.SetParent(m.buildTabPageConfig)
 	m.i386CheckBox = lcl.NewCheckBox(m)
 	m.i386CheckBox.SetCaption("i386")
 	m.i386CheckBox.SetLeft(120)
 	m.i386CheckBox.SetTop(m.x86_64CheckBox.Top())
 	m.i386CheckBox.SetFont(m.font)
-	m.i386CheckBox.SetChecked(gProject.BuildOption.ArchI386)
+	m.i386CheckBox.SetChecked(bean.GProject.BuildOption.ArchI386)
 	m.i386CheckBox.SetParent(m.buildTabPageConfig)
 	m.aarch64CheckBox = lcl.NewCheckBox(m)
 	m.aarch64CheckBox.SetCaption("aarch64")
 	m.aarch64CheckBox.SetLeft(210)
 	m.aarch64CheckBox.SetTop(m.x86_64CheckBox.Top())
 	m.aarch64CheckBox.SetFont(m.font)
-	m.aarch64CheckBox.SetChecked(gProject.BuildOption.ArchAarch64)
+	m.aarch64CheckBox.SetChecked(bean.GProject.BuildOption.ArchAarch64)
 	m.aarch64CheckBox.SetParent(m.buildTabPageConfig)
 	m.armCheckBox = lcl.NewCheckBox(m)
 	m.armCheckBox.SetCaption("arm")
 	m.armCheckBox.SetLeft(300)
 	m.armCheckBox.SetTop(m.x86_64CheckBox.Top())
 	m.armCheckBox.SetFont(m.font)
-	m.armCheckBox.SetChecked(gProject.BuildOption.ArchArm)
+	m.armCheckBox.SetChecked(bean.GProject.BuildOption.ArchArm)
 	m.armCheckBox.SetParent(m.buildTabPageConfig)
 	m.loongarch64CheckBox = lcl.NewCheckBox(m)
 	m.loongarch64CheckBox.SetCaption("loongarch64")
@@ -292,7 +293,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.loongarch64CheckBox.SetTop(m.x86_64CheckBox.Top())
 	m.loongarch64CheckBox.SetFont(m.font)
 	m.loongarch64CheckBox.SetEnabled(false)
-	m.loongarch64CheckBox.SetChecked(gProject.BuildOption.ArchLoongarch64)
+	m.loongarch64CheckBox.SetChecked(bean.GProject.BuildOption.ArchLoongarch64)
 	m.loongarch64CheckBox.SetParent(m.buildTabPageConfig)
 
 	widgetTitle := lcl.NewLabel(m)
@@ -325,7 +326,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk2Box.SetLeft(210)
 	m.uiGtk2Box.SetTop(m.uiWin32Box.Top())
 	m.uiGtk2Box.SetFont(m.font)
-	m.uiGtk2Box.SetChecked(gProject.BuildOption.UIGtk2)
+	m.uiGtk2Box.SetChecked(bean.GProject.BuildOption.UIGtk2)
 	m.uiGtk2Box.SetParent(m.buildTabPageConfig)
 
 	m.uiGtk3Box = lcl.NewCheckBox(m)
@@ -333,7 +334,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk3Box.SetLeft(300)
 	m.uiGtk3Box.SetTop(m.uiWin32Box.Top())
 	m.uiGtk3Box.SetFont(m.font)
-	m.uiGtk3Box.SetChecked(gProject.BuildOption.UIGtk3)
+	m.uiGtk3Box.SetChecked(bean.GProject.BuildOption.UIGtk3)
 	m.uiGtk3Box.SetParent(m.buildTabPageConfig)
 
 	outputTitle := lcl.NewLabel(m)
@@ -347,7 +348,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.outputEdit.SetBounds(20, nextTop(30), 260, 30)
 	m.outputEdit.SetFont(m.font)
 	m.outputEdit.SetTextHint("构建二进制输出目录, 默认: ./build")
-	m.outputEdit.SetText(gProject.BuildOption.Output)
+	m.outputEdit.SetText(bean.GProject.BuildOption.Output)
 	m.outputEdit.SetParent(m.buildTabPageConfig)
 
 	m.selectOutputDirBtn = wg.NewButton(m)
@@ -375,7 +376,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildFileNameEdit.SetBounds(buildFileNameTitle.Left()+10, m.outputEdit.Top(), 195, 30)
 	m.buildFileNameEdit.SetFont(m.font)
 	m.buildFileNameEdit.SetTextHint(`构建的二进制文件名`)
-	m.buildFileNameEdit.SetText(gProject.BuildOption.BuildFileName)
+	m.buildFileNameEdit.SetText(bean.GProject.BuildOption.BuildFileName)
 	m.buildFileNameEdit.SetParent(m.buildTabPageConfig)
 
 	compileArgsTitle := lcl.NewLabel(m)
@@ -400,7 +401,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeDebugRdo.SetChecked(true)
 	m.buildModeDebugRdo.SetShowHint(true)
 	m.buildModeDebugRdo.SetHint("调试模式保留调试信息")
-	m.buildModeDebugRdo.SetChecked(gProject.BuildOption.BuildModeDebug)
+	m.buildModeDebugRdo.SetChecked(bean.GProject.BuildOption.BuildModeDebug)
 	m.buildModeDebugRdo.SetParent(m.buildTabPageConfig)
 	m.buildModeReleaseRdo = lcl.NewRadioButton(m)
 	m.buildModeReleaseRdo.SetCaption("发布模式")
@@ -409,7 +410,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeReleaseRdo.SetFont(m.font)
 	m.buildModeReleaseRdo.SetShowHint(true)
 	m.buildModeReleaseRdo.SetHint("发布模式优化体积, 去除调试信息和符号")
-	m.buildModeReleaseRdo.SetChecked(gProject.BuildOption.BuildModeRelease)
+	m.buildModeReleaseRdo.SetChecked(bean.GProject.BuildOption.BuildModeRelease)
 	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
 
 	buildArgsTitle := lcl.NewLabel(m)
@@ -423,7 +424,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildArgsEdit.SetBounds(20, nextTop(30), 515, 30)
 	m.buildArgsEdit.SetFont(m.font)
 	m.buildArgsEdit.SetTextHint(`传递给 go build 额外参数 如: -tags xxx -ldflags "-xxx"`)
-	m.buildArgsEdit.SetText(gProject.BuildOption.GoArgs)
+	m.buildArgsEdit.SetText(bean.GProject.BuildOption.GoArgs)
 	m.buildArgsEdit.SetParent(m.buildTabPageConfig)
 
 	decompileTitle := lcl.NewLabel(m)
@@ -441,7 +442,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.codeObfuscationCheckBox.SetShowHint(true)
 	m.codeObfuscationCheckBox.SetHint("对 Go 代码进行简单混淆")
 	m.codeObfuscationCheckBox.SetEnabled(false)
-	m.codeObfuscationCheckBox.SetChecked(gProject.BuildOption.CodeObfuscation)
+	m.codeObfuscationCheckBox.SetChecked(bean.GProject.BuildOption.CodeObfuscation)
 	m.codeObfuscationCheckBox.SetParent(m.buildTabPageConfig)
 	m.disableDebugCheckBox = lcl.NewCheckBox(m)
 	m.disableDebugCheckBox.SetCaption("禁止调试")
@@ -451,7 +452,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.disableDebugCheckBox.SetShowHint(true)
 	m.disableDebugCheckBox.SetHint("提高二进制文件的反编译难度")
 	m.disableDebugCheckBox.SetEnabled(false)
-	m.disableDebugCheckBox.SetChecked(gProject.BuildOption.DisableDebug)
+	m.disableDebugCheckBox.SetChecked(bean.GProject.BuildOption.DisableDebug)
 	m.disableDebugCheckBox.SetParent(m.buildTabPageConfig)
 
 	m.initConfigData()
@@ -487,14 +488,14 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winMsiCheckBox.SetLeft(20)
 	m.winMsiCheckBox.SetTop(60)
 	m.winMsiCheckBox.SetFont(m.font)
-	m.winMsiCheckBox.SetChecked(gProject.BuildOption.WinMsi)
+	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
 	m.winMsiCheckBox.SetParent(m.buildTabPagePackage)
 	m.winExeCheckBox = lcl.NewCheckBox(m)
 	m.winExeCheckBox.SetCaption("EXE 安装包")
 	m.winExeCheckBox.SetLeft(210)
 	m.winExeCheckBox.SetTop(60)
 	m.winExeCheckBox.SetFont(m.font)
-	m.winExeCheckBox.SetChecked(gProject.BuildOption.WinExe)
+	m.winExeCheckBox.SetChecked(bean.GProject.BuildOption.WinExe)
 	m.winExeCheckBox.SetParent(m.buildTabPagePackage)
 
 	winDefaultInstallTitle := lcl.NewLabel(m)
@@ -508,7 +509,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winDefaultInstallEdit.SetBounds(20, 115, 515, 30)
 	m.winDefaultInstallEdit.SetFont(m.font)
 	m.winDefaultInstallEdit.SetTextHint("Windows 应用的默认安装路径 如: C:\\Program Files")
-	m.winDefaultInstallEdit.SetText(gProject.BuildOption.WinDefaultInstall)
+	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
 	m.winDefaultInstallEdit.SetParent(m.buildTabPagePackage)
 
 	m.winDesktopShortcutCheckBox = lcl.NewCheckBox(m)
@@ -516,7 +517,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winDesktopShortcutCheckBox.SetLeft(20)
 	m.winDesktopShortcutCheckBox.SetTop(155)
 	m.winDesktopShortcutCheckBox.SetFont(m.font)
-	m.winDesktopShortcutCheckBox.SetChecked(gProject.BuildOption.WinDesktopShortcut)
+	m.winDesktopShortcutCheckBox.SetChecked(bean.GProject.BuildOption.WinDesktopShortcut)
 	m.winDesktopShortcutCheckBox.SetParent(m.buildTabPagePackage)
 
 	m.winAddStartMenuCheckBox = lcl.NewCheckBox(m)
@@ -524,7 +525,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winAddStartMenuCheckBox.SetLeft(210)
 	m.winAddStartMenuCheckBox.SetTop(155)
 	m.winAddStartMenuCheckBox.SetFont(m.font)
-	m.winAddStartMenuCheckBox.SetChecked(gProject.BuildOption.WinAddStartMenu)
+	m.winAddStartMenuCheckBox.SetChecked(bean.GProject.BuildOption.WinAddStartMenu)
 	m.winAddStartMenuCheckBox.SetParent(m.buildTabPagePackage)
 
 	macOSPackageTitle := lcl.NewLabel(m)
@@ -546,7 +547,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macDMGCheckBox.SetLeft(20)
 	m.macDMGCheckBox.SetTop(250)
 	m.macDMGCheckBox.SetFont(m.font)
-	m.macDMGCheckBox.SetChecked(gProject.BuildOption.MacDMG)
+	m.macDMGCheckBox.SetChecked(bean.GProject.BuildOption.MacDMG)
 	m.macDMGCheckBox.SetParent(m.buildTabPagePackage)
 
 	m.macPKGCheckBox = lcl.NewCheckBox(m)
@@ -554,7 +555,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macPKGCheckBox.SetLeft(210)
 	m.macPKGCheckBox.SetTop(250)
 	m.macPKGCheckBox.SetFont(m.font)
-	m.macPKGCheckBox.SetChecked(gProject.BuildOption.MacPKG)
+	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
 	m.macPKGCheckBox.SetParent(m.buildTabPagePackage)
 
 	m.macCertCheckBox = lcl.NewCheckBox(m)
@@ -562,7 +563,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertCheckBox.SetLeft(20)
 	m.macCertCheckBox.SetTop(280)
 	m.macCertCheckBox.SetFont(m.font)
-	m.macCertCheckBox.SetChecked(gProject.BuildOption.MacCert)
+	m.macCertCheckBox.SetChecked(bean.GProject.BuildOption.MacCert)
 	m.macCertCheckBox.SetParent(m.buildTabPagePackage)
 	m.macCertCheckBox.SetOnChange(func(sender lcl.IObject) {
 		m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
@@ -578,10 +579,10 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertComboBox.SetBorderStyle(types.BsSingle)
 	m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
 	m.macCertComboBox.Items().Add("-- 选择证书 --")
-	for _, item := range gProject.BuildOption.MacCertList {
+	for _, item := range bean.GProject.BuildOption.MacCertList {
 		m.macCertComboBox.Items().Add(item)
 	}
-	m.macCertComboBox.SetItemIndex(gProject.BuildOption.MacCertListIndex)
+	m.macCertComboBox.SetItemIndex(bean.GProject.BuildOption.MacCertListIndex)
 	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
 	m.macCertComboBox.SetParent(m.buildTabPagePackage)
 
@@ -604,7 +605,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.linuxDEBCheckBox.SetLeft(20)
 	m.linuxDEBCheckBox.SetTop(375)
 	m.linuxDEBCheckBox.SetFont(m.font)
-	m.linuxDEBCheckBox.SetChecked(gProject.BuildOption.LinuxDEB)
+	m.linuxDEBCheckBox.SetChecked(bean.GProject.BuildOption.LinuxDEB)
 	m.linuxDEBCheckBox.SetParent(m.buildTabPagePackage)
 
 	dependsTitle := lcl.NewLabel(m)
@@ -618,7 +619,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.dependsEdit.SetBounds(20, 440, 515, 30)
 	m.dependsEdit.SetFont(m.font)
 	m.dependsEdit.SetTextHint("用逗号分隔的依赖项列表, 如: libc6 (>= 2.14)")
-	m.dependsEdit.SetText(gProject.BuildOption.Depends)
+	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
 	m.dependsEdit.SetParent(m.buildTabPagePackage)
 
 	m.initBuildData()
@@ -675,45 +676,45 @@ func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
 func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	logs.Debug("构建配置-保存")
 	// 基础配置
-	gProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
-	gProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
-	gProject.BuildOption.PlatformLinux = m.linuxCheckBox.Checked()
-	gProject.BuildOption.ArchX86_64 = m.x86_64CheckBox.Checked()
-	gProject.BuildOption.ArchI386 = m.i386CheckBox.Checked()
-	gProject.BuildOption.ArchAarch64 = m.aarch64CheckBox.Checked()
-	gProject.BuildOption.ArchArm = m.armCheckBox.Checked()
-	gProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
-	gProject.BuildOption.UIWin32_64 = m.uiWin32Box.Checked()
-	gProject.BuildOption.UICocoa = m.uiCocoaBox.Checked()
-	gProject.BuildOption.UIGtk2 = m.uiGtk2Box.Checked()
-	gProject.BuildOption.UIGtk3 = m.uiGtk3Box.Checked()
-	gProject.BuildOption.Output = m.outputEdit.Text()
-	gProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
-	gProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
-	gProject.BuildOption.BuildModeRelease = m.buildModeReleaseRdo.Checked()
-	gProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
-	gProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
-	gProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
+	bean.GProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
+	bean.GProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
+	bean.GProject.BuildOption.PlatformLinux = m.linuxCheckBox.Checked()
+	bean.GProject.BuildOption.ArchX86_64 = m.x86_64CheckBox.Checked()
+	bean.GProject.BuildOption.ArchI386 = m.i386CheckBox.Checked()
+	bean.GProject.BuildOption.ArchAarch64 = m.aarch64CheckBox.Checked()
+	bean.GProject.BuildOption.ArchArm = m.armCheckBox.Checked()
+	bean.GProject.BuildOption.ArchLoongarch64 = m.loongarch64CheckBox.Checked()
+	bean.GProject.BuildOption.UIWin32_64 = m.uiWin32Box.Checked()
+	bean.GProject.BuildOption.UICocoa = m.uiCocoaBox.Checked()
+	bean.GProject.BuildOption.UIGtk2 = m.uiGtk2Box.Checked()
+	bean.GProject.BuildOption.UIGtk3 = m.uiGtk3Box.Checked()
+	bean.GProject.BuildOption.Output = m.outputEdit.Text()
+	bean.GProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
+	bean.GProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
+	bean.GProject.BuildOption.BuildModeRelease = m.buildModeReleaseRdo.Checked()
+	bean.GProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
+	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
+	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
-	gProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
-	gProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
-	gProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
-	gProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
-	gProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
-	gProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
-	gProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
-	gProject.BuildOption.MacCert = m.macCertCheckBox.Checked()
+	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
+	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
+	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
+	bean.GProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
+	bean.GProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
+	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
+	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
+	bean.GProject.BuildOption.MacCert = m.macCertCheckBox.Checked()
 	var macCertList []string
 	for i := int32(1); i < m.macCertComboBox.Items().Count(); i++ {
 		macCertList = append(macCertList, m.macCertComboBox.Items().Strings(i))
 	}
-	gProject.BuildOption.MacCertList = macCertList
-	gProject.BuildOption.MacCertListIndex = m.macCertComboBox.ItemIndex()
-	gProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
-	gProject.BuildOption.Depends = m.dependsEdit.Text()
+	bean.GProject.BuildOption.MacCertList = macCertList
+	bean.GProject.BuildOption.MacCertListIndex = m.macCertComboBox.ItemIndex()
+	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
+	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()
 	go func() {
 		// 更新项目配置文件
-		if err := WriteEGPConfig(gPath, gProject); err != nil {
+		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
 			logs.Error("保存-写入项目配置文件失败")
 			return
 		}

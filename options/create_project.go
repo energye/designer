@@ -39,10 +39,10 @@ import (
 	main.go
 */
 func createProjectDir() {
-	if gProject == nil || gPath == "" {
+	if bean.GProject == nil || bean.GPath == "" {
 		return
 	}
-	appRoot := gPath
+	appRoot := bean.GPath
 	// 代码存放目录
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName)
 	// 资源存放目录
@@ -55,7 +55,7 @@ func createProjectDir() {
 		}
 	}
 	// 模板数据
-	data := *gProject
+	data := *bean.GProject
 	// 本地模式
 	localModule := tool.Buffer{}
 	localModule.WriteString("replace (", "\n")

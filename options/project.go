@@ -31,19 +31,19 @@ import (
 // 6. UI 布局文件加载, 恢复到设计器
 // 6.1 UI 布局同步更新: 新增/修改/删除
 
-var (
-	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
-	gPath string
-	// 全局项目配置, 在创建或加载项目时设置
-	gProject *bean.TProject
-)
+//var (
+//	// 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
+//	gPath string
+//	// 全局项目配置, 在创建或加载项目时设置
+//	gProject *bean.TProject
+//)
 
 // SetGlobalProject 设置全局项目路径和项目对象
 // path: 项目路径
 // project: 项目对象指针
 func SetGlobalProject(path string, project *bean.TProject) {
-	gPath = path
-	gProject = project
+	bean.GPath = path
+	bean.GProject = project
 	if path == "" || project == nil {
 		designer.SetAppEGPPath("")
 		designer.SetEnableFuncComponent(false)
@@ -56,29 +56,19 @@ func SetGlobalProject(path string, project *bean.TProject) {
 	}
 }
 
-// 返回当前项目路径
-func Path() string {
-	return gPath
-}
-
 // 返回当前项目布局文件存放目录
 func LayoutsPath() string {
-	return filepath.Join(Path(), consts.LayoutsDir)
+	return filepath.Join(bean.GPath, consts.LayoutsDir)
 }
 
 // 返回当前项目代码存放目录
 func CodePath() string {
-	return filepath.Join(Path(), gProject.Package)
-}
-
-// 返回当前项目对象
-func Project() *bean.TProject {
-	return gProject
+	return filepath.Join(bean.GPath, bean.GProject.Package)
 }
 
 // 返回当前项目资源路径
 func ResourcePath() string {
-	return filepath.Join(Path(), "resources")
+	return filepath.Join(bean.GPath, "resources")
 }
 
 // 返回当前项目内置资源目录

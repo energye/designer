@@ -516,7 +516,7 @@ func (m *TCreateProjectForm) checkGoVersion() {
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
 	m.selectDir.SetTitle("新建项目")
 	if m.projPathEdit.Text() == "" {
-		initDir := gPath
+		initDir := bean.GPath
 		if initDir == "" {
 			initDir = exec.Dir
 		} else {
@@ -602,7 +602,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 				cmd.Command("go", "mod", "tidy")
 				// 恢复按钮
 				recoverBtn()
-				designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", gProject.Name, gPath))
+				designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", bean.GProject.Name, bean.GPath))
 			}
 
 		}()

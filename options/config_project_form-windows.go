@@ -94,7 +94,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.uiAccessCheckBox.SetCaption("uiAccess (用户界面访问)")
 	m.uiAccessCheckBox.SetHint("uiAccess (用户界面访问)")
 	m.uiAccessCheckBox.SetShowHint(true)
-	m.uiAccessCheckBox.SetChecked(gProject.AppOption.Windows.Manifest.UIAccess)
+	m.uiAccessCheckBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.UIAccess)
 	m.uiAccessCheckBox.SetParent(m.platformTabPageWindows)
 
 	m.autoElevateBox = lcl.NewCheckBox(m)
@@ -104,7 +104,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.autoElevateBox.SetCaption("autoElevate (自动提权)")
 	m.autoElevateBox.SetHint("autoElevate (自动提权)")
 	m.autoElevateBox.SetShowHint(true)
-	m.autoElevateBox.SetChecked(gProject.AppOption.Windows.Manifest.AutoElevate)
+	m.autoElevateBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.AutoElevate)
 	m.autoElevateBox.SetParent(m.platformTabPageWindows)
 
 	m.disableThemingBox = lcl.NewCheckBox(m)
@@ -114,7 +114,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableThemingBox.SetCaption("DisableTheming (禁用主题)")
 	m.disableThemingBox.SetHint("disableTheming (禁用主题)")
 	m.disableThemingBox.SetShowHint(true)
-	m.disableThemingBox.SetChecked(gProject.AppOption.Windows.Manifest.DisableTheming)
+	m.disableThemingBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.DisableTheming)
 	m.disableThemingBox.SetParent(m.platformTabPageWindows)
 
 	m.disableWindowFilteringBox = lcl.NewCheckBox(m)
@@ -124,7 +124,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableWindowFilteringBox.SetCaption("disableWindowFiltering (禁用窗口过滤)")
 	m.disableWindowFilteringBox.SetHint("disableWindowFiltering (禁用窗口过滤仅在 DPI 虚拟化启用时生效)")
 	m.disableWindowFilteringBox.SetShowHint(true)
-	m.disableWindowFilteringBox.SetChecked(gProject.AppOption.Windows.Manifest.DisableWindowFiltering)
+	m.disableWindowFilteringBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.DisableWindowFiltering)
 	m.disableWindowFilteringBox.SetParent(m.platformTabPageWindows)
 
 	m.highResolutionScrollingAwareBox = lcl.NewCheckBox(m)
@@ -134,7 +134,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.highResolutionScrollingAwareBox.SetCaption("highResolutionScrollingAware (高分辨率滚动)")
 	m.highResolutionScrollingAwareBox.SetHint("highResolutionScrollingAware (高分辨率滚动)")
 	m.highResolutionScrollingAwareBox.SetShowHint(true)
-	m.highResolutionScrollingAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware)
+	m.highResolutionScrollingAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.HighResolutionScrollingAware)
 	m.highResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.ultraHighResolutionScrollingAwareBox = lcl.NewCheckBox(m)
@@ -144,7 +144,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.ultraHighResolutionScrollingAwareBox.SetCaption("ultraHighResolutionScrollingAware (超高分辨率滚动)")
 	m.ultraHighResolutionScrollingAwareBox.SetHint("ultraHighResolutionScrollingAware (超高分辨率滚动Windows 10 2004+ / Windows 11)")
 	m.ultraHighResolutionScrollingAwareBox.SetShowHint(true)
-	m.ultraHighResolutionScrollingAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware)
+	m.ultraHighResolutionScrollingAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware)
 	m.ultraHighResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.longPathAwareBox = lcl.NewCheckBox(m)
@@ -154,7 +154,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.longPathAwareBox.SetCaption("longPathAware (启用长路径支持)")
 	m.longPathAwareBox.SetHint("longPathAware (启用长路径支持 Windows 10 1607 +)")
 	m.longPathAwareBox.SetShowHint(true)
-	m.longPathAwareBox.SetChecked(gProject.AppOption.Windows.Manifest.LongPathAware)
+	m.longPathAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.LongPathAware)
 	m.longPathAwareBox.SetParent(m.platformTabPageWindows)
 
 	m.gDIScalingBox = lcl.NewCheckBox(m)
@@ -164,7 +164,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.gDIScalingBox.SetCaption("gdiScaling (GDI 自动缩放)")
 	m.gDIScalingBox.SetHint("gdiScaling (启用 GDI 自动缩放 Windows 10 1703+)")
 	m.gDIScalingBox.SetShowHint(true)
-	m.gDIScalingBox.SetChecked(gProject.AppOption.Windows.Manifest.GDIScaling)
+	m.gDIScalingBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.GDIScaling)
 	m.gDIScalingBox.SetParent(m.platformTabPageWindows)
 
 	m.segmentHeapBox = lcl.NewCheckBox(m)
@@ -174,7 +174,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.segmentHeapBox.SetCaption("segmentHeap (分段堆)")
 	m.segmentHeapBox.SetHint("启用 Segment Heap（Windows 10 2004+）")
 	m.segmentHeapBox.SetShowHint(true)
-	m.segmentHeapBox.SetChecked(gProject.AppOption.Windows.Manifest.SegmentHeap)
+	m.segmentHeapBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.SegmentHeap)
 	m.segmentHeapBox.SetParent(m.platformTabPageWindows)
 
 	m.printerDriverIsolationBox = lcl.NewCheckBox(m)
@@ -184,7 +184,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.printerDriverIsolationBox.SetCaption("printerDriverIsolation (打印驱动隔离)")
 	m.printerDriverIsolationBox.SetHint("printerDriverIsolation (启用打印驱动隔离, 仅适用于打印驱动组件)")
 	m.printerDriverIsolationBox.SetShowHint(true)
-	m.printerDriverIsolationBox.SetChecked(gProject.AppOption.Windows.Manifest.PrinterDriverIsolation)
+	m.printerDriverIsolationBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.PrinterDriverIsolation)
 	m.printerDriverIsolationBox.SetParent(m.platformTabPageWindows)
 
 	m.useCommonControlsV6Box = lcl.NewCheckBox(m)
@@ -194,7 +194,7 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.useCommonControlsV6Box.SetCaption("useCommonControlsV6 (视觉样式)")
 	m.useCommonControlsV6Box.SetHint("useCommonControlsV6 (启用视觉样式的现代控件)")
 	m.useCommonControlsV6Box.SetShowHint(true)
-	m.useCommonControlsV6Box.SetChecked(gProject.AppOption.Windows.Manifest.UseCommonControlsV6)
+	m.useCommonControlsV6Box.SetChecked(bean.GProject.AppOption.Windows.Manifest.UseCommonControlsV6)
 	m.useCommonControlsV6Box.SetParent(m.platformTabPageWindows)
 
 	m.manifestDataInit()
@@ -208,19 +208,19 @@ func (m *TConfigProjectForm) manifestDataInit() {
 	for _, item := range bean.CompatibilityOSList.Values() {
 		compatibilityOSBoxItems.Add(item)
 	}
-	m.compatibilityOSBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.CompatibilityOS))
+	m.compatibilityOSBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.CompatibilityOS))
 
 	dpiBoxItems := m.dpiBox.Items()
 	for _, item := range bean.DPIList.Values() {
 		dpiBoxItems.Add(item)
 	}
-	m.dpiBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.DPI))
+	m.dpiBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.DPI))
 
 	runLevelBoxItems := m.runLevelBox.Items()
 	for _, item := range bean.RunLevelList.Values() {
 		runLevelBoxItems.Add(item)
 	}
-	m.runLevelBox.SetItemIndex(int32(gProject.AppOption.Windows.Manifest.RunLevel))
+	m.runLevelBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.RunLevel))
 }
 
 // saveOrUpdateWindowsManifest 用于生成并保存 Windows 平台所需的资源文件（如图标、版本信息等）。
@@ -233,7 +233,7 @@ func (m *TConfigProjectForm) manifestDataInit() {
 //	 调用时机: 创建项目/修改项目配置时
 func saveOrUpdateWindowsManifest() {
 	// 图标
-	iconData := gProject.AppOption.Icon
+	iconData := bean.GProject.AppOption.Icon
 	if iconData.Data == nil {
 		// 使用默认图标
 		iconData.Data = resources.Images("icons/window-icon_256x256.png")
@@ -266,18 +266,18 @@ func saveOrUpdateWindowsManifest() {
 
 	// 文件版本信息
 	v := version.Info{}
-	v.ProductVersion = AppVersionNum(gProject.AppOption.Version)
-	v.FileVersion = AppVersionNum(gProject.AppOption.Version)
+	v.ProductVersion = AppVersionNum(bean.GProject.AppOption.Version)
+	v.FileVersion = AppVersionNum(bean.GProject.AppOption.Version)
 	v.Flags.SpecialBuild = true
 	v.Timestamp = time.Now()
 	// langID: 2052(中文) 1033(英语)
-	v.Set(2052, version.CompanyName, gProject.AppOption.Id)
-	v.Set(2052, version.ProductName, gProject.AppOption.Title)
-	v.Set(2052, version.LegalCopyright, gProject.AppOption.Copyright)
-	v.Set(2052, version.FileDescription, gProject.AppOption.Desc)
-	v.Set(2052, version.ProductVersion, gProject.AppOption.Version)
-	v.Set(2052, version.FileVersion, gProject.AppOption.Version)
-	v.Set(2052, version.Comments, gProject.AppOption.Desc)
+	v.Set(2052, version.CompanyName, bean.GProject.AppOption.Id)
+	v.Set(2052, version.ProductName, bean.GProject.AppOption.Title)
+	v.Set(2052, version.LegalCopyright, bean.GProject.AppOption.Copyright)
+	v.Set(2052, version.FileDescription, bean.GProject.AppOption.Desc)
+	v.Set(2052, version.ProductVersion, bean.GProject.AppOption.Version)
+	v.Set(2052, version.FileVersion, bean.GProject.AppOption.Version)
+	v.Set(2052, version.Comments, bean.GProject.AppOption.Desc)
 	rs.SetVersionInfo(v)
 
 	// 保存到 resource 目录
@@ -289,7 +289,7 @@ func saveOrUpdateWindowsManifest() {
 			logs.Error("windows 应用配置-保存配置-WriteObject: ", err.Error())
 			return
 		}
-		sysoOutFile := fmt.Sprintf("%s-%s_%v.syso", gProject.Name, runtime.GOOS, arch)
+		sysoOutFile := fmt.Sprintf("%s-%s_%v.syso", bean.GProject.Name, runtime.GOOS, arch)
 		// 保存到项目的 resources 目录
 		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0666)
 		if err != nil {
@@ -304,23 +304,23 @@ func saveOrUpdateWindowsManifest() {
 func NewManifest() winres.AppManifest {
 	return winres.AppManifest{
 		Identity: winres.AssemblyIdentity{
-			Name:    gProject.AppOption.Id,
-			Version: AppVersionNum(gProject.AppOption.Version),
+			Name:    bean.GProject.AppOption.Id,
+			Version: AppVersionNum(bean.GProject.AppOption.Version),
 		},
-		Description:                       gProject.AppOption.Desc,
-		UIAccess:                          gProject.AppOption.Windows.Manifest.UIAccess,
-		AutoElevate:                       gProject.AppOption.Windows.Manifest.AutoElevate,
-		DisableTheming:                    gProject.AppOption.Windows.Manifest.DisableTheming,
-		DisableWindowFiltering:            gProject.AppOption.Windows.Manifest.DisableWindowFiltering,
-		HighResolutionScrollingAware:      gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware,
-		UltraHighResolutionScrollingAware: gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware,
-		LongPathAware:                     gProject.AppOption.Windows.Manifest.LongPathAware,
-		PrinterDriverIsolation:            gProject.AppOption.Windows.Manifest.PrinterDriverIsolation,
-		GDIScaling:                        gProject.AppOption.Windows.Manifest.GDIScaling,
-		SegmentHeap:                       gProject.AppOption.Windows.Manifest.SegmentHeap,
-		UseCommonControlsV6:               gProject.AppOption.Windows.Manifest.UseCommonControlsV6,
-		ExecutionLevel:                    winres.ExecutionLevel(gProject.AppOption.Windows.Manifest.RunLevel),
-		Compatibility:                     winres.SupportedOS(gProject.AppOption.Windows.Manifest.CompatibilityOS),
-		DPIAwareness:                      winres.DPIAwareness(gProject.AppOption.Windows.Manifest.DPI),
+		Description:                       bean.GProject.AppOption.Desc,
+		UIAccess:                          bean.GProject.AppOption.Windows.Manifest.UIAccess,
+		AutoElevate:                       bean.GProject.AppOption.Windows.Manifest.AutoElevate,
+		DisableTheming:                    bean.GProject.AppOption.Windows.Manifest.DisableTheming,
+		DisableWindowFiltering:            bean.GProject.AppOption.Windows.Manifest.DisableWindowFiltering,
+		HighResolutionScrollingAware:      bean.GProject.AppOption.Windows.Manifest.HighResolutionScrollingAware,
+		UltraHighResolutionScrollingAware: bean.GProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware,
+		LongPathAware:                     bean.GProject.AppOption.Windows.Manifest.LongPathAware,
+		PrinterDriverIsolation:            bean.GProject.AppOption.Windows.Manifest.PrinterDriverIsolation,
+		GDIScaling:                        bean.GProject.AppOption.Windows.Manifest.GDIScaling,
+		SegmentHeap:                       bean.GProject.AppOption.Windows.Manifest.SegmentHeap,
+		UseCommonControlsV6:               bean.GProject.AppOption.Windows.Manifest.UseCommonControlsV6,
+		ExecutionLevel:                    winres.ExecutionLevel(bean.GProject.AppOption.Windows.Manifest.RunLevel),
+		Compatibility:                     winres.SupportedOS(bean.GProject.AppOption.Windows.Manifest.CompatibilityOS),
+		DPIAwareness:                      winres.DPIAwareness(bean.GProject.AppOption.Windows.Manifest.DPI),
 	}
 }

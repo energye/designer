@@ -68,7 +68,7 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleNameEdit.SetShowHint(true)
 	m.CFBundleNameEdit.SetTextHint("应用的短显示名称, 默认: 构建二进制文件名")
 	m.CFBundleNameEdit.SetHint("应用的短显示名称, 默认: 构建二进制文件名")
-	m.CFBundleNameEdit.SetText(gProject.AppOption.MacOS.PList.CFBundleName)
+	m.CFBundleNameEdit.SetText(bean.GProject.AppOption.MacOS.PList.CFBundleName)
 	m.CFBundleNameEdit.SetParent(m.platformTabPageMacOS)
 
 	m.CFBundleLocalizationsText = lcl.NewLabel(m)
@@ -82,7 +82,7 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleLocalizationsEdit.SetShowHint(true)
 	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
 	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
-	m.CFBundleLocalizationsEdit.SetText(strings.Join(gProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
+	m.CFBundleLocalizationsEdit.SetText(strings.Join(bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
 	m.CFBundleLocalizationsEdit.SetParent(m.platformTabPageMacOS)
 
 	m.LSUIElementText = lcl.NewLabel(m)
@@ -122,14 +122,14 @@ func (m *TConfigProjectForm) pListDataInit() {
 		LSUIElementBoxItems.Add(value)
 		return false
 	})
-	m.LSUIElementBox.SetItemIndex(gProject.AppOption.MacOS.PList.LSUIElementIndex)
+	m.LSUIElementBox.SetItemIndex(bean.GProject.AppOption.MacOS.PList.LSUIElementIndex)
 
 	LSMinimumSystemVersionItems := m.LSMinimumSystemVersionBox.Items()
 	bean.LSMinimumSystemVersionList.Iterate(func(key bean.LSMinimumSystemVersion, value string) bool {
 		LSMinimumSystemVersionItems.Add(value)
 		return false
 	})
-	m.LSMinimumSystemVersionBox.SetItemIndex(gProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex)
+	m.LSMinimumSystemVersionBox.SetItemIndex(bean.GProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex)
 }
 
 // 保存或更新 macOS 配置并生成程序信息
@@ -139,7 +139,7 @@ func saveOrUpdateMacOSPList() {
 		logs.Error("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
 		return
 	}
-	pListInfo, err := tool.RenderTemplate(string(pListInfoTemplate), gProject.AppOption.MacOS)
+	pListInfo, err := tool.RenderTemplate(string(pListInfoTemplate), bean.GProject.AppOption.MacOS)
 	if err != nil {
 		logs.Error("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
 		return

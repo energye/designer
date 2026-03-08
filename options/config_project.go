@@ -43,49 +43,49 @@ func runAppConfig() {
 // 并异步写入到项目配置文件中。
 func (m *TConfigProjectForm) saveProjectConfig() {
 	// 项目配置对象
-	gProject.AppOption.Title = m.AppTitle()
-	gProject.AppOption.Id = m.AppId()
-	gProject.AppOption.Desc = m.AppDesc()
-	gProject.AppOption.Copyright = m.AppCopyright()
-	gProject.AppOption.Version = m.AppVersion()
-	gProject.AppOption.Icon = m.appIconData
+	bean.GProject.AppOption.Title = m.AppTitle()
+	bean.GProject.AppOption.Id = m.AppId()
+	bean.GProject.AppOption.Desc = m.AppDesc()
+	bean.GProject.AppOption.Copyright = m.AppCopyright()
+	bean.GProject.AppOption.Version = m.AppVersion()
+	bean.GProject.AppOption.Icon = m.appIconData
 	{
 		// windows manifest
-		gProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
-		gProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
-		gProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
-		gProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
-		gProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
-		gProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
-		gProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
-		gProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
-		gProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
-		gProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
-		gProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
-		gProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
-		gProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
-		gProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
+		bean.GProject.AppOption.Windows.Manifest.CompatibilityOS = m.compatibilityOSBox.ItemIndex()
+		bean.GProject.AppOption.Windows.Manifest.DPI = m.dpiBox.ItemIndex()
+		bean.GProject.AppOption.Windows.Manifest.RunLevel = m.runLevelBox.ItemIndex()
+		bean.GProject.AppOption.Windows.Manifest.UIAccess = m.uiAccessCheckBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.AutoElevate = m.autoElevateBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.DisableTheming = m.disableThemingBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.DisableWindowFiltering = m.disableWindowFilteringBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.HighResolutionScrollingAware = m.highResolutionScrollingAwareBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware = m.ultraHighResolutionScrollingAwareBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.LongPathAware = m.longPathAwareBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.PrinterDriverIsolation = m.printerDriverIsolationBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.GDIScaling = m.gDIScalingBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.SegmentHeap = m.segmentHeapBox.Checked()
+		bean.GProject.AppOption.Windows.Manifest.UseCommonControlsV6 = m.useCommonControlsV6Box.Checked()
 	}
 	{
 		// macOS plist.info
-		gProject.AppOption.MacOS.PList.CFBundleExecutable = m.AppBundleExecutable() // 从构建配置里获取
-		gProject.AppOption.MacOS.PList.CFBundleName = m.AppBundleName()
-		gProject.AppOption.MacOS.PList.CFBundleDisplayName = gProject.AppOption.Title
-		gProject.AppOption.MacOS.PList.CFBundleLocalizations = m.AppBundleLocalizations()
-		gProject.AppOption.MacOS.PList.CFBundleIdentifier = gProject.AppOption.Id
-		gProject.AppOption.MacOS.PList.CFBundleVersion = gProject.AppOption.Version
-		gProject.AppOption.MacOS.PList.CFBundleShortVersionString = gProject.AppOption.Version
-		gProject.AppOption.MacOS.PList.CFBundleGetInfoString = gProject.AppOption.Desc
-		gProject.AppOption.MacOS.PList.CFBundleIconFile = gProject.Name + ".icns"
-		gProject.AppOption.MacOS.PList.NSHumanReadableCopyright = gProject.AppOption.Copyright
-		gProject.AppOption.MacOS.PList.LSUIElementIndex = m.LSUIElementBox.ItemIndex()
-		gProject.AppOption.MacOS.PList.LSUIElement = m.AppLSUIElement()
-		gProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = m.LSMinimumSystemVersionBox.ItemIndex()
-		gProject.AppOption.MacOS.PList.LSMinimumSystemVersion = m.AppLSMinimumSystemVersion()
+		bean.GProject.AppOption.MacOS.PList.CFBundleExecutable = m.AppBundleExecutable() // 从构建配置里获取
+		bean.GProject.AppOption.MacOS.PList.CFBundleName = m.AppBundleName()
+		bean.GProject.AppOption.MacOS.PList.CFBundleDisplayName = bean.GProject.AppOption.Title
+		bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations = m.AppBundleLocalizations()
+		bean.GProject.AppOption.MacOS.PList.CFBundleIdentifier = bean.GProject.AppOption.Id
+		bean.GProject.AppOption.MacOS.PList.CFBundleVersion = bean.GProject.AppOption.Version
+		bean.GProject.AppOption.MacOS.PList.CFBundleShortVersionString = bean.GProject.AppOption.Version
+		bean.GProject.AppOption.MacOS.PList.CFBundleGetInfoString = bean.GProject.AppOption.Desc
+		bean.GProject.AppOption.MacOS.PList.CFBundleIconFile = bean.GProject.Name + ".icns"
+		bean.GProject.AppOption.MacOS.PList.NSHumanReadableCopyright = bean.GProject.AppOption.Copyright
+		bean.GProject.AppOption.MacOS.PList.LSUIElementIndex = m.LSUIElementBox.ItemIndex()
+		bean.GProject.AppOption.MacOS.PList.LSUIElement = m.AppLSUIElement()
+		bean.GProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = m.LSMinimumSystemVersionBox.ItemIndex()
+		bean.GProject.AppOption.MacOS.PList.LSMinimumSystemVersion = m.AppLSMinimumSystemVersion()
 	}
 	go func() {
 		// 更新项目配置文件
-		if err := WriteEGPConfig(gPath, gProject); err != nil {
+		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
 			logs.Error("保存-写入项目配置文件失败")
 			return
 		}
@@ -109,7 +109,7 @@ func AppVersionNum(version string) [4]uint16 {
 // macOS	16×16	32×32		.icns		16×16、32×32
 // Linux	16×16	24×24		.png		16×16、24×24
 func updateWindowICON() {
-	icon := gProject.AppOption.Icon
+	icon := bean.GProject.AppOption.Icon
 	if icon.Data == nil {
 		// 使用默认图标
 		icon = bean.TAppIcon{

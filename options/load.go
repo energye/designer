@@ -85,9 +85,9 @@ func LoadProject(path, egpFilePath string) {
 	// 重置设计器
 	designer.ResetDesigner()
 	// 恢复设计器窗体
-	designer.RecoverDesignerFormTab(gPath, loadProject, nil)
+	designer.RecoverDesignerFormTab(bean.GPath, loadProject, nil)
 	// 加载完后设置窗口标题
-	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, gPath))
+	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, bean.GPath))
 	// 更新打开项目历史记录
 	designer.UpdateHistoryProject(egpFilePath)
 }
@@ -97,20 +97,20 @@ func LoadProject(path, egpFilePath string) {
 func LoadUI(uiFilePath string) {
 	logs.Info("开始加载UI布局文件:", uiFilePath)
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
-	if gPath == "" || gProject == nil {
+	if bean.GPath == "" || bean.GProject == nil {
 		logs.Error("不允许加载的UI布局, 当前项目未创建")
 		event.ConsoleWriteError("不允许加载的UI布局, 当前项目未创建")
 		return
 	}
 	path, uiFileName := filepath.Split(uiFilePath)
 	// 匹配 ui 文件是否属于当前项目
-	if !strings.HasPrefix(path, gPath) {
+	if !strings.HasPrefix(path, bean.GPath) {
 		logs.Error("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
 		event.ConsoleWriteError("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
 		return
 	}
 	var loadUIForm *bean.TUIForm
-	for _, uiForm := range gProject.UIForms {
+	for _, uiForm := range bean.GProject.UIForms {
 		if uiForm.UIFile == uiFileName {
 			loadUIForm = &uiForm
 			break
@@ -123,5 +123,5 @@ func LoadUI(uiFilePath string) {
 	}
 	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
 	// 恢复设计器窗体
-	designer.RecoverDesignerFormTab(gPath, gProject, loadUIForm)
+	designer.RecoverDesignerFormTab(bean.GPath, bean.GProject, loadUIForm)
 }

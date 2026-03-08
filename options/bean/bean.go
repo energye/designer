@@ -18,6 +18,13 @@ import (
 	"github.com/energye/designer/pkg/winres"
 )
 
+var (
+	// GPath 全局 Path 完整项目路径, 打开项目时设置. C:/YouProjectXxx/xxx.egp > C:/YouProjectXxx
+	GPath string
+	// GProject 全局项目配置, 在创建或加载项目时设置
+	GProject *TProject
+)
+
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
 	Name               string       `json:"name"`                 // 项目名 "Your Application"
