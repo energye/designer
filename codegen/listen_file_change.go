@@ -17,6 +17,7 @@ import (
 	"context"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/options"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -79,8 +80,8 @@ func runListenFileChange() {
 
 // DetectFileChange 检测文件
 func detectFileChange() {
-	projPath := options.Path()
-	proj := options.Project()
+	projPath := bean.GPath
+	proj := bean.GProject
 	if proj == nil || projPath == "" {
 		return
 	}
@@ -92,7 +93,7 @@ func detectFileChange() {
 
 	// 重新定位文件信息
 	appCodePath := options.CodePath()
-	for _, form := range options.Project().UIForms {
+	for _, form := range bean.GProject.UIForms {
 		userFile := filepath.Join(appCodePath, form.GOUserFile)
 		if fi := gFileInfo.Get(form.Name); fi != nil {
 			fi.Exist = true

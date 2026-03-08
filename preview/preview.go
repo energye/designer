@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
-	"github.com/energye/designer/options"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	lclTool "github.com/energye/lcl/tool"
@@ -33,7 +33,7 @@ func build(output string) (err error) {
 	buildCmd := command.NewCMD()
 	buildCmd.IsPrint = false
 	buildCmd.HideWindow = true
-	buildCmd.Dir = options.Path()
+	buildCmd.Dir = bean.GPath
 	buildCmd.Console = func(data string, level command.Level) {
 		logs.Info("Level", level.String(), data)
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
@@ -76,7 +76,7 @@ func runPreview(state chan<- any) {
 	runCmd = command.NewCMD()
 	runCmd.IsPrint = false
 	runCmd.HideWindow = true
-	runCmd.Dir = options.Path()
+	runCmd.Dir = bean.GPath
 	runCmd.Console = func(data string, level command.Level) {
 		logs.Info("[", level.String(), "]", data)
 		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息

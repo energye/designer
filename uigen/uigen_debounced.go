@@ -94,7 +94,7 @@ func tryRenameFileName(tempFormTab *designer.FormTab) bool {
 
 	// 验证UI布局文件名
 	var uiForm *projBean.TUIForm
-	for _, form := range options.Project().UIForms {
+	for _, form := range projBean.GProject.UIForms {
 		if form.Id == tempFormTab.Id {
 			uiForm = &form
 			break

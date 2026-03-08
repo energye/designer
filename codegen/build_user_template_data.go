@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/options"
+	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -79,7 +80,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 
 // 构建用户代码模板数据
 func buildUserTemplateData(component *bean.TUIComponent) *TFormData {
-	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: options.Project().Package, Imports: tool.NewHashSet[string]()}
+	formData := &TFormData{BaseInfo: &TBaseInfo{}, PackageName: projBean.GProject.Package, Imports: tool.NewHashSet[string]()}
 	formData.Form = &TComponentData{
 		Name:       component.Name,
 		ClassName:  component.ClassName,
