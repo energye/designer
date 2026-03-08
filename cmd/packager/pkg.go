@@ -13,6 +13,8 @@
 
 package packager
 
-func Run() {
+import "github.com/energye/designer/pkg/logs"
 
+func Run() {
+	logs.Info("CMD-Packager")
 }

@@ -13,6 +13,10 @@
 
 package build
 
-func Run() {
+import (
+	"github.com/energye/designer/pkg/logs"
+)
 
+func Run() {
+	logs.Info("CMD-Run")
 }

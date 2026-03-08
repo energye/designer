@@ -14,3 +14,7 @@
 //go:build darwin
 
 package build
+
+func build() {
+	
+}

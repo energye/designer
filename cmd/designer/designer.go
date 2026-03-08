@@ -14,11 +14,16 @@
 package main
 
 import (
+	"flag"
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/cmd/packager"
+	"github.com/energye/designer/cmd/project"
 )
 
 func main() {
+	path := flag.String("path", "", "")
+	flag.Parse()
+	project.LoadProject(*path)
 	build.Run()
 	packager.Run()
 }
