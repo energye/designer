@@ -14,3 +14,7 @@
 //go:build linux
 
 package build
+
+func build() {
+
+}

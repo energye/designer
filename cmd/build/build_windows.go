@@ -15,3 +15,6 @@
 
 package build
 
+func build() {
+
+}

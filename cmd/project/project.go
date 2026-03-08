@@ -24,6 +24,12 @@ import (
 	"strings"
 )
 
+// LoadProject 加载项目配置文件
+//
+//	该函数用于读取和解析 .egp 格式的项目配置文件，并将配置信息存储到全局变量中
+//	如果项目已经加载过（GPath 不为空且 GProject 不为 nil），则直接返回避免重复加载
+//	成功加载后，会将路径和项目名称分别设置到 bean.GPath 和 bean.GProject
+//	filePath - 项目配置文件的路径，应为 .egp 后缀的 JSON 格式文件
 func LoadProject(filePath string) {
 	if bean.GPath != "" && bean.GProject != nil {
 		return
