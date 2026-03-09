@@ -17,4 +17,5 @@ import "github.com/energye/designer/pkg/logs"
 
 func Run() {
 	logs.Info("CMD-package-run")
+	packager()
 }

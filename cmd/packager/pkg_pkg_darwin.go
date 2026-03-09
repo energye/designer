@@ -14,3 +14,26 @@
 //go:build darwin
 
 package packager
+
+import (
+	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/logs"
+	"path/filepath"
+)
+
+func packager() {
+	proj := bean.GProject
+	if proj == nil {
+		logs.Error("项目对象 GProject 为 nil")
+		return
+	}
+	logs.Info("打包项目, 检查配置选项")
+	option := proj.BuildOption
+
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	outputFilename := filepath.Join(output, option.BuildFileName)
+	logs.Info("Packaging", outputFilename)
+}

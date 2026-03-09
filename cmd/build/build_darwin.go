@@ -27,8 +27,12 @@ import (
 )
 
 func build() {
-	logs.Info("构建项目, 检查配置选项")
 	proj := bean.GProject
+	if proj == nil {
+		logs.Error("项目对象 GProject 为 nil")
+		return
+	}
+	logs.Info("构建项目, 检查配置选项")
 	option := proj.BuildOption
 	if !option.PlatformMacOS {
 		logs.Warn("项目未启用 MacOS, 项目配置 > 构建配置")
@@ -66,7 +70,6 @@ func build() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Building", outputFilename)
-	// go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer
 	var (
 		tags    []string
 		ldflags []string
