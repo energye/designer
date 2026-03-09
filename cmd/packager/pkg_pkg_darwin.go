@@ -29,6 +29,10 @@ func packager() {
 	}
 	logs.Info("打包项目, 检查配置选项")
 	option := proj.BuildOption
+	if !option.MacDMG && !option.MacPKG {
+		logs.Warn("项目未启用打包格式 DMG PKG")
+		return
+	}
 
 	output := option.Output
 	if !filepath.IsAbs(option.Output) {
@@ -36,4 +40,12 @@ func packager() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Packaging", outputFilename)
+}
+
+func pkg() {
+
+}
+
+func dmg() {
+
 }
