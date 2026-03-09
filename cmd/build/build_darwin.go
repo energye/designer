@@ -60,45 +60,64 @@ func build() {
 	}
 	logs.Info("构建项目, 开始构建项目", proj.Name)
 
-	// go build
 	output := option.Output
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Building", outputFilename)
+	// go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer
+	var (
+		tags    []string
+		ldflags []string
+	)
+	// 编译参数
+	buildArgs := option.GoArgs
+	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
+	reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
+	reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
+	// 提取 tags
+	tagMatches := reTags.FindStringSubmatch(buildArgs)
+	customTags := ""
+	customLdflags := ""
+	if len(tagMatches) > 1 {
+		customTags = tagMatches[1]
+	}
+	// 提取 ldflags
+	ldMatches := reLdflags.FindStringSubmatch(buildArgs)
+	if len(ldMatches) > 1 {
+		customLdflags = ldMatches[1]
+	}
+	// 合并 tags
+	tags = mergeTags("", customTags)
+	// 合并 ldflags
+	ldflags = mergeLdflags("", customLdflags)
+	// macOS 去除 -H windowsgui
+	tempNewLdflags := []string{}
+	for _, v := range ldflags {
+		if v == "-H" || v == "windowsgui" {
+			continue
+		}
+		tempNewLdflags = append(tempNewLdflags, v)
+	}
+	ldflags = tempNewLdflags
+	// 编译命令
 	cmd := command.NewCMD()
 	cmd.Dir = bean.GPath
 	args := []string{"build"}
-	// go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer
-	{
-		buildArgs := option.GoArgs
-		buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
-		reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
-		reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
-		// 提取tags
-		tagMatches := reTags.FindStringSubmatch(buildArgs)
-		customTags := ""
-		customLdflags := ""
-		if len(tagMatches) > 1 {
-			customTags = tagMatches[1]
-		}
-		ldMatches := reLdflags.FindStringSubmatch(buildArgs)
-		if len(ldMatches) > 1 {
-			customLdflags = ldMatches[1]
-		}
-		newTags := mergeTags(customTags, " a,b,d a proc")
-		newLdflags := mergeLdflags(customLdflags, "-H windowsgui -s -w -X main.Version=v1.0.0")
-		println("newtags:", strings.Join(newTags, " "))
-		println("newldflags:", strings.Join(newLdflags, " "))
-		// macOS 去除 -H windowsgui
-
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
 	}
-
+	// 编译模式
 	if option.BuildModeDebug {
-
+		// debug
+		if len(ldflags) > 0 {
+			args = append(args, "-ldflags", strings.Join(ldflags, " "))
+		}
 	} else {
-		// -ldflags="-s -w" -trimpath
+		// release
+		ldflags = mergeLdflags("-s -w", strings.Join(ldflags, " "))
+		args = append(args, "-ldflags", strings.Join(ldflags, " "))
 		args = append(args, "-trimpath")
 	}
 	args = append(args, "-o", outputFilename)
