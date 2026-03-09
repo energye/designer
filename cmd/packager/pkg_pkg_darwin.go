@@ -33,17 +33,24 @@ func packager() {
 		logs.Warn("项目未启用打包格式 DMG PKG")
 		return
 	}
+	if option.MacPKG {
+		pkg()
+	}
+	if option.MacDMG {
+		dmg()
+	}
 
+}
+
+func pkg() {
+	proj := bean.GProject
+	option := proj.BuildOption
 	output := option.Output
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Packaging", outputFilename)
-}
-
-func pkg() {
-
 }
 
 func dmg() {
