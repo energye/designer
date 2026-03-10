@@ -21,6 +21,13 @@ import (
 	"path/filepath"
 )
 
+const (
+	appContents           = "Contents"
+	appContentsFrameworks = "Frameworks"
+	appContentsMacOS      = "MacOS"
+	appContentsResources  = "Resources"
+)
+
 func packager() {
 	proj := bean.GProject
 	if proj == nil {

@@ -15,6 +15,7 @@ package options
 
 import (
 	"errors"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -106,7 +107,6 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.goRootBox.SetFont(m.font)
 		m.goRootBox.SetDoubleBuffered(true)
 		//m.goRootBox.SetStyle(types.CsDropDownList)
-		m.goRootBox.SetReadOnly(true)
 		m.goRootBox.SetBorderStyle(types.BsSingle)
 		m.goRootBox.SetParent(m)
 		// 优先从配置
@@ -185,13 +185,16 @@ func (m *TEnvForm) closeClick(sender lcl.IObject) {
 }
 
 func (m *TEnvForm) saveClick(sender lcl.IObject) {
-	goRoot := m.goRootBox.Items().Strings(m.goRootBox.ItemIndex())
+	goRoot := strings.TrimSpace(m.goRootBox.Text())
+	event.ConsoleWriteInfo("Designer config env, save.", goRoot)
 	if goRoot != "" {
 		err := SetGoRootPath(goRoot)
 		if err == nil {
 			// 更新到 .energy 配置文件
 			config.UpdateEnvGoRoot(bean.GProject.Name, goRoot)
 			config.UpdateConfig()
+		} else {
+			event.ConsoleWriteError("Designer config env, save.", err.Error(), goRoot)
 		}
 	}
 }
