@@ -105,8 +105,7 @@ func AppVersionNum(version string) [4]uint16 {
 	return versionNum
 }
 
-// 更新窗口图标
-// TODO ?? 下面是标准尺寸
+// 更新窗口图标 png
 // Windows	16×16	24×24/32×32	.ico	16×16、24×24、32×32
 // macOS	16×16	32×32		.icns		16×16、32×32
 // Linux	16×16	24×24		.png		16×16、24×24
