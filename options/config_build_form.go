@@ -719,6 +719,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 			event.ConsoleWriteError("保存-写入项目配置文件失败", err.Error())
 			return
 		}
+		event.ConsoleWriteInfo("构建配置-保存-完成")
 	}()
 }
 

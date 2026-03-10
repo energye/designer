@@ -460,6 +460,7 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 		saveOrUpdateMacOSPList()
 		// 更新图标
 		updateWindowICON()
+		event.ConsoleWriteInfo("项目配置-保存-完成")
 	}()
 }
 
