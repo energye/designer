@@ -57,7 +57,12 @@ func pkg() {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
-	logs.Info("Packaging", outputFilename)
+	logs.Info("Packaging", "GUI-Render", proj.GUIRenderFramework, outputFilename)
+	switch proj.GUIRenderFramework {
+	case bean.GUIRenderFramework_LCL:
+	case bean.GUIRenderFramework_WV:
+	case bean.GUIRenderFramework_CEF:
+	}
 
 }
 

@@ -15,6 +15,5 @@
 
 package build
 
-func build() string {
-	return ""
+func build() {
 }

@@ -14,3 +14,7 @@
 //go:build windows
 
 package packager
+
+func packager() {
+
+}

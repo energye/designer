@@ -34,9 +34,9 @@ func LoadProject(filePath string) {
 	if bean.GPath != "" && bean.GProject != nil {
 		return
 	}
-	logs.Info("加载项目配置文件:", filePath)
+	logs.Info("Load project Config:", filePath)
 	if filePath == "" {
-		logs.Error("项目配置文件 .egp 路径为空")
+		logs.Error("Project config .egp path is nil")
 		return
 	}
 	if tool.IsExist(filePath) {
@@ -45,21 +45,21 @@ func LoadProject(filePath string) {
 		if isEgp {
 			data, err := os.ReadFile(filePath)
 			if err != nil {
-				logs.Error("读取项目配置文件失败:", err)
+				logs.Error("Read project config file error:", err)
 				return
 			}
 			project := &bean.TProject{}
 			err = json.Unmarshal(data, project)
 			if err != nil {
-				logs.Error("解析项目配置文件失败:", err)
+				logs.Error("Unmarshal project config file error:", err)
 				return
 			}
 			bean.GPath = path
 			bean.GProject = project
 		} else {
-			logs.Error("非 .egp 项目配置文件:", filePath)
+			logs.Error("not .egp project config file:", filePath)
 		}
 	} else {
-		logs.Error("项目配置文件 .egp 不存在")
+		logs.Error("project config file .egp not exist", filePath)
 	}
 }

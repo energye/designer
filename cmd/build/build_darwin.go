@@ -16,8 +16,8 @@
 package build
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"os"
@@ -27,24 +27,24 @@ import (
 	"strings"
 )
 
-func build() string {
+func build() {
 	proj := bean.GProject
 	if proj == nil {
-		logs.Error("项目对象 GProject 为 nil")
-		return ""
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return
 	}
-	logs.Info("构建项目, 检查配置选项")
+	event.ConsoleWriteInfo("Build - project check config options")
 	option := proj.BuildOption
 	if !option.PlatformMacOS {
-		logs.Warn("项目未启用 MacOS, 项目配置 > 构建配置")
-		return ""
+		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
+		return
 	}
 	isAmd64 := runtime.GOARCH == "amd64"
 	isArm64 := runtime.GOARCH == "arm64"
 	if isAmd64 {
 		if !option.ArchX86_64 {
-			logs.Warn("项目未启用架构 amd64, 项目配置 > 构建配置")
-			return ""
+			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
+			return
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
@@ -52,25 +52,25 @@ func build() string {
 	}
 	if isArm64 {
 		if !option.ArchAarch64 {
-			logs.Warn("项目未启用架构 arm64, 项目配置 > 构建配置")
-			return ""
+			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
+			return
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
 		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
 	}
 	if !option.UICocoa {
-		logs.Warn("项目未启用 UI Cocoa, 项目配置 > 构建配置")
-		return ""
+		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
+		return
 	}
-	logs.Info("构建项目, 开始构建项目", proj.Name)
+	event.ConsoleWriteInfo("Build - start build", proj.Name)
 
 	output := option.Output
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
-	logs.Info("Building", outputFilename)
+	event.ConsoleWriteInfo("Build - output", outputFilename)
 	// 编译参数
 	buildArgs := option.GoArgs
 	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
@@ -128,6 +128,5 @@ func build() string {
 	}
 	cmd.Command("go", args...)
 	cmd.Command("strip", outputFilename)
-	logs.Info("Build Successfully")
-	return outputFilename
+	event.ConsoleWriteInfo("Build Successfully")
 }
