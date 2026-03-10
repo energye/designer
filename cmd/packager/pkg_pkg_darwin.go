@@ -16,8 +16,8 @@
 package packager
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/logs"
 	"path/filepath"
 )
 
@@ -31,25 +31,29 @@ const (
 func packager() {
 	proj := bean.GProject
 	if proj == nil {
-		logs.Error("项目对象 GProject 为 nil")
+		event.ConsoleWriteError("Package - GProject is nil")
 		return
 	}
-	logs.Info("打包项目, 检查配置选项")
+	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
 	if !option.MacDMG && !option.MacPKG {
-		logs.Warn("项目未启用打包格式 DMG PKG")
+		event.ConsoleWriteWarn("Package - project not package format DMG PKG")
 		return
 	}
 	if option.MacPKG {
+		event.ConsoleWriteInfo("Package - PKG")
 		pkg()
 	}
 	if option.MacDMG {
+		event.ConsoleWriteInfo("Package - DMG")
 		dmg()
 	}
 
 }
 
 func pkg() {
+	event.ConsoleWriteInfo("Package - Path:", bean.GPath)
+	event.ConsoleWriteInfo("Package - Project:", bean.GProject.Name)
 	proj := bean.GProject
 	option := proj.BuildOption
 	output := option.Output
@@ -57,7 +61,7 @@ func pkg() {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
-	logs.Info("Packaging", "GUI-Render", proj.GUIRenderFramework, outputFilename)
+	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, outputFilename)
 	switch proj.GUIRenderFramework {
 	case bean.GUIRenderFramework_LCL:
 	case bean.GUIRenderFramework_WV:

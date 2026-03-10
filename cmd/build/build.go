@@ -14,10 +14,10 @@
 package build
 
 import (
-	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/event"
 )
 
 func Run() {
-	logs.Info("CMD-build-run")
+	event.ConsoleWriteInfo("CMD-build-run")
 	build()
 }

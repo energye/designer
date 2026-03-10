@@ -13,9 +13,11 @@
 
 package packager
 
-import "github.com/energye/designer/pkg/logs"
+import (
+	"github.com/energye/designer/event"
+)
 
 func Run() {
-	logs.Info("CMD-package-run")
+	event.ConsoleWriteInfo("CMD-package-run")
 	packager()
 }

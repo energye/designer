@@ -80,7 +80,7 @@ func (m *TEvent) run() {
 		select {
 		case trigger := <-m.trigger:
 			if callback, ok := m.list[trigger.Name]; ok {
-				go callback.trigger(trigger)
+				callback.trigger(trigger)
 			}
 		case <-m.cancel:
 			logs.Println("停止所有事件监听服务")

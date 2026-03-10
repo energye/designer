@@ -126,6 +126,8 @@ func build() {
 	if len(otherArgs) > 0 {
 		args = append(args, otherArgs...)
 	}
+	event.ConsoleWriteInfo("go", strings.Join(args, " "))
+	event.ConsoleWriteInfo("strip", outputFilename)
 	cmd.Command("go", args...)
 	cmd.Command("strip", outputFilename)
 	event.ConsoleWriteInfo("Build Successfully")
