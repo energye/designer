@@ -74,6 +74,8 @@ type TBuildForm struct {
 	disableDebugCheckBox    lcl.ICheckBox
 
 	// 构建打包
+	packageNameEdit lcl.IEdit
+
 	winMsiCheckBox             lcl.ICheckBox
 	winExeCheckBox             lcl.ICheckBox
 	winDefaultInstallEdit      lcl.IEdit
@@ -89,8 +91,8 @@ type TBuildForm struct {
 	dependsEdit      lcl.IEdit
 
 	// 操作按钮
-	saveBtn  *wg.TButton
-	buildBtn *wg.TButton
+	saveBtn    *wg.TButton
+	packageBtn *wg.TButton
 }
 
 func (m *TBuildForm) FormCreate(sender lcl.IObject) {
@@ -184,18 +186,18 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.saveBtn.SetParent(m.buildTab)
 		m.saveBtn.SetOnClick(m.saveClick)
 
-		m.buildBtn = wg.NewButton(m)
-		m.buildBtn.SetText("开始打包")
-		m.buildBtn.SetFont(btnFont)
-		m.buildBtn.Font().SetColor(colors.ClWhite)
-		m.buildBtn.SetRadius(3)
+		m.packageBtn = wg.NewButton(m)
+		m.packageBtn.SetText("开始打包")
+		m.packageBtn.SetFont(btnFont)
+		m.packageBtn.Font().SetColor(colors.ClWhite)
+		m.packageBtn.SetRadius(3)
 		buildBtnRect := types.TRect{Left: saveBtnRect.Left + saveBtnRect.Width() + 10, Top: saveBtnRect.Top}
 		buildBtnRect.SetWidth(75)
 		buildBtnRect.SetHeight(25)
-		m.buildBtn.SetBoundsRect(buildBtnRect)
-		m.buildBtn.SetColor(colors.RGBToColor(46, 204, 113))
-		m.buildBtn.SetParent(m.buildTab)
-		m.buildBtn.SetOnClick(m.buildClick)
+		m.packageBtn.SetBoundsRect(buildBtnRect)
+		m.packageBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.packageBtn.SetParent(m.buildTab)
+		m.packageBtn.SetOnClick(m.buildClick)
 	}
 	//(&hook.TWindowHook{Form: m}).Hook()
 }
@@ -470,31 +472,50 @@ func (m *TBuildForm) initBuildComponent() {
 	titleFontTwo.SetSize(10)
 	titleFontTwo.SetStyle(types.NewSet(types.FsBold))
 
+	baseTop := int32(0)
+	nextTop := func(top int32) int32 {
+		baseTop += top
+		return baseTop
+	}
+
+	packageNameTitle := lcl.NewLabel(m)
+	packageNameTitle.SetFont(titleFontTwo)
+	packageNameTitle.SetCaption("安装包名称")
+	packageNameTitle.SetTop(nextTop(10))
+	packageNameTitle.SetLeft(10)
+	packageNameTitle.SetParent(m.buildTabPagePackage)
+	m.packageNameEdit = lcl.NewEdit(m)
+	m.packageNameEdit.SetBounds(80, packageNameTitle.Top()-5, 435, 30)
+	m.packageNameEdit.SetFont(m.font)
+	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
+	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
+	m.packageNameEdit.SetParent(m.buildTabPagePackage)
+
 	windowsPackageTitle := lcl.NewLabel(m)
 	windowsPackageTitle.SetFont(titleFont)
 	windowsPackageTitle.SetCaption("Windows 打包配置")
-	windowsPackageTitle.SetTop(5)
+	windowsPackageTitle.SetTop(nextTop(35))
 	windowsPackageTitle.SetLeft(10)
 	windowsPackageTitle.SetParent(m.buildTabPagePackage)
 
 	windowsPackageFmtTitle := lcl.NewLabel(m)
 	windowsPackageFmtTitle.SetCaption("打包格式")
 	windowsPackageFmtTitle.SetLeft(10)
-	windowsPackageFmtTitle.SetTop(35)
+	windowsPackageFmtTitle.SetTop(nextTop(30))
 	windowsPackageFmtTitle.SetFont(titleFontTwo)
 	windowsPackageFmtTitle.SetParent(m.buildTabPagePackage)
 
 	m.winMsiCheckBox = lcl.NewCheckBox(m)
 	m.winMsiCheckBox.SetCaption("MSI 安装包")
 	m.winMsiCheckBox.SetLeft(20)
-	m.winMsiCheckBox.SetTop(60)
+	m.winMsiCheckBox.SetTop(nextTop(25))
 	m.winMsiCheckBox.SetFont(m.font)
 	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
 	m.winMsiCheckBox.SetParent(m.buildTabPagePackage)
 	m.winExeCheckBox = lcl.NewCheckBox(m)
 	m.winExeCheckBox.SetCaption("EXE 安装包")
 	m.winExeCheckBox.SetLeft(210)
-	m.winExeCheckBox.SetTop(60)
+	m.winExeCheckBox.SetTop(m.winMsiCheckBox.Top())
 	m.winExeCheckBox.SetFont(m.font)
 	m.winExeCheckBox.SetChecked(bean.GProject.BuildOption.WinExe)
 	m.winExeCheckBox.SetParent(m.buildTabPagePackage)
@@ -502,12 +523,12 @@ func (m *TBuildForm) initBuildComponent() {
 	winDefaultInstallTitle := lcl.NewLabel(m)
 	winDefaultInstallTitle.SetCaption("默认安装路径")
 	winDefaultInstallTitle.SetLeft(10)
-	winDefaultInstallTitle.SetTop(90)
+	winDefaultInstallTitle.SetTop(nextTop(30))
 	winDefaultInstallTitle.SetFont(titleFontTwo)
 	winDefaultInstallTitle.SetParent(m.buildTabPagePackage)
 
 	m.winDefaultInstallEdit = lcl.NewEdit(m)
-	m.winDefaultInstallEdit.SetBounds(20, 115, 515, 30)
+	m.winDefaultInstallEdit.SetBounds(20, nextTop(25), 515, 30)
 	m.winDefaultInstallEdit.SetFont(m.font)
 	m.winDefaultInstallEdit.SetTextHint("Windows 应用的默认安装路径 如: C:\\Program Files")
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
@@ -516,7 +537,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winDesktopShortcutCheckBox = lcl.NewCheckBox(m)
 	m.winDesktopShortcutCheckBox.SetCaption("创建桌面快捷方式")
 	m.winDesktopShortcutCheckBox.SetLeft(20)
-	m.winDesktopShortcutCheckBox.SetTop(155)
+	m.winDesktopShortcutCheckBox.SetTop(nextTop(40))
 	m.winDesktopShortcutCheckBox.SetFont(m.font)
 	m.winDesktopShortcutCheckBox.SetChecked(bean.GProject.BuildOption.WinDesktopShortcut)
 	m.winDesktopShortcutCheckBox.SetParent(m.buildTabPagePackage)
@@ -524,7 +545,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.winAddStartMenuCheckBox = lcl.NewCheckBox(m)
 	m.winAddStartMenuCheckBox.SetCaption("添加到开始菜单")
 	m.winAddStartMenuCheckBox.SetLeft(210)
-	m.winAddStartMenuCheckBox.SetTop(155)
+	m.winAddStartMenuCheckBox.SetTop(m.winDesktopShortcutCheckBox.Top())
 	m.winAddStartMenuCheckBox.SetFont(m.font)
 	m.winAddStartMenuCheckBox.SetChecked(bean.GProject.BuildOption.WinAddStartMenu)
 	m.winAddStartMenuCheckBox.SetParent(m.buildTabPagePackage)
@@ -532,21 +553,21 @@ func (m *TBuildForm) initBuildComponent() {
 	macOSPackageTitle := lcl.NewLabel(m)
 	macOSPackageTitle.SetFont(titleFont)
 	macOSPackageTitle.SetCaption("macOS 打包配置")
-	macOSPackageTitle.SetTop(190)
+	macOSPackageTitle.SetTop(nextTop(35))
 	macOSPackageTitle.SetLeft(10)
 	macOSPackageTitle.SetParent(m.buildTabPagePackage)
 
 	macOSPackageFmtTitle := lcl.NewLabel(m)
 	macOSPackageFmtTitle.SetCaption("打包格式")
 	macOSPackageFmtTitle.SetLeft(10)
-	macOSPackageFmtTitle.SetTop(220)
+	macOSPackageFmtTitle.SetTop(nextTop(30))
 	macOSPackageFmtTitle.SetFont(titleFontTwo)
 	macOSPackageFmtTitle.SetParent(m.buildTabPagePackage)
 
 	m.macDMGCheckBox = lcl.NewCheckBox(m)
 	m.macDMGCheckBox.SetCaption("DMG 镜像")
 	m.macDMGCheckBox.SetLeft(20)
-	m.macDMGCheckBox.SetTop(250)
+	m.macDMGCheckBox.SetTop(nextTop(30))
 	m.macDMGCheckBox.SetFont(m.font)
 	m.macDMGCheckBox.SetChecked(bean.GProject.BuildOption.MacDMG)
 	m.macDMGCheckBox.SetParent(m.buildTabPagePackage)
@@ -554,7 +575,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macPKGCheckBox = lcl.NewCheckBox(m)
 	m.macPKGCheckBox.SetCaption("PKG 安装包")
 	m.macPKGCheckBox.SetLeft(210)
-	m.macPKGCheckBox.SetTop(250)
+	m.macPKGCheckBox.SetTop(m.macDMGCheckBox.Top())
 	m.macPKGCheckBox.SetFont(m.font)
 	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
 	m.macPKGCheckBox.SetParent(m.buildTabPagePackage)
@@ -562,7 +583,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertCheckBox = lcl.NewCheckBox(m)
 	m.macCertCheckBox.SetCaption("签名")
 	m.macCertCheckBox.SetLeft(20)
-	m.macCertCheckBox.SetTop(280)
+	m.macCertCheckBox.SetTop(nextTop(30))
 	m.macCertCheckBox.SetFont(m.font)
 	m.macCertCheckBox.SetChecked(bean.GProject.BuildOption.MacCert)
 	m.macCertCheckBox.SetParent(m.buildTabPagePackage)
@@ -571,7 +592,7 @@ func (m *TBuildForm) initBuildComponent() {
 	})
 
 	m.macCertComboBox = lcl.NewComboBox(m)
-	m.macCertComboBox.SetBounds(85, 280, 450, 30)
+	m.macCertComboBox.SetBounds(85, m.macCertCheckBox.Top(), 450, 30)
 	m.macCertComboBox.SetFont(m.font)
 	m.macCertComboBox.SetTextHint(`选择用于签名的证书`)
 	m.macCertComboBox.SetShowHint(true)
@@ -590,21 +611,21 @@ func (m *TBuildForm) initBuildComponent() {
 	linuxPackageTitle := lcl.NewLabel(m)
 	linuxPackageTitle.SetFont(titleFont)
 	linuxPackageTitle.SetCaption("Linux 打包配置")
-	linuxPackageTitle.SetTop(320)
+	linuxPackageTitle.SetTop(nextTop(35))
 	linuxPackageTitle.SetLeft(10)
 	linuxPackageTitle.SetParent(m.buildTabPagePackage)
 
 	linuxPackageFmtTitle := lcl.NewLabel(m)
 	linuxPackageFmtTitle.SetCaption("打包格式")
 	linuxPackageFmtTitle.SetLeft(10)
-	linuxPackageFmtTitle.SetTop(350)
+	linuxPackageFmtTitle.SetTop(nextTop(30))
 	linuxPackageFmtTitle.SetFont(titleFontTwo)
 	linuxPackageFmtTitle.SetParent(m.buildTabPagePackage)
 
 	m.linuxDEBCheckBox = lcl.NewCheckBox(m)
 	m.linuxDEBCheckBox.SetCaption("DEB 包")
 	m.linuxDEBCheckBox.SetLeft(20)
-	m.linuxDEBCheckBox.SetTop(375)
+	m.linuxDEBCheckBox.SetTop(nextTop(30))
 	m.linuxDEBCheckBox.SetFont(m.font)
 	m.linuxDEBCheckBox.SetChecked(bean.GProject.BuildOption.LinuxDEB)
 	m.linuxDEBCheckBox.SetParent(m.buildTabPagePackage)
@@ -612,12 +633,12 @@ func (m *TBuildForm) initBuildComponent() {
 	dependsTitle := lcl.NewLabel(m)
 	dependsTitle.SetCaption("依赖项")
 	dependsTitle.SetLeft(10)
-	dependsTitle.SetTop(410)
+	dependsTitle.SetTop(nextTop(35))
 	dependsTitle.SetFont(titleFontTwo)
 	dependsTitle.SetParent(m.buildTabPagePackage)
 
 	m.dependsEdit = lcl.NewEdit(m)
-	m.dependsEdit.SetBounds(20, 440, 515, 30)
+	m.dependsEdit.SetBounds(20, nextTop(30), 515, 30)
 	m.dependsEdit.SetFont(m.font)
 	m.dependsEdit.SetTextHint("用逗号分隔的依赖项列表, 如: libc6 (>= 2.14)")
 	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
@@ -697,6 +718,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
+	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()

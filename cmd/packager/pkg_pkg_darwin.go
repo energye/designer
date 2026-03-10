@@ -16,7 +16,6 @@
 package packager
 
 import (
-	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"os"
@@ -64,6 +63,9 @@ func pkg() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, outputFilename)
+	if createApp() {
+		return
+	}
 	switch proj.GUIRenderFramework {
 	case bean.GUIRenderFramework_LCL, bean.GUIRenderFramework_WV:
 	case bean.GUIRenderFramework_CEF:
@@ -75,37 +77,53 @@ func dmg() {
 
 }
 
-func createApp() error {
+func createApp() bool {
 	proj := bean.GProject
 	option := proj.BuildOption
 	output := option.Output
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	appRoot := ""
-	event.ConsoleWriteInfo("Package - Create App Dir: " + appRoot)
-	buildOutDir := ""
-	appDir := filepath.Join(buildOutDir, appRoot)
-	os.Remove(appDir)
+	packageName := option.PackageName + ".app"
+	appRoot := filepath.Join(output, packageName)
+	event.ConsoleWriteInfo("Package - Create App Dir", appRoot)
+	err := os.RemoveAll(appRoot)
+	if err != nil {
+		event.ConsoleWriteError("Package - remove app root:", err.Error())
+		return false
+	}
 	// Contents
-	contents := filepath.Join(appDir, appContents)
+	contents := filepath.Join(appRoot, appContents)
 	if err := os.MkdirAll(contents, 0755); err != nil {
-		return fmt.Errorf("unable to create directory: %w", err)
+		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+		return false
 	}
 	// Contents/Frameworks
 	contentsFrameworks := filepath.Join(contents, appContentsFrameworks)
 	if err := os.MkdirAll(contentsFrameworks, 0755); err != nil {
-		return fmt.Errorf("unable to create directory: %w", err)
+		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+		return false
 	}
 	// Contents/MacOS
 	contentsMacOS := filepath.Join(contents, appContentsMacOS)
 	if err := os.MkdirAll(contentsMacOS, 0755); err != nil {
-		return fmt.Errorf("unable to create directory: %w", err)
+		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+		return false
 	}
 	// Contents/Resources
 	contentsResources := filepath.Join(contents, appContentsResources)
 	if err := os.MkdirAll(contentsResources, 0755); err != nil {
-		return fmt.Errorf("unable to create directory: %w", err)
+		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+		return false
 	}
-	return nil
+	event.ConsoleWriteInfo("Package - Create App Dir success")
+	return true
+}
+
+func copyAppInfoPList() {
+
+}
+
+func copyAppPkgInfo() {
+
 }
