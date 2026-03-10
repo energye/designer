@@ -16,10 +16,12 @@ package options
 import (
 	"bytes"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/icns"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"image"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -123,9 +125,15 @@ func updateWindowICON() {
 		return
 	}
 	iconData := icon.Data // png
-	// 这里没使用标准尺寸, 统一最大尺寸为: 256x256
-	if icon.W > 256 || icon.H > 256 {
-		iconData = tool.Scale(iconData, 256, 256)
+	// 这里没使用标准尺寸, 统一最大尺寸
+	if tool.IsDarwin {
+		if icon.W > 1024 || icon.H > 1024 {
+			iconData = tool.Scale(iconData, 1024, 1024)
+		}
+	} else {
+		if icon.W > 256 || icon.H > 256 {
+			iconData = tool.Scale(iconData, 256, 256)
+		}
 	}
 	pngBuf := new(bytes.Buffer)
 	pngBuf.Write(iconData)
@@ -153,9 +161,30 @@ func updateWindowICON() {
 	iconPngFilePath := filepath.Join(embedPath, "icon.png")
 	err = os.WriteFile(iconPngFilePath, iconData, 0666)
 	if err != nil {
-		logs.Error("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
+		logs.Error("updateWindowICON, 写 windows icon.png 失败:", err.Error())
 		return
 	}
 	// macOS
 	// icon.icns
+	iconPngFile, err := os.Open(iconPngFilePath)
+	if err != nil {
+		logs.Error("updateWindowICON, opening source image:", err.Error())
+		return
+	}
+	defer iconPngFile.Close()
+	iconPngSrcImg, _, err := image.Decode(iconPngFile)
+	if err != nil {
+		logs.Error("updateWindowICON, decoding source image:", err.Error())
+		return
+	}
+	iconPngIcnsDest, err := os.Create(filepath.Join(embedPath, "icon.icns"))
+	if err != nil {
+		logs.Error("updateWindowICON, opening destination file:", err.Error())
+		return
+	}
+	defer iconPngIcnsDest.Close()
+	if err := icns.Encode(iconPngIcnsDest, iconPngSrcImg); err != nil {
+		logs.Error("updateWindowICON, encoding icns:", err.Error())
+		return
+	}
 }
