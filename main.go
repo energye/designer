@@ -43,17 +43,18 @@ func main() {
 }
 
 func init() {
-	isAmd64 := runtime.GOARCH == "amd64"
-	isArm64 := runtime.GOARCH == "arm64"
-	if isAmd64 {
-		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
-		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
-		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
+	if runtime.GOOS == "darwin" {
+		isAmd64 := runtime.GOARCH == "amd64"
+		isArm64 := runtime.GOARCH == "arm64"
+		if isAmd64 {
+			os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
+			os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
+			os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
+		}
+		if isArm64 {
+			os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
+			os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
+			os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
+		}
 	}
-	if isArm64 {
-		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
-		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
-		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
-	}
-
 }

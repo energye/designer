@@ -51,6 +51,7 @@ func pkg() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Packaging", outputFilename)
+
 }
 
 func dmg() {
