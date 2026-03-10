@@ -18,6 +18,15 @@ import (
 	"strings"
 )
 
+// MergeTags 合并默认和自定义的构建标签（tags）
+// 该函数将两个 tags 字符串按逗号或空格分割后合并，自动去除重复项
+// 并保持原有的插入顺序
+//
+//   defaultTags: 默认的构建标签字符串，多个标签间以逗号或空格分隔
+//   customTags: 自定义的构建标签字符串，多个标签间以逗号或空格分隔
+//
+//   mergedTags: 合并后的构建标签字符串切片，已去重且保持原有顺序，
+//               优先保留 defaultTags 中的标签，然后追加 customTags 中独有的标签
 func MergeTags(defaultTags, customTags string) (mergedTags []string) {
 	defaultTagsArr := strings.FieldsFunc(defaultTags, func(r rune) bool {
 		return r == ',' || r == ' '
@@ -47,6 +56,15 @@ func MergeTags(defaultTags, customTags string) (mergedTags []string) {
 	return
 }
 
+// MergeLdflags 合并默认和自定义的链接器标志（ldflags）
+// 该函数将两个 ldflags 字符串按空格分割后合并，自动去除重复项
+// 并保持原有的插入顺序
+//
+//	defaultLdflags: 默认的链接器标志字符串，多个标志间以空格分隔
+//	customLdflags: 自定义的链接器标志字符串，多个标志间以空格分隔
+//
+//	mergedLdFlags: 合并后的链接器标志字符串切片，已去重且保持原有顺序，
+//	               优先保留 defaultLdflags 中的标志，然后追加 customLdflags 中独有的标志
 func MergeLdflags(defaultLdflags, customLdflags string) (mergedLdFlags []string) {
 	flagMap := NewArrayMap[string, string]()
 	defaultLdflagsArr := strings.Fields(defaultLdflags)
