@@ -83,6 +83,7 @@ type TBuildOption struct {
 	MacCert            bool     `json:"mac_cert"`
 	MacCertList        []string `json:"mac_cert_list"`
 	MacCertListIndex   int32    `json:"mac_cert_list_index"`
+	MacCommonLib       bool     `json:"mac_common_lib"`
 	LinuxDEB           bool     `json:"linux_deb"`
 	Depends            string   `json:"depends"`
 }
@@ -238,6 +239,7 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.MacPKG = true
 	m.BuildOption.MacCert = false
 	m.BuildOption.MacCertList = nil
+	m.BuildOption.MacCommonLib = false
 	m.BuildOption.LinuxDEB = true
 	m.BuildOption.Depends = ""
 }

@@ -87,6 +87,8 @@ type TBuildForm struct {
 	macCertCheckBox lcl.ICheckBox
 	macCertComboBox lcl.IComboBox
 
+	macCommonLibCheckBox lcl.ICheckBox
+
 	linuxDEBCheckBox lcl.ICheckBox
 	dependsEdit      lcl.IEdit
 
@@ -608,6 +610,14 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
 	m.macCertComboBox.SetParent(m.buildTabPagePackage)
 
+	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
+	m.macCommonLibCheckBox.SetCaption("通用应用")
+	m.macCommonLibCheckBox.SetLeft(210)
+	m.macCommonLibCheckBox.SetTop(m.macCertCheckBox.Top())
+	m.macCommonLibCheckBox.SetFont(m.font)
+	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
+	m.macCommonLibCheckBox.SetParent(m.buildTabPagePackage)
+
 	linuxPackageTitle := lcl.NewLabel(m)
 	linuxPackageTitle.SetFont(titleFont)
 	linuxPackageTitle.SetCaption("Linux 打包配置")
@@ -733,6 +743,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	}
 	bean.GProject.BuildOption.MacCertList = macCertList
 	bean.GProject.BuildOption.MacCertListIndex = m.macCertComboBox.ItemIndex()
+	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()
 	go func() {

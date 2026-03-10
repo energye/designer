@@ -177,7 +177,6 @@ func copyFiles() bool {
 	//libDll := lib.Libs().Get(libname.GetDLLName())
 
 	//appRoot := appRootDir()
-
 	event.ConsoleWriteInfo("Package - Copy frameworks")
 
 	return true
