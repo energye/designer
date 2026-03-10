@@ -104,9 +104,9 @@ type TConfigProjectForm struct {
 	CFBundleLocalizationsText  lcl.ILabel
 	CFBundleLocalizationsEdit  lcl.IEdit
 	LSUIElementText            lcl.ILabel
-	LSUIElementBox             lcl.IComboBoxEx
+	LSUIElementBox             lcl.IComboBox
 	LSMinimumSystemVersionText lcl.ILabel
-	LSMinimumSystemVersionBox  lcl.IComboBoxEx
+	LSMinimumSystemVersionBox  lcl.IComboBox
 
 	// linux
 
