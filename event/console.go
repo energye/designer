@@ -13,23 +13,39 @@
 
 package event
 
-import "strings"
+import (
+	"github.com/energye/designer/pkg/logs"
+	"strings"
+)
 
 func ConsoleWriteInfo(s ...string) {
+	logs.Info(toAny(s...)...)
 	s = append([]string{"[INFO]"}, s...)
 	data := strings.Join(s, " ")
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
+
 func ConsoleWriteWarn(s ...string) {
+	logs.Warn(toAny(s...)...)
 	s = append([]string{"[WARN]"}, s...)
 	data := strings.Join(s, " ")
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
+
 func ConsoleWriteError(s ...string) {
+	logs.Error(toAny(s...)...)
 	s = append([]string{"[ERROR]"}, s...)
 	data := strings.Join(s, " ")
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
+
 func ConsoleWriteClear() {
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleClear}})
+}
+
+func toAny(str ...string) (log []any) {
+	for _, v := range str {
+		log = append(log, v)
+	}
+	return
 }

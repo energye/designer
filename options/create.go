@@ -49,13 +49,11 @@ func runCreate() {
 func checkCreate(dir string) bool {
 	logs.Debug("运行创建项目 目录:", dir)
 	if !tool.IsExist(dir) {
-		logs.Error("目录不存在:", dir)
 		event.ConsoleWriteError("目录不存在:", dir)
 		return false
 	}
 	de, err := os.ReadDir(dir)
 	if err != nil {
-		logs.Error("读取目录失败:", err.Error())
 		event.ConsoleWriteError("读取目录失败:", err.Error())
 		return false
 	}
@@ -78,31 +76,25 @@ func checkCreate(dir string) bool {
 	// 已存在项目 egp 文件, 提示覆盖
 	if existEgp != "" {
 		msg := fmt.Sprintf("当前目录已存在项目配置 %s\n是否覆盖？", existEgp)
-		logs.Warn("当前目录已存在项目配置", existEgp, "是否覆盖？")
 		event.ConsoleWriteWarn("当前目录已存在项目配置", existEgp, "是否覆盖？")
 		isCreate = api.MessageDlg(msg, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 		if !isCreate {
-			logs.Info("取消创建项目")
 			event.ConsoleWriteInfo("取消创建项目")
 			return false
 		}
 		// 覆盖并创建项目, 删除已存在的 xx.egp 文件
 		existEGPPath := filepath.Join(dir, existEgp)
-		logs.Warn("创建并覆盖项目配置文件:", existEGPPath)
 		event.ConsoleWriteWarn("创建并覆盖项目配置文件:", existEGPPath)
 		err = os.Remove(existEGPPath)
 		if err != nil {
-			logs.Error("删除项目配置文件错误:", err.Error())
 			event.ConsoleWriteError("删除项目配置文件错误件:", err.Error())
 			return false
 		}
 	} else if isNotEmpty {
 		// 目录非空并且没有项目配置文件 egp, 提示是否在当前目录创建项目
-		logs.Warn("当前目录非空")
 		event.ConsoleWriteWarn("当前目录非空是否创建？")
 		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 		if !isCreate {
-			logs.Info("取消创建项目")
 			event.ConsoleWriteInfo("取消创建项目")
 			return false
 		}
@@ -113,7 +105,6 @@ func checkCreate(dir string) bool {
 // 运行创建项目
 func doRunCreate(name, dir, guiRenderFramework string) bool {
 	// 开始创建项目
-	logs.Info("开始创建项目:", name)
 	event.ConsoleWriteInfo("开始创建项目", name)
 	newProject := new(bean.TProject)
 	newProject.Name = name
@@ -125,7 +116,6 @@ func doRunCreate(name, dir, guiRenderFramework string) bool {
 	newProject.InitBuildOption() // 初始化构建配置
 	// 创建并写入项目配置文件
 	if err := WriteEGPConfig(dir, newProject); err != nil {
-		logs.Error("创建项目, 写入项目配置失败:", err.Error())
 		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
 		SetGlobalProject("", nil)
 		return false
@@ -141,7 +131,6 @@ func doRunCreate(name, dir, guiRenderFramework string) bool {
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功
-		logs.Info("创建项目成功", newProject.Name, dir)
 		event.ConsoleWriteInfo("创建项目成功", newProject.Name, dir)
 		return true
 	}

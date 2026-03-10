@@ -79,8 +79,6 @@ func runBuild(output string) (err error) {
 		}
 	}
 	args := []string{"build", "-v"}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "go " + strings.Join(args, " ")}})
-
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))
 	}
@@ -91,6 +89,7 @@ func runBuild(output string) (err error) {
 	if len(otherArgs) > 0 {
 		args = append(args, otherArgs...)
 	}
+	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "go " + strings.Join(args, " ")}})
 	buildCmd.Command("go", args...)
 	return
 }

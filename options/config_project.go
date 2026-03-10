@@ -15,9 +15,9 @@ package options
 
 import (
 	"bytes"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/icns"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
@@ -88,7 +88,7 @@ func (m *TConfigProjectForm) saveProjectConfig() {
 	go func() {
 		// 更新项目配置文件
 		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
-			logs.Error("保存-写入项目配置文件失败")
+			event.ConsoleWriteError("保存-写入项目配置文件失败", err.Error())
 			return
 		}
 	}()
@@ -120,7 +120,7 @@ func updateWindowICON() {
 		}
 	}
 	if icon.Data == nil || icon.W <= 0 || icon.H <= 0 {
-		logs.Error("updateWindowICON, 图标数据不能为空/大小不正确")
+		event.ConsoleWriteError("updateWindowICON, 图标数据不能为空/大小不正确")
 		return
 	}
 	iconData := icon.Data // png
@@ -138,13 +138,13 @@ func updateWindowICON() {
 	pngBuf.Write(iconData)
 	pngImage, err := png.Decode(pngBuf)
 	if err != nil {
-		logs.Error("updateWindowICON, 图标转为 png 对象失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, 图标转为 png 对象失败:", err.Error())
 		return
 	}
 	icoBuf := new(bytes.Buffer)
 	err = tool.Encode(icoBuf, pngImage)
 	if err != nil {
-		logs.Error("updateWindowICON, png 转为 ico 对象失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, png 转为 ico 对象失败:", err.Error())
 		return
 	}
 	// 保存图标
@@ -153,37 +153,37 @@ func updateWindowICON() {
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	err = os.WriteFile(iconIcoFilePath, icoBuf.Bytes(), 0666)
 	if err != nil {
-		logs.Error("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
 		return
 	}
 	// icon.png
 	iconPngFilePath := filepath.Join(embedPath, "icon.png")
 	err = os.WriteFile(iconPngFilePath, iconData, 0666)
 	if err != nil {
-		logs.Error("updateWindowICON, 写 windows icon.png 失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, 写 windows icon.png 失败:", err.Error())
 		return
 	}
 	// macOS
 	// icon.icns
 	iconPngFile, err := os.Open(iconPngFilePath)
 	if err != nil {
-		logs.Error("updateWindowICON, opening source image:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, opening source image:", err.Error())
 		return
 	}
 	defer iconPngFile.Close()
 	iconPngSrcImg, _, err := image.Decode(iconPngFile)
 	if err != nil {
-		logs.Error("updateWindowICON, decoding source image:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, decoding source image:", err.Error())
 		return
 	}
 	iconPngIcnsDest, err := os.Create(filepath.Join(embedPath, "icon.icns"))
 	if err != nil {
-		logs.Error("updateWindowICON, opening destination file:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, opening destination file:", err.Error())
 		return
 	}
 	defer iconPngIcnsDest.Close()
 	if err := icns.Encode(iconPngIcnsDest, iconPngSrcImg); err != nil {
-		logs.Error("updateWindowICON, encoding icns:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, encoding icns:", err.Error())
 		return
 	}
 }

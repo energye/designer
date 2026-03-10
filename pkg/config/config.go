@@ -15,6 +15,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -210,6 +211,7 @@ func UpdateConfig() bool {
 
 // UpdateEnvGoRoot 更新环境配置
 func UpdateEnvGoRoot(envName string, goRoot string) {
+	event.ConsoleWriteInfo("项目环境配置, name:", envName, "Go SDK:", goRoot)
 	if Config.Env == nil {
 		Config.Env = make(map[string]*TEnv)
 	}

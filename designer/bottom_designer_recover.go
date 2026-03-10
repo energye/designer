@@ -144,7 +144,6 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			data, err := os.ReadFile(uiFilePath)
 			if err != nil {
 				wg.Done()
-				logs.Error("恢复设计窗体, 读取UI布局文件错误:", err.Error())
 				event.ConsoleWriteError("恢复设计窗体, 读取UI布局文件错误:", err.Error())
 				continue
 			}
@@ -152,7 +151,6 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			err = json.Unmarshal(data, uiComponent)
 			if err != nil {
 				wg.Done()
-				logs.Error("恢复设计窗体, 解析窗体布局错误:", err.Error())
 				event.ConsoleWriteError("恢复设计窗体, 解析窗体布局错误:", err.Error())
 				continue
 			}

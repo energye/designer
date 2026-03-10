@@ -14,6 +14,7 @@
 package options
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -136,12 +137,12 @@ func (m *TConfigProjectForm) pListDataInit() {
 func saveOrUpdateMacOSPList() {
 	pListInfoTemplate := app.Packager("darwin/Info.plist")
 	if pListInfoTemplate == nil {
-		logs.Error("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
+		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
 		return
 	}
 	pListInfo, err := tool.RenderTemplate(string(pListInfoTemplate), bean.GProject.AppOption.MacOS)
 	if err != nil {
-		logs.Error("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
+		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
 		return
 	}
 	// 保存到 resources/Info.plist
@@ -149,6 +150,6 @@ func saveOrUpdateMacOSPList() {
 	pListOutFile := "Info.plist"
 	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0666)
 	if err != nil {
-		logs.Error("macOS 应用配置-保存配置-WriteFile: ", err.Error())
+		event.ConsoleWriteError("macOS 应用配置-保存配置-WriteFile: ", err.Error())
 	}
 }

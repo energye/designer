@@ -14,6 +14,7 @@
 package options
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/helperform"
 	"github.com/energye/designer/pkg/logs"
@@ -436,8 +437,9 @@ func (m *TConfigProjectForm) validateInputs() bool {
 }
 
 func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
+	event.ConsoleWriteInfo("项目配置-保存")
 	if m.validateInputs() {
-		logs.Error("保存-验证输入失败")
+		event.ConsoleWriteError("保存-验证输入失败")
 		return
 	}
 	m.cancelBtn.SetDisable(true)
