@@ -50,7 +50,7 @@ func runBuild(output string) (err error) {
 		customLdflags = ldMatches[1]
 	}
 	// 合并 tags
-	tags := tool.MergeTags("", customTags)
+	tags := tool.MergeTags("dev", customTags)
 	// 合并 ldflags
 	ldflags := tool.MergeLdflags("", customLdflags)
 	// 其它参数
