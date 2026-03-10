@@ -72,6 +72,7 @@ type TBuildOption struct {
 	CodeObfuscation  bool   `json:"code_obfuscation"`
 	DisableDebug     bool   `json:"disable_debug"`
 	// 打包配置
+	PackageName        string   `json:"package_name"`
 	WinMsi             bool     `json:"win_msi"`
 	WinExe             bool     `json:"win_exe"`
 	WinDefaultInstall  string   `json:"win_default_install"`
@@ -227,6 +228,7 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.CodeObfuscation = false
 	m.BuildOption.DisableDebug = false
 	// 打包配置
+	m.BuildOption.PackageName = m.Name
 	m.BuildOption.WinMsi = false
 	m.BuildOption.WinExe = true
 	m.BuildOption.WinDefaultInstall = ""
