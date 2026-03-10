@@ -21,15 +21,52 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	lclTool "github.com/energye/lcl/tool"
 	"github.com/energye/lcl/tool/command"
+	"path/filepath"
+	"regexp"
 	"strings"
 )
 
 var runCmd *command.CMD
 
 // 构建项目
-func build(output string) (err error) {
+func runBuild(output string) (err error) {
+	option := bean.GProject.BuildOption
+	// 编译参数
+	buildArgs := option.GoArgs
+	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
+	reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
+	reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
+	// 提取 tags
+	tagMatches := reTags.FindStringSubmatch(buildArgs)
+	customTags := ""
+	customLdflags := ""
+	if len(tagMatches) > 1 {
+		customTags = tagMatches[1]
+	}
+	// 提取 ldflags
+	ldMatches := reLdflags.FindStringSubmatch(buildArgs)
+	if len(ldMatches) > 1 {
+		customLdflags = ldMatches[1]
+	}
+	// 合并 tags
+	tags := tool.MergeTags("", customTags)
+	// 合并 ldflags
+	ldflags := tool.MergeLdflags("", customLdflags)
+	// 其它参数
+	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
+	if !tool.IsWindows {
+		// macOS, linux 去除 -H windowsgui
+		tempNewLdflags := []string{}
+		for _, v := range ldflags {
+			if v == "-H" || v == "windowsgui" {
+				continue
+			}
+			tempNewLdflags = append(tempNewLdflags, v)
+		}
+		ldflags = tempNewLdflags
+	}
+
 	buildCmd := command.NewCMD()
 	buildCmd.IsPrint = false
 	buildCmd.HideWindow = true
@@ -41,9 +78,19 @@ func build(output string) (err error) {
 			err = errors.New(data)
 		}
 	}
-	// TODO 需要通过配置, 构建参数
-	args := []string{"build", "-v", "-o", output}
+	args := []string{"build", "-v"}
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "go " + strings.Join(args, " ")}})
+
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
+	}
+	if len(ldflags) > 0 {
+		args = append(args, "-ldflags", strings.Join(ldflags, " "))
+	}
+	args = append(args, "-o", output)
+	if len(otherArgs) > 0 {
+		args = append(args, otherArgs...)
+	}
 	buildCmd.Command("go", args...)
 	return
 }
@@ -55,18 +102,17 @@ func runPreview(state chan<- any) {
 		return
 	}
 	event.ConsoleWriteClear() //清空控制台消息
-
 	state <- consts.PsStarting
-	var output string
-	// TODO 需要通过配置 --test
-	if lclTool.IsWindows() {
-		output = "./build/main.exe"
-	} else {
-		output = "./build/main"
+	option := bean.GProject.BuildOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
 	}
+	output = filepath.Join(output, option.BuildFileName)
+
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "构建程序: " + output}})
 	// 构建项目二进制
-	if err := build(output); err != nil {
+	if err := runBuild(output); err != nil {
 		msg := fmt.Sprintf("构建程序失败: %v", err.Error())
 		logs.Error(msg)
 		state <- consts.PsStop

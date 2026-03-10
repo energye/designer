@@ -18,6 +18,7 @@ package build
 import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
@@ -26,24 +27,24 @@ import (
 	"strings"
 )
 
-func build() {
+func build() string {
 	proj := bean.GProject
 	if proj == nil {
 		logs.Error("项目对象 GProject 为 nil")
-		return
+		return ""
 	}
 	logs.Info("构建项目, 检查配置选项")
 	option := proj.BuildOption
 	if !option.PlatformMacOS {
 		logs.Warn("项目未启用 MacOS, 项目配置 > 构建配置")
-		return
+		return ""
 	}
 	isAmd64 := runtime.GOARCH == "amd64"
 	isArm64 := runtime.GOARCH == "arm64"
 	if isAmd64 {
 		if !option.ArchX86_64 {
 			logs.Warn("项目未启用架构 amd64, 项目配置 > 构建配置")
-			return
+			return ""
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
@@ -52,7 +53,7 @@ func build() {
 	if isArm64 {
 		if !option.ArchAarch64 {
 			logs.Warn("项目未启用架构 arm64, 项目配置 > 构建配置")
-			return
+			return ""
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
@@ -60,7 +61,7 @@ func build() {
 	}
 	if !option.UICocoa {
 		logs.Warn("项目未启用 UI Cocoa, 项目配置 > 构建配置")
-		return
+		return ""
 	}
 	logs.Info("构建项目, 开始构建项目", proj.Name)
 
@@ -70,10 +71,6 @@ func build() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	logs.Info("Building", outputFilename)
-	var (
-		tags    []string
-		ldflags []string
-	)
 	// 编译参数
 	buildArgs := option.GoArgs
 	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
@@ -92,9 +89,11 @@ func build() {
 		customLdflags = ldMatches[1]
 	}
 	// 合并 tags
-	tags = mergeTags("", customTags)
+	tags := tool.MergeTags("", customTags)
 	// 合并 ldflags
-	ldflags = mergeLdflags("", customLdflags)
+	ldflags := tool.MergeLdflags("", customLdflags)
+	// 其它参数
+	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
 	// macOS 去除 -H windowsgui
 	tempNewLdflags := []string{}
 	for _, v := range ldflags {
@@ -107,7 +106,7 @@ func build() {
 	// 编译命令
 	cmd := command.NewCMD()
 	cmd.Dir = bean.GPath
-	args := []string{"build"}
+	args := []string{"build", "-v"}
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))
 	}
@@ -119,12 +118,16 @@ func build() {
 		}
 	} else {
 		// release
-		ldflags = mergeLdflags("-s -w", strings.Join(ldflags, " "))
+		ldflags = tool.MergeLdflags("-s -w", strings.Join(ldflags, " "))
 		args = append(args, "-ldflags", strings.Join(ldflags, " "))
 		args = append(args, "-trimpath")
 	}
 	args = append(args, "-o", outputFilename)
+	if len(otherArgs) > 0 {
+		args = append(args, otherArgs...)
+	}
 	cmd.Command("go", args...)
 	cmd.Command("strip", outputFilename)
 	logs.Info("Build Successfully")
+	return outputFilename
 }

@@ -200,7 +200,9 @@ func (m *TProject) InitAppOption() {
 		m.AppOption.MacOS.PList.LSMinimumSystemVersionIndex = int32(LSMinimumSystemVersion_10_15)
 		m.AppOption.MacOS.PList.LSMinimumSystemVersion = "10.15"
 	}
-	// linux 默认值
+	{
+		// linux 默认值
+	}
 }
 
 func (m *TProject) InitBuildOption() {
