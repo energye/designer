@@ -18,6 +18,7 @@ package packager
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
 	"os"
 	"path/filepath"
 )
@@ -63,7 +64,16 @@ func pkg() {
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
 	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, outputFilename)
-	if createApp() {
+	if !createApp() {
+		return
+	}
+	if !copyAppInfoPList() {
+		return
+	}
+	if !copyAppPkgInfo() {
+		return
+	}
+	if !copyFiles() {
 		return
 	}
 	switch proj.GUIRenderFramework {
@@ -77,7 +87,7 @@ func dmg() {
 
 }
 
-func createApp() bool {
+func appRootDir() string {
 	proj := bean.GProject
 	option := proj.BuildOption
 	output := option.Output
@@ -86,6 +96,11 @@ func createApp() bool {
 	}
 	packageName := option.PackageName + ".app"
 	appRoot := filepath.Join(output, packageName)
+	return appRoot
+}
+
+func createApp() bool {
+	appRoot := appRootDir()
 	event.ConsoleWriteInfo("Package - Create App Dir", appRoot)
 	err := os.RemoveAll(appRoot)
 	if err != nil {
@@ -120,10 +135,81 @@ func createApp() bool {
 	return true
 }
 
-func copyAppInfoPList() {
-
+func copyAppInfoPList() bool {
+	event.ConsoleWriteInfo("Package - Copy app Info.plist")
+	resourcesPath := filepath.Join(bean.GPath, "resources", "Info.plist")
+	if !tool.IsExist(resourcesPath) {
+		event.ConsoleWriteError("Package - Info.plist not exist", resourcesPath)
+		return false
+	}
+	infoPlistData, err := os.ReadFile(resourcesPath)
+	if err != nil {
+		event.ConsoleWriteError("Package - Copy app Info.plist ReadFile:", err.Error())
+		return false
+	}
+	appRoot := appRootDir()
+	copyInfoPlistPath := filepath.Join(appRoot, "Info.plist")
+	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0755)
+	if err != nil {
+		event.ConsoleWriteError("Package - Copy app Info.plist WriteFile:", err.Error())
+		return false
+	}
+	event.ConsoleWriteInfo("Package - Copy app Info.plist success")
+	return true
 }
 
-func copyAppPkgInfo() {
-
+func copyAppPkgInfo() bool {
+	pkgInfo := []byte{0x41, 0x50, 0x50, 0x4C, 0x3F, 0x3F, 0x3F, 0x3F, 0x0D, 0x0A}
+	event.ConsoleWriteInfo("Package - Copy app PkgInfo")
+	appRoot := appRootDir()
+	copyPkgInfoPath := filepath.Join(appRoot, "PkgInfo")
+	err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0755)
+	if err != nil {
+		event.ConsoleWriteError("Package - Copy app PkgInfo WriteFile:", err.Error())
+		return false
+	}
+	event.ConsoleWriteInfo("Package - Copy app PkgInfo success")
+	return true
 }
+
+func copyFiles() bool {
+	event.ConsoleWriteInfo("Package - Copy app file")
+	//libDll := lib.Libs().Get(libname.GetDLLName())
+
+	//appRoot := appRootDir()
+
+	event.ConsoleWriteInfo("Package - Copy frameworks")
+
+	return true
+}
+
+// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
+//func pkgbuild(c *command.Config, proj *project.Project, appRoot string) error {
+//	proj.AppType = project.AtApp
+//	proj.ProjectPath = projectPath
+//	buildOutDir := assets.BuildOutPath(proj)
+//	cmdWorkDir := filepath.Join(buildOutDir, "darwin")
+//	term.Logger.Info("Generate app pkgbuild", term.Logger.Args("cmd work dir", cmdWorkDir))
+//	// remove xxx.pkg
+//	os.Remove(filepath.Join(cmdWorkDir, fmt.Sprintf("%s.pkg", getAppName(c, proj))))
+//	cmd := cmd.NewCMD()
+//	//cmd.IsPrint = false
+//	cmd.Dir = cmdWorkDir
+//	cmd.MessageCallback = func(bytes []byte, err error) {
+//		msg := string(bytes)
+//		if msg != "" {
+//			println(msg)
+//		}
+//	}
+//	app := fmt.Sprintf("%s.app", getAppName(c, proj))
+//	pkg := fmt.Sprintf("%s.pkg", getAppName(c, proj))
+//	var args = []string{"--root", app,
+//		"--identifier", proj.PList.BundleIdentifier,
+//		"--version", proj.PList.BundleVersion,
+//		"--install-location", fmt.Sprintf("/Applications/%s", app), pkg}
+//	cmd.Command("pkgbuild", args...)
+//	cmd.Close()
+//	// remove xxx.app
+//	os.RemoveAll(filepath.Join(cmdWorkDir, app))
+//	return nil
+//}

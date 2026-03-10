@@ -61,3 +61,7 @@ func DefaultLibName(filename string) bool {
 	name := libname.GetDLLName()
 	return tool.Equal(filename, name)
 }
+
+func Libs() *tool.HashMap[string, *EmbedFS] {
+	return libs
+}
