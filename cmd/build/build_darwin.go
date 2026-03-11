@@ -137,7 +137,6 @@ func build() {
 		cmd.Command("go", tempArgs...)
 		event.ConsoleWriteInfo("strip", output)
 		cmd.Command("strip", output)
-		event.ConsoleWriteInfo("Build - output", output)
 	}
 	if option.MacCommonLib {
 		// build amd64
