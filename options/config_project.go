@@ -149,7 +149,7 @@ func updateWindowICON() {
 	}
 	// 保存图标
 	// icon.ico
-	embedPath := EmbedPath()
+	embedPath := ResourceEmbedPath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	err = os.WriteFile(iconIcoFilePath, icoBuf.Bytes(), 0666)
 	if err != nil {

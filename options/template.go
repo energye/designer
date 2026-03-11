@@ -145,3 +145,25 @@ func init() {
 	engLCL.SetOnBeforeRun(SetIcon)
 }
 `
+
+// resources/metadata_windows.go
+// 资源代码模板
+const resourcesWindowsGoTemplate = `// ==============================================================================
+// 📚 应用元数据
+// 📌 不存在时自动创建
+// ✏️ 可在此文件中添加业务逻辑
+// ==============================================================================
+
+//go:build windows
+
+package resources
+
+import _ "{{.Name}}/resources/metadata"
+`
+
+// resources/metadata/metadata_windows.go
+// 资源代码模板
+const metadataWindowsGoTemplate = `//go:build windows
+
+package metadata
+`

@@ -71,7 +71,12 @@ func ResourcePath() string {
 	return filepath.Join(bean.GPath, "resources")
 }
 
+// 返回当前应用元数据资源路径
+func ResourceMetadataPath() string {
+	return filepath.Join(ResourcePath(), "metadata")
+}
+
 // 返回当前项目内置资源目录
-func EmbedPath() string {
+func ResourceEmbedPath() string {
 	return filepath.Join(ResourcePath(), "embed")
 }
