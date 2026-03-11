@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
@@ -611,10 +612,15 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertComboBox.SetParent(m.buildTabPagePackage)
 
 	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-	m.macCommonLibCheckBox.SetCaption("通用应用")
+	m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
 	m.macCommonLibCheckBox.SetLeft(210)
 	m.macCommonLibCheckBox.SetTop(m.macCertCheckBox.Top())
 	m.macCommonLibCheckBox.SetFont(m.font)
+	if version.OSVersion.Major <= 10 {
+		// 需: macOS ≥ 11.0 Xcode ≥ 12.2
+		bean.GProject.BuildOption.MacCommonLib = false
+		m.macCommonLibCheckBox.SetEnabled(false)
+	}
 	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
 	m.macCommonLibCheckBox.SetParent(m.buildTabPagePackage)
 
