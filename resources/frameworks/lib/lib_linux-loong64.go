@@ -24,12 +24,7 @@ var (
 	libLoong64GTK3 embed.FS
 )
 
-const (
-	pathLoong64Gtk2 = "linux/libenergy-linux-loong64-gtk2.zip"
-	pathLoong64Gtk3 = "linux/libenergy-linux-loong64-gtk3.zip"
-)
-
 func init() {
-	libs.Add(pathLoong64Gtk2, &EmbedFS{Lib: &libLoong64GTK2, OutputFilename: "libenergy-linux-loong64-gtk2.so"})
-	libs.Add(pathLoong64Gtk3, &EmbedFS{Lib: &libLoong64GTK3, OutputFilename: "libenergy-linux-loong64-gtk3.so"})
+	libs.Add(PathLoong64Gtk2, &EmbedFS{Lib: &libLoong64GTK2, OutputFilename: "libenergy-linux-loong64-gtk2.so"})
+	libs.Add(PathLoong64Gtk3, &EmbedFS{Lib: &libLoong64GTK3, OutputFilename: "libenergy-linux-loong64-gtk3.so"})
 }

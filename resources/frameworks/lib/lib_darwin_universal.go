@@ -11,20 +11,15 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build (linux && arm) || liball
+//go:build darwin || liball
 
 package lib
 
 import "embed"
 
-var (
-	//go:embed linux/libenergy-linux-armhf-gtk2.zip
-	libARMGTK2 embed.FS
-	//go:embed linux/libenergy-linux-armhf-gtk3.zip
-	libARMGTK3 embed.FS
-)
+//go:embed darwin/libenergy-macos-universal.zip
+var libUniversalCocoa embed.FS
 
 func init() {
-	libs.Add(PathARMGtk2, &EmbedFS{Lib: &libARMGTK2, OutputFilename: "libenergy-linux-arm-gtk2.so"})
-	libs.Add(PathARMGtk3, &EmbedFS{Lib: &libARMGTK3, OutputFilename: "libenergy-linux-arm-gtk3.so"})
+	libs.Add(PathUniversalCocoa, &EmbedFS{Lib: &libUniversalCocoa, OutputFilename: "libenergy-darwin-universal-cocoa.dylib"})
 }

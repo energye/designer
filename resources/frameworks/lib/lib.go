@@ -23,6 +23,26 @@ import (
 	"path/filepath"
 )
 
+const (
+	PathAMD64Cocoa     = "darwin/libenergy-macos-amd64.zip"
+	PathARM64Cocoa     = "darwin/libenergy-macos-arm64.zip"
+	PathUniversalCocoa = "darwin/libenergy-macos-universal.zip"
+	PathAMD64Gtk2      = "linux/libenergy-linux-amd64-gtk2.zip"
+	PathAMD64Gtk3      = "linux/libenergy-linux-amd64-gtk3.zip"
+	PathARMGtk2        = "linux/libenergy-linux-armhf-gtk2.zip"
+	PathARMGtk3        = "linux/libenergy-linux-armhf-gtk3.zip"
+	PathARM64Gtk2      = "linux/libenergy-linux-arm64-gtk2.zip"
+	PathARM64Gtk3      = "linux/libenergy-linux-arm64-gtk3.zip"
+	PathI386Gtk2       = "linux/libenergy-linux-i386-gtk2.zip"
+	PathI386Gtk3       = "linux/libenergy-linux-i386-gtk3.zip"
+	PathLoong64Gtk2    = "linux/libenergy-linux-loong64-gtk2.zip"
+	PathLoong64Gtk3    = "linux/libenergy-linux-loong64-gtk3.zip"
+	PathAMD64Win64     = "windows/libenergy-windows-amd64.zip"
+	PathWV2AMD64Win64  = "windows/WebView2Loader-amd64.zip"
+	PathI386Win32      = "windows/libenergy-windows-i386.zip"
+	PathWV2I386Win32   = "windows/WebView2Loader-i386.zip"
+)
+
 var libs = tool.NewHashMap[string, *EmbedFS]()
 
 type EmbedFS struct {

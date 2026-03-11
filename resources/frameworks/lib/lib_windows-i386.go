@@ -22,12 +22,7 @@ var (
 	libWV2I386Win32 embed.FS
 )
 
-const (
-	pathI386Win32    = "windows/libenergy-windows-i386.zip"
-	pathWV2I386Win32 = "windows/WebView2Loader-i386.zip"
-)
-
 func init() {
-	libs.Add(pathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-windows-i386-win32.dll"})
-	libs.Add(pathWV2I386Win32, &EmbedFS{Lib: &libWV2I386Win32, OutputFilename: "WebView2Loader-i386.dll"})
+	libs.Add(PathI386Win32, &EmbedFS{Lib: &libI386Win32, OutputFilename: "libenergy-windows-i386-win32.dll"})
+	libs.Add(PathWV2I386Win32, &EmbedFS{Lib: &libWV2I386Win32, OutputFilename: "WebView2Loader-i386.dll"})
 }

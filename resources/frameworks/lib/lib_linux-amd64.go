@@ -26,12 +26,7 @@ var (
 	libAMD64GTK3 embed.FS
 )
 
-const (
-	pathAMD64Gtk2 = "linux/libenergy-linux-amd64-gtk2.zip"
-	pathAMD64Gtk3 = "linux/libenergy-linux-amd64-gtk3.zip"
-)
-
 func init() {
-	libs.Add(pathAMD64Gtk2, &EmbedFS{Lib: &libAMD64GTK2, OutputFilename: "libenergy-linux-amd64-gtk2.so"})
-	libs.Add(pathAMD64Gtk3, &EmbedFS{Lib: &libAMD64GTK3, OutputFilename: "libenergy-linux-amd64-gtk3.so"})
+	libs.Add(PathAMD64Gtk2, &EmbedFS{Lib: &libAMD64GTK2, OutputFilename: "libenergy-linux-amd64-gtk2.so"})
+	libs.Add(PathAMD64Gtk3, &EmbedFS{Lib: &libAMD64GTK3, OutputFilename: "libenergy-linux-amd64-gtk3.so"})
 }

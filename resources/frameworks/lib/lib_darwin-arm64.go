@@ -20,10 +20,6 @@ import "embed"
 //go:embed darwin/libenergy-macos-arm64.zip
 var libARM64Cocoa embed.FS
 
-const (
-	pathARM64Cocoa = "darwin/libenergy-macos-arm64.zip"
-)
-
 func init() {
-	libs.Add(pathARM64Cocoa, &EmbedFS{Lib: &libARM64Cocoa, OutputFilename: "libenergy-darwin-arm64-cocoa.dylib"})
+	libs.Add(PathARM64Cocoa, &EmbedFS{Lib: &libARM64Cocoa, OutputFilename: "libenergy-darwin-arm64-cocoa.dylib"})
 }
