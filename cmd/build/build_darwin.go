@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -69,8 +70,6 @@ func build() {
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	outputFilename := filepath.Join(output, option.BuildFileName)
-	event.ConsoleWriteInfo("Build - output", outputFilename)
 	// 编译参数
 	buildArgs := option.GoArgs
 	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
@@ -103,9 +102,7 @@ func build() {
 		tempNewLdflags = append(tempNewLdflags, v)
 	}
 	ldflags = tempNewLdflags
-	// 编译命令
-	cmd := command.NewCMD()
-	cmd.Dir = bean.GPath
+
 	args := []string{"build", "-v"}
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))
@@ -122,13 +119,63 @@ func build() {
 		args = append(args, "-ldflags", strings.Join(ldflags, " "))
 		args = append(args, "-trimpath")
 	}
-	args = append(args, "-o", outputFilename)
-	if len(otherArgs) > 0 {
-		args = append(args, otherArgs...)
+
+	runGoBuild := func(env []string, output string) {
+		tempArgs := args[:]
+		tempArgs = append(tempArgs, "-o", output)
+		if len(otherArgs) > 0 {
+			tempArgs = append(tempArgs, otherArgs...)
+		}
+		event.ConsoleWriteInfo("Build - output", output)
+		event.ConsoleWriteInfo("go", strings.Join(tempArgs, " "))
+		// 编译命令
+		cmd := command.NewCMD()
+		cmd.Dir = bean.GPath
+		cmd.BeforeRun = func(cmd *exec.Cmd) {
+			cmd.Env = append(os.Environ(), env...)
+		}
+		cmd.Command("go", tempArgs...)
+		event.ConsoleWriteInfo("strip", output)
+		cmd.Command("strip", output)
+		event.ConsoleWriteInfo("Build - output", output)
 	}
-	event.ConsoleWriteInfo("go", strings.Join(args, " "))
-	event.ConsoleWriteInfo("strip", outputFilename)
-	cmd.Command("go", args...)
-	cmd.Command("strip", outputFilename)
+	if option.MacCommonLib {
+		// build amd64
+		amd64OutputFilename := filepath.Join(output, "temp_amd64_"+option.BuildFileName)
+		runGoBuild([]string{"GOOS=darwin", "GOARCH=amd64", "CGO_ENABLED=1"}, amd64OutputFilename)
+		// build arm64
+		arm64OutputFilename := filepath.Join(output, "temp_arm64_"+option.BuildFileName)
+		runGoBuild([]string{"GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=1"}, arm64OutputFilename)
+		defer func() {
+			_ = os.Remove(amd64OutputFilename)
+			_ = os.Remove(arm64OutputFilename)
+		}()
+		// merge universal
+		outputFilename := filepath.Join(output, option.BuildFileName)
+		mergeUniversal(amd64OutputFilename, arm64OutputFilename, outputFilename)
+		verifyUniversal(outputFilename)
+	} else {
+		outputFilename := filepath.Join(output, option.BuildFileName)
+		runGoBuild(nil, outputFilename)
+		verifyUniversal(outputFilename)
+	}
+
 	event.ConsoleWriteInfo("Build Successfully")
+}
+
+func mergeUniversal(amd64File, arm64File, output string) {
+	event.ConsoleWriteInfo("Build - merge universal")
+	cmd := command.NewCMD()
+	cmd.Dir = bean.GPath
+	cmd.Command("lipo", "-create", amd64File, arm64File, "-output", output)
+}
+
+func verifyUniversal(filePath string) {
+	event.ConsoleWriteInfo("Build - verify universal")
+	cmd := command.NewCMD()
+	cmd.Dir = bean.GPath
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	cmd.Command("lipo", "-info", filePath)
 }

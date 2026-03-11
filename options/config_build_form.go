@@ -781,6 +781,7 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		return
 	}
 	m.packageing = true
+	m.packageBtn.SetText("打包中...")
 	m.packageBtn.SetDisable(true)
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
@@ -788,6 +789,7 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 	}
 	go func() {
 		configBuildPackage()
+		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetDisable(false)
 		m.packageing = false
 	}()

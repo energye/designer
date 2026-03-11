@@ -137,7 +137,7 @@ func createApp() bool {
 
 func copyAppInfoPList() bool {
 	event.ConsoleWriteInfo("Package - Copy app Info.plist")
-	resourcesPath := filepath.Join(bean.GPath, "resources", "Info.plist")
+	resourcesPath := filepath.Join(bean.GPath, "resources", "metadata", "Info.plist")
 	if !tool.IsExist(resourcesPath) {
 		event.ConsoleWriteError("Package - Info.plist not exist", resourcesPath)
 		return false
