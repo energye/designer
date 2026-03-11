@@ -64,10 +64,17 @@ func runUpdate(formTab *designer.FormTab) {
 		return
 	}
 	// 2. 更新 app/app.go 代码文件
+	if err := updateAppGoFile(); err != nil {
+		logs.Error("创建/更新 app.go 文件失败:", err.Error())
+		return
+	}
+}
+
+// 更新 app/app.go 代码文件
+func updateAppGoFile() error {
 	appRoot := bean.GPath
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName, consts.FormListFileName)
 	code := buildTemplateData(appCodeTemplate, bean.GProject)
-	if err := os.WriteFile(appCodePath, []byte(code), 0666); err != nil {
-		logs.Error("创建项目文件失败:", err.Error())
-	}
+	err := os.WriteFile(appCodePath, []byte(code), 0666)
+	return err
 }

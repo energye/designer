@@ -74,6 +74,7 @@ package {{.Package}}
 import (
 	"github.com/energye/lcl/lcl"
 	"os"
+	"runtime"
 )
 
 // Forms 应用使用的窗体列表
@@ -85,6 +86,10 @@ func init() {
 	if "{{.GUIRenderFramework}}" == "WV" {
 		// linux webkit2 > gtk3
 		os.Setenv("--ws", "gtk3")
+	}
+	if runtime.GOOS == "darwin" {
+		// macOS universal-binary
+		{{ if not .BuildOption.MacCommonLib }}// {{ end }}os.Setenv("--universal-binary", "universal")
 	}
 }
 `

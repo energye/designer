@@ -14,17 +14,22 @@
 package options
 
 import (
+	"errors"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/rtl/version"
+	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
+	"os"
+	"path/filepath"
 )
 
 var (
@@ -200,7 +205,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.packageBtn.SetBoundsRect(buildBtnRect)
 		m.packageBtn.SetColor(colors.RGBToColor(46, 204, 113))
 		m.packageBtn.SetParent(m.buildTab)
-		m.packageBtn.SetOnClick(m.buildClick)
+		m.packageBtn.SetOnClick(m.packageClick)
 	}
 	//(&hook.TWindowHook{Form: m}).Hook()
 }
@@ -617,7 +622,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCommonLibCheckBox.SetTop(m.macCertCheckBox.Top())
 	m.macCommonLibCheckBox.SetFont(m.font)
 	if version.OSVersion.Major <= 10 {
-		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用能用二进制生成
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
 		bean.GProject.BuildOption.MacCommonLib = false
 		m.macCommonLibCheckBox.SetEnabled(false)
 	}
@@ -758,10 +763,57 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 			event.ConsoleWriteError("保存-写入项目配置文件失败", err.Error())
 			return
 		}
+		if err := updateAppGoFile(); err != nil {
+			event.ConsoleWriteError("创建/更新 app.go 文件失败:", err.Error())
+			return
+		}
+		if err := m.mergeMacOSUniversalBinary(); err != nil {
+			event.ConsoleWriteError("合并通用二进制文件失败:", err.Error())
+			return
+		}
 		event.ConsoleWriteInfo("构建配置-保存-完成")
 	}()
 }
 
-func (m *TBuildForm) buildClick(sender lcl.IObject) {
+func (m *TBuildForm) packageClick(sender lcl.IObject) {
+	if version.OSVersion.Major <= 10 {
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
+		bean.GProject.BuildOption.MacCommonLib = false
+	}
 	configBuildPackage()
+}
+
+func (m *TBuildForm) mergeMacOSUniversalBinary() error {
+	if !tool.IsDarwin {
+		return nil
+	}
+	if version.OSVersion.Major <= 10 {
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
+		bean.GProject.BuildOption.MacCommonLib = false
+	}
+	event.ConsoleWriteInfo("Merge macOS UniversalBinary, MacCommonLib:", tool.BoolToString(bean.GProject.BuildOption.MacCommonLib))
+	if bean.GProject.BuildOption.MacCommonLib {
+		// 启用通用二进制, 保存到 designer frameworks/runtime 目录
+		libArm64 := lib.Libs().Get(lib.PathARM64Cocoa)
+		if libArm64 == nil {
+			return errors.New("libArm64 is nil")
+		}
+		libAmd64 := lib.Libs().Get(lib.PathAMD64Cocoa)
+		if libAmd64 == nil {
+			return errors.New("libAmd64 is nil")
+		}
+		outputLibPath := filepath.Join(config.Config.FrameworkDir, "runtime")
+		tempArm64LibName := libArm64.OutputFilename
+		tempAmd64LibName := libAmd64.OutputFilename
+		arm64LibFilePath := filepath.Join(outputLibPath, tempArm64LibName)
+		amd64LibFilePath := filepath.Join(outputLibPath, tempAmd64LibName)
+		universalLibFilePath := filepath.Join(outputLibPath, "libenergy-darwin-universal-cocoa.dylib")
+		event.ConsoleWriteInfo("Merge macOS UniversalBinary, arm64LibFilePath:", arm64LibFilePath)
+		event.ConsoleWriteInfo("Merge macOS UniversalBinary, amd64LibFilePath:", amd64LibFilePath)
+		_ = os.Remove(universalLibFilePath)
+		cmd := command.NewCMD()
+		cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
+		event.ConsoleWriteInfo("Merge macOS UniversalBinary, universalLibFilePath:", universalLibFilePath)
+	}
+	return nil
 }
