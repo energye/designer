@@ -617,7 +617,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCommonLibCheckBox.SetTop(m.macCertCheckBox.Top())
 	m.macCommonLibCheckBox.SetFont(m.font)
 	if version.OSVersion.Major <= 10 {
-		// 需: macOS ≥ 11.0 Xcode ≥ 12.2
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用能用二进制生成
 		bean.GProject.BuildOption.MacCommonLib = false
 		m.macCommonLibCheckBox.SetEnabled(false)
 	}
