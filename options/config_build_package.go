@@ -26,4 +26,5 @@ func configBuildPackage() {
 	event.ConsoleWriteClear()
 	build.Run()
 	packager.Run()
+	logs.Debug("构建配置-打包-完成")
 }

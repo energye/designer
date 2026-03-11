@@ -88,8 +88,8 @@ func build() {
 	if len(ldMatches) > 1 {
 		customLdflags = ldMatches[1]
 	}
-	// 合并 tags
-	tags := tool.MergeTags("", customTags)
+	// 合并 tags prod
+	tags := tool.MergeTags("prod", customTags)
 	// 合并 ldflags
 	ldflags := tool.MergeLdflags("", customLdflags)
 	// 其它参数

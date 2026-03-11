@@ -101,6 +101,7 @@ type TBuildForm struct {
 	// 操作按钮
 	saveBtn    *wg.TButton
 	packageBtn *wg.TButton
+	packageing bool
 }
 
 func (m *TBuildForm) FormCreate(sender lcl.IObject) {
@@ -776,11 +777,20 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) packageClick(sender lcl.IObject) {
+	if m.packageing {
+		return
+	}
+	m.packageing = true
+	m.packageBtn.SetDisable(true)
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
 		bean.GProject.BuildOption.MacCommonLib = false
 	}
-	configBuildPackage()
+	go func() {
+		configBuildPackage()
+		m.packageBtn.SetDisable(false)
+		m.packageing = false
+	}()
 }
 
 func (m *TBuildForm) mergeMacOSUniversalBinary() error {
