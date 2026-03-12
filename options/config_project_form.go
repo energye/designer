@@ -600,9 +600,7 @@ func (m *TConfigProjectForm) AppBundleName() string {
 //
 //	macOS 应用的主可执行文件名称
 func (m *TConfigProjectForm) AppBundleExecutable() string {
-	bundleExecutable := bean.GProject.Name
-	// TODO 需要在构建配置里获取
-	return bundleExecutable
+	return bean.GProject.BuildOption.BuildFileName
 }
 
 func (m *TConfigProjectForm) AppBundleLocalizations() []string {

@@ -16,6 +16,7 @@ package tool
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/api"
@@ -214,6 +215,41 @@ func RenderTemplate(templateText string, data any) ([]byte, error) {
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+func CopyFile(srcFilePath, dstFilePath string) error {
+	srcFileInfo, err := os.Stat(srcFilePath)
+	if err != nil {
+		return err
+	}
+	if srcFileInfo.IsDir() {
+		return errors.New("source path is a directory, not a file")
+	}
+	dstDir := filepath.Dir(dstFilePath)
+	if err := os.MkdirAll(dstDir, 0755); err != nil {
+		return err
+	}
+	srcFile, err := os.Open(srcFilePath)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+	dstFile, err := os.Create(dstFilePath)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+	if err := dstFile.Sync(); err != nil {
+		return err
+	}
+	if err := os.Chmod(dstFilePath, srcFileInfo.Mode()); err != nil {
+		return err
+	}
+	return nil
 }
 
 //// DirPermissions 结构体用于存储目录权限检查结果

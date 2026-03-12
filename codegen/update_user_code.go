@@ -17,7 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/designer/dependmod"
-	"github.com/energye/designer/options"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -40,7 +40,7 @@ import (
 //	仅修改 xxx.go 用户文件, 其它文件需手动修改
 func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
-	goUserFilePath := filepath.Join(options.CodePath(), formTab.GOUserFile())
+	goUserFilePath := filepath.Join(bean.CodePath(), formTab.GOUserFile())
 	newFormName := "T" + formTab.FormRoot.Name()
 	oldFormName := "T" + uiGenData.Component.FormTab.OldFormName
 	logs.Debug("NewFormName:", newFormName, "OldFormName:", oldFormName, "FilePath:", goUserFilePath)
@@ -79,7 +79,7 @@ func doUpdateEvent(uiGenData designer.TUIGenerationData) {
 		return
 	}
 	formTab := uiGenData.Component.FormTab
-	goUserFilePath := filepath.Join(options.CodePath(), formTab.GOUserFile())
+	goUserFilePath := filepath.Join(bean.CodePath(), formTab.GOUserFile())
 	formName := "T" + formTab.FormRoot.Name() // T + [FormName]
 	nodeData := uiGenData.NodeData.EditNodeData
 	bindEventFuncName := uiGenData.NodeData.EditStringValue()

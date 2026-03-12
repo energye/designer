@@ -18,7 +18,9 @@ package packager
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/api/libname"
 	"os"
 	"path/filepath"
 )
@@ -54,8 +56,8 @@ func packager() {
 }
 
 func pkg() {
-	event.ConsoleWriteInfo("Package - ProjectPath:", bean.GPath)
-	event.ConsoleWriteInfo("Package - ProjectName:", bean.GProject.Name)
+	event.ConsoleWriteInfo("Package - ProjectPath", bean.GPath)
+	event.ConsoleWriteInfo("Package - ProjectName", bean.GProject.Name)
 	proj := bean.GProject
 	option := proj.BuildOption
 	output := option.Output
@@ -63,7 +65,7 @@ func pkg() {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
-	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, outputFilename)
+	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, "Output:", outputFilename)
 	if !createApp() {
 		return
 	}
@@ -76,11 +78,7 @@ func pkg() {
 	if !copyFiles() {
 		return
 	}
-	switch proj.GUIRenderFramework {
-	case bean.GUIRenderFramework_LCL, bean.GUIRenderFramework_WV:
-	case bean.GUIRenderFramework_CEF:
-	}
-
+	event.ConsoleWriteInfo("Package - ProjectName", bean.GProject.Name, "Success")
 }
 
 func dmg() {
@@ -136,7 +134,7 @@ func createApp() bool {
 }
 
 func copyAppInfoPList() bool {
-	event.ConsoleWriteInfo("Package - Copy app Info.plist")
+	event.ConsoleWriteInfo("Package - Copy App Info.plist")
 	resourcesPath := filepath.Join(bean.GPath, "resources", "metadata", "Info.plist")
 	if !tool.IsExist(resourcesPath) {
 		event.ConsoleWriteError("Package - Info.plist not exist", resourcesPath)
@@ -144,41 +142,99 @@ func copyAppInfoPList() bool {
 	}
 	infoPlistData, err := os.ReadFile(resourcesPath)
 	if err != nil {
-		event.ConsoleWriteError("Package - Copy app Info.plist ReadFile:", err.Error())
+		event.ConsoleWriteError("Package - Copy App Info.plist ReadFile:", err.Error())
 		return false
 	}
 	appRoot := appRootDir()
 	copyInfoPlistPath := filepath.Join(appRoot, "Info.plist")
 	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0666)
 	if err != nil {
-		event.ConsoleWriteError("Package - Copy app Info.plist WriteFile:", err.Error())
+		event.ConsoleWriteError("Package - Copy App Info.plist WriteFile:", err.Error())
 		return false
 	}
-	event.ConsoleWriteInfo("Package - Copy app Info.plist success")
+	event.ConsoleWriteInfo("Package - Copy App Info.plist success")
 	return true
 }
 
 func copyAppPkgInfo() bool {
 	pkgInfo := []byte{0x41, 0x50, 0x50, 0x4C, 0x3F, 0x3F, 0x3F, 0x3F, 0x0D, 0x0A}
-	event.ConsoleWriteInfo("Package - Copy app PkgInfo")
+	event.ConsoleWriteInfo("Package - Copy App PkgInfo")
 	appRoot := appRootDir()
 	copyPkgInfoPath := filepath.Join(appRoot, "PkgInfo")
 	err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
 	if err != nil {
-		event.ConsoleWriteError("Package - Copy app PkgInfo WriteFile:", err.Error())
+		event.ConsoleWriteError("Package - Copy App PkgInfo WriteFile:", err.Error())
 		return false
 	}
-	event.ConsoleWriteInfo("Package - Copy app PkgInfo success")
+	event.ConsoleWriteInfo("Package - Copy App PkgInfo success")
 	return true
 }
 
 func copyFiles() bool {
-	event.ConsoleWriteInfo("Package - Copy app file")
+	event.ConsoleWriteInfo("Package - Copy App Files")
 	//libDll := lib.Libs().Get(libname.GetDLLName())
+	cfg := config.Config
+	proj := bean.GProject
+	appRoot := appRootDir()
+	frameworksRuntime := filepath.Join(cfg.FrameworkDir, "runtime")
+	// libenergy-xxx-xxx-xxx.dylib
+	srcRuntimeFilePath := filepath.Join(frameworksRuntime, libname.GetDLLName())
+	if proj.BuildOption.MacCommonLib {
+		srcRuntimeFilePath = filepath.Join(frameworksRuntime, libname.DarwinUniversalBinaryName)
+	}
+	if !tool.IsExist(srcRuntimeFilePath) {
+		event.ConsoleWriteError("Package - energy runtime lib not exist.", srcRuntimeFilePath)
+		return false
+	}
+	// app binary
+	output := proj.BuildOption.Output
+	if !filepath.IsAbs(proj.BuildOption.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	srcAppBinary := filepath.Join(output, proj.BuildOption.BuildFileName)
+	if !tool.IsExist(srcAppBinary) {
+		event.ConsoleWriteError("Package - app binary not exist.", srcAppBinary)
+		return false
+	}
+	// icon.icns
+	srcAppIconIcns := filepath.Join(bean.ResourceEmbedPath(), "icon.icns")
+	if !tool.IsExist(srcAppIconIcns) {
+		event.ConsoleWriteError("Package - app icon.icns not exist.", srcAppIconIcns)
+		return false
+	}
 
-	//appRoot := appRootDir()
-	event.ConsoleWriteInfo("Package - Copy frameworks")
+	contents := filepath.Join(appRoot, appContents)
+	contentsFrameworks := filepath.Join(contents, appContentsFrameworks)
+	contentsMacOS := filepath.Join(contents, appContentsMacOS)
+	contentsResources := filepath.Join(contents, appContentsResources)
 
+	outputRuntimeFilePath := filepath.Join(contentsFrameworks, libname.GetDLLName())
+	if proj.BuildOption.MacCommonLib {
+		outputRuntimeFilePath = filepath.Join(contentsFrameworks, libname.DarwinUniversalBinaryName)
+	}
+	event.ConsoleWriteInfo("Package - Copy Frameworks")
+	event.ConsoleWriteInfo("Package - Copy Runtime lib", outputRuntimeFilePath)
+	if err := tool.CopyFile(srcRuntimeFilePath, outputRuntimeFilePath); err != nil {
+		event.ConsoleWriteError(err.Error())
+		return false
+	}
+
+	outputAppBinary := filepath.Join(contentsMacOS, proj.AppOption.MacOS.PList.CFBundleExecutable)
+	event.ConsoleWriteInfo("Package - Copy MacOS")
+	event.ConsoleWriteInfo("Package - Copy App binary", outputAppBinary)
+	if err := tool.CopyFile(srcAppBinary, outputAppBinary); err != nil {
+		event.ConsoleWriteError(err.Error())
+		return false
+	}
+
+	outputAppIcns := filepath.Join(contentsResources, proj.AppOption.MacOS.PList.CFBundleIconFile)
+	event.ConsoleWriteInfo("Package - Copy Resources")
+	event.ConsoleWriteInfo("Package - Copy icns", outputAppIcns)
+	if err := tool.CopyFile(srcAppIconIcns, outputAppIcns); err != nil {
+		event.ConsoleWriteError(err.Error())
+		return false
+	}
+	event.ConsoleWriteInfo("Package - Copy App Files. Success")
 	return true
 }
 

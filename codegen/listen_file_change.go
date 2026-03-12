@@ -16,7 +16,6 @@ package codegen
 import (
 	"context"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
@@ -92,7 +91,7 @@ func detectFileChange() {
 	})
 
 	// 重新定位文件信息
-	appCodePath := options.CodePath()
+	appCodePath := bean.CodePath()
 	for _, form := range bean.GProject.UIForms {
 		userFile := filepath.Join(appCodePath, form.GOUserFile)
 		if fi := gFileInfo.Get(form.Name); fi != nil {

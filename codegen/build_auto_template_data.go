@@ -16,7 +16,6 @@ package codegen
 import (
 	"fmt"
 	"github.com/energye/designer/designer"
-	"github.com/energye/designer/options"
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -70,7 +69,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	}
 
 	// 写入文件
-	goUIFilePath := filepath.Join(options.CodePath(), formTab.GOFile())
+	goUIFilePath := filepath.Join(projBean.CodePath(), formTab.GOFile())
 	if err := os.WriteFile(goUIFilePath, formatted, 0644); err != nil {
 		return fmt.Errorf("写入自动代码文件失败: %w", err)
 	}

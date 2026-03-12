@@ -91,6 +91,7 @@ func Libs() *tool.HashMap[string, *EmbedFS] {
 }
 
 func macOSUniversalBinary(outputPath string) {
+	version.Init()
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2
 		return
