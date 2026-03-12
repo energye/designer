@@ -58,6 +58,11 @@ func packager() bool {
 			return false
 		}
 	}
+	if option.MacCert {
+		if !cert() {
+			return false
+		}
+	}
 	return true
 }
 
@@ -95,6 +100,11 @@ func pkg() bool {
 
 func dmg() bool {
 	event.ConsoleWriteInfo("Package - DMG")
+	return true
+}
+
+func cert() bool {
+	event.ConsoleWriteInfo("Cert")
 	return true
 }
 
