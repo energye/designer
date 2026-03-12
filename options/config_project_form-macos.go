@@ -78,11 +78,11 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleLocalizationsText.SetCaption("本地化语言列表")
 	m.CFBundleLocalizationsText.SetParent(m.platformTabPageMacOS)
 	m.CFBundleLocalizationsEdit = lcl.NewEdit(m)
-	m.CFBundleLocalizationsEdit.SetBounds(m.CFBundleLocalizationsText.Left()+100, baseTop+35, 430, 30)
+	m.CFBundleLocalizationsEdit.SetBounds(m.CFBundleLocalizationsText.Left()+100, baseTop+35, 230, 30)
 	m.CFBundleLocalizationsEdit.SetFont(m.font)
 	m.CFBundleLocalizationsEdit.SetShowHint(true)
-	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en, 默认: zh_CN")
-	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en, 默认: zh_CN")
+	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en")
+	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en")
 	m.CFBundleLocalizationsEdit.SetText(strings.Join(bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
 	m.CFBundleLocalizationsEdit.SetParent(m.platformTabPageMacOS)
 
@@ -151,5 +151,27 @@ func saveOrUpdateMacOSPList() {
 	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0666)
 	if err != nil {
 		event.ConsoleWriteError("macOS 应用配置-保存配置-WriteFile: ", err.Error())
+	}
+}
+
+func createAppLocalizations() {
+	// Contents/Resources/xxx.lproj
+	resourcesWindowsMetadataPath := bean.ResourceMetadataPath()
+	for _, local := range bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations {
+		resourcesLocal := filepath.Join(resourcesWindowsMetadataPath, local+".lproj")
+		if tool.IsExist(resourcesLocal) {
+			continue
+		}
+		if err := os.MkdirAll(resourcesLocal, 0755); err != nil {
+			event.ConsoleWriteError("Unable to create localizations:", err.Error())
+			continue
+		}
+		localizations := `/* localizations */
+CFBundleDisplayName = "{{CFBundleDisplayName}}";
+CFBundleName = "{{CFBundleName}}";
+`
+		localizations = strings.Replace(localizations, "{{CFBundleDisplayName}}", bean.GProject.AppOption.MacOS.PList.CFBundleDisplayName, 1)
+		localizations = strings.Replace(localizations, "{{CFBundleName}}", bean.GProject.AppOption.MacOS.PList.CFBundleName, 1)
+		_ = os.WriteFile(filepath.Join(resourcesLocal, "InfoPlist.strings"), []byte(localizations), 0666)
 	}
 }

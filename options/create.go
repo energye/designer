@@ -128,6 +128,8 @@ func doRunCreate(name, dir, guiRenderFramework string) bool {
 		saveOrUpdateWindowsManifest()
 		// 创建 macOS 应用程序清单配置
 		saveOrUpdateMacOSPList()
+		// 创建 本地语言文件
+		createAppLocalizations()
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功

@@ -458,6 +458,8 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 		saveOrUpdateWindowsManifest()
 		// 更新 macOS 配置并生成程序信息
 		saveOrUpdateMacOSPList()
+		// 创建 本地语言文件
+		createAppLocalizations()
 		// 更新图标
 		updateWindowICON()
 		event.ConsoleWriteInfo("项目配置-保存-完成")

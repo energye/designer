@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -100,34 +101,42 @@ func appRootDir() string {
 func createApp() bool {
 	appRoot := appRootDir()
 	event.ConsoleWriteInfo("Package - Create App Dir", appRoot)
-	err := os.RemoveAll(appRoot)
-	if err != nil {
-		event.ConsoleWriteError("Package - remove app root:", err.Error())
-		return false
-	}
+	//err := os.RemoveAll(appRoot)
+	//if err != nil {
+	//	event.ConsoleWriteError("Package - remove app root:", err.Error())
+	//	return false
+	//}
 	// Contents
 	contents := filepath.Join(appRoot, appContents)
-	if err := os.MkdirAll(contents, 0755); err != nil {
-		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
-		return false
+	if !tool.IsExist(contents) {
+		if err := os.MkdirAll(contents, 0755); err != nil {
+			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			return false
+		}
 	}
 	// Contents/Frameworks
 	contentsFrameworks := filepath.Join(contents, appContentsFrameworks)
-	if err := os.MkdirAll(contentsFrameworks, 0755); err != nil {
-		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
-		return false
+	if !tool.IsExist(contentsFrameworks) {
+		if err := os.MkdirAll(contentsFrameworks, 0755); err != nil {
+			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			return false
+		}
 	}
 	// Contents/MacOS
 	contentsMacOS := filepath.Join(contents, appContentsMacOS)
-	if err := os.MkdirAll(contentsMacOS, 0755); err != nil {
-		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
-		return false
+	if !tool.IsExist(contentsMacOS) {
+		if err := os.MkdirAll(contentsMacOS, 0755); err != nil {
+			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			return false
+		}
 	}
 	// Contents/Resources
 	contentsResources := filepath.Join(contents, appContentsResources)
-	if err := os.MkdirAll(contentsResources, 0755); err != nil {
-		event.ConsoleWriteError("Package - unable to create directory:", err.Error())
-		return false
+	if !tool.IsExist(contentsResources) {
+		if err := os.MkdirAll(contentsResources, 0755); err != nil {
+			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			return false
+		}
 	}
 	event.ConsoleWriteInfo("Package - Create App Dir success")
 	return true
@@ -163,10 +172,12 @@ func copyAppPkgInfo() bool {
 	appRoot := appRootDir()
 	contents := filepath.Join(appRoot, appContents)
 	copyPkgInfoPath := filepath.Join(contents, "PkgInfo")
-	err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
-	if err != nil {
-		event.ConsoleWriteError("Package - Copy App PkgInfo WriteFile:", err.Error())
-		return false
+	if !tool.IsExist(copyPkgInfoPath) {
+		err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
+		if err != nil {
+			event.ConsoleWriteError("Package - Copy App PkgInfo WriteFile:", err.Error())
+			return false
+		}
 	}
 	event.ConsoleWriteInfo("Package - Copy App PkgInfo success")
 	return true
@@ -236,6 +247,29 @@ func copyFiles() bool {
 		event.ConsoleWriteError(err.Error())
 		return false
 	}
+
+	// Contents/Resources/xxx.lproj
+	event.ConsoleWriteInfo("Package - Copy Localizations")
+	srcResourceMetadataPath := bean.ResourceMetadataPath()
+	for _, local := range bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations {
+		srcLocal := filepath.Join(srcResourceMetadataPath, local+".lproj")
+		dstLocal := filepath.Join(contentsResources, local+".lproj")
+		err := filepath.WalkDir(srcLocal, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				return nil
+			}
+			_, fileName := filepath.Split(path)
+			dstPath := filepath.Join(dstLocal, fileName)
+			return tool.CopyFile(path, dstPath)
+		})
+		if err != nil {
+			event.ConsoleWriteError("Package - Copy Localizations", err.Error())
+		}
+	}
+
 	event.ConsoleWriteInfo("Package - Copy App Files. Success")
 	return true
 }
