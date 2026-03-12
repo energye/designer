@@ -15,5 +15,6 @@
 
 package build
 
-func build() {
+func build() bool {
+	return true
 }

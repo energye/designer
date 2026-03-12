@@ -252,6 +252,15 @@ func CopyFile(srcFilePath, dstFilePath string) error {
 	return nil
 }
 
+func ContainsStrings(strs []string, str string) bool {
+	for _, s := range strs {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}
+
 //// DirPermissions 结构体用于存储目录权限检查结果
 //type DirPermissions struct {
 //	Exists     bool

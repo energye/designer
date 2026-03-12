@@ -20,6 +20,12 @@ import (
 	"github.com/energye/designer/cmd/project"
 )
 
+// app path
+//
+// run
+//
+//	build [dev prod]
+//	package
 func main() {
 	path := flag.String("path", "", "")
 	flag.Parse()

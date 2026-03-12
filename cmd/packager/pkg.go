@@ -21,3 +21,7 @@ func Run() {
 	event.ConsoleWriteInfo("CMD-package-run")
 	packager()
 }
+
+func AppBundle() bool {
+	return createAppBundle()
+}

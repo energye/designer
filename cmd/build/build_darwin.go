@@ -28,24 +28,24 @@ import (
 	"strings"
 )
 
-func build() {
+func build() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
-		return
+		return false
 	}
 	event.ConsoleWriteInfo("Build - project check config options")
 	option := proj.BuildOption
 	if !option.PlatformMacOS {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
-		return
+		return false
 	}
 	isAmd64 := runtime.GOARCH == "amd64"
 	isArm64 := runtime.GOARCH == "arm64"
 	if isAmd64 {
 		if !option.ArchX86_64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
-			return
+			return false
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
@@ -54,7 +54,7 @@ func build() {
 	if isArm64 {
 		if !option.ArchAarch64 {
 			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
-			return
+			return false
 		}
 		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
 		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
@@ -62,7 +62,7 @@ func build() {
 	}
 	if !option.UICocoa {
 		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
-		return
+		return false
 	}
 	event.ConsoleWriteInfo("Build - start build", proj.Name)
 
@@ -87,8 +87,12 @@ func build() {
 	if len(ldMatches) > 1 {
 		customLdflags = ldMatches[1]
 	}
+	buildMode := "dev"
+	if option.BuildModeRelease {
+		buildMode = "prod"
+	}
 	// 合并 tags prod
-	tags := tool.MergeTags("prod", customTags)
+	tags := tool.MergeTags(buildMode, customTags)
 	// 合并 ldflags
 	ldflags := tool.MergeLdflags("", customLdflags)
 	// 其它参数
@@ -102,7 +106,6 @@ func build() {
 		tempNewLdflags = append(tempNewLdflags, v)
 	}
 	ldflags = tempNewLdflags
-
 	args := []string{"build", "-v"}
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))
@@ -135,8 +138,10 @@ func build() {
 			cmd.Env = append(os.Environ(), env...)
 		}
 		cmd.Command("go", tempArgs...)
-		event.ConsoleWriteInfo("strip", output)
-		cmd.Command("strip", output)
+		if option.BuildModeRelease {
+			event.ConsoleWriteInfo("strip", output)
+			cmd.Command("strip", output)
+		}
 	}
 	if option.MacCommonLib {
 		// build amd64
@@ -160,6 +165,7 @@ func build() {
 	}
 
 	event.ConsoleWriteInfo("Build Successfully")
+	return true
 }
 
 func mergeUniversal(amd64File, arm64File, output string) {

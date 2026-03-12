@@ -27,38 +27,43 @@ import (
 )
 
 const (
-	appContents           = "Contents"
-	appContentsFrameworks = "Frameworks"
-	appContentsMacOS      = "MacOS"
-	appContentsResources  = "Resources"
+	AppContents           = "Contents"
+	AppContentsFrameworks = "Frameworks"
+	AppContentsMacOS      = "MacOS"
+	AppContentsResources  = "Resources"
 )
 
-func packager() {
+func packager() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Package - GProject is nil")
-		return
+		return false
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
 	if !option.MacDMG && !option.MacPKG {
 		event.ConsoleWriteWarn("Package - project not package format DMG PKG")
-		return
+		return false
+	}
+	if !createAppBundle() {
+		return false
 	}
 	if option.MacPKG {
-		event.ConsoleWriteInfo("Package - PKG")
-		pkg()
+		if !pkg() {
+			return false
+		}
 	}
 	if option.MacDMG {
-		event.ConsoleWriteInfo("Package - DMG")
-		dmg()
+		if !dmg() {
+			return false
+		}
 	}
-
+	return true
 }
 
-func pkg() {
-	event.ConsoleWriteInfo("Package - ProjectPath", bean.GPath)
-	event.ConsoleWriteInfo("Package - ProjectName", bean.GProject.Name)
+func createAppBundle() bool {
+	event.ConsoleWriteInfo("App Bundle", bean.GPath)
+	event.ConsoleWriteInfo("App Bundle", bean.GProject.Name)
 	proj := bean.GProject
 	option := proj.BuildOption
 	output := option.Output
@@ -66,24 +71,31 @@ func pkg() {
 		output = filepath.Join(bean.GPath, output)
 	}
 	outputFilename := filepath.Join(output, option.BuildFileName)
-	event.ConsoleWriteInfo("Package - GUI-Render:", proj.GUIRenderFramework, "Output:", outputFilename)
+	event.ConsoleWriteInfo("App Bundle - GUI-Render:", proj.GUIRenderFramework, "Output:", outputFilename)
 	if !createApp() {
-		return
+		return false
 	}
 	if !copyAppInfoPList() {
-		return
+		return false
 	}
 	if !copyAppPkgInfo() {
-		return
+		return false
 	}
 	if !copyFiles() {
-		return
+		return false
 	}
-	event.ConsoleWriteInfo("Package - ProjectName", bean.GProject.Name, "Success")
+	event.ConsoleWriteInfo("App Bundle", bean.GProject.Name, "Success")
+	return true
 }
 
-func dmg() {
+func pkg() bool {
+	event.ConsoleWriteInfo("Package - PKG")
+	return true
+}
 
+func dmg() bool {
+	event.ConsoleWriteInfo("Package - DMG")
+	return true
 }
 
 func appRootDir() string {
@@ -100,77 +112,77 @@ func appRootDir() string {
 
 func createApp() bool {
 	appRoot := appRootDir()
-	event.ConsoleWriteInfo("Package - Create App Dir", appRoot)
+	event.ConsoleWriteInfo("App Bundle - Create App Dir", appRoot)
 	//err := os.RemoveAll(appRoot)
 	//if err != nil {
 	//	event.ConsoleWriteError("Package - remove app root:", err.Error())
 	//	return false
 	//}
 	// Contents
-	contents := filepath.Join(appRoot, appContents)
+	contents := filepath.Join(appRoot, AppContents)
 	if !tool.IsExist(contents) {
 		if err := os.MkdirAll(contents, 0755); err != nil {
-			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			event.ConsoleWriteError("App Bundle - unable to create directory:", err.Error())
 			return false
 		}
 	}
 	// Contents/Frameworks
-	contentsFrameworks := filepath.Join(contents, appContentsFrameworks)
+	contentsFrameworks := filepath.Join(contents, AppContentsFrameworks)
 	if !tool.IsExist(contentsFrameworks) {
 		if err := os.MkdirAll(contentsFrameworks, 0755); err != nil {
-			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			event.ConsoleWriteError("App Bundle - unable to create directory:", err.Error())
 			return false
 		}
 	}
 	// Contents/MacOS
-	contentsMacOS := filepath.Join(contents, appContentsMacOS)
+	contentsMacOS := filepath.Join(contents, AppContentsMacOS)
 	if !tool.IsExist(contentsMacOS) {
 		if err := os.MkdirAll(contentsMacOS, 0755); err != nil {
-			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			event.ConsoleWriteError("App Bundle - unable to create directory:", err.Error())
 			return false
 		}
 	}
 	// Contents/Resources
-	contentsResources := filepath.Join(contents, appContentsResources)
+	contentsResources := filepath.Join(contents, AppContentsResources)
 	if !tool.IsExist(contentsResources) {
 		if err := os.MkdirAll(contentsResources, 0755); err != nil {
-			event.ConsoleWriteError("Package - unable to create directory:", err.Error())
+			event.ConsoleWriteError("App Bundle - unable to create directory:", err.Error())
 			return false
 		}
 	}
-	event.ConsoleWriteInfo("Package - Create App Dir success")
+	event.ConsoleWriteInfo("App Bundle - Create Success")
 	return true
 }
 
 func copyAppInfoPList() bool {
-	event.ConsoleWriteInfo("Package - Copy App Info.plist")
+	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist")
 	resourcesPath := filepath.Join(bean.GPath, "resources", "metadata", "Info.plist")
 	if !tool.IsExist(resourcesPath) {
-		event.ConsoleWriteError("Package - Info.plist not exist", resourcesPath)
+		event.ConsoleWriteError("App Bundle - Info.plist not exist", resourcesPath)
 		return false
 	}
 	infoPlistData, err := os.ReadFile(resourcesPath)
 	if err != nil {
-		event.ConsoleWriteError("Package - Copy App Info.plist ReadFile:", err.Error())
+		event.ConsoleWriteError("App Bundle - Copy App Info.plist ReadFile:", err.Error())
 		return false
 	}
 	appRoot := appRootDir()
-	contents := filepath.Join(appRoot, appContents)
+	contents := filepath.Join(appRoot, AppContents)
 	copyInfoPlistPath := filepath.Join(contents, "Info.plist")
 	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0666)
 	if err != nil {
-		event.ConsoleWriteError("Package - Copy App Info.plist WriteFile:", err.Error())
+		event.ConsoleWriteError("App Bundle - Copy App Info.plist WriteFile:", err.Error())
 		return false
 	}
-	event.ConsoleWriteInfo("Package - Copy App Info.plist success")
+	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist Success")
 	return true
 }
 
 func copyAppPkgInfo() bool {
 	pkgInfo := []byte{0x41, 0x50, 0x50, 0x4C, 0x3F, 0x3F, 0x3F, 0x3F, 0x0D, 0x0A}
-	event.ConsoleWriteInfo("Package - Copy App PkgInfo")
+	event.ConsoleWriteInfo("App Bundle - Copy App PkgInfo")
 	appRoot := appRootDir()
-	contents := filepath.Join(appRoot, appContents)
+	contents := filepath.Join(appRoot, AppContents)
 	copyPkgInfoPath := filepath.Join(contents, "PkgInfo")
 	if !tool.IsExist(copyPkgInfoPath) {
 		err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
@@ -179,13 +191,12 @@ func copyAppPkgInfo() bool {
 			return false
 		}
 	}
-	event.ConsoleWriteInfo("Package - Copy App PkgInfo success")
+	event.ConsoleWriteInfo("App Bundle - Copy App PkgInfo success")
 	return true
 }
 
 func copyFiles() bool {
-	event.ConsoleWriteInfo("Package - Copy App Files")
-	//libDll := lib.Libs().Get(libname.GetDLLName())
+	event.ConsoleWriteInfo("App Bundle - Copy App Files")
 	cfg := config.Config
 	proj := bean.GProject
 	appRoot := appRootDir()
@@ -196,7 +207,7 @@ func copyFiles() bool {
 		srcRuntimeFilePath = filepath.Join(frameworksRuntime, libname.DarwinUniversalBinaryName)
 	}
 	if !tool.IsExist(srcRuntimeFilePath) {
-		event.ConsoleWriteError("Package - energy runtime lib not exist.", srcRuntimeFilePath)
+		event.ConsoleWriteError("App Bundle - energy runtime lib not exist.", srcRuntimeFilePath)
 		return false
 	}
 	// app binary
@@ -206,50 +217,50 @@ func copyFiles() bool {
 	}
 	srcAppBinary := filepath.Join(output, proj.BuildOption.BuildFileName)
 	if !tool.IsExist(srcAppBinary) {
-		event.ConsoleWriteError("Package - app binary not exist.", srcAppBinary)
+		event.ConsoleWriteError("App Bundle - app binary not exist.", srcAppBinary)
 		return false
 	}
 	// icon.icns
 	srcAppIconIcns := filepath.Join(bean.ResourceEmbedPath(), "icon.icns")
 	if !tool.IsExist(srcAppIconIcns) {
-		event.ConsoleWriteError("Package - app icon.icns not exist.", srcAppIconIcns)
+		event.ConsoleWriteError("App Bundle - app icon.icns not exist.", srcAppIconIcns)
 		return false
 	}
 
-	contents := filepath.Join(appRoot, appContents)
-	contentsFrameworks := filepath.Join(contents, appContentsFrameworks)
-	contentsMacOS := filepath.Join(contents, appContentsMacOS)
-	contentsResources := filepath.Join(contents, appContentsResources)
+	contents := filepath.Join(appRoot, AppContents)
+	contentsFrameworks := filepath.Join(contents, AppContentsFrameworks)
+	contentsMacOS := filepath.Join(contents, AppContentsMacOS)
+	contentsResources := filepath.Join(contents, AppContentsResources)
 
 	outputRuntimeFilePath := filepath.Join(contentsFrameworks, libname.GetDLLName())
 	if proj.BuildOption.MacCommonLib {
 		outputRuntimeFilePath = filepath.Join(contentsFrameworks, libname.DarwinUniversalBinaryName)
 	}
-	event.ConsoleWriteInfo("Package - Copy Frameworks")
-	event.ConsoleWriteInfo("Package - Copy Runtime lib", outputRuntimeFilePath)
+	event.ConsoleWriteInfo("App Bundle - Copy Frameworks")
+	event.ConsoleWriteInfo("App Bundle - Copy Runtime lib", outputRuntimeFilePath)
 	if err := tool.CopyFile(srcRuntimeFilePath, outputRuntimeFilePath); err != nil {
 		event.ConsoleWriteError(err.Error())
 		return false
 	}
 
 	outputAppBinary := filepath.Join(contentsMacOS, proj.AppOption.MacOS.PList.CFBundleExecutable)
-	event.ConsoleWriteInfo("Package - Copy MacOS")
-	event.ConsoleWriteInfo("Package - Copy App binary", outputAppBinary)
+	event.ConsoleWriteInfo("App Bundle - Copy MacOS")
+	event.ConsoleWriteInfo("App Bundle - Copy App binary", outputAppBinary)
 	if err := tool.CopyFile(srcAppBinary, outputAppBinary); err != nil {
 		event.ConsoleWriteError(err.Error())
 		return false
 	}
 
 	outputAppIcns := filepath.Join(contentsResources, proj.AppOption.MacOS.PList.CFBundleIconFile)
-	event.ConsoleWriteInfo("Package - Copy Resources")
-	event.ConsoleWriteInfo("Package - Copy icns", outputAppIcns)
+	event.ConsoleWriteInfo("App Bundle - Copy Resources")
+	event.ConsoleWriteInfo("App Bundle - Copy icns", outputAppIcns)
 	if err := tool.CopyFile(srcAppIconIcns, outputAppIcns); err != nil {
 		event.ConsoleWriteError(err.Error())
 		return false
 	}
 
 	// Contents/Resources/xxx.lproj
-	event.ConsoleWriteInfo("Package - Copy Localizations")
+	event.ConsoleWriteInfo("App Bundle - Copy Localizations")
 	srcResourceMetadataPath := bean.ResourceMetadataPath()
 	for _, local := range bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations {
 		srcLocal := filepath.Join(srcResourceMetadataPath, local+".lproj")
@@ -266,11 +277,11 @@ func copyFiles() bool {
 			return tool.CopyFile(path, dstPath)
 		})
 		if err != nil {
-			event.ConsoleWriteError("Package - Copy Localizations", err.Error())
+			event.ConsoleWriteError("App Bundle - Copy Localizations", err.Error())
 		}
 	}
 
-	event.ConsoleWriteInfo("Package - Copy App Files. Success")
+	event.ConsoleWriteInfo("App Bundle - Copy App Files. Success")
 	return true
 }
 

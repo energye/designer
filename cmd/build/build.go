@@ -17,7 +17,7 @@ import (
 	"github.com/energye/designer/event"
 )
 
-func Run() {
+func Run() bool {
 	event.ConsoleWriteInfo("CMD-build-run")
-	build()
+	return build()
 }

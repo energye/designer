@@ -14,8 +14,8 @@
 package preview
 
 import (
-	"errors"
-	"fmt"
+	"github.com/energye/designer/cmd/build"
+	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -23,76 +23,9 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"path/filepath"
-	"regexp"
-	"strings"
 )
 
 var runCmd *command.CMD
-
-// 构建项目
-func runBuild(output string) (err error) {
-	option := bean.GProject.BuildOption
-	// 编译参数
-	buildArgs := option.GoArgs
-	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
-	reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
-	reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
-	// 提取 tags
-	tagMatches := reTags.FindStringSubmatch(buildArgs)
-	customTags := ""
-	customLdflags := ""
-	if len(tagMatches) > 1 {
-		customTags = tagMatches[1]
-	}
-	// 提取 ldflags
-	ldMatches := reLdflags.FindStringSubmatch(buildArgs)
-	if len(ldMatches) > 1 {
-		customLdflags = ldMatches[1]
-	}
-	// 合并 tags
-	tags := tool.MergeTags("dev", customTags)
-	// 合并 ldflags
-	ldflags := tool.MergeLdflags("", customLdflags)
-	// 其它参数
-	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
-	if !tool.IsWindows {
-		// macOS, linux 去除 -H windowsgui
-		tempNewLdflags := []string{}
-		for _, v := range ldflags {
-			if v == "-H" || v == "windowsgui" {
-				continue
-			}
-			tempNewLdflags = append(tempNewLdflags, v)
-		}
-		ldflags = tempNewLdflags
-	}
-
-	buildCmd := command.NewCMD()
-	buildCmd.IsPrint = false
-	buildCmd.HideWindow = true
-	buildCmd.Dir = bean.GPath
-	buildCmd.Console = func(data string, level command.Level) {
-		logs.Info("Level", level.String(), data)
-		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
-		if level == command.LError && err == nil {
-			err = errors.New(data)
-		}
-	}
-	args := []string{"build", "-v"}
-	if len(tags) > 0 {
-		args = append(args, "-tags", strings.Join(tags, ","))
-	}
-	if len(ldflags) > 0 {
-		args = append(args, "-ldflags", strings.Join(ldflags, " "))
-	}
-	args = append(args, "-o", output)
-	if len(otherArgs) > 0 {
-		args = append(args, otherArgs...)
-	}
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "go " + strings.Join(args, " ")}})
-	buildCmd.Command("go", args...)
-	return
-}
 
 // 执行应用程序的预览功能
 // 根据项目配置预览当前项目
@@ -102,18 +35,17 @@ func runPreview(state chan<- any) {
 	}
 	event.ConsoleWriteClear() //清空控制台消息
 	state <- consts.PsStarting
-	option := bean.GProject.BuildOption
-	output := option.Output
-	if !filepath.IsAbs(option.Output) {
-		output = filepath.Join(bean.GPath, output)
-	}
-	output = filepath.Join(output, option.BuildFileName)
 
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "构建程序: " + output}})
-	// 构建项目二进制
-	if err := runBuild(output); err != nil {
-		msg := fmt.Sprintf("构建程序失败: %v", err.Error())
-		logs.Error(msg)
+	// macOS > xxx.app, windows > xxx.exe, linux > xxx
+	output := appExecutable()
+
+	// build app
+	if !build.Run() {
+		state <- consts.PsStop
+		return
+	}
+	// macOS bundle > xxx.app
+	if !packager.AppBundle() {
 		state <- consts.PsStop
 		return
 	}
@@ -150,4 +82,28 @@ func stopPreview() {
 		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)
 	}
 	runCmd = nil
+}
+
+// appExecutable 获取应用程序可执行文件的完整路径
+//
+//	根据项目构建选项和操作系统类型，计算并返回可执行文件的绝对路径
+//	在 macOS 上会构建 .app 包的可执行文件路径，在 Windows/Linux 上直接返回构建文件路径
+func appExecutable() string {
+	proj := bean.GProject
+	option := proj.BuildOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	if tool.IsWindows || tool.IsLinux {
+		buildFile := filepath.Join(output, option.BuildFileName)
+		return buildFile
+	} else if tool.IsDarwin {
+		packageName := option.PackageName + ".app"
+		appRoot := filepath.Join(output, packageName)
+		macOS := filepath.Join(appRoot, "Contents", "MacOS")
+		buildFile := filepath.Join(macOS, proj.AppOption.MacOS.PList.CFBundleExecutable)
+		return buildFile
+	}
+	return ""
 }
