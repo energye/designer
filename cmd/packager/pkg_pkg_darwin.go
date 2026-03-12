@@ -146,7 +146,8 @@ func copyAppInfoPList() bool {
 		return false
 	}
 	appRoot := appRootDir()
-	copyInfoPlistPath := filepath.Join(appRoot, "Info.plist")
+	contents := filepath.Join(appRoot, appContents)
+	copyInfoPlistPath := filepath.Join(contents, "Info.plist")
 	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0666)
 	if err != nil {
 		event.ConsoleWriteError("Package - Copy App Info.plist WriteFile:", err.Error())
@@ -160,7 +161,8 @@ func copyAppPkgInfo() bool {
 	pkgInfo := []byte{0x41, 0x50, 0x50, 0x4C, 0x3F, 0x3F, 0x3F, 0x3F, 0x0D, 0x0A}
 	event.ConsoleWriteInfo("Package - Copy App PkgInfo")
 	appRoot := appRootDir()
-	copyPkgInfoPath := filepath.Join(appRoot, "PkgInfo")
+	contents := filepath.Join(appRoot, appContents)
+	copyPkgInfoPath := filepath.Join(contents, "PkgInfo")
 	err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
 	if err != nil {
 		event.ConsoleWriteError("Package - Copy App PkgInfo WriteFile:", err.Error())

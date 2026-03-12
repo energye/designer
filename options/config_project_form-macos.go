@@ -81,8 +81,8 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.CFBundleLocalizationsEdit.SetBounds(m.CFBundleLocalizationsText.Left()+100, baseTop+35, 430, 30)
 	m.CFBundleLocalizationsEdit.SetFont(m.font)
 	m.CFBundleLocalizationsEdit.SetShowHint(true)
-	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
-	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en_US, 默认: zh_CN")
+	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en, 默认: zh_CN")
+	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en, 默认: zh_CN")
 	m.CFBundleLocalizationsEdit.SetText(strings.Join(bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
 	m.CFBundleLocalizationsEdit.SetParent(m.platformTabPageMacOS)
 
