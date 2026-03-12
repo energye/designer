@@ -20,6 +20,8 @@ import (
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
+	"github.com/energye/lcl/rtl/version"
+	"github.com/energye/lcl/tool/command"
 	"path/filepath"
 )
 
@@ -73,6 +75,9 @@ func ExtractLibrary(outputPath string) (libPath string) {
 		}
 		return false
 	})
+	if tool.IsDarwin {
+		go macOSUniversalBinary(outputPath)
+	}
 	return
 }
 
@@ -83,4 +88,27 @@ func DefaultLibName(filename string) bool {
 
 func Libs() *tool.HashMap[string, *EmbedFS] {
 	return libs
+}
+
+func macOSUniversalBinary(outputPath string) {
+	if version.OSVersion.Major <= 10 {
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2
+		return
+	}
+	universalLibFilePath := filepath.Join(outputPath, libname.DarwinUniversalBinaryName)
+	if tool.IsExist(universalLibFilePath) {
+		return
+	}
+	libArm64 := libs.Get(PathARM64Cocoa)
+	if libArm64 == nil {
+		panic("libArm64 is nil")
+	}
+	libAmd64 := libs.Get(PathAMD64Cocoa)
+	if libAmd64 == nil {
+		panic("libAmd64 is nil")
+	}
+	arm64LibFilePath := filepath.Join(outputPath, libArm64.OutputFilename)
+	amd64LibFilePath := filepath.Join(outputPath, libAmd64.OutputFilename)
+	cmd := command.NewCMD()
+	cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
 }

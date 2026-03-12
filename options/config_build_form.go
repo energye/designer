@@ -22,6 +22,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/tool/command"
@@ -819,7 +820,7 @@ func (m *TBuildForm) mergeMacOSUniversalBinary() error {
 		tempAmd64LibName := libAmd64.OutputFilename
 		arm64LibFilePath := filepath.Join(outputLibPath, tempArm64LibName)
 		amd64LibFilePath := filepath.Join(outputLibPath, tempAmd64LibName)
-		universalLibFilePath := filepath.Join(outputLibPath, "libenergy-darwin-universal-cocoa.dylib")
+		universalLibFilePath := filepath.Join(outputLibPath, libname.DarwinUniversalBinaryName)
 		event.ConsoleWriteInfo("Merge macOS UniversalBinary, arm64LibFilePath:", arm64LibFilePath)
 		event.ConsoleWriteInfo("Merge macOS UniversalBinary, amd64LibFilePath:", amd64LibFilePath)
 		_ = os.Remove(universalLibFilePath)

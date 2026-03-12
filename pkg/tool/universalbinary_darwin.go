@@ -19,11 +19,11 @@ import (
 	"archive/zip"
 	"bytes"
 	"errors"
+	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/rtl/version"
+	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
-
-	"github.com/energye/lcl/tool/command"
 )
 
 // UniversalBinary 创建 macOS 通用二进制文件（Universal Binary）
@@ -36,6 +36,9 @@ import (
 //
 //	error: 错误信息，如果系统版本不满足要求、文件不存在或处理失败则返回相应错误
 func UniversalBinary(amd64ZipPath, arm64ZipPath, outputPath string) (string, error) {
+	if !IsDarwin {
+		return "", errors.New("must macOS")
+	}
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
 		return "", errors.New("must macOS ≥ 11.0 Xcode ≥ 12.2")
@@ -51,7 +54,7 @@ func UniversalBinary(amd64ZipPath, arm64ZipPath, outputPath string) (string, err
 	tempAmd64LibName := "temp-libenergy-darwin-amd64-cocoa.dylib"
 	arm64LibFilePath := filepath.Join(outputPath, tempArm64LibName)
 	amd64LibFilePath := filepath.Join(outputPath, tempAmd64LibName)
-	universalLibFilePath := filepath.Join(outputPath, "libenergy-darwin-universal-cocoa.dylib")
+	universalLibFilePath := filepath.Join(outputPath, libname.DarwinUniversalBinaryName)
 	defer func() {
 		_ = os.Remove(arm64LibFilePath)
 		_ = os.Remove(amd64LibFilePath)

@@ -56,5 +56,6 @@ func init() {
 			os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
 			os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
 		}
+		// os.Setenv("--universal-binary", "universal")
 	}
 }
