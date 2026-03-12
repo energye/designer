@@ -146,7 +146,7 @@ func saveOrUpdateMacOSPList() {
 		return
 	}
 	// 保存到 resources/Info.plist
-	resourcesPath := ResourceMetadataPath()
+	resourcesPath := bean.ResourceMetadataPath()
 	pListOutFile := "Info.plist"
 	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0666)
 	if err != nil {

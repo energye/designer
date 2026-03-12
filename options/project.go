@@ -14,7 +14,6 @@
 package options
 
 import (
-	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
@@ -54,29 +53,4 @@ func SetGlobalProject(path string, project *bean.TProject) {
 			_ = SetGoRootPath(env.GoRoot[env.GoRootSelectIndex])
 		}
 	}
-}
-
-// 返回当前项目布局文件存放目录
-func LayoutsPath() string {
-	return filepath.Join(bean.GPath, consts.LayoutsDir)
-}
-
-// 返回当前项目代码存放目录
-func CodePath() string {
-	return filepath.Join(bean.GPath, bean.GProject.Package)
-}
-
-// 返回当前项目资源路径
-func ResourcePath() string {
-	return filepath.Join(bean.GPath, "resources")
-}
-
-// 返回当前应用元数据资源路径
-func ResourceMetadataPath() string {
-	return filepath.Join(ResourcePath(), "metadata")
-}
-
-// 返回当前项目内置资源目录
-func ResourceEmbedPath() string {
-	return filepath.Join(ResourcePath(), "embed")
 }

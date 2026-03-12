@@ -282,7 +282,7 @@ func saveOrUpdateWindowsManifest() {
 	rs.SetVersionInfo(v)
 
 	// 保存到 resource 目录
-	resourcesPath := ResourceMetadataPath()
+	resourcesPath := bean.ResourceMetadataPath()
 	for _, arch := range []winres.Arch{winres.ArchAMD64 /*winres.ArchARM64,*/, winres.ArchI386} {
 		sysoOutBuf := tool.Buffer{}
 		err = rs.WriteObject(&sysoOutBuf, arch)

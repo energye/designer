@@ -46,9 +46,9 @@ func createProjectDir() {
 	// 代码存放目录
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName)
 	// 资源存放目录
-	resourcesPath := ResourcePath()
-	resourcesEmbedPath := ResourceEmbedPath()
-	resourcesWindowsMetadataPath := ResourceMetadataPath()
+	resourcesPath := bean.ResourcePath()
+	resourcesEmbedPath := bean.ResourceEmbedPath()
+	resourcesWindowsMetadataPath := bean.ResourceMetadataPath()
 	paths := []string{appCodePath, resourcesPath, resourcesEmbedPath, resourcesWindowsMetadataPath}
 	for _, path := range paths {
 		if err := os.Mkdir(path, fs.ModePerm); err != nil {

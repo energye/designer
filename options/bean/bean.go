@@ -14,8 +14,10 @@
 package bean
 
 import (
+	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winres"
+	"path/filepath"
 )
 
 var (
@@ -279,4 +281,29 @@ func init() {
 	GUIRenderFrameworks.Add(GUIRenderFramework_LCL, "LCL (Native - Lazarus Component Library)")
 	GUIRenderFrameworks.Add(GUIRenderFramework_WV, "WV (Web - WebView2, WebKit2)")
 	GUIRenderFrameworks.Add(GUIRenderFramework_CEF, "CEF (Web - Chromium Embedded Framework)")
+}
+
+// 返回当前项目布局文件存放目录
+func LayoutsPath() string {
+	return filepath.Join(GPath, consts.LayoutsDir)
+}
+
+// 返回当前项目代码存放目录
+func CodePath() string {
+	return filepath.Join(GPath, GProject.Package)
+}
+
+// 返回当前项目资源路径
+func ResourcePath() string {
+	return filepath.Join(GPath, "resources")
+}
+
+// 返回当前应用元数据资源路径
+func ResourceMetadataPath() string {
+	return filepath.Join(ResourcePath(), "metadata")
+}
+
+// 返回当前项目内置资源目录
+func ResourceEmbedPath() string {
+	return filepath.Join(ResourcePath(), "embed")
 }
