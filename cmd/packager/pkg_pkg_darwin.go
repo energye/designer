@@ -16,6 +16,7 @@
 package packager
 
 import (
+	"embed"
 	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -38,6 +39,9 @@ const (
 	AppContentsMacOS      = "MacOS"
 	AppContentsResources  = "Resources"
 )
+
+//go:embed dmg
+var images embed.FS
 
 func packager() bool {
 	proj := bean.GProject
