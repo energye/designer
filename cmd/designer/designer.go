@@ -14,22 +14,60 @@
 package main
 
 import (
-	"flag"
 	"github.com/energye/designer/cmd/build"
+	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/cmd/project"
+	"github.com/energye/designer/cmd/run"
 )
 
-// app path
-//
-// run
-//
-//	build [dev prod]
-//	package
+/*
+designer run -path /you/app/path
+designer build -path /you/app/path
+designer package -path /you/app/path
+*/
 func main() {
-	path := flag.String("path", "", "")
-	flag.Parse()
-	project.LoadProject(*path)
-	build.Run()
-	packager.Run()
+	cmd := dflag.New()
+	cmd.Add(&dflag.Command{
+		Name: "run",
+		Long: "designer run, 运行应用",
+		Run: func(args dflag.Args) {
+			if args.Contains("path") {
+				path := args.Get("path")
+				project.LoadProject(path)
+				if build.Run() {
+					// 运行
+					run.Run(nil)
+				}
+			}
+		},
+	})
+	cmd.Add(&dflag.Command{
+		Name: "build",
+		Long: "designer build, 构建应用二进制程序",
+		Run: func(args dflag.Args) {
+			if args.Contains("path") {
+				path := args.Get("path")
+				project.LoadProject(path)
+				build.Run()
+			}
+		},
+	})
+	cmd.Add(&dflag.Command{
+		Name: "package",
+		Long: "designer package, 制作应用安装包",
+		Run: func(args dflag.Args) {
+			if args.Contains("path") {
+				path := args.Get("path")
+				project.LoadProject(path)
+				if !build.Run() {
+					return
+				}
+				if !packager.Run() {
+					return
+				}
+			}
+		},
+	})
+	cmd.Parse()
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/event"
 )
 
+// Run 执行构建命令的入口函数
 func Run() bool {
 	event.ConsoleWriteInfo("CMD-build-run")
 	return build()

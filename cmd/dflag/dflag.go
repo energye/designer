@@ -16,32 +16,52 @@ package dflag
 import (
 	"github.com/energye/designer/pkg/tool"
 	"os"
+	"strings"
 )
 
-func New() *command {
-	return &command{commands: tool.NewArrayMap[string, *Command]()}
+// New 创建并返回一个新的命令实例
+func New() *dFlag {
+	return &dFlag{commands: tool.NewArrayMap[string, *Command]()}
+}
+
+type Args struct {
+	list *tool.HashMap[string, string]
+}
+
+// Get 获取指定名称的参数值
+//
+//	name: 参数名称, "-path --path" > path
+func (m *Args) Get(name string) string {
+	return m.list.Get(name)
+}
+
+// Contains 检查指定名称的参数是否存在
+//
+//	name: 参数名称, "-path --path" > path
+func (m *Args) Contains(name string) bool {
+	return m.list.ContainsKey(name)
 }
 
 type Command struct {
 	Name string
 	Long string
-	Run  func(args []string)
+	Run  func(args Args)
 }
 
-type command struct {
+type dFlag struct {
 	commands *tool.ArrayMap[string, *Command]
 }
 
-func (m *command) Add(cmd *Command) {
+func (m *dFlag) Add(cmd *Command) {
 	if cmd == nil || cmd.Name == "" || cmd.Run == nil {
 		return
 	}
 	m.commands.Add(cmd.Name, cmd)
 }
 
-func (m *command) Parse() {
-	args := os.Args[1:]
-	if len(args) == 0 {
+func (m *dFlag) Parse() {
+	newArgs := os.Args[1:]
+	if len(newArgs) == 0 {
 		keys := m.commands.Keys()
 		for _, name := range keys {
 			println(name)
@@ -50,7 +70,39 @@ func (m *command) Parse() {
 		}
 		return
 	}
-	if cmd := m.commands.Get(args[0]); cmd != nil {
-		cmd.Run(args[1:])
+	if cmd := m.commands.Get(newArgs[0]); cmd != nil {
+		inArgs := &Args{tool.NewHashMap[string, string]()}
+		cmdArgs := newArgs[1:]
+		for i := 0; i < len(cmdArgs); i++ {
+			el := strings.TrimSpace(cmdArgs[i])
+			if el == "" {
+				continue
+			}
+			if el[0] == '-' {
+				v := ""
+				if eqEl := strings.Split(el, "="); len(eqEl) > 1 {
+					el = eqEl[0]
+					v = eqEl[1]
+				} else if i+1 <= len(cmdArgs)-1 {
+					tmpV := strings.TrimSpace(cmdArgs[i+1])
+					if tmpV != "" && tmpV[0] != '-' {
+						v = tmpV
+						i++
+					}
+				}
+				name := strings.TrimFunc(el, func(r rune) bool {
+					if r == '-' {
+						return true
+					}
+					return false
+				})
+				inArgs.list.Add(name, v)
+			} else {
+				inArgs.list.Add(el, "")
+			}
+		}
+		if cmd.Run != nil {
+			cmd.Run(*inArgs)
+		}
 	}
 }

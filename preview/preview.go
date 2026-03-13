@@ -16,13 +16,11 @@ package preview
 import (
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/cmd/packager"
+	"github.com/energye/designer/cmd/run"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
-	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
-	"path/filepath"
 )
 
 var runCmd *command.CMD
@@ -35,10 +33,6 @@ func runPreview(state chan<- any) {
 	}
 	event.ConsoleWriteClear() //清空控制台消息
 	state <- consts.PsStarting
-
-	// macOS > xxx.app, windows > xxx.exe, linux > xxx
-	output := appExecutable()
-
 	// build app
 	if !build.Run() {
 		state <- consts.PsStop
@@ -49,23 +43,13 @@ func runPreview(state chan<- any) {
 		state <- consts.PsStop
 		return
 	}
-	// 运行命令
-	runCmd = command.NewCMD()
-	runCmd.IsPrint = false
-	runCmd.HideWindow = true
-	runCmd.Dir = bean.GPath
-	runCmd.Console = func(data string, level command.Level) {
-		logs.Info("[", level.String(), "]", data)
-		event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: data}}) //正常消息
-		if tool.Equal(data, "exit") {
-			// 退出
-			//state <- 0
-		}
-	}
-	// 开始运行
+	// macOS > xxx.app, windows > xxx.exe, linux > xxx
+	output := run.AppExecutable()
 	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "运行预览: " + output}})
-	state <- consts.PsStarted
-	runCmd.Command(output)
+	// 开始运行
+	state <- consts.PsStarted // 运行命令
+	runCmd = command.NewCMD()
+	run.Run(runCmd)
 	state <- consts.PsStop
 	close(state)
 	logs.Debug("run preview end")
@@ -82,28 +66,4 @@ func stopPreview() {
 		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)
 	}
 	runCmd = nil
-}
-
-// appExecutable 获取应用程序可执行文件的完整路径
-//
-//	根据项目构建选项和操作系统类型，计算并返回可执行文件的绝对路径
-//	在 macOS 上会构建 .app 包的可执行文件路径，在 Windows/Linux 上直接返回构建文件路径
-func appExecutable() string {
-	proj := bean.GProject
-	option := proj.BuildOption
-	output := option.Output
-	if !filepath.IsAbs(option.Output) {
-		output = filepath.Join(bean.GPath, output)
-	}
-	if tool.IsWindows || tool.IsLinux {
-		buildFile := filepath.Join(output, option.BuildFileName)
-		return buildFile
-	} else if tool.IsDarwin {
-		packageName := option.PackageName + ".app"
-		appRoot := filepath.Join(output, packageName)
-		macOS := filepath.Join(appRoot, "Contents", "MacOS")
-		buildFile := filepath.Join(macOS, proj.AppOption.MacOS.PList.CFBundleExecutable)
-		return buildFile
-	}
-	return ""
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,6 +41,28 @@ func LoadProject(filePath string) {
 		return
 	}
 	if tool.IsExist(filePath) {
+		st, err := os.Stat(filePath)
+		if err != nil {
+			logs.Error("Project config", err.Error())
+			return
+		}
+		if st.IsDir() {
+			err = filepath.WalkDir(filePath, func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				if strings.HasSuffix(d.Name(), consts.EGPExt) {
+					filePath = path
+					return nil
+				}
+				return nil
+			})
+			if err != nil {
+				logs.Error("Project config", err.Error())
+				return
+			}
+		}
+
 		path, file := filepath.Split(filePath)
 		isEgp := strings.ToLower(filepath.Ext(file)) == consts.EGPExt
 		if isEgp {
@@ -57,7 +80,7 @@ func LoadProject(filePath string) {
 			bean.GPath = path
 			bean.GProject = project
 		} else {
-			logs.Error("not .egp project config file:", filePath)
+			logs.Error("Not .egp project config file:", filePath)
 		}
 	} else {
 		logs.Error("project config file .egp not exist", filePath)

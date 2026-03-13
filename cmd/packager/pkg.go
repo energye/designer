@@ -17,11 +17,13 @@ import (
 	"github.com/energye/designer/event"
 )
 
-func Run() {
+// Run 执行打包命令的入口函数
+func Run() bool {
 	event.ConsoleWriteInfo("CMD-package-run")
-	packager()
+	return packager()
 }
 
+// AppBundle 创建 macOS 应用程序包
 func AppBundle() bool {
 	return createAppBundle()
 }
