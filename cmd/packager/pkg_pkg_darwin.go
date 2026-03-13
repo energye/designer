@@ -60,16 +60,22 @@ func packager() bool {
 		if !cert() {
 			return false
 		}
+	} else {
+		event.ConsoleWriteInfo("Package - Not Enabled cert")
 	}
 	if option.MacPKG {
 		if !pkg() {
 			return false
 		}
+	} else {
+		event.ConsoleWriteInfo("Package - Not Enabled PKG")
 	}
 	if option.MacDMG {
 		if !dmg() {
 			return false
 		}
+	} else {
+		event.ConsoleWriteInfo("Package - Not Enabled DMG")
 	}
 	return true
 }

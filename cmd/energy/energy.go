@@ -23,9 +23,9 @@ import (
 )
 
 /*
-designer run -path /you/app/path
-designer build -path /you/app/path
-designer package -path /you/app/path
+energy run -path /you/app/path
+energy build -path /you/app/path
+energy package -path /you/app/path
 */
 func main() {
 	projectPath := func(args dflag.Args) string {
@@ -39,7 +39,7 @@ func main() {
 	cmd := dflag.New()
 	cmd.Add(&dflag.Command{
 		Name: "run",
-		Long: "designer run, 运行应用",
+		Long: "energy run, 运行应用",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
@@ -51,7 +51,7 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "build",
-		Long: "designer build, 构建应用二进制程序",
+		Long: "energy build, 构建应用二进制程序",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
@@ -60,7 +60,7 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "package",
-		Long: "designer package, 制作应用安装包",
+		Long: "energy package, 制作应用安装包",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
