@@ -31,6 +31,7 @@ import (
 	"github.com/energye/widget/wg"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -92,7 +93,8 @@ type TBuildForm struct {
 	macDMGCheckBox  lcl.ICheckBox
 	macPKGCheckBox  lcl.ICheckBox
 	macCertCheckBox lcl.ICheckBox
-	macCertComboBox lcl.IComboBox
+	macCertList     *wg.TButton
+	macCertArray    []string
 
 	macCommonLibCheckBox lcl.ICheckBox
 
@@ -598,25 +600,22 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macCertCheckBox.SetChecked(bean.GProject.BuildOption.MacCert)
 	m.macCertCheckBox.SetParent(m.buildTabPagePackage)
 	m.macCertCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
+		m.macCertList.SetVisible(m.macCertCheckBox.Checked())
 	})
 
-	m.macCertComboBox = lcl.NewComboBox(m)
-	m.macCertComboBox.SetBounds(85, m.macCertCheckBox.Top(), 450, 30)
-	m.macCertComboBox.SetFont(m.font)
-	m.macCertComboBox.SetTextHint(`选择用于签名的证书`)
-	m.macCertComboBox.SetShowHint(true)
-	m.macCertComboBox.SetDoubleBuffered(true)
-	m.macCertComboBox.SetStyle(types.CsDropDownList)
-	m.macCertComboBox.SetBorderStyle(types.BsSingle)
-	m.macCertComboBox.SetVisible(m.macCertCheckBox.Checked())
-	m.macCertComboBox.Items().Add("-- 选择证书 --")
-	for _, item := range bean.GProject.BuildOption.MacCertList {
-		m.macCertComboBox.Items().Add(item)
-	}
-	m.macCertComboBox.SetItemIndex(bean.GProject.BuildOption.MacCertListIndex)
-	m.macCertComboBox.SetOnChange(m.macCertComboBoxChange)
-	m.macCertComboBox.SetParent(m.buildTabPagePackage)
+	m.macCertList = wg.NewButton(m)
+	m.macCertList.SetVisible(m.macCertCheckBox.Checked())
+	m.macCertList.SetText("签名文件命令列表")
+	m.macCertList.Font().SetColor(colors.ClWhite)
+	m.macCertList.SetRadius(0)
+	macCertRect := types.TRect{Left: 75, Top: m.macCertCheckBox.Top()}
+	macCertRect.SetWidth(120)
+	macCertRect.SetHeight(20)
+	m.macCertList.SetBoundsRect(macCertRect)
+	m.macCertList.SetColor(colors.RGBToColor(59, 130, 246))
+	m.macCertList.SetParent(m.buildTabPagePackage)
+	m.macCertList.SetOnClick(m.macCertCommandList)
+	m.macCertArray = bean.GProject.BuildOption.MacCertList
 
 	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
 	m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
@@ -678,6 +677,55 @@ func (m *TBuildForm) initBuildData() {
 
 }
 
+func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
+	newCertCommandListForm := lcl.NewEngForm(nil)
+	newCertCommandListForm.SetBorderStyleToFormBorderStyle(types.BsNone)
+	newCertCommandListForm.SetBounds(0, 0, 250, 200)
+	newCertCommandListForm.WorkAreaCenter()
+	memo := lcl.NewMemo(newCertCommandListForm)
+	//memo.SetBounds(25, 0, 250, 145)
+	memo.SetBounds(0, 0, 250, 170)
+	memo.SetShowHint(true)
+	memo.SetHint(`签名文件命令列表, 多个换行. 按深度顺序添加
+codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
+codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"
+...
+`)
+	lines := memo.Lines()
+	if len(m.macCertArray) > 0 {
+		for _, line := range m.macCertArray {
+			lines.Add(line)
+		}
+	}
+	memo.Font().SetSize(8)
+	memo.SetParent(newCertCommandListForm)
+	saveBtn := lcl.NewButton(newCertCommandListForm)
+	saveBtn.SetBounds(140, 173, 50, 25)
+	saveBtn.SetCaption("确定")
+	saveBtn.SetParent(newCertCommandListForm)
+	saveBtn.SetOnClick(func(sender lcl.IObject) {
+		var macCertList []string
+		lines = memo.Lines()
+		for i := int32(0); i < lines.Count(); i++ {
+			line := strings.TrimSpace(lines.Strings(i))
+			if line == "" {
+				continue
+			}
+			macCertList = append(macCertList, line)
+		}
+		m.macCertArray = macCertList
+		newCertCommandListForm.Close()
+	})
+	closeBtn := lcl.NewButton(newCertCommandListForm)
+	closeBtn.SetBounds(195, 173, 50, 25)
+	closeBtn.SetCaption("取消")
+	closeBtn.SetParent(newCertCommandListForm)
+	closeBtn.SetOnClick(func(sender lcl.IObject) {
+		newCertCommandListForm.Close()
+	})
+	newCertCommandListForm.ShowModal()
+}
+
 func (m *TBuildForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	m.closing = true
 }
@@ -695,26 +743,6 @@ func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
 	if m.selectDir.Execute() {
 		output := m.selectDir.FileName()
 		m.outputEdit.SetText(output)
-	}
-}
-
-func (m *TBuildForm) macCertComboBoxChange(sender lcl.IObject) {
-	if m.macCertComboBox.ItemIndex() == 0 {
-		if m.openFile.Execute() {
-			output := m.openFile.FileName()
-			isAdd := true
-			items := m.macCertComboBox.Items()
-			for i := int32(0); i < items.Count(); i++ {
-				if items.Strings(i) == output {
-					isAdd = false
-					break
-				}
-			}
-			if isAdd {
-				m.macCertComboBox.Items().Add(output)
-				m.macCertComboBox.SetText(output)
-			}
-		}
 	}
 }
 
@@ -750,12 +778,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
 	bean.GProject.BuildOption.MacCert = m.macCertCheckBox.Checked()
-	var macCertList []string
-	for i := int32(1); i < m.macCertComboBox.Items().Count(); i++ {
-		macCertList = append(macCertList, m.macCertComboBox.Items().Strings(i))
-	}
-	bean.GProject.BuildOption.MacCertList = macCertList
-	bean.GProject.BuildOption.MacCertListIndex = m.macCertComboBox.ItemIndex()
+	bean.GProject.BuildOption.MacCertList = m.macCertArray
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()

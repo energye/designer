@@ -84,7 +84,6 @@ type TBuildOption struct {
 	MacPKG             bool     `json:"mac_pkg"`
 	MacCert            bool     `json:"mac_cert"`
 	MacCertList        []string `json:"mac_cert_list"`
-	MacCertListIndex   int32    `json:"mac_cert_list_index"`
 	MacCommonLib       bool     `json:"mac_common_lib"`
 	LinuxDEB           bool     `json:"linux_deb"`
 	Depends            string   `json:"depends"`
@@ -240,7 +239,10 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.MacDMG = false
 	m.BuildOption.MacPKG = true
 	m.BuildOption.MacCert = false
-	m.BuildOption.MacCertList = nil
+	m.BuildOption.MacCertList = []string{
+		`codesign -f -s "-" "$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB"`,
+		`codesign -f -s "-" --options runtime "$APP_NAME"`,
+	}
 	m.BuildOption.MacCommonLib = false
 	m.BuildOption.LinuxDEB = true
 	m.BuildOption.Depends = ""

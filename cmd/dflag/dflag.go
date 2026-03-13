@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"os"
 	"strings"
+	"unicode"
 )
 
 // New 创建并返回一个新的命令实例
@@ -105,4 +106,39 @@ func (m *dFlag) Parse() {
 			cmd.Run(*inArgs)
 		}
 	}
+}
+
+// ParseCommandLine 解析命令行字符串，正确处理带引号的参数
+func ParseCommandLine(line string) []string {
+	var args []string
+	var current strings.Builder
+	inQuote := false
+	inSingle := false
+	escape := false
+	for _, r := range line {
+		if escape {
+			current.WriteRune(r)
+			escape = false
+			continue
+		}
+		switch {
+		case r == '\\':
+			escape = true
+		case r == '"' && !inSingle:
+			inQuote = !inQuote
+		case r == '\'' && !inQuote:
+			inSingle = !inSingle
+		case unicode.IsSpace(r) && !inQuote && !inSingle:
+			if current.Len() > 0 {
+				args = append(args, current.String())
+				current.Reset()
+			}
+		default:
+			current.WriteRune(r)
+		}
+	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
+	return args
 }

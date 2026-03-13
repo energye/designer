@@ -18,6 +18,7 @@ package packager
 import (
 	"embed"
 	"fmt"
+	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
@@ -31,6 +32,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -51,12 +53,13 @@ func packager() bool {
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
-	if !option.MacDMG && !option.MacPKG {
-		event.ConsoleWriteWarn("Package - project not package format DMG PKG")
-		return false
-	}
 	if !createAppBundle() {
 		return false
+	}
+	if option.MacCert {
+		if !cert() {
+			return false
+		}
 	}
 	if option.MacPKG {
 		if !pkg() {
@@ -65,11 +68,6 @@ func packager() bool {
 	}
 	if option.MacDMG {
 		if !dmg() {
-			return false
-		}
-	}
-	if option.MacCert {
-		if !cert() {
 			return false
 		}
 	}
@@ -99,7 +97,7 @@ func createAppBundle() bool {
 	if !copyFiles() {
 		return false
 	}
-	event.ConsoleWriteInfo("App Bundle", bean.GProject.Name, "Success")
+	event.ConsoleWriteInfo("App Bundle", bean.GProject.Name, "END")
 	return true
 }
 
@@ -127,7 +125,7 @@ func pkg() bool {
 		"--version", proj.AppOption.MacOS.PList.CFBundleVersion,
 		"--install-location", fmt.Sprintf("/Applications/%s", appName), pkgName}
 	cmd.Command("pkgbuild", args...)
-	event.ConsoleWriteInfo("Package - PKG Success")
+	event.ConsoleWriteInfo("Package - PKG END")
 	return true
 }
 
@@ -164,7 +162,7 @@ func dmg() bool {
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}
-
+	cmd.Command("rm", "-rf", dmgName)
 	args := []string{
 		"--volname", option.PackageName,
 		"--window-pos", "200", "120",
@@ -177,12 +175,55 @@ func dmg() bool {
 		appName,
 	}
 	cmd.Command("create-dmg", args...)
-	event.ConsoleWriteInfo("Package - DMG Success")
+	event.ConsoleWriteInfo("Package - DMG END")
 	return true
 }
 
+// APP_NAME="MyApp.app"
+// CERT="Developer ID Application: 你的名字 (团队ID)"
+// echo "签名 dylib..."
+// codesign -f -s "$CERT" "$APP_NAME/Contents/Frameworks/"your.dylib
+// echo "签名主程序..."
+// codesign -f -s "$CERT" --options runtime "$APP_NAME"
+// echo "验证签名..."
+// codesign -vvv --deep --strict "$APP_NAME"
 func cert() bool {
-	event.ConsoleWriteInfo("Cert")
+	event.ConsoleWriteInfo("Package - Cert")
+	proj := bean.GProject
+	option := proj.BuildOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	certCommandList := option.MacCertList
+	if len(certCommandList) > 0 {
+		appName := option.PackageName + ".app"
+		runtimeFile := libname.GetDLLName()
+		if proj.BuildOption.MacCommonLib {
+			runtimeFile = libname.DarwinUniversalBinaryName
+		}
+		cmd := command.NewCMD()
+		cmd.IsPrint = false
+		cmd.HideWindow = true
+		cmd.Dir = output
+		cmd.Console = func(data string, level command.Level) {
+			event.ConsoleWriteInfo(data)
+		}
+		for _, codesignCMD := range certCommandList {
+			// 必须是 codesign 命令
+			if strings.Index(codesignCMD, "codesign") == 0 {
+				// 替换变量 $APP_NAME $ENERGY.DYLIB
+				codesignCMD = strings.ReplaceAll(codesignCMD, "$APP_NAME", appName)
+				codesignCMD = strings.ReplaceAll(codesignCMD, "$ENERGY.DYLIB", runtimeFile)
+				args := dflag.ParseCommandLine(codesignCMD)
+				if len(args) > 1 {
+					event.ConsoleWriteInfo(codesignCMD)
+					cmd.Command("codesign", args[1:]...)
+				}
+			}
+		}
+	}
+	event.ConsoleWriteInfo("Package - Cert END")
 	return true
 }
 
@@ -238,7 +279,7 @@ func createApp() bool {
 			return false
 		}
 	}
-	event.ConsoleWriteInfo("App Bundle - Create Success")
+	event.ConsoleWriteInfo("App Bundle - Create END")
 	return true
 }
 
@@ -262,7 +303,7 @@ func copyAppInfoPList() bool {
 		event.ConsoleWriteError("App Bundle - Copy App Info.plist WriteFile:", err.Error())
 		return false
 	}
-	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist Success")
+	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist END")
 	return true
 }
 
@@ -279,7 +320,7 @@ func copyAppPkgInfo() bool {
 			return false
 		}
 	}
-	event.ConsoleWriteInfo("App Bundle - Copy App PkgInfo success")
+	event.ConsoleWriteInfo("App Bundle - Copy App PkgInfo END")
 	return true
 }
 
@@ -369,6 +410,6 @@ func copyFiles() bool {
 		}
 	}
 
-	event.ConsoleWriteInfo("App Bundle - Copy App Files. Success")
+	event.ConsoleWriteInfo("App Bundle - Copy App Files. END")
 	return true
 }
