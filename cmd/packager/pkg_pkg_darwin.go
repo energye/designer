@@ -16,13 +16,19 @@
 package packager
 
 import (
+	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/libname"
+	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/pkgs/win"
+	"github.com/energye/lcl/tool/command"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -95,11 +101,79 @@ func createAppBundle() bool {
 
 func pkg() bool {
 	event.ConsoleWriteInfo("Package - PKG")
+	proj := bean.GProject
+	option := proj.BuildOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	app := appRootDir()
+	appName := option.PackageName + ".app"
+	pkgName := option.PackageName + ".pkg"
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
+	args := []string{"--root", app,
+		"--identifier", proj.AppOption.MacOS.PList.CFBundleIdentifier,
+		"--version", proj.AppOption.MacOS.PList.CFBundleVersion,
+		"--install-location", fmt.Sprintf("/Applications/%s", appName), pkgName}
+	cmd.Command("pkgbuild", args...)
+	event.ConsoleWriteInfo("Package - PKG Success")
 	return true
 }
 
 func dmg() bool {
 	event.ConsoleWriteInfo("Package - DMG")
+
+	whichCmd := exec.Command("which", "create-dmg")
+	err := whichCmd.Run()
+	if err != nil {
+		msg := "create-dmg command was not found.\nUse 'brew install create-dmg' Install"
+		event.ConsoleWriteError("Package - DMG", err.Error(), "\n", msg)
+		if lcl.Application != nil {
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				text := api.PasStr(msg)
+				title := api.PasStr("ENERGY Designer")
+				lcl.Application.MessageBox(text, title, win.MB_OK+win.MB_ICONINFORMATION)
+			})
+		}
+		return false
+	}
+
+	proj := bean.GProject
+	option := proj.BuildOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	appName := option.PackageName + ".app"
+	dmgName := option.PackageName + ".dmg"
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+
+	args := []string{
+		"--volname", option.PackageName,
+		"--window-pos", "200", "120",
+		"--window-size", "500", "350",
+		"--icon-size", "80",
+		"--icon", appName, "100", "130",
+		"--app-drop-link", "350", "130",
+		//"--background", "bg.png",
+		dmgName,
+		appName,
+	}
+	cmd.Command("create-dmg", args...)
+	event.ConsoleWriteInfo("Package - DMG Success")
 	return true
 }
 
@@ -115,8 +189,8 @@ func appRootDir() string {
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	packageName := option.PackageName + ".app"
-	appRoot := filepath.Join(output, packageName)
+	appName := option.PackageName + ".app"
+	appRoot := filepath.Join(output, appName)
 	return appRoot
 }
 
@@ -294,34 +368,3 @@ func copyFiles() bool {
 	event.ConsoleWriteInfo("App Bundle - Copy App Files. Success")
 	return true
 }
-
-// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
-//func pkgbuild(c *command.Config, proj *project.Project, appRoot string) error {
-//	proj.AppType = project.AtApp
-//	proj.ProjectPath = projectPath
-//	buildOutDir := assets.BuildOutPath(proj)
-//	cmdWorkDir := filepath.Join(buildOutDir, "darwin")
-//	term.Logger.Info("Generate app pkgbuild", term.Logger.Args("cmd work dir", cmdWorkDir))
-//	// remove xxx.pkg
-//	os.Remove(filepath.Join(cmdWorkDir, fmt.Sprintf("%s.pkg", getAppName(c, proj))))
-//	cmd := cmd.NewCMD()
-//	//cmd.IsPrint = false
-//	cmd.Dir = cmdWorkDir
-//	cmd.MessageCallback = func(bytes []byte, err error) {
-//		msg := string(bytes)
-//		if msg != "" {
-//			println(msg)
-//		}
-//	}
-//	app := fmt.Sprintf("%s.app", getAppName(c, proj))
-//	pkg := fmt.Sprintf("%s.pkg", getAppName(c, proj))
-//	var args = []string{"--root", app,
-//		"--identifier", proj.PList.BundleIdentifier,
-//		"--version", proj.PList.BundleVersion,
-//		"--install-location", fmt.Sprintf("/Applications/%s", app), pkg}
-//	cmd.Command("pkgbuild", args...)
-//	cmd.Close()
-//	// remove xxx.app
-//	os.RemoveAll(filepath.Join(cmdWorkDir, app))
-//	return nil
-//}
