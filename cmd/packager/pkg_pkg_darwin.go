@@ -361,10 +361,17 @@ func copyFiles() bool {
 	contentsMacOS := filepath.Join(contents, AppContentsMacOS)
 	contentsResources := filepath.Join(contents, AppContentsResources)
 
-	outputRuntimeFilePath := filepath.Join(contentsFrameworks, libname.GetDLLName())
+	outputRuntimeFilePath := ""
+	outputCurrRuntimeFilePath := filepath.Join(contentsFrameworks, libname.GetDLLName())
+	outputUnivRuntimeFilePath := filepath.Join(contentsFrameworks, libname.DarwinUniversalBinaryName)
 	if proj.BuildOption.MacCommonLib {
-		outputRuntimeFilePath = filepath.Join(contentsFrameworks, libname.DarwinUniversalBinaryName)
+		outputRuntimeFilePath = outputUnivRuntimeFilePath
+		_ = os.Remove(outputCurrRuntimeFilePath)
+	} else {
+		outputRuntimeFilePath = outputCurrRuntimeFilePath
+		_ = os.Remove(outputUnivRuntimeFilePath)
 	}
+
 	event.ConsoleWriteInfo("App Bundle - Copy Frameworks")
 	event.ConsoleWriteInfo("App Bundle - Copy Runtime lib", outputRuntimeFilePath)
 	if err := tool.CopyFile(srcRuntimeFilePath, outputRuntimeFilePath); err != nil {
