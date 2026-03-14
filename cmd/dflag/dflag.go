@@ -64,10 +64,11 @@ func (m *dFlag) Parse() {
 	newArgs := os.Args[1:]
 	if len(newArgs) == 0 {
 		keys := m.commands.Keys()
+		println("energy command")
 		for _, name := range keys {
-			println(name)
+			println("  ", name)
 			cmd := m.commands.Get(name)
-			println("  ", cmd.Long)
+			println("    ", cmd.Long)
 		}
 		return
 	}
