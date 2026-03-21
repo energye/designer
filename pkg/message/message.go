@@ -73,7 +73,7 @@ func Follow(content string) {
 	//message.hintWindow.Show()
 	//message.hintWindow.Invalidate()
 
-	message.hintWindow.ActivateHintWithRectString(hintRect, content)
+	message.hintWindow.ActivateHintWithRectStr(hintRect, content)
 }
 
 func FollowHide() {
@@ -90,7 +90,7 @@ func Info(title, content string, w, h int32) {
 	message.displayTime = 3 // 秒
 	message.showTimer.SetEnabled(true)
 	windowCenterRect := rect(w, h)
-	message.hintWindow.ActivateHintWithRectString(windowCenterRect, msg)
+	message.hintWindow.ActivateHintWithRectStr(windowCenterRect, msg)
 }
 
 // OnShowTimer 处理显示定时器事件，控制提示窗口的渐显效果和自动隐藏
