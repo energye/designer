@@ -18,13 +18,13 @@ package lib
 import "embed"
 
 var (
-	//go:embed linux/libenergy-linux-armhf-gtk2.zip
+	//go:embed linux/libenergy-arm-gtk2.zip
 	libARMGTK2 embed.FS
-	//go:embed linux/libenergy-linux-armhf-gtk3.zip
+	//go:embed linux/libenergy-arm-gtk3.zip
 	libARMGTK3 embed.FS
 )
 
 func init() {
-	libs.Add(PathARMGtk2, &EmbedFS{Lib: &libARMGTK2, OutputFilename: "libenergy-linux-arm-gtk2.so"})
-	libs.Add(PathARMGtk3, &EmbedFS{Lib: &libARMGTK3, OutputFilename: "libenergy-linux-arm-gtk3.so"})
+	libs.Add(PathARMGtk2, &EmbedFS{Lib: &libARMGTK2, OutputFilename: "libenergy-arm-gtk2.so"})
+	libs.Add(PathARMGtk3, &EmbedFS{Lib: &libARMGTK3, OutputFilename: "libenergy-arm-gtk3.so"})
 }

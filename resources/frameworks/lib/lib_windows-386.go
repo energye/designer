@@ -11,20 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build (linux && i386) || liball
+//go:build windows || liball
 
 package lib
 
 import "embed"
 
 var (
-	//go:embed linux/libenergy-linux-i386-gtk2.zip
-	libI386GTK2 embed.FS
-	//go:embed linux/libenergy-linux-i386-gtk3.zip
-	libI386GTK3 embed.FS
+	//go:embed windows/libenergy-386.zip
+	lib386Win32 embed.FS
+	//go:embed windows/WebView2Loader-386.zip
+	libWV2386Win32 embed.FS
 )
 
 func init() {
-	libs.Add(PathI386Gtk2, &EmbedFS{Lib: &libI386GTK2, OutputFilename: "libenergy-linux-i386-gtk2.so"})
-	libs.Add(PathI386Gtk3, &EmbedFS{Lib: &libI386GTK3, OutputFilename: "libenergy-linux-i386-gtk3.so"})
+	libs.Add(Path386Win32, &EmbedFS{Lib: &lib386Win32, OutputFilename: "libenergy-386.dll"})
+	libs.Add(PathWV2386Win32, &EmbedFS{Lib: &libWV2386Win32, OutputFilename: "WebView2Loader-386.dll"})
 }

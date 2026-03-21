@@ -11,20 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build (windows && amd64) || liball
+//go:build windows || liball
 
 package lib
 
 import "embed"
 
 var (
-	//go:embed windows/libenergy-windows-amd64.zip
+	//go:embed windows/libenergy-amd64.zip
 	libAMD64Win64 embed.FS
 	//go:embed windows/WebView2Loader-amd64.zip
 	libWV2AMD64Win64 embed.FS
 )
 
 func init() {
-	libs.Add(PathAMD64Win64, &EmbedFS{Lib: &libAMD64Win64, OutputFilename: "libenergy-windows-amd64-win32.dll"})
+	libs.Add(PathAMD64Win64, &EmbedFS{Lib: &libAMD64Win64, OutputFilename: "libenergy-amd64.dll"})
 	libs.Add(PathWV2AMD64Win64, &EmbedFS{Lib: &libWV2AMD64Win64, OutputFilename: "WebView2Loader-amd64.dll"})
 }

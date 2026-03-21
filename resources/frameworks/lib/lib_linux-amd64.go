@@ -20,13 +20,13 @@ import (
 )
 
 var (
-	//go:embed linux/libenergy-linux-amd64-gtk2.zip
+	//go:embed linux/libenergy-amd64-gtk2.zip
 	libAMD64GTK2 embed.FS
-	//go:embed linux/libenergy-linux-amd64-gtk3.zip
+	//go:embed linux/libenergy-amd64-gtk3.zip
 	libAMD64GTK3 embed.FS
 )
 
 func init() {
-	libs.Add(PathAMD64Gtk2, &EmbedFS{Lib: &libAMD64GTK2, OutputFilename: "libenergy-linux-amd64-gtk2.so"})
-	libs.Add(PathAMD64Gtk3, &EmbedFS{Lib: &libAMD64GTK3, OutputFilename: "libenergy-linux-amd64-gtk3.so"})
+	libs.Add(PathAMD64Gtk2, &EmbedFS{Lib: &libAMD64GTK2, OutputFilename: "libenergy-amd64-gtk2.so"})
+	libs.Add(PathAMD64Gtk3, &EmbedFS{Lib: &libAMD64GTK3, OutputFilename: "libenergy-amd64-gtk3.so"})
 }
