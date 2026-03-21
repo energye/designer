@@ -50,8 +50,8 @@ func UniversalBinary(amd64ZipPath, arm64ZipPath, outputPath string) (string, err
 		return "", errors.New("arm64 zip binary not found")
 	}
 
-	tempArm64LibName := "temp-libenergy-darwin-arm64-cocoa.dylib"
-	tempAmd64LibName := "temp-libenergy-darwin-amd64-cocoa.dylib"
+	tempArm64LibName := "temp-libenergy-arm64.dylib"
+	tempAmd64LibName := "temp-libenergy-amd64.dylib"
 	arm64LibFilePath := filepath.Join(outputPath, tempArm64LibName)
 	amd64LibFilePath := filepath.Join(outputPath, tempAmd64LibName)
 	universalLibFilePath := filepath.Join(outputPath, libname.DarwinUniversalBinaryName)

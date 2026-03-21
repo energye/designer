@@ -336,7 +336,7 @@ func copyFiles() bool {
 	proj := bean.GProject
 	appRoot := appRootDir()
 	frameworksRuntime := filepath.Join(cfg.FrameworkDir, "runtime")
-	// libenergy-xxx-xxx-xxx.dylib
+	// libenergy-[arch].dylib
 	srcRuntimeFilePath := filepath.Join(frameworksRuntime, libname.GetDLLName())
 	if proj.BuildOption.MacCommonLib {
 		srcRuntimeFilePath = filepath.Join(frameworksRuntime, libname.DarwinUniversalBinaryName)
