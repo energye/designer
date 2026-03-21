@@ -65,7 +65,7 @@ func (m *TNonVisualComponentWrap) TextFollowShow() {
 	caption := m.comp.Name()
 	m.text.SetCaption(caption)
 	br := m.icon.BoundsRect()
-	textWidth := m.text.Canvas().TextWidthWithUnicodestring(caption)
+	textWidth := m.text.Canvas().TextWidthWithStr(caption)
 	x := br.Left + br.Width()/2
 	y := br.Top + br.Height()
 	m.text.SetLeft(x - textWidth/2)

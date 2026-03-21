@@ -74,8 +74,7 @@
         "THeaderControl",
         "TImageList",
         "TPopupNotifier",
-        "TDateTimePicker",
-        "TRichMemo"
+        "TDateTimePicker"
       ]
     },
     "dialogs": {
@@ -118,7 +117,6 @@
         "TLinkLabel",
         "TXButton",
         "TImageButton",
-        "TATGauge",
         "TOpenGLControl"
       ]
     },

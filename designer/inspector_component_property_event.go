@@ -55,7 +55,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		tree.EndEditNode()
 		tree.SetFocusedNode(node)
 		sender.SetSelected(node, true)
-		sender.ScrollIntoViewWithPVirtualNodeBoolX2(node, true, true)
+		sender.ScrollIntoViewWithPVNodeBoolX2(node, true, true)
 	})
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
@@ -234,7 +234,7 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 		tree.EndEditNode()
 		tree.SetFocusedNode(node)
 		sender.SetSelected(node, true)
-		sender.ScrollIntoViewWithPVirtualNodeBoolX2(node, true, true)
+		sender.ScrollIntoViewWithPVNodeBoolX2(node, true, true)
 	})
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {

@@ -151,7 +151,6 @@ func initRegisterComponent() {
 	AddRegisterComponent("TImageList", NewLCLNonVisualRegisterComponent(lcl.TImageListClass, lcl.AsImageList))
 	AddRegisterComponent("TPopupNotifier", NewLCLNonVisualRegisterComponent(lcl.TPopupNotifierClass, lcl.AsPopupNotifier))
 	AddRegisterComponent("TDateTimePicker", NewLCLVisualRegisterComponent(lcl.TDateTimePickerClass, lcl.AsDateTimePicker))
-	AddRegisterComponent("TRichMemo", NewLCLVisualRegisterComponent(lcl.TRichMemoClass, lcl.AsRichMemo))
 
 	// 对话框组件
 	AddRegisterComponent("TOpenDialog", NewLCLNonVisualRegisterComponent(lcl.TOpenDialogClass, lcl.AsOpenDialog))
@@ -186,7 +185,6 @@ func initRegisterComponent() {
 	AddRegisterComponent("TLinkLabel", NewLCLVisualRegisterComponent(lcl.TLinkLabelClass, lcl.AsLinkLabel))
 	AddRegisterComponent("TXButton", NewLCLVisualRegisterComponent(lcl.TXButtonClass, lcl.AsXButton))
 	AddRegisterComponent("TImageButton", NewLCLVisualRegisterComponent(lcl.TImageButtonClass, lcl.AsImageButton))
-	AddRegisterComponent("TATGauge", NewLCLVisualRegisterComponent(lcl.TATGaugeClass, lcl.AsATGauge))
 	AddRegisterComponent("TOpenGLControl", NewLCLVisualRegisterComponent(lcl.TOpenGLControlClass, lcl.AsOpenGLControl))
 
 	// 系统组件
