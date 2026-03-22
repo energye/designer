@@ -67,6 +67,7 @@ type ComponentTabs struct {
 	Misc       Tab `json:"misc"`
 	System     Tab `json:"system"`
 	LazControl Tab `json:"lazcontrol"`
+	SynEdit    Tab `json:"synedit"`
 	WebView    Tab `json:"webview"`
 }
 

@@ -141,6 +141,25 @@
         "TVTHeaderPopupMenu"
       ]
     },
+    "synedit": {
+      "cn": "  SynEdit  ",
+      "en": "SynEdit",
+      "component": [
+        "TSynEdit",
+        "TSynCompletion",
+        "TSynAutoComplete",
+        "TSynMacroRecorder",
+        "TSynPluginSyncroEdit",
+        "TSynPopupMenu",
+        "TSynCppSyn",
+        "TSynJavaSyn",
+        "TSynSQLSyn",
+        "TSynPythonSyn",
+        "TSynJScriptSyn",
+        "TSynHTMLSyn",
+        "TSynCssSyn"
+      ]
+    },
     "webview": {
       "cn": "  Web  ",
       "en": "Web",

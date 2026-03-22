@@ -139,6 +139,7 @@ func (m *TopToolbar) createComponentTabs() {
 	newComponentTab(config.FormConfig.ComponentTabs.Misc)
 	newComponentTab(config.FormConfig.ComponentTabs.System)
 	newComponentTab(config.FormConfig.ComponentTabs.LazControl)
+	newComponentTab(config.FormConfig.ComponentTabs.SynEdit)
 	newComponentTab(config.FormConfig.ComponentTabs.WebView)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		tab.RecalculatePosition()

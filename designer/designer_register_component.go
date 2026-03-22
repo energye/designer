@@ -200,6 +200,21 @@ func initRegisterComponent() {
 	AddRegisterComponent("TTreeFilterEdit", NewLCLVisualRegisterComponent(lcl.TTreeFilterEditClass, lcl.AsTreeFilterEdit))
 	AddRegisterComponent("TVTHeaderPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TVTHeaderPopupMenuClass, lcl.AsVTHeaderPopupMenu))
 
+	// SynEdit
+	AddRegisterComponent("TSynEdit", NewLCLVisualRegisterComponent(lcl.TSynEditClass, lcl.AsSynEdit))
+	AddRegisterComponent("TSynCompletion", NewLCLNonVisualRegisterComponent(lcl.TSynCompletionClass, lcl.AsSynCompletion))
+	AddRegisterComponent("TSynAutoComplete", NewLCLNonVisualRegisterComponent(lcl.TSynAutoCompleteClass, lcl.AsSynAutoComplete))
+	AddRegisterComponent("TSynMacroRecorder", NewLCLNonVisualRegisterComponent(lcl.TSynMacroRecorderClass, lcl.AsSynMacroRecorder))
+	AddRegisterComponent("TSynPluginSyncroEdit", NewLCLNonVisualRegisterComponent(lcl.TSynPluginSyncroEditClass, lcl.AsSynPluginSyncroEdit))
+	AddRegisterComponent("TSynPopupMenu", NewLCLNonVisualRegisterComponent(lcl.TSynPopupMenuClass, lcl.AsSynPopupMenu))
+	AddRegisterComponent("TSynCppSyn", NewLCLNonVisualRegisterComponent(lcl.TSynCppSynClass, lcl.AsSynCppSyn))
+	AddRegisterComponent("TSynJavaSyn", NewLCLNonVisualRegisterComponent(lcl.TSynJavaSynClass, lcl.AsSynJavaSyn))
+	AddRegisterComponent("TSynSQLSyn", NewLCLNonVisualRegisterComponent(lcl.TSynSQLSynClass, lcl.AsSynSQLSyn))
+	AddRegisterComponent("TSynPythonSyn", NewLCLNonVisualRegisterComponent(lcl.TSynPythonSynClass, lcl.AsSynPythonSyn))
+	AddRegisterComponent("TSynJScriptSyn", NewLCLNonVisualRegisterComponent(lcl.TSynJScriptSynClass, lcl.AsSynJScriptSyn))
+	AddRegisterComponent("TSynHTMLSyn", NewLCLNonVisualRegisterComponent(lcl.TSynHTMLSynClass, lcl.AsSynHTMLSyn))
+	AddRegisterComponent("TSynCssSyn", NewLCLNonVisualRegisterComponent(lcl.TSynCssSynClass, lcl.AsSynCssSyn))
+
 	// Web组件
 	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(NewDesignerWebview, nil))
 }
