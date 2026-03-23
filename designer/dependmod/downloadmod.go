@@ -138,6 +138,6 @@ func downloadMod(dir *modCacheDir) bool {
 			return false
 		}
 	}
-	event.ConsoleWriteInfo("Download module cache END")
+	event.ConsoleWriteInfo("Download module cache end")
 	return ok
 }
