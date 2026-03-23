@@ -43,10 +43,11 @@ var (
 
 // 设计器窗体配置
 type formConfig struct {
-	Title         string        `json:"title"`
-	Version       string        `json:"version"`
-	Window        Window        `json:"window"`
-	ComponentTabs ComponentTabs `json:"componentTabs"`
+	Title         string            `json:"title"`         // 设计器标题
+	Version       string            `json:"version"`       // 设计器版本
+	Dependencies  map[string]string `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
+	Window        Window            `json:"window"`        // 设计器窗体信息
+	ComponentTabs ComponentTabs     `json:"componentTabs"` // 设计器加载组件
 }
 
 // 设计器窗口配置

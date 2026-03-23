@@ -1,6 +1,12 @@
 {
   "title": "ENERGY Designer",
-  "version": "v0.0.1-dev",
+  "version": "v0.0.1",
+  "dependencies": {
+    "github.com/energye/lcl": "latest",
+    "github.com/energye/cef": "latest",
+    "github.com/energye/wv": "latest",
+    "github.com/energye/energy/v3": "v3.0.0"
+  },
   "window": {
     "width": 1150,
     "height": 650

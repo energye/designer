@@ -33,11 +33,18 @@ import (
 
 // InitDependencyModule 初始化模块类型信息
 func InitDependencyModule() {
-	go initModuleTypeInfo()
+	go initModuleTypeInfoFormEmbed()
 }
 
-// 初始化模块类型信息
-func initModuleTypeInfo() {
+// 从模块缓存 初始化模块类型信息
+// TODO 待添加
+func initModuleTypeInfoFormModCache() {
+	logs.Println("初始化模块类型信息")
+}
+
+// 从内嵌源码 初始化模块类型信息
+// 注意: 该功能去除, 同时移除内嵌源码
+func initModuleTypeInfoFormEmbed() {
 	logs.Println("初始化模块类型信息")
 	// LCL 模块的事件回调函数类型
 	lclSRCEventDefData, err := frameworks.LCL("lcl/callback_event_def.go")
