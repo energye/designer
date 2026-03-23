@@ -60,6 +60,10 @@ func (m *TInstallFrameworkForm) FormCreate(sender lcl.IObject) {
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
+	box := lcl.NewPanel(m)
+	box.SetAlign(types.AlClient)
+	box.SetParent(m)
+
 	titleLab := lcl.NewLabel(m)
 	titleLab.SetCaption("请设置框架安装目录")
 	titleLabFont := titleLab.Font()
@@ -67,7 +71,7 @@ func (m *TInstallFrameworkForm) FormCreate(sender lcl.IObject) {
 	titleLabFont.SetStyle(types.NewSet(types.FsBold))
 	titleLab.SetLeft(150)
 	titleLab.SetTop(20)
-	titleLab.SetParent(m)
+	titleLab.SetParent(box)
 
 	// 软件运行所需组件将安装到此目录
 	//仅需设置一次，后续自动使用
@@ -80,7 +84,7 @@ func (m *TInstallFrameworkForm) FormCreate(sender lcl.IObject) {
 	titleSubLabFont.SetColor(colors.ClGray)
 	titleSubLab.SetLeft(125)
 	titleSubLab.SetTop(60)
-	titleSubLab.SetParent(m)
+	titleSubLab.SetParent(box)
 
 	m.selectDirEdit = lcl.NewLabeledEdit(m)
 	m.selectDirEdit.SetLeft(10)
@@ -94,42 +98,45 @@ func (m *TInstallFrameworkForm) FormCreate(sender lcl.IObject) {
 	m.selectDirEdit.SetShowHint(true)
 	m.selectDirEdit.SetTextHint("请选择有效的空文件夹或新建目录")
 	m.selectDirEdit.SetCaption(config.Config.FrameworkDir)
-	m.selectDirEdit.SetParent(m)
+	m.selectDirEdit.SetParent(box)
 
 	selectDirBtn := lcl.NewButton(m)
 	selectDirBtn.SetCaption("浏 览...")
 	selectDirBtn.SetTop(m.selectDirEdit.Top())
 	selectDirBtn.SetLeft(m.selectDirEdit.Width() + 15)
-	selectDirBtn.SetParent(m)
+	selectDirBtn.SetParent(box)
 	selectDirBtn.SetOnClick(m.selectDirClick)
 
 	m.installMsgLab = lcl.NewLabel(m)
 	m.installMsgLab.SetTop(m.selectDirEdit.Top() + 35)
 	m.installMsgLab.SetLeft(10)
 	m.installMsgLab.SetCaption("---")
-	m.installMsgLab.SetParent(m)
+	m.installMsgLab.SetParent(box)
 
 	cancelRect := types.TRect{Left: 280, Top: 230}
 	cancelRect.SetWidth(80)
-	cancelRect.SetHeight(35)
+	cancelRect.SetHeight(30)
 	m.cancelBtn = wg.NewButton(m)
-	m.cancelBtn.SetText("关 闭")
+	m.cancelBtn.SetText("关　闭")
 	m.cancelBtn.SetBoundsRect(cancelRect)
 	m.cancelBtn.SetCursor(types.CrHandPoint)
-	m.cancelBtn.SetColor(colors.RGBToColor(192, 192, 192))
-	m.cancelBtn.SetParent(m)
+	m.cancelBtn.Font().SetColor(colors.ClWhite)
+	m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
+	m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+	m.cancelBtn.SetParent(box)
 	m.cancelBtn.SetOnClick(m.cancel)
 
 	okBtnRect := types.TRect{Left: cancelRect.Left + cancelRect.Width() + 10, Top: cancelRect.Top}
 	okBtnRect.SetWidth(80)
-	okBtnRect.SetHeight(35)
+	okBtnRect.SetHeight(30)
 	m.okBtn = wg.NewButton(m)
 	m.okBtn.SetText("确定并安装")
 	m.okBtn.SetBoundsRect(okBtnRect)
 	m.okBtn.SetCursor(types.CrHandPoint)
 	m.okBtn.Font().SetColor(colors.ClWhite)
-	m.okBtn.SetColor(colors.RGBToColor(0, 123, 255))
-	m.okBtn.SetParent(m)
+	m.okBtn.Font().SetStyle(types.NewSet(types.FsBold))
+	m.okBtn.SetColor(colors.RGBToColor(46, 204, 113))
+	m.okBtn.SetParent(box)
 	m.okBtn.SetOnClick(m.ok)
 }
 
@@ -141,40 +148,46 @@ func (m *TInstallFrameworkForm) OnClose(sender lcl.IObject, closeAction *types.T
 }
 
 func (m *TInstallFrameworkForm) cancel(sender lcl.IObject) {
+	if m.cancelBtn.Disable() {
+		return
+	}
 	m.Close()
 }
 
 func (m *TInstallFrameworkForm) ok(sender lcl.IObject) {
+	if m.okBtn.Disable() {
+		return
+	}
 	if m.checkInstallDir() {
-		m.cancelBtn.SetDisable(true)
-		m.cancelBtn.SetEnabled(false)
-		m.okBtn.SetDisable(true)
-		m.okBtn.SetEnabled(false)
 		installDir := m.selectDirEdit.Text()
-		config.UpdateFrameworkDir(installDir)
-		config.UpdateConfig()
+		m.cancelBtn.SetDisable(true)
+		m.okBtn.SetDisable(true)
 		m.setInstallMsgFont(colors.ClBlack)
-		// 释放 lib runtime 库文件
-		runtimeDir := filepath.Join(installDir, "runtime")
-		_ = os.MkdirAll(runtimeDir, os.ModePerm)
-		lib.ExtractLibrary(runtimeDir)
-		// 提取所有启用的框架
-		frameworks.ExtractFrameworks(func(message string) {
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.installMsgLab.SetCaption(message)
+		go func() {
+			config.UpdateFrameworkDir(installDir)
+			config.UpdateConfig()
+			// 释放 lib runtime 库文件
+			runtimeDir := filepath.Join(installDir, "runtime")
+			_ = os.MkdirAll(runtimeDir, os.ModePerm)
+			lib.ExtractLibrary(runtimeDir)
+			// 提取所有启用的框架
+			frameworks.ExtractFrameworks(func(message string) {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.installMsgLab.SetCaption(message)
+				})
+			}, func() {
+				// 提取完成
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.setInstallMsgFont(colors.ClGreen)
+					m.installMsgLab.SetCaption("框架安装完成")
+				})
+				SetEnableFuncComponent(true)
+				m.cancelBtn.SetDisable(false)
+				m.cancelBtn.SetEnabled(true)
+				m.okBtn.SetDisable(false)
+				m.okBtn.SetEnabled(true)
 			})
-		}, func() {
-			// 提取完成
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.setInstallMsgFont(colors.ClGreen)
-				m.installMsgLab.SetCaption("框架安装完成")
-			})
-			SetEnableFuncComponent(true)
-			m.cancelBtn.SetDisable(false)
-			m.cancelBtn.SetEnabled(true)
-			m.okBtn.SetDisable(false)
-			m.okBtn.SetEnabled(true)
-		})
+		}()
 	}
 }
 
