@@ -48,3 +48,21 @@ func GetFuncTypeAliases(mod consts.Mod) *dast.TFuncTypeAlias {
 	}
 	return nil
 }
+
+// InitDependencyModule 初始化模块类型信息
+func InitDependencyModule(success func()) {
+	go func() {
+		// initModuleTypeInfoFormEmbed() 不再使用
+		//go initModuleTypeInfoFormEmbed()
+
+		// 根据 designer/resources/config.json 配置依赖模块下载模块
+		downloadMod()
+		// 从模块缓存 初始化模块类型信息
+		initModuleTypeInfoFormModCache()
+
+		// 完成回调
+		if success != nil {
+			success()
+		}
+	}()
+}

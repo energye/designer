@@ -31,11 +31,6 @@ import (
 //   应用启动期间
 //
 
-// InitDependencyModule 初始化模块类型信息
-func InitDependencyModule() {
-	go initModuleTypeInfoFormEmbed()
-}
-
 // 从模块缓存 初始化模块类型信息
 // TODO 待添加
 func initModuleTypeInfoFormModCache() {

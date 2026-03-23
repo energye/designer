@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks"
@@ -25,6 +26,21 @@ import (
 	"os"
 	"path/filepath"
 )
+
+// 检查框架是否设置 frameworks 框架安装目录，并正确安装
+func (m *TAppWindow) checkInstallFrameworks() {
+	frameworksDir := config.Config.FrameworkDir
+	if config.Config.FrameworkDir == "" || !tool.IsExist(frameworksDir) {
+		event.ConsoleWriteError("未设置 framework 框架安装目录")
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 禁用所有功能组件
+			SetEnableFuncComponent(false)
+			// 弹出一个引导窗口
+			form := NewInstallFrameworkForm()
+			form.ShowModal()
+		})
+	}
+}
 
 type TInstallFrameworkForm struct {
 	*lcl.TEngForm

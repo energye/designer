@@ -34,6 +34,7 @@ func main() {
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug
+	//logs.Level = logs.LevelInfo
 	//logs.Level = logs.LevelError
 	libname.LibName = frameworks.ExtractLibrary()
 	lcl.Init(nil, nil)

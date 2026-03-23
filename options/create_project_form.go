@@ -50,9 +50,10 @@ var (
 )
 
 var (
-	bgColor          = colors.RGBToColor(56, 57, 60)
-	bgTextColor      = colors.ClGray
-	modSelectOptions = []string{"本地路径 (内置框架)", "远程仓库 (远程拉取)"}
+	bgColor     = colors.RGBToColor(56, 57, 60)
+	bgTextColor = colors.ClGray
+	//modSelectOptions = []string{"本地路径 (内置框架)", "远程仓库 (远程拉取)"}
+	modSelectOptions = []string{"远程仓库 (远程拉取)"}
 )
 
 // NewCreateProjectForm 创建一个新的项目创建表单实例
@@ -306,7 +307,7 @@ func (m *TCreateProjectForm) initComponents() {
 		}
 		m.modBox.SetItemIndex(0)
 		m.modBox.SetParent(m.box)
-		m.modBox.SetOnChange(m.modBoxChange)
+		//m.modBox.SetOnChange(m.modBoxChange)
 
 		m.guiRenderFrameworkText = lcl.NewLabel(m)
 		m.guiRenderFrameworkText.SetLeft(left)

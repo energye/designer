@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -158,44 +159,24 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)
 		WriteConsole(consoleText.String())
 
-		// 检查框架 frameworks 框架是否设置安装目录，并正确安装
-		//m.checkInstallFrameworks()
-		if true { // 一个开关, 动态配置
-			isEgp := strings.HasSuffix(os.Args[len(os.Args)-1], consts.EGPExt)
-			if isEgp {
-				// 自动打开 energy 项目
-				filePath := os.Args[len(os.Args)-1]
-				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
-			} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
-				// 自动打开 最后一次打开的项目
-				event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
+		// 初始化依赖模块信息 ast
+		dependmod.InitDependencyModule(func() {
+			if true { // 一个开关, 动态配置
+				isEgp := strings.HasSuffix(os.Args[len(os.Args)-1], consts.EGPExt)
+				if isEgp {
+					// 自动打开 energy 项目
+					filePath := os.Args[len(os.Args)-1]
+					event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
+				} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
+					// 自动打开 最后一次打开的项目
+					event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
+				}
 			}
-		}
+		})
+		// 检查框架 frameworks 框架是否设置安装目录，并正确安装
+		//m.checkInstallFrameworks() // 不再使用
 	})
 }
-
-// 检查框架是否设置 frameworks 框架安装目录，并正确安装
-func (m *TAppWindow) checkInstallFrameworks() {
-	frameworksDir := config.Config.FrameworkDir
-	if config.Config.FrameworkDir == "" || !tool.IsExist(frameworksDir) {
-		event.ConsoleWriteError("未设置 framework 框架安装目录")
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 禁用所有功能组件
-			SetEnableFuncComponent(false)
-			// 弹出一个引导窗口
-			form := NewInstallFrameworkForm()
-			form.ShowModal()
-		})
-	}
-}
-
-//func (m *TAppWindow) FormAfterCreate(sender lcl.IObject) {
-//	logs.Info("FormAfterCreate")
-//}
-
-//func (m *TAppWindow) CreateParams(params *types.TCreateParams) {
-//	logs.Info("CreateParams")
-//}
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	logs.Info("OnCloseQuery closing:", m.closing)
