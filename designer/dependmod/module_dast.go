@@ -31,10 +31,21 @@ import (
 //   应用启动期间
 //
 
+type modCacheDir struct {
+	lclDir string
+	cefDir string
+	wvDir  string
+	engDir string
+}
+
 // 从模块缓存 初始化模块类型信息
 // TODO 待添加
-func initModuleTypeInfoFormModCache() {
+func initModuleTypeInfoFormModCache(dir *modCacheDir) {
 	logs.Println("初始化模块类型信息")
+	logs.Println("LCL Dir:", dir.lclDir)
+	logs.Println("CEF Dir:", dir.cefDir)
+	logs.Println("WV Dir:", dir.wvDir)
+	logs.Println("ENERGY Dir:", dir.engDir)
 }
 
 // 从内嵌源码 初始化模块类型信息

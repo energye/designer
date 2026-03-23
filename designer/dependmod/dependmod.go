@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/types"
 	"go/ast"
 )
 
@@ -50,19 +51,32 @@ func GetFuncTypeAliases(mod consts.Mod) *dast.TFuncTypeAlias {
 }
 
 // InitDependencyModule 初始化模块类型信息
-func InitDependencyModule(success func()) {
+func InitDependencyModule(windowRect types.TRect, callback func(ok bool)) {
 	go func() {
 		// initModuleTypeInfoFormEmbed() 不再使用
 		//go initModuleTypeInfoFormEmbed()
+		//lcl.RunOnMainThreadAsync(func(id uint32) {
+		//	newForm := NewDependModForm()
+		//	newForm.ShowModal()
+		//})
+
+		dir := &modCacheDir{}
 
 		// 根据 designer/resources/config.json 配置依赖模块下载模块
-		downloadMod()
+		isOk := downloadMod(dir)
+		if !isOk {
+			if callback != nil {
+				callback(false)
+			}
+			return
+		}
+
 		// 从模块缓存 初始化模块类型信息
-		initModuleTypeInfoFormModCache()
+		initModuleTypeInfoFormModCache(dir)
 
 		// 完成回调
-		if success != nil {
-			success()
+		if callback != nil {
+			callback(true)
 		}
 	}()
 }

@@ -160,8 +160,8 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		WriteConsole(consoleText.String())
 
 		// 初始化依赖模块信息 ast
-		dependmod.InitDependencyModule(func() {
-			if true { // 一个开关, 动态配置
+		dependmod.InitDependencyModule(m.ReadBounds(), func(ok bool) {
+			if ok { // 一个开关, 动态配置
 				isEgp := strings.HasSuffix(os.Args[len(os.Args)-1], consts.EGPExt)
 				if isEgp {
 					// 自动打开 energy 项目
