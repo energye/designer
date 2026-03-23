@@ -256,7 +256,7 @@ func init() {
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.Window = FormConfig.Window
-		Config.FrameworkDir = filepath.Join(exec.AppDir(), "frameworks")
+		//Config.FrameworkDir = filepath.Join(exec.AppDir(), "frameworks")
 		data, e := json.MarshalIndent(Config, "", "\t")
 		err.CheckErr(e)
 		e = os.WriteFile(configPath, data, 0644)

@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/exec"
 	"io"
@@ -43,25 +44,42 @@ var (
 // ExtractLibrary 解压设计器运行时库 libenergy
 // 这个函数作为解压过程的入口点
 func ExtractLibrary() string {
-	_ = os.MkdirAll(RuntimePath, os.ModePerm)
+	frameworksDir := config.Config.FrameworkDir
+	runtimeDir := filepath.Join(frameworksDir, "runtime")
+	if config.Config.FrameworkDir != "" && tool.IsExist(runtimeDir) {
+		// 确保运行时库被释放
+		_ = os.MkdirAll(runtimeDir, os.ModePerm)
+		// 释放LCL框架文件
+		return lib.ExtractLibrary(runtimeDir)
+	} else if !tool.IsDarwin {
+		// windows, linux 在未设置框架目录时，将运行时库释放到临时目录
+		tempDir := os.TempDir()
+		return lib.ExtractLibrary(tempDir)
+	}
+	//_ = os.MkdirAll(RuntimePath, os.ModePerm)
 	// 释放LCL框架文件
-	return lib.ExtractLibrary(RuntimePath)
+	//return lib.ExtractLibrary(RuntimePath)
+	return ""
 }
 
 // ExtractFrameworks 提取所有启用的框架
 // 该函数会根据启用的标志位，依次提取LCL、CEF和WV框架
-func ExtractFrameworks() {
+func ExtractFrameworks(fn func(message string), ok func()) {
 	go func() {
-		ExtractLCL(EnableLCL)
-		ExtractCEF(EnableCEF)
-		ExtractWV(EnableWV)
-		ExtractENERGY(EnableENERGY)
+		ExtractLCL(EnableLCL, fn)
+		ExtractCEF(EnableCEF, fn)
+		ExtractWV(EnableWV, fn)
+		ExtractENERGY(EnableENERGY, fn)
+		if ok != nil {
+			ok()
+		}
 	}()
 }
 
 // ExtractLCL 根据enable参数决定是否执行 LCL 库提取操作
-func ExtractLCL(enable bool) {
+func ExtractLCL(enable bool, fn func(message string)) {
 	if enable {
+		fn("提取 LCL 组件库")
 		// LocalPath LCL 框架源码路径
 		LocalPath := config.Config.FrameworkDirForLCL()
 		_ = os.MkdirAll(LocalPath, os.ModePerm)
@@ -70,8 +88,9 @@ func ExtractLCL(enable bool) {
 }
 
 // ExtractCEF 根据enable参数决定是否执行 CEF 库提取操作
-func ExtractCEF(enable bool) {
+func ExtractCEF(enable bool, fn func(message string)) {
 	if enable {
+		fn("提取 CEF 组件库")
 		LocalPath := config.Config.FrameworkDirForCEF()
 		_ = os.MkdirAll(LocalPath, os.ModePerm)
 		extractCEF(LocalPath)
@@ -79,8 +98,9 @@ func ExtractCEF(enable bool) {
 }
 
 // ExtractWV 根据enable参数决定是否执行 WebView 库提取操作
-func ExtractWV(enable bool) {
+func ExtractWV(enable bool, fn func(message string)) {
 	if enable {
+		fn("提取 Webview 组件库")
 		LocalPath := config.Config.FrameworkDirForWV()
 		_ = os.MkdirAll(LocalPath, os.ModePerm)
 		extractWV(LocalPath)
@@ -88,8 +108,9 @@ func ExtractWV(enable bool) {
 }
 
 // ExtractENERGY 根据enable参数决定是否执行 energy 库提取操作
-func ExtractENERGY(enable bool) {
+func ExtractENERGY(enable bool, fn func(message string)) {
 	if enable {
+		fn("提取 ENERGY GUI 框架库")
 		LocalPath := config.Config.FrameworkDirForENERGY()
 		_ = os.MkdirAll(LocalPath, os.ModePerm)
 		extractENERGY(LocalPath)

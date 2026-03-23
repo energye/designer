@@ -17,7 +17,6 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
@@ -464,8 +463,9 @@ func init() {
 	initConfigToolbar()
 	// 注册组件
 	initRegisterComponent()
+
 	// 初始化依赖模块信息 ast
 	dependmod.InitDependencyModule()
 	// 提取所有启用的框架
-	frameworks.ExtractFrameworks()
+	//frameworks.ExtractFrameworks()
 }
