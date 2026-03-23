@@ -15,6 +15,126 @@
 
 package build
 
+import (
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/command"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"runtime"
+	"strings"
+)
+
 func build() bool {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return false
+	}
+	event.ConsoleWriteInfo("Build - project check config options")
+	option := proj.BuildOption
+	if !option.PlatformWindows {
+		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
+		return false
+	}
+	isAmd64 := runtime.GOARCH == "amd64"
+	is386 := runtime.GOARCH == "386"
+	if isAmd64 {
+		if !option.ArchAmd64 {
+			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
+			return false
+		}
+	}
+	if is386 {
+		if !option.Arch386 {
+			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
+			return false
+		}
+	}
+	if !option.UIWin32 {
+		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
+		return false
+	}
+	event.ConsoleWriteInfo("Build - start build", proj.Name)
+
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+	// 编译参数
+	buildArgs := option.GoArgs
+	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
+	reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
+	reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
+	// 提取 tags
+	tagMatches := reTags.FindStringSubmatch(buildArgs)
+	customTags := ""
+	customLdflags := ""
+	if len(tagMatches) > 1 {
+		customTags = tagMatches[1]
+	}
+	// 提取 ldflags
+	ldMatches := reLdflags.FindStringSubmatch(buildArgs)
+	if len(ldMatches) > 1 {
+		customLdflags = ldMatches[1]
+	}
+	buildMode := "dev"
+	if option.BuildModeRelease {
+		buildMode = "prod"
+	}
+	// 合并 tags prod
+	tags := tool.MergeTags(buildMode, customTags)
+	// 合并 ldflags
+	ldflags := tool.MergeLdflags("", customLdflags)
+	// 其它参数
+	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
+	args := []string{"build", "-v"}
+	if len(tags) > 0 {
+		args = append(args, "-tags", strings.Join(tags, ","))
+	}
+	// 编译模式
+	if option.BuildModeDebug {
+		// debug
+		if len(ldflags) > 0 {
+			args = append(args, "-ldflags", strings.Join(ldflags, " "))
+		}
+	} else {
+		// release
+		ldflags = tool.MergeLdflags("-s -w", strings.Join(ldflags, " "))
+		args = append(args, "-ldflags", strings.Join(ldflags, " "))
+		args = append(args, "-trimpath")
+	}
+
+	runGoBuild := func(env []string, output string) {
+		tempArgs := args[:]
+		tempArgs = append(tempArgs, "-o", output)
+		if len(otherArgs) > 0 {
+			tempArgs = append(tempArgs, otherArgs...)
+		}
+		event.ConsoleWriteInfo("Build - output", output)
+		event.ConsoleWriteInfo("go", strings.Join(tempArgs, " "))
+		// 编译命令
+		cmd := command.NewCMD()
+		cmd.Dir = bean.GPath
+		cmd.BeforeRun = func(cmd *exec.Cmd) {
+			cmd.Env = append(os.Environ(), env...)
+		}
+		cmd.Command("go", tempArgs...)
+		if option.BuildModeRelease {
+			event.ConsoleWriteInfo("strip", output)
+			cmd.Command("strip", output)
+		}
+	}
+	buildFileName := option.BuildFileName
+	if filepath.Ext(buildFileName) != ".exe" {
+		buildFileName += ".exe"
+	}
+	outputFilename := filepath.Join(output, buildFileName)
+	runGoBuild(nil, outputFilename)
+
+	event.ConsoleWriteInfo("Build Successfully")
 	return true
 }

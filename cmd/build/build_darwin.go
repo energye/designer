@@ -43,7 +43,7 @@ func build() bool {
 	isAmd64 := runtime.GOARCH == "amd64"
 	isArm64 := runtime.GOARCH == "arm64"
 	if isAmd64 {
-		if !option.ArchX86_64 {
+		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
@@ -52,7 +52,7 @@ func build() bool {
 		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
 	}
 	if isArm64 {
-		if !option.ArchAarch64 {
+		if !option.ArchArm64 {
 			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}

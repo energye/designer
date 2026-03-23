@@ -57,15 +57,15 @@ type TBuildOption struct {
 	PlatformWindows  bool   `json:"windows"`
 	PlatformMacOS    bool   `json:"macos"`
 	PlatformLinux    bool   `json:"linux"`
-	ArchX86_64       bool   `json:"arch_x86_64"`
-	ArchI386         bool   `json:"arch_i386"`
-	ArchAarch64      bool   `json:"arch_aarch64"`
+	ArchAmd64        bool   `json:"arch_amd64"`
+	Arch386          bool   `json:"arch_386"`
+	ArchArm64        bool   `json:"arch_arm64"`
 	ArchArm          bool   `json:"arch_arm"`
-	ArchLoongarch64  bool   `json:"arch_loongarch64"`
-	UIWin32_64       bool   `json:"ui_win_32_64"`
+	ArchLoong64      bool   `json:"arch_loong64"`
+	UIWin32          bool   `json:"ui_win32"`
 	UICocoa          bool   `json:"ui_cocoa"`
-	UIGtk2           bool   `json:"ui_gtk_2"`
-	UIGtk3           bool   `json:"ui_gtk_3"`
+	UIGtk2           bool   `json:"ui_gtk2"`
+	UIGtk3           bool   `json:"ui_gtk3"`
 	Output           string `json:"output"`
 	BuildFileName    string `json:"build_file_name"`
 	BuildModeDebug   bool   `json:"build_mode_debug"`
@@ -213,12 +213,12 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.PlatformWindows = true
 	m.BuildOption.PlatformMacOS = true
 	m.BuildOption.PlatformLinux = true
-	m.BuildOption.ArchX86_64 = true
-	m.BuildOption.ArchI386 = true
-	m.BuildOption.ArchAarch64 = true
+	m.BuildOption.ArchAmd64 = true
+	m.BuildOption.Arch386 = true
+	m.BuildOption.ArchArm64 = true
 	m.BuildOption.ArchArm = true
-	m.BuildOption.ArchLoongarch64 = false
-	m.BuildOption.UIWin32_64 = true
+	m.BuildOption.ArchLoong64 = false
+	m.BuildOption.UIWin32 = true
 	m.BuildOption.UICocoa = true
 	m.BuildOption.UIGtk2 = true
 	m.BuildOption.UIGtk3 = false
