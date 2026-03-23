@@ -20,7 +20,6 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
-	"github.com/energye/lcl/tool/exec"
 	"io"
 	"os"
 	"path/filepath"
@@ -35,10 +34,10 @@ const (
 )
 
 var (
-	// Path 框架目录
-	Path = filepath.Join(exec.AppDir(), "frameworks")
-	// RuntimePath 运行时库目录
-	RuntimePath = filepath.Join(Path, "runtime")
+// Path 框架目录
+// Path = filepath.Join(exec.AppDir(), "frameworks")
+// RuntimePath 运行时库目录
+// RuntimePath = filepath.Join(Path, "runtime")
 )
 
 // ExtractLibrary 解压设计器运行时库 libenergy
@@ -46,7 +45,7 @@ var (
 func ExtractLibrary() string {
 	frameworksDir := config.Config.FrameworkDir
 	runtimeDir := filepath.Join(frameworksDir, "runtime")
-	if config.Config.FrameworkDir != "" && tool.IsExist(runtimeDir) {
+	if config.Config.FrameworkDir != "" && tool.IsExist(frameworksDir) {
 		// 确保运行时库被释放
 		_ = os.MkdirAll(runtimeDir, os.ModePerm)
 		// 释放LCL框架文件
@@ -56,9 +55,6 @@ func ExtractLibrary() string {
 		tempDir := os.TempDir()
 		return lib.ExtractLibrary(tempDir)
 	}
-	//_ = os.MkdirAll(RuntimePath, os.ModePerm)
-	// 释放LCL框架文件
-	//return lib.ExtractLibrary(RuntimePath)
 	return ""
 }
 

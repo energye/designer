@@ -159,7 +159,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		WriteConsole(consoleText.String())
 
 		// 检查框架 frameworks 框架是否设置安装目录，并正确安装
-		m.checkInstallFrameworks()
+		//m.checkInstallFrameworks()
 		if true { // 一个开关, 动态配置
 			isEgp := strings.HasSuffix(os.Args[len(os.Args)-1], consts.EGPExt)
 			if isEgp {

@@ -239,6 +239,12 @@ func UpdateEnvGoRoot(envName string, goRoot string) {
 	}
 }
 
+// Path 返回 energy designer 环境目录
+// 该目录在当前用户目录/.energy
+func Path() string {
+	return energyDir
+}
+
 func init() {
 	FormConfig = &formConfig{}
 	e := json.Unmarshal(resources.Config(), FormConfig)
@@ -256,7 +262,7 @@ func init() {
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.Window = FormConfig.Window
-		//Config.FrameworkDir = filepath.Join(exec.AppDir(), "frameworks")
+		Config.FrameworkDir = filepath.Join(energyDir)
 		data, e := json.MarshalIndent(Config, "", "\t")
 		err.CheckErr(e)
 		e = os.WriteFile(configPath, data, 0644)
@@ -269,4 +275,10 @@ func init() {
 	e = json.Unmarshal(data, Config)
 	err.CheckErr(e)
 	FormConfig.Window = Config.Window
+
+	// 框架目录为空或无效重新设置
+	if Config.FrameworkDir == "" || !tool.IsExist(Config.FrameworkDir) {
+		Config.FrameworkDir = filepath.Join(energyDir)
+		go UpdateConfig()
+	}
 }
