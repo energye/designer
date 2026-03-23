@@ -17,7 +17,7 @@ import (
 	"github.com/energye/designer/designer"
 	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/pkg/logs"
-	_ "github.com/energye/designer/pkg/syso"
+	_ "github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"

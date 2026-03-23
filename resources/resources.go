@@ -1,80 +1,40 @@
-// Copyright © yanghy. All Rights Reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and limitations under the License.
+// ==============================================================================
+// 📚 内嵌资源
+// 📌 不存在时自动创建
+// ✏️ 可在此文件中添加业务逻辑
+// ==============================================================================
 
 package resources
 
 import (
 	"embed"
+	engLCL "github.com/energye/energy/v3/lcl"
+	"github.com/energye/lcl/lcl"
 )
 
-var (
-	// 主配置
-	//go:embed config.json
-	config embed.FS
-	// 组件属性配置
-	//go:embed component-property.json
-	componentProperty embed.FS
-	// 图标资源
-	//go:embed images
-	images embed.FS
-	// 弹窗过滤配置
-	//go:embed dialog-filter.json
-	dialogFilter embed.FS
-)
+//go:embed embed
+var icon embed.FS
 
-// 配置文件
-func Config() []byte {
-	if d, err := config.ReadFile("config.json"); err == nil {
-		return d
-	}
-	return nil
+// Embed 获取内嵌资源
+// 函数签名不能修改
+func Embed(fileName string) []byte {
+	data, _ := icon.ReadFile("embed/" + fileName)
+	return data
 }
 
-// 弹窗过滤
-func DialogFilter() []byte {
-	if d, err := dialogFilter.ReadFile("dialog-filter.json"); err == nil {
-		return d
-	}
-	return nil
+// SetIcon 设置应用程序图标
+// 函数签名不能修改
+func SetIcon() {
+	stream := lcl.NewMemoryStream()
+	lcl.StreamHelper.Write(stream, Embed("icon.png"))
+	stream.SetPosition(0)
+	png := lcl.NewPortableNetworkGraphic()
+	png.LoadFromStreamWithStream(stream)
+	lcl.Application.Icon().Assign(png)
+	png.Free()
+	stream.Free()
 }
 
-// 图标资源
-func Images(filePath string) []byte {
-	if d, err := images.ReadFile("images/" + filePath); err == nil {
-		return d
-	}
-	return nil
-}
-
-// 获取指定目录的图标资源列表
-func GetImageFileList(dirName string) (result []string) {
-	des, err := images.ReadDir("images/" + dirName)
-	if err != nil {
-		return nil
-	}
-	for _, de := range des {
-		result = append(result, dirName+"/"+de.Name())
-	}
-	return
-}
-
-// 组件属性配置
-// 用于通用属性和定制属性
-// 通用属性 1. 排除 2. 包含
-// 定制属性 组件特有的属性
-func ComponentProperty() []byte {
-	if d, err := componentProperty.ReadFile("component-property.json"); err == nil {
-		return d
-	}
-	return nil
+func init() {
+	engLCL.SetOnBeforeRun(SetIcon)
 }
