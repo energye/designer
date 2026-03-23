@@ -39,7 +39,6 @@ type modCacheDir struct {
 }
 
 // 从模块缓存 初始化模块类型信息
-// TODO 待添加
 func initModuleTypeInfoFormModCache(dir *modCacheDir) {
 	logs.Println("初始化模块类型信息")
 	logs.Println("LCL Dir:", dir.lclDir)
