@@ -43,7 +43,11 @@ func AppExecutable() string {
 		output = filepath.Join(bean.GPath, output)
 	}
 	if tool.IsWindows || tool.IsLinux {
-		buildFile := filepath.Join(output, option.BuildFileName)
+		buildFileName := option.BuildFileName
+		if tool.IsWindows && filepath.Ext(buildFileName) != ".exe" {
+			buildFileName += ".exe"
+		}
+		buildFile := filepath.Join(output, buildFileName)
 		return buildFile
 	} else if tool.IsDarwin {
 		packageName := option.PackageName + ".app"

@@ -47,7 +47,6 @@ func runGenerateCode(uiGenData designer.TUIGenerationData) error {
 	if err := generateUserCode(formTab, &uiComponent); err != nil {
 		return fmt.Errorf("生成用户代码失败: %w", err)
 	}
-
 	return nil
 }
 
