@@ -96,7 +96,7 @@ func downloadMod(dir *modCacheDir) bool {
 	}
 	event.ConsoleWriteInfo("Download module cache start")
 	paserModCacheDir := func(modPath string) (string, error) {
-		modJSON := runDownloadModCache(lclPath)
+		modJSON := runDownloadModCache(modPath)
 		if !ok {
 			return "", errors.New("-")
 		}
@@ -110,7 +110,7 @@ func downloadMod(dir *modCacheDir) bool {
 		}
 		return tmpDir.Dir, err
 	}
-	if !tool.IsExist(dir.engDir) {
+	if !tool.IsExist(dir.lclDir) {
 		if tmpModDir, err := paserModCacheDir(lclPath); err == nil {
 			dir.lclDir = tmpModDir
 		} else {

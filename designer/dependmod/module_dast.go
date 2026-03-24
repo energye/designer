@@ -45,6 +45,8 @@ func initModuleTypeInfoFormModCache(dir *modCacheDir) {
 	logs.Println("CEF Dir:", dir.cefDir)
 	logs.Println("WV Dir:", dir.wvDir)
 	logs.Println("ENERGY Dir:", dir.engDir)
+
+	// todo 待 添加  dast ast
 }
 
 // 从内嵌源码 初始化模块类型信息
