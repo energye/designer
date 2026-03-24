@@ -848,6 +848,7 @@ func (m *TBuildForm) mergeMacOSUniversalBinary() error {
 		event.ConsoleWriteInfo("Merge macOS UniversalBinary, amd64LibFilePath:", amd64LibFilePath)
 		_ = os.Remove(universalLibFilePath)
 		cmd := command.NewCMD()
+		cmd.HideWindow = true
 		cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
 		event.ConsoleWriteInfo("Merge macOS UniversalBinary, universalLibFilePath:", universalLibFilePath)
 	}

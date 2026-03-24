@@ -111,5 +111,6 @@ func macOSUniversalBinary(outputPath string) {
 	arm64LibFilePath := filepath.Join(outputPath, libArm64.OutputFilename)
 	amd64LibFilePath := filepath.Join(outputPath, libAmd64.OutputFilename)
 	cmd := command.NewCMD()
+	cmd.HideWindow = true
 	cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
 }

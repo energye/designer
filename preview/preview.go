@@ -49,6 +49,7 @@ func runPreview(state chan<- any) {
 	// 开始运行
 	state <- consts.PsStarted // 运行命令
 	runCmd = command.NewCMD()
+	runCmd.HideWindow = true
 	run.Run(runCmd)
 	state <- consts.PsStop
 	close(state)

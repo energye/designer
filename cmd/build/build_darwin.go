@@ -134,6 +134,7 @@ func build() bool {
 		// 编译命令
 		cmd := command.NewCMD()
 		cmd.Dir = bean.GPath
+		cmd.HideWindow = true
 		cmd.BeforeRun = func(cmd *exec.Cmd) {
 			cmd.Env = append(os.Environ(), env...)
 		}
@@ -172,6 +173,7 @@ func mergeUniversal(amd64File, arm64File, output string) {
 	event.ConsoleWriteInfo("Build - merge universal")
 	cmd := command.NewCMD()
 	cmd.Dir = bean.GPath
+	cmd.HideWindow = true
 	cmd.Command("lipo", "-create", amd64File, arm64File, "-output", output)
 }
 
@@ -179,6 +181,7 @@ func verifyUniversal(filePath string) {
 	event.ConsoleWriteInfo("Build - verify universal")
 	cmd := command.NewCMD()
 	cmd.Dir = bean.GPath
+	cmd.HideWindow = true
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}

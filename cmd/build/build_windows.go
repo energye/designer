@@ -103,7 +103,7 @@ func build() bool {
 		}
 	} else {
 		// release
-		ldflags = tool.MergeLdflags("-s -w", strings.Join(ldflags, " "))
+		ldflags = tool.MergeLdflags("-H windowsgui -s -w", strings.Join(ldflags, " "))
 		args = append(args, "-ldflags", strings.Join(ldflags, " "))
 		args = append(args, "-trimpath")
 	}
@@ -119,6 +119,7 @@ func build() bool {
 		// 编译命令
 		cmd := command.NewCMD()
 		cmd.Dir = bean.GPath
+		cmd.HideWindow = true
 		cmd.BeforeRun = func(cmd *exec.Cmd) {
 			cmd.Env = append(os.Environ(), env...)
 		}

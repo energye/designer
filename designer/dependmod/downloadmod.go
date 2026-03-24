@@ -59,6 +59,7 @@ func downloadMod(dir *modCacheDir) bool {
 		cmdArgs := []string{"mod", "download", "-json", modPath}
 		cmd := command.NewCMD()
 		cmd.IsPrint = false
+		cmd.HideWindow = true
 		cmd.Console = func(data string, level command.Level) {
 			logs.Println(data)
 			if level == command.LError {

@@ -68,6 +68,7 @@ func UniversalBinary(amd64ZipPath, arm64ZipPath, outputPath string) (string, err
 	}
 	// lipo -create [x86_64架构文件路径] [arm64架构文件路径] -output [输出通用二进制文件路径]
 	cmd := command.NewCMD()
+	cmd.HideWindow = true
 	cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
 	if !IsExist(universalLibFilePath) {
 		return "", errors.New("universal dylib not exist")

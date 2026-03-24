@@ -15,6 +15,7 @@ package dependmod
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources/frameworks"
@@ -42,10 +43,10 @@ type modCacheDir struct {
 // 从模块缓存 初始化模块类型信息
 func initModuleTypeInfoFormModCache(dir *modCacheDir) {
 	logs.Println("初始化模块类型信息")
-	logs.Println("   LCL:", dir.lclDir)
-	logs.Println("   CEF:", dir.cefDir)
-	logs.Println("    WV:", dir.wvDir)
-	logs.Println("ENERGY:", dir.engDir)
+	event.ConsoleWriteInfo("   LCL:", dir.lclDir)
+	event.ConsoleWriteInfo("   CEF:", dir.cefDir)
+	event.ConsoleWriteInfo("    WV:", dir.wvDir)
+	event.ConsoleWriteInfo("ENERGY:", dir.engDir)
 
 	lclSRCEventDef := filepath.Join(dir.lclDir, "lcl", "callback_event_def.go")
 	cefSRCEventDef := filepath.Join(dir.cefDir, "cef", "callback_event_def.go")
