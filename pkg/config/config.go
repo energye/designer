@@ -48,11 +48,11 @@ var (
 	// energy 配置文件路径
 	configPath = filepath.Join(energyDir, "config.json")
 	// 全局当前 Go 环境配置
-	GGoEnv GoEnv
+	GGoEnv goEnv
 )
 
 type dependencies map[string]string
-type GoEnv map[string]string
+type goEnv map[string]string
 
 // 设计器窗体配置
 type designerConfig struct {
@@ -168,11 +168,11 @@ func (m dependencies) Get(modPath string) string {
 	return m[modPath]
 }
 
-func (m GoEnv) Get(name string) string {
+func (m goEnv) Get(name string) string {
 	return m[name]
 }
 
-func (m GoEnv) Set(name, value string) {
+func (m goEnv) Set(name, value string) {
 	m[name] = value
 	_ = os.Setenv("name", value)
 }

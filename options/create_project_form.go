@@ -495,18 +495,6 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		// 重置设计器
 		designer.ResetDesigner()
 		go func() {
-			// 更新设计器配置框架目录
-			//if config.UpdateFrameworkDir(frameworkDir) {
-			//	config.UpdateConfig()
-			//	// 更新框架目录
-			//	frameworks.Path = config.Config.FrameworkDir
-			//}
-			//// 释放 LCL 库
-			//frameworks.ExtractLCL(enableLCL)
-			//// 释放 CEF 库
-			//frameworks.ExtractCEF(enableCEF)
-			//// 释放 WebView 库
-			//frameworks.ExtractWV(enableWV)
 			// 运行创建项目
 			if doRunCreate(projectName, projectDir, guiRenderFrameworkGUI) {
 				// go.mod

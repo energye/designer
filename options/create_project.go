@@ -59,11 +59,10 @@ func createProjectDir() {
 	data := *bean.GProject
 	// 本地模式
 	localModule := tool.Buffer{}
-	localModule.WriteString("replace (", "\n")
-	localModule.WriteString("  github.com/energye/lcl", " => ", config.Config.FrameworkDirForLCL(), "\n")
-	localModule.WriteString("  github.com/energye/wv", " => ", config.Config.FrameworkDirForWV(), "\n")
-	localModule.WriteString("  github.com/energye/cef", " => ", config.Config.FrameworkDirForCEF(), "\n")
-	localModule.WriteString("  github.com/energye/energy/v3", " => ", config.Config.FrameworkDirForENERGY(), "\n")
+	localModule.WriteString("require (\n")
+	for modName, modVersion := range config.DesignerConfig.Dependencies {
+		localModule.WriteString(modName, " ", modVersion, "\n")
+	}
 	localModule.WriteString(")", "\n")
 	data.Data = localModule.String()
 
