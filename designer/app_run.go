@@ -26,7 +26,7 @@ func Run() {
 	//locales.SwitchLCLLang("de")
 	locales.SwitchLCLLang("zh_CN")
 	lcl.Application.Initialize()
-	lcl.Application.SetTitle(config.FormConfig.Title)
+	lcl.Application.SetTitle(config.DesignerConfig.Title)
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
 	lcl.Application.NewForms(&mainWindow)

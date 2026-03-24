@@ -40,7 +40,7 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	// 构建模板数据
 	data := buildAutoTemplateData(component)
 	data.BaseInfo = &TBaseInfo{
-		DesignerVersion: config.FormConfig.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
+		DesignerVersion: config.DesignerConfig.Version, DateTime: time.Now().Format("2006-01-02 15:04:05"),
 		UIFile:   formTab.UIFile(),
 		UserFile: formTab.GOUserFile(),
 	}

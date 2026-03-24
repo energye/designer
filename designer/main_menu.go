@@ -300,7 +300,7 @@ func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 	about.SetCaption("关于")
 	about.SetImageIndex(imageMenu.ImageIndex("menu_project_about.png"))
 	about.SetOnClick(func(sender lcl.IObject) {
-		versionInfo := api.PasStr("ENERGY Designer " + config.FormConfig.Version + "\nLCL " + v)
+		versionInfo := api.PasStr("ENERGY Designer " + config.DesignerConfig.Version + "\nLCL " + v)
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
 	})
 	m.helper.Add(about)

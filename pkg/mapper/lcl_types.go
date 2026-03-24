@@ -14,6 +14,7 @@
 package mapper
 
 import (
+	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
@@ -32,7 +33,11 @@ func GetLCL(name string) any {
 	if v := cacheValue.Get(name); v != nil {
 		return v
 	}
-	lclPath := config.Config.FrameworkDirForLCL()
+	modCachePath := config.GGoEnv.Get("GOMODCACHE")
+	dependencies := config.DesignerConfig.Dependencies
+	lclModVersion := dependencies.Get(config.LCLModPath)
+	lclMod := fmt.Sprintf("%s@%s", config.LCLModPath, lclModVersion)
+	lclPath := filepath.Join(modCachePath, lclMod)
 	for _, file := range _LCLTypeFiles {
 		filePath := filepath.Join(lclPath, "types", file)
 		val := dast.GetConstValue(filePath, name)

@@ -18,6 +18,7 @@ import (
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources/frameworks"
+	"os"
 	"path/filepath"
 )
 
@@ -41,12 +42,79 @@ type modCacheDir struct {
 // 从模块缓存 初始化模块类型信息
 func initModuleTypeInfoFormModCache(dir *modCacheDir) {
 	logs.Println("初始化模块类型信息")
-	logs.Println("LCL Dir:", dir.lclDir)
-	logs.Println("CEF Dir:", dir.cefDir)
-	logs.Println("WV Dir:", dir.wvDir)
-	logs.Println("ENERGY Dir:", dir.engDir)
+	logs.Println("   LCL:", dir.lclDir)
+	logs.Println("   CEF:", dir.cefDir)
+	logs.Println("    WV:", dir.wvDir)
+	logs.Println("ENERGY:", dir.engDir)
 
-	// todo 待 添加  dast ast
+	lclSRCEventDef := filepath.Join(dir.lclDir, "lcl", "callback_event_def.go")
+	cefSRCEventDef := filepath.Join(dir.cefDir, "cef", "callback_event_def.go")
+	wvWindowsSRCEventDef := filepath.Join(dir.wvDir, "windows", "callback_event_def.go")
+	wvDarwinSRCEventDef := filepath.Join(dir.wvDir, "darwin", "callback_event_def.go")
+	wvLinuxSRCEventDef := filepath.Join(dir.wvDir, "linux", "callback_event_def.go")
+
+	{
+		// LCL 模块的事件回调函数类型
+		lclSRCEventDefData, err := os.ReadFile(lclSRCEventDef)
+		if err != nil {
+			logs.Error("initModuleTypeInfoFormModCache", err.Error())
+			return
+		}
+		GLCLFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(lclSRCEventDef, lclSRCEventDefData)
+		if GLCLFuncTypeAliases != nil {
+			GLCLFuncTypeAliases.Mod = consts.ModLCL
+			GLCLFuncTypeAliases.Imports.Add(GLCLFuncTypeAliases.Mod, consts.DmLCL)
+		}
+	}
+	{
+		// CEF 模块的事件回调函数类型
+		cefSRCEventDefData, err := os.ReadFile(cefSRCEventDef)
+		if err != nil {
+			logs.Error("initModuleTypeInfoFormModCache", err.Error())
+			return
+		}
+		if GCEFFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(cefSRCEventDef, cefSRCEventDefData); GCEFFuncTypeAliases != nil {
+			GCEFFuncTypeAliases.Mod = consts.ModCEF
+			GCEFFuncTypeAliases.Imports.Add(GCEFFuncTypeAliases.Mod, consts.DmCEF)
+		}
+	}
+	{
+		// WV 模块的事件回调函数类型
+		// Windows
+		wvWindowsSRCEventDefData, err := os.ReadFile(wvWindowsSRCEventDef)
+		if err != nil {
+			logs.Error("initModuleTypeInfoFormModCache", err.Error())
+			return
+		}
+		GWVWindowsFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvWindowsSRCEventDef, wvWindowsSRCEventDefData)
+		if GWVWindowsFuncTypeAliases != nil {
+			GWVWindowsFuncTypeAliases.Mod = consts.ModWVWindows
+			GWVWindowsFuncTypeAliases.Imports.Add(GWVWindowsFuncTypeAliases.Mod, consts.DmWVWindows)
+		}
+		//  macOS
+		wvDarwinSRCEventDefData, err := os.ReadFile(wvDarwinSRCEventDef)
+		if err != nil {
+			logs.Error("initModuleTypeInfoFormModCache", err.Error())
+			return
+		}
+		GWVDarwinFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvDarwinSRCEventDef, wvDarwinSRCEventDefData)
+		if GWVDarwinFuncTypeAliases != nil {
+			GWVDarwinFuncTypeAliases.Mod = consts.ModWVDarwin
+			GWVDarwinFuncTypeAliases.Imports.Add(GWVDarwinFuncTypeAliases.Mod, consts.DmWVMacOS)
+		}
+		// Linux
+		wvLinuxSRCEventDefData, err := os.ReadFile(wvLinuxSRCEventDef)
+		if err != nil {
+			logs.Error("initModuleTypeInfoFormModCache", err.Error())
+			return
+		}
+		GWVLinuxFuncTypeAliases = dast.GetAllFuncTypeAliasesByCode(wvLinuxSRCEventDef, wvLinuxSRCEventDefData)
+		if GWVLinuxFuncTypeAliases != nil {
+			GWVLinuxFuncTypeAliases.Mod = consts.ModWVLinux
+			GWVLinuxFuncTypeAliases.Imports.Add(GWVLinuxFuncTypeAliases.Mod, consts.DmWVLinux)
+		}
+	}
+	logs.Println("初始化模块类型信息 结束")
 }
 
 // 从内嵌源码 初始化模块类型信息

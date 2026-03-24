@@ -78,9 +78,9 @@ func SetAppEGPPath(path string) {
 // 打开项目后, 新建项目后
 func UpdateDesignerTitle(title string) {
 	if title == "" {
-		title = fmt.Sprintf("%v %v", config.FormConfig.Title, config.FormConfig.Version)
+		title = fmt.Sprintf("%v %v", config.DesignerConfig.Title, config.DesignerConfig.Version)
 	} else {
-		title = fmt.Sprintf("%v %v - %v", title, config.FormConfig.Title, config.FormConfig.Version)
+		title = fmt.Sprintf("%v %v - %v", title, config.DesignerConfig.Title, config.DesignerConfig.Version)
 	}
 	lcl.RunOnMainThreadSync(func() {
 		logs.Println("UpdateDesignerTitle:", title)
@@ -103,7 +103,7 @@ func SwitchAllTheme(dark bool) {
 func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
-	cfg := config.FormConfig
+	cfg := config.DesignerConfig
 	// 属性
 	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
@@ -153,7 +153,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 			fn()
 		}
 		// 向消息输出基本信息
-		cfg := config.FormConfig
+		cfg := config.DesignerConfig
 		_, _, _, _, _, v := api.LCLVersion()
 		consoleText := tool.Buffer{}
 		consoleText.WriteString(cfg.Title, ":", cfg.Version, " LCL:v", v)

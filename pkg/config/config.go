@@ -19,35 +19,48 @@ import (
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/lcl/tool/exec"
+	toolExec "github.com/energye/lcl/tool/exec"
 	"github.com/energye/lcl/types"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 )
 
 // 设计器配置
 
+const (
+	LCLModPath    = "github.com/energye/lcl"
+	CEFModPath    = "github.com/energye/cef"
+	WVModPath     = "github.com/energye/wv"
+	ENERGYModPath = "github.com/energye/energy/v3"
+)
+
 var (
-	// FormConfig 设计器窗体全局配置(布局窗体信息等)
-	FormConfig *formConfig
+	// DesignerConfig 设计器窗体全局配置(布局窗体信息等)
+	DesignerConfig *designerConfig
 	// Config energy 配置文件
 	Config *TConfig
 	// 用户目录
-	homeDir = exec.HomeDir
+	homeDir = toolExec.HomeDir
 	// energy 配置目录
 	energyDir = filepath.Join(homeDir, ".energy")
 	// energy 配置文件路径
 	configPath = filepath.Join(energyDir, "config.json")
+	// 全局当前 Go 环境配置
+	GGoEnv GoEnv
 )
 
+type dependencies map[string]string
+type GoEnv map[string]string
+
 // 设计器窗体配置
-type formConfig struct {
-	Title         string            `json:"title"`         // 设计器标题
-	Version       string            `json:"version"`       // 设计器版本
-	Dependencies  map[string]string `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
-	Window        Window            `json:"window"`        // 设计器窗体信息
-	ComponentTabs ComponentTabs     `json:"componentTabs"` // 设计器加载组件
+type designerConfig struct {
+	Title         string        `json:"title"`         // 设计器标题
+	Version       string        `json:"version"`       // 设计器版本
+	Dependencies  dependencies  `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
+	Window        Window        `json:"window"`        // 设计器窗体信息
+	ComponentTabs ComponentTabs `json:"componentTabs"` // 设计器加载组件
 }
 
 // 设计器窗口配置
@@ -106,7 +119,7 @@ type TMod struct {
 //   - string: 构建的源码版本框架目录路径，如果未设置 FrameworkDir 则返回空字符串
 func (m *TConfig) FrameworkDirForSrcVersion() (string, string) {
 	if m.FrameworkDir != "" {
-		return filepath.Join(m.FrameworkDir, "src"), FormConfig.Version
+		return filepath.Join(m.FrameworkDir, "src"), DesignerConfig.Version
 	}
 	return "", ""
 }
@@ -149,6 +162,19 @@ func (m *TConfig) FrameworkDirForENERGY() string {
 func (m *TConfig) FrameworkDirForENERGYRelativePath() string {
 	_, version := m.FrameworkDirForSrcVersion()
 	return "../energy@" + version
+}
+
+func (m dependencies) Get(modPath string) string {
+	return m[modPath]
+}
+
+func (m GoEnv) Get(name string) string {
+	return m[name]
+}
+
+func (m GoEnv) Set(name, value string) {
+	m[name] = value
+	_ = os.Setenv("name", value)
 }
 
 // UpdateWindow 更新窗体配置
@@ -247,8 +273,8 @@ func Path() string {
 }
 
 func init() {
-	FormConfig = &formConfig{}
-	e := json.Unmarshal(resources.Config(), FormConfig)
+	DesignerConfig = &designerConfig{}
+	e := json.Unmarshal(resources.Config(), DesignerConfig)
 	err.CheckErr(e)
 	// 从 energy 配置文件读取
 	if !tool.IsDir(energyDir) {
@@ -259,10 +285,10 @@ func init() {
 	_ = os.Mkdir(energyDir, os.ModePerm)
 
 	// config.json
-	Config = &TConfig{Window: FormConfig.Window}
+	Config = &TConfig{Window: DesignerConfig.Window}
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
-		Config.Window = FormConfig.Window
+		Config.Window = DesignerConfig.Window
 		Config.FrameworkDir = filepath.Join(energyDir)
 		data, e := json.MarshalIndent(Config, "", "\t")
 		err.CheckErr(e)
@@ -275,11 +301,22 @@ func init() {
 	err.CheckErr(e)
 	e = json.Unmarshal(data, Config)
 	err.CheckErr(e)
-	FormConfig.Window = Config.Window
+	DesignerConfig.Window = Config.Window
 
 	// 框架目录为空或无效重新设置
 	if Config.FrameworkDir == "" || !tool.IsExist(Config.FrameworkDir) {
 		Config.FrameworkDir = filepath.Join(energyDir)
 		go UpdateConfig()
+	}
+
+	// 加载 Go 环境信息
+	goEnvCmd := exec.Command("go", "env", "-json")
+	goEnvData, err := goEnvCmd.Output()
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(goEnvData, &GGoEnv)
+	if err != nil {
+		return
 	}
 }
