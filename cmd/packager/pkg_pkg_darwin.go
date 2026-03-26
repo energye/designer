@@ -56,7 +56,7 @@ func packager() bool {
 	if !createAppBundle() {
 		return false
 	}
-	if option.MacCert {
+	if option.Cert {
 		if !cert() {
 			return false
 		}

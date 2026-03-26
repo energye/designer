@@ -15,12 +15,50 @@
 
 package packager
 
+import (
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
+	"os/exec"
+)
+
 // signtool.exe
 
 func packager() bool {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Package - GProject is nil")
+		return false
+	}
+	event.ConsoleWriteInfo("Package - project check config options")
+	option := proj.BuildOption
+	if option.Cert {
+		if !cert() {
+			return false
+		}
+	} else {
+		event.ConsoleWriteInfo("Package - Not Enabled cert")
+	}
+	if option.WinExe {
+		packageNSIS()
+	} else if option.WinMsi {
+
+	}
+	return false
+}
+
+func cert() bool {
 	return true
 }
 
 func createAppBundle() bool {
+	// empty impl
+	return true
+}
+
+func checkToolCMD(name string) bool {
+	_, err := exec.LookPath(name)
+	if err != nil {
+		return false
+	}
 	return true
 }

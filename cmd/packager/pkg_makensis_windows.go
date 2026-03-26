@@ -16,3 +16,7 @@
 package packager
 
 // makensis.exe
+
+func packageNSIS() bool {
+	return true
+}

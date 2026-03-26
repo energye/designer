@@ -16,3 +16,7 @@
 package packager
 
 // MakeAppx.exe
+
+func packageAppx() bool {
+	return false
+}

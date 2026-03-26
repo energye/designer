@@ -75,6 +75,7 @@ type TBuildOption struct {
 	DisableDebug     bool   `json:"disable_debug"`
 	// 打包配置
 	PackageName        string   `json:"package_name"`
+	Cert               bool     `json:"cert"`
 	WinMsi             bool     `json:"win_msi"`
 	WinExe             bool     `json:"win_exe"`
 	WinDefaultInstall  string   `json:"win_default_install"`
@@ -82,7 +83,6 @@ type TBuildOption struct {
 	WinAddStartMenu    bool     `json:"win_add_start_menu"`
 	MacDMG             bool     `json:"mac_dmg"`
 	MacPKG             bool     `json:"mac_pkg"`
-	MacCert            bool     `json:"mac_cert"`
 	MacCertList        []string `json:"mac_cert_list"`
 	MacCommonLib       bool     `json:"mac_common_lib"`
 	LinuxDEB           bool     `json:"linux_deb"`
@@ -231,6 +231,7 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.DisableDebug = false
 	// 打包配置
 	m.BuildOption.PackageName = m.Name
+	m.BuildOption.Cert = false
 	m.BuildOption.WinMsi = false
 	m.BuildOption.WinExe = true
 	m.BuildOption.WinDefaultInstall = ""
@@ -238,7 +239,6 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.WinAddStartMenu = true
 	m.BuildOption.MacDMG = false
 	m.BuildOption.MacPKG = true
-	m.BuildOption.MacCert = false
 	m.BuildOption.MacCertList = []string{
 		`codesign -f -s "-" "$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB"`,
 		`codesign -f -s "-" --options runtime "$APP_NAME"`,

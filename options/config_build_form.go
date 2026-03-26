@@ -83,6 +83,8 @@ type TBuildForm struct {
 
 	// 构建打包
 	packageNameEdit lcl.IEdit
+	certCheckBox    lcl.ICheckBox
+	certListBtn     *wg.TButton
 
 	winMsiCheckBox             lcl.ICheckBox
 	winExeCheckBox             lcl.ICheckBox
@@ -90,11 +92,9 @@ type TBuildForm struct {
 	winDesktopShortcutCheckBox lcl.ICheckBox
 	winAddStartMenuCheckBox    lcl.ICheckBox
 
-	macDMGCheckBox  lcl.ICheckBox
-	macPKGCheckBox  lcl.ICheckBox
-	macCertCheckBox lcl.ICheckBox
-	macCertList     *wg.TButton
-	macCertArray    []string
+	macDMGCheckBox lcl.ICheckBox
+	macPKGCheckBox lcl.ICheckBox
+	macCertArray   []string
 
 	macCommonLibCheckBox lcl.ICheckBox
 
@@ -592,43 +592,47 @@ func (m *TBuildForm) initBuildComponent() {
 	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
 	m.macPKGCheckBox.SetParent(m.buildTabPagePackage)
 
-	m.macCertCheckBox = lcl.NewCheckBox(m)
-	m.macCertCheckBox.SetCaption("签名")
-	m.macCertCheckBox.SetLeft(20)
-	m.macCertCheckBox.SetTop(nextTop(30))
-	m.macCertCheckBox.SetFont(m.font)
-	m.macCertCheckBox.SetChecked(bean.GProject.BuildOption.MacCert)
-	m.macCertCheckBox.SetParent(m.buildTabPagePackage)
-	m.macCertCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.macCertList.SetVisible(m.macCertCheckBox.Checked())
+	m.certCheckBox = lcl.NewCheckBox(m)
+	m.certCheckBox.SetCaption("签名")
+	m.certCheckBox.SetLeft(20)
+	m.certCheckBox.SetTop(nextTop(30))
+	m.certCheckBox.SetFont(m.font)
+	m.certCheckBox.SetChecked(bean.GProject.BuildOption.Cert)
+	m.certCheckBox.SetParent(m.buildTabPagePackage)
+	m.certCheckBox.SetOnChange(func(sender lcl.IObject) {
+		m.certListBtn.SetVisible(m.certCheckBox.Checked())
 	})
+	
+	// 文件签名配置按钮
+	m.certListBtn = wg.NewButton(m)
+	m.certListBtn.SetVisible(m.certCheckBox.Checked())
+	m.certListBtn.SetText("二进制签名")
+	m.certListBtn.Font().SetColor(colors.ClWhite)
+	m.certListBtn.SetRadius(0)
+	certListBtnRect := types.TRect{Left: 75, Top: m.certCheckBox.Top()}
+	certListBtnRect.SetWidth(120)
+	certListBtnRect.SetHeight(20)
+	m.certListBtn.SetBoundsRect(certListBtnRect)
+	m.certListBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.certListBtn.SetParent(m.buildTabPagePackage)
+	m.certListBtn.SetOnClick(m.macCertCommandList)
 
-	m.macCertList = wg.NewButton(m)
-	m.macCertList.SetVisible(m.macCertCheckBox.Checked())
-	m.macCertList.SetText("签名文件命令列表")
-	m.macCertList.Font().SetColor(colors.ClWhite)
-	m.macCertList.SetRadius(0)
-	macCertRect := types.TRect{Left: 75, Top: m.macCertCheckBox.Top()}
-	macCertRect.SetWidth(120)
-	macCertRect.SetHeight(20)
-	m.macCertList.SetBoundsRect(macCertRect)
-	m.macCertList.SetColor(colors.RGBToColor(59, 130, 246))
-	m.macCertList.SetParent(m.buildTabPagePackage)
-	m.macCertList.SetOnClick(m.macCertCommandList)
-	m.macCertArray = bean.GProject.BuildOption.MacCertList
-
-	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-	m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
-	m.macCommonLibCheckBox.SetLeft(210)
-	m.macCommonLibCheckBox.SetTop(m.macCertCheckBox.Top())
-	m.macCommonLibCheckBox.SetFont(m.font)
-	if version.OSVersion.Major <= 10 {
-		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
-		bean.GProject.BuildOption.MacCommonLib = false
-		m.macCommonLibCheckBox.SetEnabled(false)
+	{
+		// macOS 文件签名配置
+		m.macCertArray = bean.GProject.BuildOption.MacCertList
+		m.macCommonLibCheckBox = lcl.NewCheckBox(m)
+		m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
+		m.macCommonLibCheckBox.SetLeft(210)
+		m.macCommonLibCheckBox.SetTop(m.certCheckBox.Top())
+		m.macCommonLibCheckBox.SetFont(m.font)
+		if version.OSVersion.Major <= 10 {
+			// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
+			bean.GProject.BuildOption.MacCommonLib = false
+			m.macCommonLibCheckBox.SetEnabled(false)
+		}
+		m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
+		m.macCommonLibCheckBox.SetParent(m.buildTabPagePackage)
 	}
-	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
-	m.macCommonLibCheckBox.SetParent(m.buildTabPagePackage)
 
 	linuxPackageTitle := lcl.NewLabel(m)
 	linuxPackageTitle.SetFont(titleFont)
@@ -770,6 +774,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
 	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
+	bean.GProject.BuildOption.Cert = m.certCheckBox.Checked()
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
@@ -777,7 +782,6 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
-	bean.GProject.BuildOption.MacCert = m.macCertCheckBox.Checked()
 	bean.GProject.BuildOption.MacCertList = m.macCertArray
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
