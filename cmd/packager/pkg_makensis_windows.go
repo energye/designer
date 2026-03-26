@@ -18,7 +18,10 @@ package packager
 import (
 	"fmt"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/resources/app"
+	"path/filepath"
+	"strings"
 )
 
 // makensis.exe
@@ -30,9 +33,36 @@ func packageNSIS() bool {
 		event.ConsoleWriteInfo("Package - check nsis Not Installed")
 		///return false
 	}
-	installerNsis := app.Packager("windows/installer-nsis.nsi")
-	installerTools := app.Packager("windows/installer-tools.nsh")
-	fmt.Println(string(installerNsis))
-	fmt.Println(string(installerTools))
+	proj := bean.GProject
+	buildOption := proj.BuildOption
+	appOption := proj.AppOption
+
+	installNsisTemp := app.Packager("windows/install-nsis.nsi")
+	installToolsTemp := app.Packager("windows/install-tools.nsh")
+
+	buildFileName := buildOption.BuildFileName
+	if filepath.Ext(buildFileName) != ".exe" {
+		buildFileName += ".exe"
+	}
+	var (
+		appCompanyName = ""
+		appProductName = ""
+	)
+	appID := appOption.Id // CompanyName.productName.AppName
+	if ids := strings.Split(appID, "."); len(ids) >= 2 {
+		appCompanyName = ids[0]
+		appProductName = ids[1]
+	}
+
+	data := map[string]any{}
+	data["BuildName"] = buildFileName         // 应用运行二进制名
+	data["InstallFileName"] = appOption.Title // 安装包名
+	data["CompanyName"] = appCompanyName      // 企业名
+	data["ProductName"] = appProductName      // 产品名
+	data["ShortCutName"] = appOption.Title    // 快捷方试名
+
+	fmt.Println(string(installNsisTemp))
+	fmt.Println(string(installToolsTemp))
+
 	return true
 }

@@ -14,7 +14,9 @@
 package packager
 
 import (
+	"bytes"
 	"github.com/energye/designer/event"
+	"text/template"
 )
 
 // Run 执行打包命令的入口函数
@@ -26,4 +28,16 @@ func Run() bool {
 // AppBundle 创建 macOS 应用程序包
 func AppBundle() bool {
 	return createAppBundle()
+}
+
+func RenderTemplate(data any, templateText string) ([]byte, error) {
+	tmpl, err := template.New("package-render-template").Parse(templateText)
+	if err != nil {
+		return nil, err
+	}
+	var out bytes.Buffer
+	if err = tmpl.Execute(&out, data); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
