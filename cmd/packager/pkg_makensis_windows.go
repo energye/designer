@@ -15,8 +15,24 @@
 
 package packager
 
+import (
+	"fmt"
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/resources/app"
+)
+
 // makensis.exe
 
+const makensis = "makensis.exe"
+
 func packageNSIS() bool {
+	if !checkToolCMD(makensis) {
+		event.ConsoleWriteInfo("Package - check nsis Not Installed")
+		///return false
+	}
+	installerNsis := app.Packager("windows/installer-nsis.nsi")
+	installerTools := app.Packager("windows/installer-tools.nsh")
+	fmt.Println(string(installerNsis))
+	fmt.Println(string(installerTools))
 	return true
 }

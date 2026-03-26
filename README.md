@@ -29,24 +29,18 @@ ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架打造、且基于该框架
 
 ### 安装 Designer
 
-- 创建工作目录. 如: `C:\app\workspace`
-- 克隆项目依赖模块. 进入 `workspace` 目录，执行如下克隆命令
+#### 环境
+- 安装 git
+- 安装 golang
+- 执行下面命令
+```cmd
+# 克隆
+git clone https://github.com/energye/designer.git
 
-| 项目模块     | 克隆命令                                              | 描述                                |
-|----------|---------------------------------------------------|-----------------------------------|
-| LCL      | git clone https://github.com/energye/lcl.git      | ENERGY GUI 框架基础库, 需切换分枝`3.0-beta` |
-| Widget   | git clone https://github.com/energye/widget.git   | ENERGY GUI 框架自定义组件库               |
-| Designer | git clone https://github.com/energye/designer.git | ENERGY GUI 设计器库                   |
-
-- 初始化工作空间, 进入 `workspace` 目录，执行如下命令
-```shell
-  go work init
-  go work use lcl
-  go work use widget
-  go work use designer
+# 进入 designer 目录, 更新模块依赖
+go mod tidy
 ```
-
-- 运行. 进入 designer 目录
+- 运行进入 designer 目录
 
 `go run main.go`
 

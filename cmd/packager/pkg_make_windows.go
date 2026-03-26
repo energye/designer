@@ -56,9 +56,13 @@ func createAppBundle() bool {
 }
 
 func checkToolCMD(name string) bool {
-	_, err := exec.LookPath(name)
-	if err != nil {
+	//_, err := exec.LookPath(name)
+	cmd := exec.Command("where", name)
+	if err := cmd.Run(); err != nil {
 		return false
 	}
+	//if err != nil {
+	//	return false
+	//}
 	return true
 }
