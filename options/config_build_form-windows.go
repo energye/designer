@@ -25,23 +25,10 @@ func (m *TBuildForm) initWindowsOptions() {
 		return gTop
 	}
 
-	packageNameTitle := lcl.NewLabel(m)
-	packageNameTitle.SetFont(m.titleFontTwo)
-	packageNameTitle.SetCaption("安装包名称")
-	packageNameTitle.SetTop(nextTop(5))
-	packageNameTitle.SetLeft(10)
-	packageNameTitle.SetParent(m.platformTabPageWindows)
-	m.packageNameEdit = lcl.NewEdit(m)
-	m.packageNameEdit.SetBounds(80, packageNameTitle.Top()-5, 435, 30)
-	m.packageNameEdit.SetFont(m.font)
-	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
-	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
-	m.packageNameEdit.SetParent(m.platformTabPageWindows)
-
 	windowsPackageTitle := lcl.NewLabel(m)
 	windowsPackageTitle.SetFont(m.titleFont)
 	windowsPackageTitle.SetCaption("Windows 打包配置")
-	windowsPackageTitle.SetTop(nextTop(35))
+	windowsPackageTitle.SetTop(nextTop(5))
 	windowsPackageTitle.SetLeft(10)
 	windowsPackageTitle.SetParent(m.platformTabPageWindows)
 

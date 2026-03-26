@@ -82,7 +82,7 @@ type TBuildForm struct {
 	platformTabPageMacOS   *wg.TPage
 	platformTabPageLinux   *wg.TPage
 
-	packageNameEdit lcl.IEdit
+	packageNameEdit lcl.ILabeledEdit
 	certCheckBox    lcl.ICheckBox
 	certListBtn     *wg.TButton
 
@@ -165,11 +165,13 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 
 		m.buildTabPageConfig = m.buildTab.NewPage()
 		m.buildTabPageConfig.SetCaption("基础配置")
+		m.buildTabPageConfig.Button().SetCursor(types.CrHandPoint)
 		//m.buildTabPageConfig.Button().SetIconFavoriteFormBytes(buttons.Get("Windows").iconDefault)
 		//setTabPageStyle(m.platformTabPageWindows)
 
 		m.buildTabPagePackage = m.buildTab.NewPage()
 		m.buildTabPagePackage.SetCaption("构建打包")
+		m.buildTabPagePackage.Button().SetCursor(types.CrHandPoint)
 		//m.buildTabPageConfig.Button().SetIconFavoriteFormBytes(buttons.Get("Windows").iconDefault)
 		//setTabPageStyle(m.platformTabPageWindows)
 
@@ -191,6 +193,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.saveBtn.SetFont(btnFont)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
+		m.saveBtn.SetCursor(types.CrHandPoint)
 		saveBtnRect := types.TRect{Left: 390, Top: 0}
 		saveBtnRect.SetWidth(75)
 		saveBtnRect.SetHeight(25)
@@ -202,6 +205,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.packageBtn = wg.NewButton(m)
 		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetFont(btnFont)
+		m.packageBtn.SetCursor(types.CrHandPoint)
 		m.packageBtn.Font().SetColor(colors.ClWhite)
 		m.packageBtn.SetRadius(3)
 		buildBtnRect := types.TRect{Left: saveBtnRect.Left + saveBtnRect.Width() + 10, Top: saveBtnRect.Top}
@@ -475,13 +479,31 @@ func (m *TBuildForm) initConfigComponent() {
 }
 
 func (m *TBuildForm) initBuildComponent() {
+	//packageNameTitle := lcl.NewLabel(m)
+	//packageNameTitle.SetFont(m.titleFontTwo)
+	//packageNameTitle.SetCaption("安装包名称")
+	//packageNameTitle.SetTop(10)
+	//packageNameTitle.SetLeft(10)
+	//packageNameTitle.SetParent(m.buildTabPagePackage)
+
+	m.packageNameEdit = lcl.NewLabeledEdit(m)
+	m.packageNameEdit.SetBounds(80, 5, 435, 30)
+	m.packageNameEdit.SetFont(m.font)
+	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
+	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
+	editLabel := m.packageNameEdit.EditLabel()
+	editLabel.SetCaption("安装包名称")
+	editLabel.SetFont(m.titleFontTwo)
+	m.packageNameEdit.SetLabelPosition(types.LpLeft)
+	m.packageNameEdit.SetParent(m.buildTabPagePackage)
+
 	{
 		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
 		btnColor := colors.RGBToColor(0, 120, 212)
 
 		m.platformTab = wg.NewTab(m)
 		m.platformTab.Margin = 5
-		tabBR := types.TRect{Left: 0, Top: 5}
+		tabBR := types.TRect{Left: 0, Top: 35}
 		tabBR.SetWidth(m.buildTabPagePackage.Width())
 		tabBR.SetHeight(m.buildTabPagePackage.Height() - tabBR.Top)
 		m.platformTab.SetBoundsRect(tabBR)
@@ -490,7 +512,7 @@ func (m *TBuildForm) initBuildComponent() {
 		m.platformTab.SetParent(m.buildTabPagePackage)
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
-			page.SetTop(10)
+			page.SetTop(30)
 			page.SetHeight(m.platformTab.Height() - page.Top())
 			page.SetColor(m.platformTab.Color()) // 设置背景色
 			page.Button().SetWidth(80)
@@ -505,6 +527,7 @@ func (m *TBuildForm) initBuildComponent() {
 			page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.1))
 			page.SetDefaultColor(tabColor)
 			page.SetActiveColor(btnColor)
+			page.Button().SetCursor(types.CrHandPoint)
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
