@@ -25,17 +25,10 @@ func (m *TBuildForm) initWindowsOptions() {
 		return gTop
 	}
 
-	windowsPackageTitle := lcl.NewLabel(m)
-	windowsPackageTitle.SetFont(m.titleFont)
-	windowsPackageTitle.SetCaption("Windows 打包配置")
-	windowsPackageTitle.SetTop(nextTop(5))
-	windowsPackageTitle.SetLeft(10)
-	windowsPackageTitle.SetParent(m.platformTabPageWindows)
-
 	windowsPackageFmtTitle := lcl.NewLabel(m)
 	windowsPackageFmtTitle.SetCaption("打包格式")
 	windowsPackageFmtTitle.SetLeft(10)
-	windowsPackageFmtTitle.SetTop(nextTop(30))
+	windowsPackageFmtTitle.SetTop(nextTop(5))
 	windowsPackageFmtTitle.SetFont(m.titleFontTwo)
 	windowsPackageFmtTitle.SetParent(m.platformTabPageWindows)
 

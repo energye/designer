@@ -39,17 +39,10 @@ func (m *TBuildForm) initMacOSOptions() {
 		return gTop
 	}
 
-	macOSPackageTitle := lcl.NewLabel(m)
-	macOSPackageTitle.SetFont(m.titleFont)
-	macOSPackageTitle.SetCaption("macOS 打包配置")
-	macOSPackageTitle.SetTop(nextTop(5))
-	macOSPackageTitle.SetLeft(10)
-	macOSPackageTitle.SetParent(m.platformTabPageMacOS)
-
 	macOSPackageFmtTitle := lcl.NewLabel(m)
 	macOSPackageFmtTitle.SetCaption("打包格式")
 	macOSPackageFmtTitle.SetLeft(10)
-	macOSPackageFmtTitle.SetTop(nextTop(30))
+	macOSPackageFmtTitle.SetTop(nextTop(5))
 	macOSPackageFmtTitle.SetFont(m.titleFontTwo)
 	macOSPackageFmtTitle.SetParent(m.platformTabPageMacOS)
 

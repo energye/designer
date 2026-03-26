@@ -25,17 +25,10 @@ func (m *TBuildForm) initLinuxOptions() {
 		return gTop
 	}
 
-	linuxPackageTitle := lcl.NewLabel(m)
-	linuxPackageTitle.SetFont(m.titleFont)
-	linuxPackageTitle.SetCaption("Linux 打包配置")
-	linuxPackageTitle.SetTop(nextTop(5))
-	linuxPackageTitle.SetLeft(10)
-	linuxPackageTitle.SetParent(m.platformTabPageLinux)
-
 	linuxPackageFmtTitle := lcl.NewLabel(m)
 	linuxPackageFmtTitle.SetCaption("打包格式")
 	linuxPackageFmtTitle.SetLeft(10)
-	linuxPackageFmtTitle.SetTop(nextTop(30))
+	linuxPackageFmtTitle.SetTop(nextTop(5))
 	linuxPackageFmtTitle.SetFont(m.titleFontTwo)
 	linuxPackageFmtTitle.SetParent(m.platformTabPageLinux)
 
