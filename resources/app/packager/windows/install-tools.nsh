@@ -5,7 +5,8 @@
 !include "WinVer.nsh"
 !include "FileFunc.nsh"
 
-!define INFO_EXECUTE_BINARY "${.BuildName}"
+!define INFO_EXECUTE_BINARY "{{.BuildName}}"
+!define INFO_EXECUTE_BINARY_PATH "${{.BuildFileNamePath}}"
 !define INFO_InstallFileName "{{.InstallFileName}}"
 !define INFO_CompanyName "{{.CompanyName}}"
 !define INFO_ProductName "{{.ProductName}}"
@@ -22,17 +23,17 @@
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"
 
 {{if .NSISLicense}}
-    !define NSIS_PAGE_LICENSE "{{.NSISLicense}}" ; license.txt path
+    !define NSIS_PAGE_LICENSE "{{.NSISLicense}}"
 {{end}}
 
 {{if .NSISRequestExecutionLevel}}
     !define REQUEST_EXECUTION_LEVEL "{{.NSISRequestExecutionLevel}}"
-    RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}" ; admin or ""
+    RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 {{end}}
 
 
 !macro energy.files
-    File "/oname=${INFO_EXECUTE_BINARY}" "{{.ProjectPath}}\{{.ExeName}}.exe"
+    File "/oname=${INFO_EXECUTE_BINARY}" "${INFO_EXECUTE_BINARY_PATH}"
 
     ; File "file xxx"
     ; File -r "file xxx"

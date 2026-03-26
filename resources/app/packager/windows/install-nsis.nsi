@@ -14,26 +14,26 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 
 !include "MUI2.nsh"
 
-!define MUI_ICON "${INFO_Icon}" ;"..\icon.ico"
-!define MUI_UNICON "${INFO_UnIcon}" ;"..\icon.ico"
+!define MUI_ICON "${INFO_Icon}"
+!define MUI_UNICON "${INFO_UnIcon}"
 
-!define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
-!define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_ABORTWARNING
 
 
-!insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
+!insertmacro MUI_PAGE_WELCOME
 
 !ifdef NSIS_PAGE_LICENSE
-    !insertmacro MUI_PAGE_LICENSE "${NSIS_PAGE_LICENSE}" # Add a LICENSE page to the installer
+    !insertmacro MUI_PAGE_LICENSE "${NSIS_PAGE_LICENSE}"
 !endif
 
-!insertmacro MUI_PAGE_DIRECTORY # In which folder install page.
-!insertmacro MUI_PAGE_INSTFILES # Installing page.
-!insertmacro MUI_PAGE_FINISH # Finished installation page.
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
-!insertmacro MUI_UNPAGE_INSTFILES # Uinstalling page
+!insertmacro MUI_UNPAGE_INSTFILES
 
-!insertmacro MUI_LANGUAGE "${INFO_LANGUAGE}" # Set the Language of the installer
+!insertmacro MUI_LANGUAGE "${INFO_LANGUAGE}"
 
 
 Name "${INFO_ProductName}"
