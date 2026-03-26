@@ -15,6 +15,8 @@
 
 package packager
 
+// signtool.exe
+
 func packager() bool {
 	return true
 }
