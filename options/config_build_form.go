@@ -14,24 +14,17 @@
 package options
 
 import (
-	"errors"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/designer/resources/frameworks/lib"
-	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/rtl/version"
-	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 var (
@@ -50,10 +43,12 @@ func NewBuildForm() *TBuildForm {
 
 type TBuildForm struct {
 	*lcl.TEngForm
-	closing   bool
-	font      lcl.IFont
-	selectDir lcl.ISelectDirectoryDialog
-	openFile  lcl.IOpenDialog
+	closing      bool
+	font         lcl.IFont
+	titleFont    lcl.IFont
+	titleFontTwo lcl.IFont
+	selectDir    lcl.ISelectDirectoryDialog
+	openFile     lcl.IOpenDialog
 
 	buildTab            *wg.TTab
 	buildTabPageConfig  *wg.TPage
@@ -82,6 +77,11 @@ type TBuildForm struct {
 	disableDebugCheckBox    lcl.ICheckBox
 
 	// 构建打包
+	platformTab            *wg.TTab
+	platformTabPageWindows *wg.TPage
+	platformTabPageMacOS   *wg.TPage
+	platformTabPageLinux   *wg.TPage
+
 	packageNameEdit lcl.IEdit
 	certCheckBox    lcl.ICheckBox
 	certListBtn     *wg.TButton
@@ -175,8 +175,9 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 
 		m.buildTabPageConfig.SetActive(true)
 	}
-
+	// 初始化创建配置组件
 	m.initConfigComponent()
+	// 初始化构建打包组件
 	m.initBuildComponent()
 
 	{
@@ -215,15 +216,15 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) initConfigComponent() {
-	titleFont := lcl.NewFont()
-	titleFont.SetName("微软雅黑")
-	titleFont.SetSize(12)
-	titleFont.SetStyle(types.NewSet(types.FsBold))
+	m.titleFont = lcl.NewFont()
+	m.titleFont.SetName("微软雅黑")
+	m.titleFont.SetSize(12)
+	m.titleFont.SetStyle(types.NewSet(types.FsBold))
 
-	titleFontTwo := lcl.NewFont()
-	titleFontTwo.SetName("微软雅黑")
-	titleFontTwo.SetSize(10)
-	titleFontTwo.SetStyle(types.NewSet(types.FsBold))
+	m.titleFontTwo = lcl.NewFont()
+	m.titleFontTwo.SetName("微软雅黑")
+	m.titleFontTwo.SetSize(10)
+	m.titleFontTwo.SetStyle(types.NewSet(types.FsBold))
 
 	gTop := int32(0)
 	nextTop := func(top int32) int32 {
@@ -232,7 +233,7 @@ func (m *TBuildForm) initConfigComponent() {
 	}
 
 	targetPlatformTitle := lcl.NewLabel(m)
-	targetPlatformTitle.SetFont(titleFont)
+	targetPlatformTitle.SetFont(m.titleFont)
 	targetPlatformTitle.SetCaption("平台与架构")
 	targetPlatformTitle.SetTop(nextTop(5))
 	targetPlatformTitle.SetLeft(10)
@@ -242,7 +243,7 @@ func (m *TBuildForm) initConfigComponent() {
 	platformTitle.SetCaption("平台")
 	platformTitle.SetLeft(10)
 	platformTitle.SetTop(nextTop(30))
-	platformTitle.SetFont(titleFontTwo)
+	platformTitle.SetFont(m.titleFontTwo)
 	platformTitle.SetParent(m.buildTabPageConfig)
 
 	m.windowsCheckBox = lcl.NewCheckBox(m)
@@ -271,7 +272,7 @@ func (m *TBuildForm) initConfigComponent() {
 	archTitle.SetCaption("架构")
 	archTitle.SetLeft(10)
 	archTitle.SetTop(nextTop(30))
-	archTitle.SetFont(titleFontTwo)
+	archTitle.SetFont(m.titleFontTwo)
 	archTitle.SetParent(m.buildTabPageConfig)
 
 	m.amd64CheckBox = lcl.NewCheckBox(m)
@@ -315,7 +316,7 @@ func (m *TBuildForm) initConfigComponent() {
 	widgetTitle.SetCaption("UI")
 	widgetTitle.SetLeft(10)
 	widgetTitle.SetTop(nextTop(30))
-	widgetTitle.SetFont(titleFontTwo)
+	widgetTitle.SetFont(m.titleFontTwo)
 	widgetTitle.SetParent(m.buildTabPageConfig)
 
 	m.uiWin32Box = lcl.NewCheckBox(m)
@@ -356,7 +357,7 @@ func (m *TBuildForm) initConfigComponent() {
 	outputTitle.SetCaption("输出目录")
 	outputTitle.SetLeft(10)
 	outputTitle.SetTop(nextTop(30))
-	outputTitle.SetFont(titleFontTwo)
+	outputTitle.SetFont(m.titleFontTwo)
 	outputTitle.SetParent(m.buildTabPageConfig)
 
 	m.outputEdit = lcl.NewEdit(m)
@@ -384,7 +385,7 @@ func (m *TBuildForm) initConfigComponent() {
 	buildFileNameTitle.SetCaption("可执行文件名称")
 	buildFileNameTitle.SetLeft(m.outputEdit.Left() + m.outputEdit.Width() + selectOutputDirRect.Width() + 20)
 	buildFileNameTitle.SetTop(outputTitle.Top())
-	buildFileNameTitle.SetFont(titleFontTwo)
+	buildFileNameTitle.SetFont(m.titleFontTwo)
 	buildFileNameTitle.SetParent(m.buildTabPageConfig)
 
 	m.buildFileNameEdit = lcl.NewEdit(m)
@@ -395,14 +396,14 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildFileNameEdit.SetParent(m.buildTabPageConfig)
 
 	compileArgsTitle := lcl.NewLabel(m)
-	compileArgsTitle.SetFont(titleFont)
+	compileArgsTitle.SetFont(m.titleFont)
 	compileArgsTitle.SetCaption("编译")
 	compileArgsTitle.SetTop(nextTop(50))
 	compileArgsTitle.SetLeft(10)
 	compileArgsTitle.SetParent(m.buildTabPageConfig)
 
 	buildModeTitle := lcl.NewLabel(m)
-	buildModeTitle.SetFont(titleFontTwo)
+	buildModeTitle.SetFont(m.titleFontTwo)
 	buildModeTitle.SetCaption("编译模式")
 	buildModeTitle.SetTop(nextTop(35))
 	buildModeTitle.SetLeft(10)
@@ -429,7 +430,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
 
 	buildArgsTitle := lcl.NewLabel(m)
-	buildArgsTitle.SetFont(titleFontTwo)
+	buildArgsTitle.SetFont(m.titleFontTwo)
 	buildArgsTitle.SetCaption("构建参数")
 	buildArgsTitle.SetTop(nextTop(35))
 	buildArgsTitle.SetLeft(10)
@@ -443,7 +444,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildArgsEdit.SetParent(m.buildTabPageConfig)
 
 	decompileTitle := lcl.NewLabel(m)
-	decompileTitle.SetFont(titleFontTwo)
+	decompileTitle.SetFont(m.titleFontTwo)
 	decompileTitle.SetCaption("反编译防护")
 	decompileTitle.SetTop(nextTop(45))
 	decompileTitle.SetLeft(10)
@@ -474,201 +475,61 @@ func (m *TBuildForm) initConfigComponent() {
 }
 
 func (m *TBuildForm) initBuildComponent() {
-	titleFont := lcl.NewFont()
-	titleFont.SetName("微软雅黑")
-	titleFont.SetSize(12)
-	titleFont.SetStyle(types.NewSet(types.FsBold))
-
-	titleFontTwo := lcl.NewFont()
-	titleFontTwo.SetName("微软雅黑")
-	titleFontTwo.SetSize(10)
-	titleFontTwo.SetStyle(types.NewSet(types.FsBold))
-
-	baseTop := int32(0)
-	nextTop := func(top int32) int32 {
-		baseTop += top
-		return baseTop
-	}
-
-	packageNameTitle := lcl.NewLabel(m)
-	packageNameTitle.SetFont(titleFontTwo)
-	packageNameTitle.SetCaption("安装包名称")
-	packageNameTitle.SetTop(nextTop(10))
-	packageNameTitle.SetLeft(10)
-	packageNameTitle.SetParent(m.buildTabPagePackage)
-	m.packageNameEdit = lcl.NewEdit(m)
-	m.packageNameEdit.SetBounds(80, packageNameTitle.Top()-5, 435, 30)
-	m.packageNameEdit.SetFont(m.font)
-	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
-	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
-	m.packageNameEdit.SetParent(m.buildTabPagePackage)
-
-	windowsPackageTitle := lcl.NewLabel(m)
-	windowsPackageTitle.SetFont(titleFont)
-	windowsPackageTitle.SetCaption("Windows 打包配置")
-	windowsPackageTitle.SetTop(nextTop(35))
-	windowsPackageTitle.SetLeft(10)
-	windowsPackageTitle.SetParent(m.buildTabPagePackage)
-
-	windowsPackageFmtTitle := lcl.NewLabel(m)
-	windowsPackageFmtTitle.SetCaption("打包格式")
-	windowsPackageFmtTitle.SetLeft(10)
-	windowsPackageFmtTitle.SetTop(nextTop(30))
-	windowsPackageFmtTitle.SetFont(titleFontTwo)
-	windowsPackageFmtTitle.SetParent(m.buildTabPagePackage)
-
-	m.winMsiCheckBox = lcl.NewCheckBox(m)
-	m.winMsiCheckBox.SetCaption("MSI 安装包(MakeAppx)")
-	m.winMsiCheckBox.SetLeft(20)
-	m.winMsiCheckBox.SetTop(nextTop(25))
-	m.winMsiCheckBox.SetFont(m.font)
-	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
-	m.winMsiCheckBox.SetParent(m.buildTabPagePackage)
-	m.winExeCheckBox = lcl.NewCheckBox(m)
-	m.winExeCheckBox.SetCaption("EXE 安装包(makensis)")
-	m.winExeCheckBox.SetLeft(210)
-	m.winExeCheckBox.SetTop(m.winMsiCheckBox.Top())
-	m.winExeCheckBox.SetFont(m.font)
-	m.winExeCheckBox.SetChecked(bean.GProject.BuildOption.WinExe)
-	m.winExeCheckBox.SetParent(m.buildTabPagePackage)
-
-	winDefaultInstallTitle := lcl.NewLabel(m)
-	winDefaultInstallTitle.SetCaption("默认安装路径")
-	winDefaultInstallTitle.SetLeft(10)
-	winDefaultInstallTitle.SetTop(nextTop(30))
-	winDefaultInstallTitle.SetFont(titleFontTwo)
-	winDefaultInstallTitle.SetParent(m.buildTabPagePackage)
-
-	m.winDefaultInstallEdit = lcl.NewEdit(m)
-	m.winDefaultInstallEdit.SetBounds(20, nextTop(25), 515, 30)
-	m.winDefaultInstallEdit.SetFont(m.font)
-	m.winDefaultInstallEdit.SetTextHint("Windows 应用的默认安装路径 如: C:\\Program Files")
-	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
-	m.winDefaultInstallEdit.SetParent(m.buildTabPagePackage)
-
-	m.winDesktopShortcutCheckBox = lcl.NewCheckBox(m)
-	m.winDesktopShortcutCheckBox.SetCaption("创建桌面快捷方式")
-	m.winDesktopShortcutCheckBox.SetLeft(20)
-	m.winDesktopShortcutCheckBox.SetTop(nextTop(40))
-	m.winDesktopShortcutCheckBox.SetFont(m.font)
-	m.winDesktopShortcutCheckBox.SetChecked(bean.GProject.BuildOption.WinDesktopShortcut)
-	m.winDesktopShortcutCheckBox.SetParent(m.buildTabPagePackage)
-
-	m.winAddStartMenuCheckBox = lcl.NewCheckBox(m)
-	m.winAddStartMenuCheckBox.SetCaption("添加到开始菜单")
-	m.winAddStartMenuCheckBox.SetLeft(210)
-	m.winAddStartMenuCheckBox.SetTop(m.winDesktopShortcutCheckBox.Top())
-	m.winAddStartMenuCheckBox.SetFont(m.font)
-	m.winAddStartMenuCheckBox.SetChecked(bean.GProject.BuildOption.WinAddStartMenu)
-	m.winAddStartMenuCheckBox.SetParent(m.buildTabPagePackage)
-
-	macOSPackageTitle := lcl.NewLabel(m)
-	macOSPackageTitle.SetFont(titleFont)
-	macOSPackageTitle.SetCaption("macOS 打包配置")
-	macOSPackageTitle.SetTop(nextTop(35))
-	macOSPackageTitle.SetLeft(10)
-	macOSPackageTitle.SetParent(m.buildTabPagePackage)
-
-	macOSPackageFmtTitle := lcl.NewLabel(m)
-	macOSPackageFmtTitle.SetCaption("打包格式")
-	macOSPackageFmtTitle.SetLeft(10)
-	macOSPackageFmtTitle.SetTop(nextTop(30))
-	macOSPackageFmtTitle.SetFont(titleFontTwo)
-	macOSPackageFmtTitle.SetParent(m.buildTabPagePackage)
-
-	m.macDMGCheckBox = lcl.NewCheckBox(m)
-	m.macDMGCheckBox.SetCaption("DMG 镜像")
-	m.macDMGCheckBox.SetLeft(20)
-	m.macDMGCheckBox.SetTop(nextTop(30))
-	m.macDMGCheckBox.SetFont(m.font)
-	m.macDMGCheckBox.SetChecked(bean.GProject.BuildOption.MacDMG)
-	m.macDMGCheckBox.SetParent(m.buildTabPagePackage)
-
-	m.macPKGCheckBox = lcl.NewCheckBox(m)
-	m.macPKGCheckBox.SetCaption("PKG 安装包")
-	m.macPKGCheckBox.SetLeft(210)
-	m.macPKGCheckBox.SetTop(m.macDMGCheckBox.Top())
-	m.macPKGCheckBox.SetFont(m.font)
-	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
-	m.macPKGCheckBox.SetParent(m.buildTabPagePackage)
-
-	m.certCheckBox = lcl.NewCheckBox(m)
-	m.certCheckBox.SetCaption("签名")
-	m.certCheckBox.SetLeft(20)
-	m.certCheckBox.SetTop(nextTop(30))
-	m.certCheckBox.SetFont(m.font)
-	m.certCheckBox.SetChecked(bean.GProject.BuildOption.Cert)
-	m.certCheckBox.SetParent(m.buildTabPagePackage)
-	m.certCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.certListBtn.SetVisible(m.certCheckBox.Checked())
-	})
-	
-	// 文件签名配置按钮
-	m.certListBtn = wg.NewButton(m)
-	m.certListBtn.SetVisible(m.certCheckBox.Checked())
-	m.certListBtn.SetText("二进制签名")
-	m.certListBtn.Font().SetColor(colors.ClWhite)
-	m.certListBtn.SetRadius(0)
-	certListBtnRect := types.TRect{Left: 75, Top: m.certCheckBox.Top()}
-	certListBtnRect.SetWidth(120)
-	certListBtnRect.SetHeight(20)
-	m.certListBtn.SetBoundsRect(certListBtnRect)
-	m.certListBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.certListBtn.SetParent(m.buildTabPagePackage)
-	m.certListBtn.SetOnClick(m.macCertCommandList)
-
 	{
-		// macOS 文件签名配置
-		m.macCertArray = bean.GProject.BuildOption.MacCertList
-		m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-		m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
-		m.macCommonLibCheckBox.SetLeft(210)
-		m.macCommonLibCheckBox.SetTop(m.certCheckBox.Top())
-		m.macCommonLibCheckBox.SetFont(m.font)
-		if version.OSVersion.Major <= 10 {
-			// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
-			bean.GProject.BuildOption.MacCommonLib = false
-			m.macCommonLibCheckBox.SetEnabled(false)
+		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
+		btnColor := colors.RGBToColor(0, 120, 212)
+
+		m.platformTab = wg.NewTab(m)
+		m.platformTab.Margin = 5
+		tabBR := types.TRect{Left: 0, Top: 5}
+		tabBR.SetWidth(m.buildTabPagePackage.Width())
+		tabBR.SetHeight(m.buildTabPagePackage.Height() - tabBR.Top)
+		m.platformTab.SetBoundsRect(tabBR)
+		m.platformTab.SetColor(colors.ClWhite)
+		m.platformTab.EnableScrollButton(false)
+		m.platformTab.SetParent(m.buildTabPagePackage)
+		// 设置标签按钮样式
+		setTabPageStyle := func(page *wg.TPage) {
+			page.SetTop(10)
+			page.SetHeight(m.platformTab.Height() - page.Top())
+			page.SetColor(m.platformTab.Color()) // 设置背景色
+			page.Button().SetWidth(80)
+			page.Button().SetHeight(25)
+			page.Button().SetLeft(0)
+			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
+			page.Button().Font().SetColor(colors.ClBlack)
+			page.Button().SetBorderColor(wg.BbdNone, wg.DarkenColor(tabColor, 0.1))
+			page.Button().SetRadius(5)
+			page.Button().SetColor(tabColor)
+			page.Button().SetDownColor(wg.LightenColor(btnColor, 0.15), wg.LightenColor(btnColor, 0.15))
+			page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.1))
+			page.SetDefaultColor(tabColor)
+			page.SetActiveColor(btnColor)
 		}
-		m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
-		m.macCommonLibCheckBox.SetParent(m.buildTabPagePackage)
+
+		m.platformTabPageWindows = m.platformTab.NewPage()
+		m.platformTabPageWindows.SetCaption("Windows")
+		setTabPageStyle(m.platformTabPageWindows)
+		m.initWindowsOptions()
+
+		m.platformTabPageMacOS = m.platformTab.NewPage()
+		m.platformTabPageMacOS.SetCaption("MacOS")
+		setTabPageStyle(m.platformTabPageMacOS)
+		m.initMacOSOptions()
+
+		m.platformTabPageLinux = m.platformTab.NewPage()
+		m.platformTabPageLinux.SetCaption("Linux")
+		setTabPageStyle(m.platformTabPageLinux)
+		m.initLinuxOptions()
+
+		if tool.IsWindows {
+			m.platformTabPageWindows.SetActive(true)
+		} else if tool.IsDarwin {
+			m.platformTabPageMacOS.SetActive(true)
+		} else if tool.IsLinux {
+			m.platformTabPageLinux.SetActive(true)
+		}
 	}
-
-	linuxPackageTitle := lcl.NewLabel(m)
-	linuxPackageTitle.SetFont(titleFont)
-	linuxPackageTitle.SetCaption("Linux 打包配置")
-	linuxPackageTitle.SetTop(nextTop(35))
-	linuxPackageTitle.SetLeft(10)
-	linuxPackageTitle.SetParent(m.buildTabPagePackage)
-
-	linuxPackageFmtTitle := lcl.NewLabel(m)
-	linuxPackageFmtTitle.SetCaption("打包格式")
-	linuxPackageFmtTitle.SetLeft(10)
-	linuxPackageFmtTitle.SetTop(nextTop(30))
-	linuxPackageFmtTitle.SetFont(titleFontTwo)
-	linuxPackageFmtTitle.SetParent(m.buildTabPagePackage)
-
-	m.linuxDEBCheckBox = lcl.NewCheckBox(m)
-	m.linuxDEBCheckBox.SetCaption("DEB 包")
-	m.linuxDEBCheckBox.SetLeft(20)
-	m.linuxDEBCheckBox.SetTop(nextTop(30))
-	m.linuxDEBCheckBox.SetFont(m.font)
-	m.linuxDEBCheckBox.SetChecked(bean.GProject.BuildOption.LinuxDEB)
-	m.linuxDEBCheckBox.SetParent(m.buildTabPagePackage)
-
-	dependsTitle := lcl.NewLabel(m)
-	dependsTitle.SetCaption("依赖项")
-	dependsTitle.SetLeft(10)
-	dependsTitle.SetTop(nextTop(35))
-	dependsTitle.SetFont(titleFontTwo)
-	dependsTitle.SetParent(m.buildTabPagePackage)
-
-	m.dependsEdit = lcl.NewEdit(m)
-	m.dependsEdit.SetBounds(20, nextTop(30), 515, 30)
-	m.dependsEdit.SetFont(m.font)
-	m.dependsEdit.SetTextHint("用逗号分隔的依赖项列表, 如: libc6 (>= 2.14)")
-	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
-	m.dependsEdit.SetParent(m.buildTabPagePackage)
 
 	m.initBuildData()
 }
@@ -679,55 +540,6 @@ func (m *TBuildForm) initConfigData() {
 
 func (m *TBuildForm) initBuildData() {
 
-}
-
-func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
-	newCertCommandListForm := lcl.NewEngForm(nil)
-	newCertCommandListForm.SetBorderStyleToFormBorderStyle(types.BsNone)
-	newCertCommandListForm.SetBounds(0, 0, 250, 200)
-	newCertCommandListForm.WorkAreaCenter()
-	memo := lcl.NewMemo(newCertCommandListForm)
-	//memo.SetBounds(25, 0, 250, 145)
-	memo.SetBounds(0, 0, 250, 170)
-	memo.SetShowHint(true)
-	memo.SetHint(`签名文件命令列表, 多个换行. 按深度顺序添加
-codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
-codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"
-...
-`)
-	lines := memo.Lines()
-	if len(m.macCertArray) > 0 {
-		for _, line := range m.macCertArray {
-			lines.Add(line)
-		}
-	}
-	memo.Font().SetSize(8)
-	memo.SetParent(newCertCommandListForm)
-	saveBtn := lcl.NewButton(newCertCommandListForm)
-	saveBtn.SetBounds(140, 173, 50, 25)
-	saveBtn.SetCaption("确定")
-	saveBtn.SetParent(newCertCommandListForm)
-	saveBtn.SetOnClick(func(sender lcl.IObject) {
-		var macCertList []string
-		lines = memo.Lines()
-		for i := int32(0); i < lines.Count(); i++ {
-			line := strings.TrimSpace(lines.Strings(i))
-			if line == "" {
-				continue
-			}
-			macCertList = append(macCertList, line)
-		}
-		m.macCertArray = macCertList
-		newCertCommandListForm.Close()
-	})
-	closeBtn := lcl.NewButton(newCertCommandListForm)
-	closeBtn.SetBounds(195, 173, 50, 25)
-	closeBtn.SetCaption("取消")
-	closeBtn.SetParent(newCertCommandListForm)
-	closeBtn.SetOnClick(func(sender lcl.IObject) {
-		newCertCommandListForm.Close()
-	})
-	newCertCommandListForm.ShowModal()
 }
 
 func (m *TBuildForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
@@ -821,40 +633,4 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		m.packageBtn.SetDisable(false)
 		m.packageing = false
 	}()
-}
-
-func (m *TBuildForm) mergeMacOSUniversalBinary() error {
-	if !tool.IsDarwin {
-		return nil
-	}
-	if version.OSVersion.Major <= 10 {
-		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
-		bean.GProject.BuildOption.MacCommonLib = false
-	}
-	event.ConsoleWriteInfo("Merge macOS UniversalBinary, MacCommonLib:", tool.BoolToString(bean.GProject.BuildOption.MacCommonLib))
-	if bean.GProject.BuildOption.MacCommonLib {
-		// 启用通用二进制, 保存到 designer frameworks/runtime 目录
-		libArm64 := lib.Libs().Get(lib.PathARM64Cocoa)
-		if libArm64 == nil {
-			return errors.New("libArm64 is nil")
-		}
-		libAmd64 := lib.Libs().Get(lib.PathAMD64Cocoa)
-		if libAmd64 == nil {
-			return errors.New("libAmd64 is nil")
-		}
-		outputLibPath := filepath.Join(config.Config.FrameworkDir, "runtime")
-		tempArm64LibName := libArm64.OutputFilename
-		tempAmd64LibName := libAmd64.OutputFilename
-		arm64LibFilePath := filepath.Join(outputLibPath, tempArm64LibName)
-		amd64LibFilePath := filepath.Join(outputLibPath, tempAmd64LibName)
-		universalLibFilePath := filepath.Join(outputLibPath, libname.DarwinUniversalBinaryName)
-		event.ConsoleWriteInfo("Merge macOS UniversalBinary, arm64LibFilePath:", arm64LibFilePath)
-		event.ConsoleWriteInfo("Merge macOS UniversalBinary, amd64LibFilePath:", amd64LibFilePath)
-		_ = os.Remove(universalLibFilePath)
-		cmd := command.NewCMD()
-		cmd.HideWindow = true
-		cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
-		event.ConsoleWriteInfo("Merge macOS UniversalBinary, universalLibFilePath:", universalLibFilePath)
-	}
-	return nil
 }
