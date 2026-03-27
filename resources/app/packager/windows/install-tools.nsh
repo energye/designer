@@ -5,6 +5,8 @@
 !include "WinVer.nsh"
 !include "FileFunc.nsh"
 
+; 脚本宏定义
+
 !define INFO_EXECUTE_BINARY "{{.BuildName}}"
 !define INFO_EXECUTE_BINARY_PATH "{{.BuildFileNamePath}}"
 !define INFO_InstallFileName "{{.InstallFileName}}"
@@ -23,16 +25,18 @@
 
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"
 
+; 授权文件信息
 {{if .NSISLicense}}
     !define NSIS_PAGE_LICENSE "{{.NSISLicense}}"
 {{end}}
 
+; 执行等级
 {{if .NSISRequestExecutionLevel}}
     !define REQUEST_EXECUTION_LEVEL "{{.NSISRequestExecutionLevel}}"
     RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 {{end}}
 
-
+; 打包进的文件
 !macro energy.files
     File "/oname=${INFO_EXECUTE_BINARY}" "${INFO_EXECUTE_BINARY_PATH}"
 
@@ -43,6 +47,7 @@
         File /r "{{$path}}"{{end}}
 !macroend
 
+;
 !macro energy.writeUninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
 

@@ -165,6 +165,11 @@ func (m *TConfig) FrameworkDirForENERGYRelativePath() string {
 	return "../energy@" + version
 }
 
+func (m *TConfig) FrameworkRuntimePath() string {
+	runtimeDir := filepath.Join(m.FrameworkDir, "runtime")
+	return runtimeDir
+}
+
 func (m dependencies) Get(modPath string) string {
 	return m[modPath]
 }

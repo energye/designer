@@ -22,7 +22,6 @@ import (
 	"github.com/energye/designer/resources/frameworks/lib"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 // 启用的模块依赖配置
@@ -44,7 +43,7 @@ var (
 // 这个函数作为解压过程的入口点
 func ExtractLibrary() string {
 	frameworksDir := config.Config.FrameworkDir
-	runtimeDir := filepath.Join(frameworksDir, "runtime")
+	runtimeDir := config.Config.FrameworkRuntimePath()
 	if config.Config.FrameworkDir != "" && tool.IsExist(frameworksDir) {
 		// 确保运行时库被释放
 		_ = os.MkdirAll(runtimeDir, os.ModePerm)

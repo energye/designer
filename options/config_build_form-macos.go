@@ -173,7 +173,7 @@ func (m *TBuildForm) mergeMacOSUniversalBinary() error {
 		if libAmd64 == nil {
 			return errors.New("libAmd64 is nil")
 		}
-		outputLibPath := filepath.Join(config.Config.FrameworkDir, "runtime")
+		outputLibPath := config.Config.FrameworkRuntimePath()
 		tempArm64LibName := libArm64.OutputFilename
 		tempAmd64LibName := libAmd64.OutputFilename
 		arm64LibFilePath := filepath.Join(outputLibPath, tempArm64LibName)

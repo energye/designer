@@ -20,7 +20,6 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_ABORTWARNING
 
-
 !insertmacro MUI_PAGE_WELCOME
 
 !ifdef NSIS_PAGE_LICENSE
@@ -30,11 +29,8 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
-
 !insertmacro MUI_UNPAGE_INSTFILES
-
 !insertmacro MUI_LANGUAGE "${INFO_LANGUAGE}"
-
 
 Name "${INFO_ProductName}"
 OutFile ".\${INFO_InstallFileName}"
@@ -45,7 +41,7 @@ Function .onInit
 FunctionEnd
 
 Function un.onInit
-    MessageBox MB_YESNO|MB_ICONQUESTION "您确定要完全卸载吗？所有程序文件都会被删除" IDYES noabort
+    MessageBox MB_YESNO|MB_ICONQUESTION "您确定要完全卸载吗？$\n$\n所有程序文件都会被删除" IDYES noabort
     Abort
 noabort:
 FunctionEnd
