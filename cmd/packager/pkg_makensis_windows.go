@@ -37,30 +37,22 @@ func packageNSIS() bool {
 		return false
 	}
 	var (
-		libEnergy     *lib.EmbedFS
-		libWebview2   *lib.EmbedFS
+		libEnergy     string
+		libWebview2   string
 		webview2Setup *lib.EmbedFS
 	)
 	switch runtime.GOARCH {
 	case "amd64":
-		libEnergy = lib.Libs().Get(lib.PathAMD64Win32)
-		libWebview2 = lib.Libs().Get(lib.PathWV2AMD64Win32)
+		libEnergy = "libenergy-amd64.dll"
+		libWebview2 = "WebView2Loader-amd64.dll"
 	case "386":
-		libEnergy = lib.Libs().Get(lib.Path386Win32)
-		libWebview2 = lib.Libs().Get(lib.PathWV2386Win32)
+		libEnergy = "libenergy-386.dll"
+		libWebview2 = "WebView2Loader-386.dll"
 	case "arm64":
 		event.ConsoleWriteInfo("Package - Currently, windows arm64 arch is not support")
 		return false
 	}
 	webview2Setup = lib.Libs().Get(lib.PathWV2Setup)
-	if libEnergy == nil {
-		event.ConsoleWriteInfo("Package - Failed to obtain libenergy.dll runtime")
-		return false
-	}
-	if libWebview2 == nil {
-		event.ConsoleWriteInfo("Package - Failed to obtain WebView2Loader.dll runtime")
-		return false
-	}
 	if webview2Setup == nil {
 		event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
 		return false
@@ -82,13 +74,13 @@ func packageNSIS() bool {
 	if !filepath.IsAbs(buildOption.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-
-	// 创建临时目录
-	//tmpPath := filepath.Join(output, "tmp")
-	//err := os.MkdirAll(tmpPath, 0755)
-	//if err != nil {
-	//	return false
-	//}
+	err := webview2Setup.Release(output)
+	if err != nil {
+		return false
+	}
+	defer func() {
+		//_ = os.Remove(filepath.Join(output, "MicrosoftEdgeWebview2Setup.exe"))
+	}()
 
 	var (
 		appCompanyName = ""
@@ -115,8 +107,8 @@ func packageNSIS() bool {
 	embedPath := bean.ResourceEmbedPath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
-	libEnergyPath := filepath.Join(frameworkRuntime, "")
-	libWebView2LoaderPath := filepath.Join(frameworkRuntime, "")
+	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
+	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
 
 	data := map[string]any{}
 	data["BuildName"] = buildFileName                                // 应用运行二进制名
@@ -133,7 +125,11 @@ func packageNSIS() bool {
 	data["Copyright"] = appOption.Copyright                          //
 	data["DefaultInstall"] = buildOption.WinDefaultInstall           // 安装目录
 	data["RuntimeLibEnergy"] = libEnergyPath                         // runtime lib energy
-	data["RuntimeWebView2Loader"] = libWebView2LoaderPath            // runtime lib webview2
+	// 判断是否使用的 webview2
+	if proj.GUIRenderFramework == "WV" {
+		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2
+		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup
+	}
 
 	data["NSISIcon"] = iconIcoFilePath                //
 	data["NSISUnIcon"] = iconIcoFilePath              //
@@ -165,4 +161,13 @@ func packageNSIS() bool {
 		return false
 	}
 	return true
+}
+
+func copyTmpFile() {
+	proj := bean.GProject
+	buildOption := proj.BuildOption
+	output := buildOption.Output
+	if !filepath.IsAbs(buildOption.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
 }

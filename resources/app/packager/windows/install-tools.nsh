@@ -17,11 +17,15 @@
 !define INFO_ProductVersion "{{.ProductVersion}}"
 !define INFO_FileDescription "{{.FileDescription}}"
 !define INFO_Copyright "{{.Copyright}}"
-!define INFO_DefaultInstall "{{.DefaultInstall}}"
 !define INFO_UNINST_KEY_NAME "${INFO_CompanyName}${INFO_ProductName}"
 !define INFO_Icon "{{.NSISIcon}}"
 !define INFO_UnIcon "{{.NSISUnIcon}}"
 !define INFO_LANGUAGE "{{.NSISLanguage}}"
+
+{{if .DefaultInstall}}
+!define INFO_DefaultInstall "{{.DefaultInstall}}"
+{{end}}
+!define INFO_RuntimeWebView2Setup "{{.RuntimeWebView2Setup}}"
 
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"
 
@@ -43,11 +47,76 @@
     ; File "file xxx"
     ; File -r "file xxx"
 
+    File "{{.RuntimeLibEnergy}}" ; libenergy-xxx.dll
+    {{if .RuntimeWebView2Loader}}
+    File "{{.RuntimeWebView2Loader}}" ; WebView2Loader-xxx.dll
+    {{end}}
+
     {{range $i,$path := .NSISInclude }}
         File /r "{{$path}}"{{end}}
 !macroend
 
-;
+!macro energy.webview2Install
+    SetRegView 64
+    !define WEBVIEW2_CLSID "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+
+    ; 检查 WebView2 是否已经安装
+
+    ; 检查 32位 系统级（WOW6432NODE）
+    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${If} $0 != ""
+        Goto webview2_done ; 已安装
+    ${EndIf}
+
+    ; 检查 当前用户级（无管理员权限时）
+    ${If} ${REQUEST_EXECUTION_LEVEL} == "user"
+        ReadRegStr $0 HKCU "Software\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+        ${If} $0 != ""
+            Goto webview2_done ; 已安装
+        ${EndIf}
+    ${EndIf}
+
+    ; 开始安装
+    SetDetailsPrint both
+    DetailPrint "Installing Microsoft Edge WebView2 Runtime..."
+    SetDetailsPrint listonly
+
+    ; 释放安装程序
+    InitPluginsDir
+    StrCpy $1 "$pluginsdir\webview2boot"
+    CreateDirectory "$1"
+    SetOutPath "$1"
+    File "MicrosoftEdgeWebview2Setup.exe"
+
+    ; 静默安装
+    ExecWait '"$1\MicrosoftEdgeWebview2Setup.exe" /silent /install'
+
+    ; 清理临时文件
+    Delete "$1\MicrosoftEdgeWebview2Setup.exe"
+    RMDir "$1"
+
+    ; 安装后必须再次校验
+    SetRegView 64
+    ReadRegStr $2 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+
+    ${If} $2 == ""
+        ${If} ${REQUEST_EXECUTION_LEVEL} == "user"
+            ReadRegStr $2 HKCU "Software\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+        ${EndIf}
+    ${EndIf}
+
+    ${If} $2 == ""
+        SetDetailsPrint both
+        MessageBox MB_ICONSTOP "WebView2 Runtime installation failed!"
+        Abort ; 安装失败，直接终止安装程序
+    ${EndIf}
+
+    ; 已安装或完成安装
+    webview2_done:
+    SetDetailsPrint both
+    SetRegView lastused
+!macroend
+
 !macro energy.writeUninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
 

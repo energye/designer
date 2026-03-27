@@ -49,8 +49,14 @@ FunctionEnd
 Section
     !insertmacro energy.setShellContext
 
+    ; 判断是否需要安装 webview2 runtime
+    !ifdef INFO_RuntimeWebView2Setup
+    !insertmacro energy.webview2Install
+    !endif
+
+    ; 安装目录
     SetOutPath $INSTDIR
-    
+    ; 打包进的文件
     !insertmacro energy.files
 
     CreateShortcut "$SMPROGRAMS\${INFO_ShortCutName}.lnk" "$INSTDIR\${INFO_EXECUTE_BINARY}"
