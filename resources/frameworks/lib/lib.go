@@ -50,6 +50,7 @@ var libs = tool.NewHashMap[string, *EmbedFS]()
 type EmbedFS struct {
 	Lib            *embed.FS
 	OutputFilename string
+	NotReleased    bool
 }
 
 // ExtractLibrary 从内置资源中提取库文件到指定输出路径
@@ -58,6 +59,9 @@ type EmbedFS struct {
 //   - libPath: 提取后的库文件完整路径
 func ExtractLibrary(outputPath string) (libPath string) {
 	libs.Iterate(func(path string, lib *EmbedFS) bool {
+		if lib.NotReleased {
+			return false
+		}
 		tempPath := filepath.Join(outputPath, lib.OutputFilename)
 		if DefaultLibName(lib.OutputFilename) {
 			libPath = tempPath

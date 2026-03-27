@@ -23,5 +23,5 @@ var (
 )
 
 func init() {
-	libs.Add(PathWV2Setup, &EmbedFS{Lib: &webview2Setup, OutputFilename: "MicrosoftEdgeWebview2Setup.exe"})
+	libs.Add(PathWV2Setup, &EmbedFS{Lib: &webview2Setup, OutputFilename: "MicrosoftEdgeWebview2Setup.exe", NotReleased: true})
 }
