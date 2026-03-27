@@ -59,6 +59,31 @@
         File /r "{{$path}}"{{end}}
 !macroend
 
+!macro energy.writeUninstaller
+    WriteUninstaller "$INSTDIR\uninstall.exe"
+
+    SetRegView 64
+    WriteRegStr HKLM "${UNINST_KEY}" "Publisher" "${INFO_CompanyName}"
+    WriteRegStr HKLM "${UNINST_KEY}" "DisplayName" "${INFO_ProductName}"
+    WriteRegStr HKLM "${UNINST_KEY}" "DisplayVersion" "${INFO_ProductVersion}"
+    WriteRegStr HKLM "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${INFO_EXECUTE_BINARY}"
+    WriteRegStr HKLM "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+    WriteRegStr HKLM "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+
+    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    IntFmt $0 "0x%08X" $0
+    WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
+!macroend
+
+!macro energy.setShellContext
+    ${If} ${REQUEST_EXECUTION_LEVEL} == "admin"
+        SetShellVarContext all
+    ${else}
+        SetShellVarContext current
+    ${EndIf}
+!macroend
+
+; Webview2
 !macro energy.webview2Install
     SetRegView 64
     !define WEBVIEW2_CLSID "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
@@ -120,26 +145,63 @@
     SetRegView lastused
 !macroend
 
-!macro energy.writeUninstaller
-    WriteUninstaller "$INSTDIR\uninstall.exe"
-
-    SetRegView 64
-    WriteRegStr HKLM "${UNINST_KEY}" "Publisher" "${INFO_CompanyName}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayName" "${INFO_ProductName}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayVersion" "${INFO_ProductVersion}"
-    WriteRegStr HKLM "${UNINST_KEY}" "DisplayIcon" "$INSTDIR\${INFO_EXECUTE_BINARY}"
-    WriteRegStr HKLM "${UNINST_KEY}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
-    WriteRegStr HKLM "${UNINST_KEY}" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
-
-    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
-    IntFmt $0 "0x%08X" $0
-    WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
+; 关联文件
+!macro APP_ASSOCIATE EXT FILECLASS DESCRIPTION ICON COMMANDTEXT COMMAND
+  ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "${FILECLASS}_backup" "$R0"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "${FILECLASS}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}" "" `${DESCRIPTION}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\DefaultIcon" "" `${ICON}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell" "" "open"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell\open" "" `${COMMANDTEXT}`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${FILECLASS}\shell\open\command" "" `${COMMAND}`
 !macroend
 
-!macro energy.setShellContext
-    ${If} ${REQUEST_EXECUTION_LEVEL} == "admin"
-        SetShellVarContext all
-    ${else}
-        SetShellVarContext current
-    ${EndIf}
+!macro APP_UNASSOCIATE EXT FILECLASS
+  ReadRegStr $R0 SHELL_CONTEXT "Software\Classes\.${EXT}" `${FILECLASS}_backup`
+  WriteRegStr SHELL_CONTEXT "Software\Classes\.${EXT}" "" "$R0"
+  DeleteRegKey SHELL_CONTEXT `Software\Classes\${FILECLASS}`
+!macroend
+
+!macro energy.associateFiles
+    {{range .FileAssociations}}
+    !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconName}}.ico" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+    File "..\{{.IconName}}.ico"
+    {{end}}
+!macroend
+
+!macro energy.unAssociateFiles
+    ; Delete app associations
+    {{range .FileAssociations}}
+    !insertmacro APP_UNASSOCIATE "{{.Ext}}" "{{.Name}}"
+    Delete "$INSTDIR\{{.IconName}}.ico"
+    {{end}}
+!macroend
+
+
+; 自定义打开软件协议
+!macro CUSTOM_PROTOCOL_ASSOCIATE PROTOCOL DESCRIPTION ICON COMMAND
+  DeleteRegKey SHELL_CONTEXT "Software\Classes\${PROTOCOL}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}" "" "${DESCRIPTION}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}" "URL Protocol" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\DefaultIcon" "" "${ICON}"
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell" "" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open" "" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${PROTOCOL}\shell\open\command" "" "${COMMAND}"
+!macroend
+
+!macro CUSTOM_PROTOCOL_UNASSOCIATE PROTOCOL
+  DeleteRegKey SHELL_CONTEXT "Software\Classes\${PROTOCOL}"
+!macroend
+
+!macro energy.customAssociateProtocols
+    {{range .Protocols}}
+      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+    {{end}}
+!macroend
+
+!macro energy.unCustomAssociateProtocols
+    {{range .Protocols}}
+      !insertmacro CUSTOM_PROTOCOL_UNASSOCIATE "{{.Scheme}}"
+    {{end}}
 !macroend
