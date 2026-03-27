@@ -21,5 +21,5 @@ import "embed"
 var libARM64Cocoa embed.FS
 
 func init() {
-	libs.Add(PathARM64Cocoa, &EmbedFS{Lib: &libARM64Cocoa, OutputFilename: "libenergy-arm64.dylib"})
+	Add(&EmbedFS{Path: PathARM64Cocoa, Lib: &libARM64Cocoa, OutputFilename: "libenergy-arm64.dylib"})
 }

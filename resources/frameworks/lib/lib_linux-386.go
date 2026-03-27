@@ -25,6 +25,6 @@ var (
 )
 
 func init() {
-	libs.Add(Path386Gtk2, &EmbedFS{Lib: &lib386GTK2, OutputFilename: "libenergy-386-gtk2.so"})
-	libs.Add(Path386Gtk3, &EmbedFS{Lib: &lib386GTK3, OutputFilename: "libenergy-386-gtk3.so"})
+	Add(&EmbedFS{Path: Path386Gtk2, Lib: &lib386GTK2, OutputFilename: "libenergy-386-gtk2.so"})
+	Add(&EmbedFS{Path: Path386Gtk3, Lib: &lib386GTK3, OutputFilename: "libenergy-386-gtk3.so"})
 }

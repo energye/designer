@@ -27,6 +27,6 @@ var (
 )
 
 func init() {
-	libs.Add(PathAMD64Gtk2, &EmbedFS{Lib: &libAMD64GTK2, OutputFilename: "libenergy-amd64-gtk2.so"})
-	libs.Add(PathAMD64Gtk3, &EmbedFS{Lib: &libAMD64GTK3, OutputFilename: "libenergy-amd64-gtk3.so"})
+	Add(&EmbedFS{Path: PathAMD64Gtk2, Lib: &libAMD64GTK2, OutputFilename: "libenergy-amd64-gtk2.so"})
+	Add(&EmbedFS{Path: PathAMD64Gtk3, Lib: &libAMD64GTK3, OutputFilename: "libenergy-amd64-gtk3.so"})
 }

@@ -25,6 +25,6 @@ var (
 )
 
 func init() {
-	libs.Add(Path386Win32, &EmbedFS{Lib: &lib386Win32, OutputFilename: "libenergy-386.dll"})
-	libs.Add(PathWV2386Win32, &EmbedFS{Lib: &libWV2386Win32, OutputFilename: "WebView2Loader-386.dll"})
+	Add(&EmbedFS{Path: Path386Win32, Lib: &lib386Win32, OutputFilename: "libenergy-386.dll"})
+	Add(&EmbedFS{Path: PathWV2386Win32, Lib: &libWV2386Win32, OutputFilename: "WebView2Loader-386.dll"})
 }

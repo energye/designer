@@ -38,19 +38,52 @@ const (
 	Path386Gtk3       = "linux/libenergy-386-gtk3.zip"
 	PathLoong64Gtk2   = "linux/libenergy-loong64-gtk2.zip"
 	PathLoong64Gtk3   = "linux/libenergy-loong64-gtk3.zip"
-	PathAMD64Win64    = "windows/libenergy-amd64.zip"
+	PathAMD64Win32    = "windows/libenergy-amd64.zip"
 	Path386Win32      = "windows/libenergy-386.zip"
-	PathWV2AMD64Win64 = "windows/WebView2Loader-amd64.zip"
+	PathWV2AMD64Win32 = "windows/WebView2Loader-amd64.zip"
 	PathWV2386Win32   = "windows/WebView2Loader-386.zip"
 	PathWV2Setup      = "windows/MicrosoftEdgeWebview2Setup.zip"
 )
 
+// 存放内嵌资源
 var libs = tool.NewHashMap[string, *EmbedFS]()
 
+func Add(fs *EmbedFS) {
+	if fs == nil || fs.Path == "" {
+		return
+	}
+	libs.Add(fs.Path, fs)
+}
+
 type EmbedFS struct {
+	Path           string
 	Lib            *embed.FS
 	OutputFilename string
 	NotReleased    bool
+}
+
+func (m *EmbedFS) Release(outputPath string, files ...string) error {
+	libByte, e := m.Lib.ReadFile(m.Path)
+	if e != nil {
+		return e
+	}
+	zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
+	if e != nil {
+		return e
+	}
+	for _, file := range zipReader.File {
+		if len(files) > 0 {
+			// 按指定文件提取, TODO 未实现
+		} else {
+			// 提取默认只有一个文件
+			_, e := tool.ExtractFile(file, outputPath, m.OutputFilename)
+			if e != nil {
+				return e
+			}
+			break
+		}
+	}
+	return nil
 }
 
 // ExtractLibrary 从内置资源中提取库文件到指定输出路径

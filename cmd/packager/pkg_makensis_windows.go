@@ -21,7 +21,9 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/resources/app"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -34,6 +36,36 @@ func packageNSIS() bool {
 		event.ConsoleWriteInfo("Package - check nsis Not Installed")
 		///return false
 	}
+	var (
+		libEnergy     *lib.EmbedFS
+		libWebview2   *lib.EmbedFS
+		webview2Setup *lib.EmbedFS
+	)
+	switch runtime.GOARCH {
+	case "amd64":
+		libEnergy = lib.Libs().Get(lib.PathAMD64Win32)
+		libWebview2 = lib.Libs().Get(lib.PathWV2AMD64Win32)
+	case "386":
+		libEnergy = lib.Libs().Get(lib.Path386Win32)
+		libWebview2 = lib.Libs().Get(lib.PathWV2386Win32)
+	case "arm64":
+		event.ConsoleWriteInfo("Package - Currently, Windows arm64 arch is not support")
+		return false
+	}
+	webview2Setup = lib.Libs().Get(lib.PathWV2Setup)
+	if libEnergy == nil {
+		event.ConsoleWriteInfo("Package - Failed to obtain libenergy.dll runtime")
+		return false
+	}
+	if libWebview2 == nil {
+		event.ConsoleWriteInfo("Package - Failed to obtain WebView2Loader.dll runtime")
+		return false
+	}
+	if webview2Setup == nil {
+		event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
+		return false
+	}
+
 	proj := bean.GProject
 	buildOption := proj.BuildOption
 	appOption := proj.AppOption
@@ -83,8 +115,8 @@ func packageNSIS() bool {
 	embedPath := bean.ResourceEmbedPath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
-	libEnergy := filepath.Join(frameworkRuntime, "")
-	libWebView2Loader := filepath.Join(frameworkRuntime, "")
+	libEnergyPath := filepath.Join(frameworkRuntime, "")
+	libWebView2LoaderPath := filepath.Join(frameworkRuntime, "")
 
 	data := map[string]any{}
 	data["BuildName"] = buildFileName                                // 应用运行二进制名
@@ -100,8 +132,8 @@ func packageNSIS() bool {
 	data["FileDescription"] = appOption.Desc                         //
 	data["Copyright"] = appOption.Copyright                          //
 	data["DefaultInstall"] = buildOption.WinDefaultInstall           // 安装目录
-	data["RuntimeLibEnergy"] = libEnergy                             // runtime lib energy
-	data["RuntimeWebView2Loader"] = libWebView2Loader                // runtime lib webview2
+	data["RuntimeLibEnergy"] = libEnergyPath                         // runtime lib energy
+	data["RuntimeWebView2Loader"] = libWebView2LoaderPath            // runtime lib webview2
 
 	data["NSISIcon"] = iconIcoFilePath                //
 	data["NSISUnIcon"] = iconIcoFilePath              //

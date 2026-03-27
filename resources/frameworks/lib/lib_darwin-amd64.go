@@ -21,5 +21,5 @@ import "embed"
 var libAMD64Cocoa embed.FS
 
 func init() {
-	libs.Add(PathAMD64Cocoa, &EmbedFS{Lib: &libAMD64Cocoa, OutputFilename: "libenergy-amd64.dylib"})
+	Add(&EmbedFS{Path: PathAMD64Cocoa, Lib: &libAMD64Cocoa, OutputFilename: "libenergy-amd64.dylib"})
 }
