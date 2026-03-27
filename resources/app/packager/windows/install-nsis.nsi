@@ -32,9 +32,9 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "${INFO_LANGUAGE}"
 
-Name "${INFO_ProductName}"
+Name "${INFO_ShortCutName}"
 OutFile ".\${INFO_InstallFileName}"
-InstallDir "$PROGRAMFILES64\${INFO_CompanyName}\${INFO_ProductName}"
+InstallDir "${INFO_DefaultInstall}"
 ShowInstDetails show # This will always show the installation details.
 
 Function .onInit

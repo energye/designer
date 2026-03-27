@@ -24,7 +24,10 @@
 
 {{if .DefaultInstall}}
 !define INFO_DefaultInstall "{{.DefaultInstall}}"
+{{else}}
+!define INFO_DefaultInstall "$PROGRAMFILES64\${INFO_CompanyName}\${INFO_ProductName}"
 {{end}}
+
 !define INFO_RuntimeWebView2Setup "{{.RuntimeWebView2Setup}}"
 
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"

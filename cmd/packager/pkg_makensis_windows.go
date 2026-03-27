@@ -123,12 +123,14 @@ func packageNSIS() bool {
 	data["ProductVersion"] = appOption.Version                       //
 	data["FileDescription"] = appOption.Desc                         //
 	data["Copyright"] = appOption.Copyright                          //
-	data["DefaultInstall"] = buildOption.WinDefaultInstall           // 安装目录
-	data["RuntimeLibEnergy"] = libEnergyPath                         // runtime lib energy
+	if buildOption.WinDefaultInstall != "" {
+		data["DefaultInstall"] = buildOption.WinDefaultInstall // 自定义安装目录
+	}
+	data["RuntimeLibEnergy"] = libEnergyPath // runtime lib energy dll
 	// 判断是否使用的 webview2
 	if proj.GUIRenderFramework == "WV" {
-		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2
-		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup
+		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
+		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
 
 	data["NSISIcon"] = iconIcoFilePath                //
