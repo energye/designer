@@ -44,6 +44,12 @@ ShowInstDetails show # This will always show the installation details.
 Function .onInit
 FunctionEnd
 
+Function un.onInit
+    MessageBox MB_YESNO|MB_ICONQUESTION "您确定要完全卸载吗？所有程序文件都会被删除" IDYES noabort
+    Abort
+noabort:
+FunctionEnd
+
 Section
     !insertmacro energy.setShellContext
 
@@ -51,8 +57,8 @@ Section
     
     !insertmacro energy.files
 
-    CreateShortcut "$SMPROGRAMS\${INFO_ShortCutName}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    CreateShortCut "$DESKTOP\${INFO_ShortCutName}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    CreateShortcut "$SMPROGRAMS\${INFO_ShortCutName}.lnk" "$INSTDIR\${INFO_EXECUTE_BINARY}"
+    CreateShortCut "$DESKTOP\${INFO_ShortCutName}.lnk" "$INSTDIR\${INFO_EXECUTE_BINARY}"
 
     !insertmacro energy.writeUninstaller
 SectionEnd
@@ -60,12 +66,13 @@ SectionEnd
 Section "uninstall" 
     !insertmacro energy.setShellContext
 
-    RMDir /r "$AppData\${PRODUCT_EXECUTABLE}"
+    RMDir /r "$AppData\${INFO_EXECUTE_BINARY}"
 
     RMDir /r $INSTDIR
 
     Delete "$SMPROGRAMS\${INFO_ShortCutName}.lnk"
     Delete "$DESKTOP\${INFO_ShortCutName}.lnk"
-
-    !insertmacro energy.deleteUninstaller
+    Delete "$INSTDIR\uninstall.exe"
+    SetRegView 64
+    DeleteRegKey HKLM "${UNINST_KEY}"
 SectionEnd

@@ -79,6 +79,8 @@ func packageNSIS() bool {
 
 	installNsisScriptTemp := app.Packager("windows/install-nsis.nsi")
 	installToolsScriptTemp := app.Packager("windows/install-tools.nsh")
+	embedPath := bean.ResourceEmbedPath()
+	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 
 	data := map[string]any{}
 	data["BuildName"] = buildFileName                                // 应用运行二进制名
@@ -94,8 +96,8 @@ func packageNSIS() bool {
 	data["FileDescription"] = appOption.Desc                         //
 	data["Copyright"] = appOption.Copyright                          //
 	data["DefaultInstall"] = buildOption.WinDefaultInstall           // 安装目录
-	data["NSISIcon"] = ""                                            //
-	data["NSISUnIcon"] = ""                                          //
+	data["NSISIcon"] = iconIcoFilePath                               //
+	data["NSISUnIcon"] = iconIcoFilePath                             //
 	data["NSISLanguage"] = "SimpChinese"                             // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	data["NSISLicense"] = ""                                         // (license.txt) 文件路径
 	data["NSISRequestExecutionLevel"] = nsisExecLevel                // run_level NSISRequestExecutionLevel
@@ -112,11 +114,13 @@ func packageNSIS() bool {
 		//_ = os.Remove(nsisInstallScriptPath)
 		//_ = os.Remove(nsisToolScriptPath)
 	}()
-
+	utf8Bom := []byte{0xEF, 0xBB, 0xBF}
+	installNsisScriptTemp = append(utf8Bom, installNsisScriptTemp...)
 	err = WriteFile(nsisInstallScriptPath, installNsisScriptTemp)
 	if err != nil {
 		return false
 	}
+	installToolsScript = append(utf8Bom, installToolsScript...)
 	err = WriteFile(nsisToolScriptPath, installToolsScript)
 	if err != nil {
 		return false

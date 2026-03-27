@@ -59,13 +59,6 @@
     WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
 !macroend
 
-!macro energy.deleteUninstaller
-    Delete "$INSTDIR\uninstall.exe"
-
-    SetRegView 64
-    DeleteRegKey HKLM "${UNINST_KEY}"
-!macroend
-
 !macro energy.setShellContext
     ${If} ${REQUEST_EXECUTION_LEVEL} == "admin"
         SetShellVarContext all

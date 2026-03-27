@@ -57,7 +57,7 @@ func RunCMD(dir, name string, args ...string) error {
 }
 
 func WriteFile(filePath string, data []byte) error {
-	if f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0755); err != nil {
+	if f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644); err != nil {
 		return err
 	} else {
 		_, err = f.Write(data)
