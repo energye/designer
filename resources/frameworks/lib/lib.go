@@ -42,6 +42,7 @@ const (
 	Path386Win32      = "windows/libenergy-386.zip"
 	PathWV2AMD64Win64 = "windows/WebView2Loader-amd64.zip"
 	PathWV2386Win32   = "windows/WebView2Loader-386.zip"
+	PathWV2Setup      = "windows/MicrosoftEdgeWebview2Setup.zip"
 )
 
 var libs = tool.NewHashMap[string, *EmbedFS]()
