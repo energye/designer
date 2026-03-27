@@ -6,7 +6,7 @@
 !include "FileFunc.nsh"
 
 !define INFO_EXECUTE_BINARY "{{.BuildName}}"
-!define INFO_EXECUTE_BINARY_PATH "${{.BuildFileNamePath}}"
+!define INFO_EXECUTE_BINARY_PATH "{{.BuildFileNamePath}}"
 !define INFO_InstallFileName "{{.InstallFileName}}"
 !define INFO_CompanyName "{{.CompanyName}}"
 !define INFO_ProductName "{{.ProductName}}"
@@ -15,6 +15,7 @@
 !define INFO_ProductVersion "{{.ProductVersion}}"
 !define INFO_FileDescription "{{.FileDescription}}"
 !define INFO_Copyright "{{.Copyright}}"
+!define INFO_DefaultInstall "{{.DefaultInstall}}"
 !define INFO_UNINST_KEY_NAME "${INFO_CompanyName}${INFO_ProductName}"
 !define INFO_Icon "{{.NSISIcon}}"
 !define INFO_UnIcon "{{.NSISUnIcon}}"
@@ -40,8 +41,6 @@
 
     {{range $i,$path := .NSISInclude }}
         File /r "{{$path}}"{{end}}
-    !macroend
-
 !macroend
 
 !macro energy.writeUninstaller

@@ -16,7 +16,6 @@
 package packager
 
 import (
-	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/winres"
@@ -38,9 +37,6 @@ func packageNSIS() bool {
 	buildOption := proj.BuildOption
 	appOption := proj.AppOption
 
-	installNsisTemp := app.Packager("windows/install-nsis.nsi")
-	installToolsTemp := app.Packager("windows/install-tools.nsh")
-
 	buildFileName := buildOption.BuildFileName
 	if filepath.Ext(buildFileName) != ".exe" {
 		buildFileName += ".exe"
@@ -53,6 +49,14 @@ func packageNSIS() bool {
 	if !filepath.IsAbs(buildOption.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
+
+	// 创建临时目录
+	//tmpPath := filepath.Join(output, "tmp")
+	//err := os.MkdirAll(tmpPath, 0755)
+	//if err != nil {
+	//	return false
+	//}
+
 	var (
 		appCompanyName = ""
 		appProductName = ""
@@ -73,6 +77,9 @@ func packageNSIS() bool {
 		nsisExecLevel = "admin"
 	}
 
+	installNsisScriptTemp := app.Packager("windows/install-nsis.nsi")
+	installToolsScriptTemp := app.Packager("windows/install-tools.nsh")
+
 	data := map[string]any{}
 	data["BuildName"] = buildFileName                                // 应用运行二进制名
 	data["BuildFileNamePath"] = filepath.Join(output, buildFileName) // 二进制文件目录
@@ -81,24 +88,38 @@ func packageNSIS() bool {
 	data["ProductName"] = appProductName                             // 产品名
 	data["ShortCutName"] = appOption.Title                           // 快捷方试名
 	data["IsShortcut"] = buildOption.WinDesktopShortcut              // 是否快捷方试名
+	data["IsStartMenu"] = buildOption.WinAddStartMenu                // 是否开始菜单
 	data["FileVersion"] = appOption.Version                          //
 	data["ProductVersion"] = appOption.Version                       //
 	data["FileDescription"] = appOption.Desc                         //
 	data["Copyright"] = appOption.Copyright                          //
+	data["DefaultInstall"] = buildOption.WinDefaultInstall           // 安装目录
 	data["NSISIcon"] = ""                                            //
 	data["NSISUnIcon"] = ""                                          //
 	data["NSISLanguage"] = "SimpChinese"                             // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	data["NSISLicense"] = ""                                         // (license.txt) 文件路径
 	data["NSISRequestExecutionLevel"] = nsisExecLevel                // run_level NSISRequestExecutionLevel
 
-	installToolsTemp, err := RenderTemplate(data, string(installToolsTemp))
+	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
 		event.ConsoleWriteError("Package - check nsis RenderTemplate:", err.Error())
 		return false
 	}
+	nsisInstallScriptPath := filepath.Join(output, "install-nsis.nsi")
+	nsisToolScriptPath := filepath.Join(output, "install-tools.nsh")
 
-	fmt.Println(string(installNsisTemp))
-	fmt.Println(string(installToolsTemp))
+	defer func() {
+		//_ = os.Remove(nsisInstallScriptPath)
+		//_ = os.Remove(nsisToolScriptPath)
+	}()
 
+	err = WriteFile(nsisInstallScriptPath, installNsisScriptTemp)
+	if err != nil {
+		return false
+	}
+	err = WriteFile(nsisToolScriptPath, installToolsScript)
+	if err != nil {
+		return false
+	}
 	return true
 }

@@ -16,6 +16,8 @@ package packager
 import (
 	"bytes"
 	"github.com/energye/designer/event"
+	"github.com/energye/lcl/tool/command"
+	"os"
 	"text/template"
 )
 
@@ -40,4 +42,25 @@ func RenderTemplate(data any, templateText string) ([]byte, error) {
 		return nil, err
 	}
 	return out.Bytes(), nil
+}
+
+func RunCMD(dir, name string, args ...string) error {
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	cmd.Dir = dir
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	cmd.Command(name, args...)
+	return nil
+}
+
+func WriteFile(filePath string, data []byte) error {
+	if f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0755); err != nil {
+		return err
+	} else {
+		_, err = f.Write(data)
+		return err
+	}
 }
