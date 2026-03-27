@@ -34,7 +34,7 @@ const makensis = "makensis.exe"
 func packageNSIS() bool {
 	if !checkToolCMD(makensis) {
 		event.ConsoleWriteInfo("Package - check nsis Not Installed")
-		///return false
+		return false
 	}
 	var (
 		libEnergy     *lib.EmbedFS
@@ -49,7 +49,7 @@ func packageNSIS() bool {
 		libEnergy = lib.Libs().Get(lib.Path386Win32)
 		libWebview2 = lib.Libs().Get(lib.PathWV2386Win32)
 	case "arm64":
-		event.ConsoleWriteInfo("Package - Currently, Windows arm64 arch is not support")
+		event.ConsoleWriteInfo("Package - Currently, windows arm64 arch is not support")
 		return false
 	}
 	webview2Setup = lib.Libs().Get(lib.PathWV2Setup)
