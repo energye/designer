@@ -112,11 +112,10 @@ func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
 	m.winAssociateFileArray = bean.GProject.BuildOption.WinAssociateFileList
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
 	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
-	newForm.SetDemoText(`多个换行, 每行格式使用 | 分割
+	newForm.SetDemoText(`多个换行, 每行使用 | 分割
 说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
-eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project
-`)
+eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project`)
 	newForm.SetOnOK(func(lines []string) {
 		m.winAssociateFileArray = lines
 	})
@@ -127,11 +126,10 @@ func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
 	m.WinAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联协议`, m)
 	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
-	newForm.SetDemoText(`多个换行, 每行格式使用 | 分割
-说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
-txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
-eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project
-`)
+	newForm.SetDemoText(`多个换行, 每行使用 | 分割
+说明: Scheme(协议头) | DESCRIPTION(协议描述)
+myapp | Open My App
+fs | fs soft scheme`)
 	newForm.SetOnOK(func(lines []string) {
 		m.WinAssociateProtocolArray = lines
 	})

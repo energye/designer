@@ -195,7 +195,7 @@
 
 !macro energy.customAssociateProtocols
     {{range .AssociateProtocols}}
-      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${INFO_EXECUTE_BINARY},0" "$INSTDIR\${INFO_EXECUTE_BINARY} $\"%1$\""
     {{end}}
 !macroend
 
