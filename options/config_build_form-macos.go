@@ -106,52 +106,15 @@ func (m *TBuildForm) initMacOSOptions() {
 }
 
 func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
-	newCertCommandListForm := lcl.NewEngForm(nil)
-	newCertCommandListForm.SetBorderStyleToFormBorderStyle(types.BsNone)
-	newCertCommandListForm.SetBounds(0, 0, 250, 200)
-	newCertCommandListForm.WorkAreaCenter()
-	memo := lcl.NewMemo(newCertCommandListForm)
-	//memo.SetBounds(25, 0, 250, 145)
-	memo.SetBounds(0, 0, 250, 170)
-	memo.SetShowHint(true)
-	memo.SetHint(`签名文件命令列表, 多个换行. 按深度顺序添加
+	newForm := NewCommonMemoForm(400, 150, `签名文件命令列表`, m)
+	newForm.SetDefaultText(strings.Join(m.macCertArray, "\n"))
+	newForm.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
-codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"
-...
-`)
-	lines := memo.Lines()
-	if len(m.macCertArray) > 0 {
-		for _, line := range m.macCertArray {
-			lines.Add(line)
-		}
-	}
-	memo.Font().SetSize(8)
-	memo.SetParent(newCertCommandListForm)
-	saveBtn := lcl.NewButton(newCertCommandListForm)
-	saveBtn.SetBounds(140, 173, 50, 25)
-	saveBtn.SetCaption("确定")
-	saveBtn.SetParent(newCertCommandListForm)
-	saveBtn.SetOnClick(func(sender lcl.IObject) {
-		var macCertList []string
-		lines = memo.Lines()
-		for i := int32(0); i < lines.Count(); i++ {
-			line := strings.TrimSpace(lines.Strings(i))
-			if line == "" {
-				continue
-			}
-			macCertList = append(macCertList, line)
-		}
-		m.macCertArray = macCertList
-		newCertCommandListForm.Close()
+codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"`)
+	newForm.SetOnOK(func(lines []string) {
+		m.macCertArray = lines
 	})
-	closeBtn := lcl.NewButton(newCertCommandListForm)
-	closeBtn.SetBounds(195, 173, 50, 25)
-	closeBtn.SetCaption("取消")
-	closeBtn.SetParent(newCertCommandListForm)
-	closeBtn.SetOnClick(func(sender lcl.IObject) {
-		newCertCommandListForm.Close()
-	})
-	newCertCommandListForm.ShowModal()
+	newForm.ShowModal()
 }
 
 func (m *TBuildForm) mergeMacOSUniversalBinary() error {

@@ -14,6 +14,7 @@
 package options
 
 import (
+	"fmt"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -106,9 +107,38 @@ func (m *TBuildForm) initWindowsOptions() {
 }
 
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
-
+	testNewForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
+	testNewForm.SetDefaultText(``)
+	testNewForm.SetDemoText(`格式使用 | 分割 
+Ext(扩展名不带 .) | FileClass(唯一类名) | Description(类型描述)  | Icon(图标路径) | CommandText(右键菜单显示的文字)
+txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
+eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project
+`)
+	testNewForm.SetOnOK(func(lines []string) {
+		fmt.Println("lines:", lines)
+	})
+	testNewForm.ShowModal()
 }
 
 func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
 
+}
+
+type TSetWinAssociateFilesForm struct {
+	*lcl.TEngForm
+}
+
+func NewSetWinAssociateFilesForm() *TSetWinAssociateFilesForm {
+	newEngForm := lcl.NewEngForm(nil)
+	newForm := &TSetWinAssociateFilesForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	newForm.FormCreate(newEngForm)
+	return newForm
+}
+
+func (m *TSetWinAssociateFilesForm) FormCreate(sender lcl.IObject) {
+	m.SetWidth(400)
+	m.SetHeight(200)
+	m.SetBorderStyleToFormBorderStyle(types.BsSingle)
+
+	SetWindowCenterByMainWindow(m)
 }
