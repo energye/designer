@@ -90,6 +90,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateFilesBtn.Font().SetColor(colors.ClWhite)
 	m.winAssociateFilesBtn.SetRadius(3)
 	m.winAssociateFilesBtn.SetCursor(types.CrHandPoint)
+	m.winAssociateFilesBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.winAssociateFilesBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateFilesBtn.SetOnClick(m.AssociateFilesClick)
 
@@ -102,6 +103,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolsBtn.Font().SetColor(colors.ClWhite)
 	m.winAssociateProtocolsBtn.SetRadius(3)
 	m.winAssociateProtocolsBtn.SetCursor(types.CrHandPoint)
+	m.winAssociateProtocolsBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
 }
@@ -109,8 +111,8 @@ func (m *TBuildForm) initWindowsOptions() {
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
 	testNewForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
 	testNewForm.SetDefaultText(``)
-	testNewForm.SetDemoText(`格式使用 | 分割 
-Ext(扩展名不带 .) | FileClass(唯一类名) | Description(类型描述)  | Icon(图标路径) | CommandText(右键菜单显示的文字)
+	testNewForm.SetDemoText(`多个换行, 每行格式使用 | 分割
+说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
 eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project
 `)

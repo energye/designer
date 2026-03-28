@@ -84,6 +84,8 @@ func (m *TBuildForm) initMacOSOptions() {
 	certListBtnRect.SetHeight(20)
 	m.certListBtn.SetBoundsRect(certListBtnRect)
 	m.certListBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.certListBtn.SetRadius(3)
+	m.certListBtn.SetCursor(types.CrHandPoint)
 	m.certListBtn.SetParent(m.platformTabPageMacOS)
 	m.certListBtn.SetOnClick(m.macCertCommandList)
 
