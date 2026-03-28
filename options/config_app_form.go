@@ -14,6 +14,7 @@
 package options
 
 import (
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/helperform"
@@ -124,7 +125,6 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
-	m.WorkAreaCenter()
 	m.box = lcl.NewPanel(m)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetAlign(types.AlClient)
@@ -158,7 +158,12 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMaxHeight(configProjectFormHeight + addSize)
 		constr.SetMinWidth(configProjectFormWidth)
 		constr.SetMinHeight(configProjectFormHeight + addSize)
-		m.WorkAreaCenter()
+		centerByMainWindow := func() {
+			windowRect := designer.MainWindow.BoundsRect()
+			m.SetLeft(windowRect.Left + (windowRect.Width()-m.Width())/2)
+			m.SetTop(windowRect.Top + (windowRect.Height()-m.Height())/2)
+		}
+		centerByMainWindow()
 		// 初始时设置图标
 		m.appIconData = bean.GProject.AppOption.Icon
 		go func() {

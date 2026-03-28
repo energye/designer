@@ -121,7 +121,6 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
-	m.WorkAreaCenter()
 	m.box = lcl.NewPanel(m)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetAlign(types.AlClient)
@@ -374,7 +373,12 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMaxHeight(createProjectFormHeight + addSize)
 		constr.SetMinWidth(createProjectFormWidth)
 		constr.SetMinHeight(createProjectFormHeight + addSize)
-		m.WorkAreaCenter()
+		centerByMainWindow := func() {
+			windowRect := designer.MainWindow.BoundsRect()
+			m.SetLeft(windowRect.Left + (windowRect.Width()-m.Width())/2)
+			m.SetTop(windowRect.Top + (windowRect.Height()-m.Height())/2)
+		}
+		centerByMainWindow()
 		go m.checkGoVersion()
 	})
 }

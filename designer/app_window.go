@@ -32,7 +32,7 @@ import (
 )
 
 var (
-	mainWindow       TAppWindow
+	MainWindow       TAppWindow
 	bgDarkColor      = colors.RGBToColor(56, 57, 60)
 	bgLightColor     = colors.ClWhite // colors.TColor(0xF3F4F6)
 	windowShowEvents []func()
@@ -84,7 +84,7 @@ func UpdateDesignerTitle(title string) {
 	}
 	lcl.RunOnMainThreadSync(func() {
 		logs.Println("UpdateDesignerTitle:", title)
-		mainWindow.SetCaption(title)
+		MainWindow.SetCaption(title)
 	})
 }
 

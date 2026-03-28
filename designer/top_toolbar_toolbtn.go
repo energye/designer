@@ -155,12 +155,12 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 
 func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 打开项目/打开UI布局")
-	mainWindow.openDialog.SetTitle("打开项目/打开UI布局")
-	mainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
-	mainWindow.openDialog.SetFilterIndex(1)
-	if mainWindow.openDialog.Execute() {
+	MainWindow.openDialog.SetTitle("打开项目/打开UI布局")
+	MainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
+	MainWindow.openDialog.SetFilterIndex(1)
+	if MainWindow.openDialog.Execute() {
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			filePath := mainWindow.openDialog.FileName()
+			filePath := MainWindow.openDialog.FileName()
 			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 		})
 	}
@@ -222,5 +222,5 @@ func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 		m.runPreviewBtn.SetHint("运行(F9)")
 		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
 	}
-	mainWindow.mainMenu.switchRunMenuItem(status)
+	MainWindow.mainMenu.switchRunMenuItem(status)
 }

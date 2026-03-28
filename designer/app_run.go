@@ -29,7 +29,7 @@ func Run() {
 	lcl.Application.SetTitle(config.DesignerConfig.Title)
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)
-	lcl.Application.NewForms(&mainWindow)
+	lcl.Application.NewForms(&MainWindow)
 	lcl.Application.Run()
 	logs.Println("ENERGY Designer RUN END.")
 }

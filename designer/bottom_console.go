@@ -63,12 +63,12 @@ func (m *BottomBox) createConsole() {
 
 // 写入控制台
 func WriteConsole(text string) {
-	mainWindow.box.WriteConsole(text)
+	MainWindow.box.WriteConsole(text)
 }
 
 // 清空控制台
 func ClearConsole() {
-	mainWindow.box.ClearConsole()
+	MainWindow.box.ClearConsole()
 }
 
 // 写入控制台

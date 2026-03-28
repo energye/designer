@@ -181,7 +181,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
 	exitWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("退出")
-		mainWindow.Close()
+		MainWindow.Close()
 	})
 	m.file.Add(exitWindow)
 }

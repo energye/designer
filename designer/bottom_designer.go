@@ -138,7 +138,7 @@ func UpdateHistoryProject(egpFilePath string) {
 	config.UpdateConfig()
 	// 更新设计器菜单-文件-历史项目
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		mainWindow.mainMenu.fileHistoryProjectMenu()
+		MainWindow.mainMenu.fileHistoryProjectMenu()
 	})
 }
 
