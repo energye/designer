@@ -87,19 +87,21 @@ type TBuildOption struct {
 	CodeObfuscation  bool   `json:"code_obfuscation"`
 	DisableDebug     bool   `json:"disable_debug"`
 	// 打包配置
-	PackageName        string   `json:"package_name"`
-	Cert               bool     `json:"cert"`
-	WinMsi             bool     `json:"win_msi"`
-	WinExe             bool     `json:"win_exe"`
-	WinDefaultInstall  string   `json:"win_default_install"`
-	WinDesktopShortcut bool     `json:"win_desktop_shortcut"`
-	WinAddStartMenu    bool     `json:"win_add_start_menu"`
-	MacDMG             bool     `json:"mac_dmg"`
-	MacPKG             bool     `json:"mac_pkg"`
-	MacCertList        []string `json:"mac_cert_list"`
-	MacCommonLib       bool     `json:"mac_common_lib"`
-	LinuxDEB           bool     `json:"linux_deb"`
-	Depends            string   `json:"depends"`
+	PackageName              string   `json:"package_name"`
+	Cert                     bool     `json:"cert"`
+	WinMsi                   bool     `json:"win_msi"`
+	WinExe                   bool     `json:"win_exe"`
+	WinDefaultInstall        string   `json:"win_default_install"`
+	WinDesktopShortcut       bool     `json:"win_desktop_shortcut"`
+	WinAddStartMenu          bool     `json:"win_add_start_menu"`
+	WinAssociateFileList     []string `json:"win_associate_file_list"`
+	WinAssociateProtocolList []string `json:"win_associate_protocol_list"`
+	MacDMG                   bool     `json:"mac_dmg"`
+	MacPKG                   bool     `json:"mac_pkg"`
+	MacCertList              []string `json:"mac_cert_list"`
+	MacCommonLib             bool     `json:"mac_common_lib"`
+	LinuxDEB                 bool     `json:"linux_deb"`
+	Depends                  string   `json:"depends"`
 }
 
 // TAppOption 应用配置

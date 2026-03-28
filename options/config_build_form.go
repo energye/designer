@@ -93,6 +93,8 @@ type TBuildForm struct {
 	winAddStartMenuCheckBox    lcl.ICheckBox
 	winAssociateFilesBtn       *wg.TButton
 	winAssociateProtocolsBtn   *wg.TButton
+	winAssociateFileArray      []string
+	WinAssociateProtocolArray  []string
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox
@@ -619,6 +621,8 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
 	bean.GProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
 	bean.GProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
+	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
+	bean.GProject.BuildOption.WinAssociateProtocolList = m.WinAssociateProtocolArray
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
 	bean.GProject.BuildOption.MacCertList = m.macCertArray
