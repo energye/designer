@@ -93,6 +93,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateFilesBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.winAssociateFilesBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateFilesBtn.SetOnClick(m.AssociateFilesClick)
+	m.winAssociateFileArray = bean.GProject.BuildOption.WinAssociateFileList
 
 	winAssociateProtocolsRect := types.TRect{Left: 210, Top: winAssociateFilesRect.Top}
 	winAssociateProtocolsRect.SetWidth(90)
@@ -106,10 +107,10 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolsBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
+	m.WinAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 }
 
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
-	m.winAssociateFileArray = bean.GProject.BuildOption.WinAssociateFileList
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
 	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
 	newForm.SetDemoText(`多个换行, 每行使用 | 分割
@@ -123,9 +124,8 @@ eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy pr
 }
 
 func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
-	m.WinAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联协议`, m)
-	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
+	newForm.SetDefaultText(strings.Join(m.WinAssociateProtocolArray, "\n"))
 	newForm.SetDemoText(`多个换行, 每行使用 | 分割
 说明: Scheme(协议头) | DESCRIPTION(协议描述)
 myapp | Open My App
