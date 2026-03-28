@@ -199,6 +199,8 @@ func paserAssociateFile(associateFileList []string) (associateFiles []TWinAssoci
 			srcIcon := icon
 			if !filepath.IsAbs(srcIcon) {
 				srcIcon = filepath.Join(embedPath, srcIcon)
+			} else {
+				_, icon = filepath.Split(icon)
 			}
 			associate := TWinAssociateFiles{
 				Ext:         strings.TrimSpace(associates[0]),
