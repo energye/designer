@@ -373,12 +373,7 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMaxHeight(createProjectFormHeight + addSize)
 		constr.SetMinWidth(createProjectFormWidth)
 		constr.SetMinHeight(createProjectFormHeight + addSize)
-		centerByMainWindow := func() {
-			windowRect := designer.MainWindow.BoundsRect()
-			m.SetLeft(windowRect.Left + (windowRect.Width()-m.Width())/2)
-			m.SetTop(windowRect.Top + (windowRect.Height()-m.Height())/2)
-		}
-		centerByMainWindow()
+		SetWindowCenterByMainWindow(m)
 		go m.checkGoVersion()
 	})
 }

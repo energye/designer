@@ -15,7 +15,6 @@ package options
 
 import (
 	"errors"
-	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
@@ -88,12 +87,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	m.SetVisible(false)
 	m.SetDoubleBuffered(true)
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
-	centerByMainWindow := func() {
-		windowRect := designer.MainWindow.BoundsRect()
-		m.SetLeft(windowRect.Left + (windowRect.Width()-m.Width())/2)
-		m.SetTop(windowRect.Top + (windowRect.Height()-m.Height())/2)
-	}
-	centerByMainWindow()
+	SetWindowCenterByMainWindow(m)
 	m.SetColor(colors.ClWhite)
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
