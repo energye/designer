@@ -51,19 +51,6 @@ type TUIForm struct {
 	UpdateTime string `json:"date_time"`    // 更新时间
 }
 
-// TWinAssociateFiles windows 关联文件
-type TWinAssociateFiles struct {
-	Ext         string `json:"ext"`          // 要关联的文件后缀（不带点）
-	FileClass   string `json:"file_class"`   // 注册表唯一类名（自定义，不能重复） 软件名+后缀+File
-	Description string `json:"description"`  // 文件类型描述（鼠标悬浮时显示的文字）
-	Icon        string `json:"icon"`         // 文件显示的图标路径 .ico "$INSTDIR\\图标名.ico"
-	CommandText string `json:"command_text"` // 右键菜单显示的文字 "Open with EnergyTool"
-}
-
-// TWinAssociateProtocols windows 关联协议
-type TWinAssociateProtocols struct {
-}
-
 // TBuildOption 构建配置
 type TBuildOption struct {
 	// 基础配置

@@ -165,15 +165,15 @@
 
 !macro energy.associateFiles
     {{range .AssociateFiles}}
-    !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconName}}.ico" "Open with ${INFO_ShortCutName}" "$INSTDIR\${INFO_EXECUTE_BINARY} $\"%1$\""
-    File "..\{{.IconName}}.ico"
+    !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.FileClass}}" "{{.Description}}" "$INSTDIR\{{.Icon}}" "{{.CommandText}}" "$INSTDIR\${INFO_EXECUTE_BINARY} $\"%1$\""
+    File "{{.SrcIcon}}"
     {{end}}
 !macroend
 
 !macro energy.unAssociateFiles
     {{range .AssociateFiles}}
-    !insertmacro APP_UNASSOCIATE "{{.Ext}}" "{{.Name}}"
-    Delete "$INSTDIR\{{.IconName}}.ico"
+    !insertmacro APP_UNASSOCIATE "{{.Ext}}" "{{.FileClass}}"
+    Delete "$INSTDIR\{{.Icon}}"
     {{end}}
 !macroend
 

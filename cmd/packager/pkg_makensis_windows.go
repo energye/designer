@@ -31,6 +31,30 @@ import (
 
 const makensis = "makensis.exe"
 
+// TWinAssociateFiles  关联文件
+type TWinAssociateFiles struct {
+	Ext         string // 要关联的文件后缀（不带点）
+	FileClass   string // 注册表唯一类名（自定义，不能重复） 软件名+后缀+File
+	Description string // 文件类型描述（鼠标悬浮时显示的文字）
+	Icon        string // 文件显示的图标路径 icon.ico "$INSTDIR\\图标名.ico"
+	SrcIcon     string // 文件显示的图标路径 icon.ico File "图标名.ico"
+	CommandText string // 右键菜单显示的文字 "Open with EnergyTool"
+}
+
+func (m *TWinAssociateFiles) IsEmpty() bool {
+	return m.Ext == "" || m.FileClass == "" || m.Description == "" || m.Icon == "" || m.CommandText == ""
+}
+
+// TWinAssociateProtocols  关联协议
+type TWinAssociateProtocols struct {
+	Scheme      string // 协议名 如 myapp, 调用格式：myapp://xxx
+	Description string // 描述 系统显示的协议名称
+}
+
+func (m *TWinAssociateProtocols) IsEmpty() bool {
+	return m.Scheme == "" || m.Description == ""
+}
+
 func packageNSIS() bool {
 	if !checkToolCMD(makensis) {
 		event.ConsoleWriteInfo("Package - check nsis Not Installed")
@@ -132,12 +156,14 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
-	data["NSISIcon"] = iconIcoFilePath                //
-	data["NSISUnIcon"] = iconIcoFilePath              //
+	data["NSISIcon"] = iconIcoFilePath                // 安装包程序图标
+	data["NSISUnIcon"] = iconIcoFilePath              // 安装包卸载程序图标
 	data["NSISLanguage"] = "SimpChinese"              // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	data["NSISLicense"] = ""                          // (license.txt) 文件路径
 	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
-	
+	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
+	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
+
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
 		event.ConsoleWriteError("Package - check nsis RenderTemplate:", err.Error())
@@ -162,6 +188,48 @@ func packageNSIS() bool {
 		return false
 	}
 	return true
+}
+
+func paserAssociateFile(associateFileList []string) (associateFiles []TWinAssociateFiles) {
+	embedPath := bean.ResourceEmbedPath()
+	for _, line := range associateFileList {
+		associates := strings.Split(line, "|")
+		if len(associates) >= 5 {
+			icon := strings.TrimSpace(associates[3])
+			srcIcon := icon
+			if !filepath.IsAbs(srcIcon) {
+				srcIcon = filepath.Join(embedPath, srcIcon)
+			}
+			associate := TWinAssociateFiles{
+				Ext:         strings.TrimSpace(associates[0]),
+				FileClass:   strings.TrimSpace(associates[1]),
+				Description: strings.TrimSpace(associates[2]),
+				Icon:        icon,
+				SrcIcon:     srcIcon,
+				CommandText: strings.TrimSpace(associates[4]),
+			}
+			if !associate.IsEmpty() {
+				associateFiles = append(associateFiles, associate)
+			}
+		}
+	}
+	return
+}
+
+func paserAssociateProtocol(associateProtocolList []string) (associateFiles []TWinAssociateProtocols) {
+	for _, line := range associateProtocolList {
+		associates := strings.Split(line, "|")
+		if len(associates) >= 2 {
+			associate := TWinAssociateProtocols{
+				Scheme:      strings.TrimSpace(associates[0]),
+				Description: strings.TrimSpace(associates[1]),
+			}
+			if !associate.IsEmpty() {
+				associateFiles = append(associateFiles, associate)
+			}
+		}
+	}
+	return
 }
 
 func copyTmpFile() {

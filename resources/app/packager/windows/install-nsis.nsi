@@ -58,6 +58,10 @@ Section
     SetOutPath $INSTDIR
     ; 打包进的文件
     !insertmacro energy.files
+    ; 关联文件
+    !insertmacro energy.associateFiles
+    ; 关联协议
+    !insertmacro energy.customAssociateProtocols
 
     CreateShortcut "$SMPROGRAMS\${INFO_ShortCutName}.lnk" "$INSTDIR\${INFO_EXECUTE_BINARY}"
     CreateShortCut "$DESKTOP\${INFO_ShortCutName}.lnk" "$INSTDIR\${INFO_EXECUTE_BINARY}"
@@ -67,6 +71,8 @@ SectionEnd
 
 Section "uninstall" 
     !insertmacro energy.setShellContext
+    !insertmacro energy.unAssociateFiles
+    !insertmacro energy.unCustomAssociateProtocols
 
     RMDir /r "$AppData\${INFO_EXECUTE_BINARY}"
 
