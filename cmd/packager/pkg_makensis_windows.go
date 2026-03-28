@@ -61,9 +61,8 @@ func packageNSIS() bool {
 		return false
 	}
 	var (
-		libEnergy     string
-		libWebview2   string
-		webview2Setup *lib.EmbedFS
+		libEnergy   string
+		libWebview2 string
 	)
 	switch runtime.GOARCH {
 	case "amd64":
@@ -76,12 +75,6 @@ func packageNSIS() bool {
 		event.ConsoleWriteInfo("Package - Currently, windows arm64 arch is not support")
 		return false
 	}
-	webview2Setup = lib.Libs().Get(lib.PathWV2Setup)
-	if webview2Setup == nil {
-		event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
-		return false
-	}
-
 	proj := bean.GProject
 	buildOption := proj.BuildOption
 	appOption := proj.AppOption
@@ -98,13 +91,21 @@ func packageNSIS() bool {
 	if !filepath.IsAbs(buildOption.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	err := webview2Setup.Release(output)
-	if err != nil {
-		return false
+	if proj.GUIRenderFramework == "WV" {
+		webview2Setup := lib.Libs().Get(lib.PathWV2Setup)
+		if webview2Setup == nil {
+			event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
+			return false
+		}
+		err := webview2Setup.Release(output)
+		if err != nil {
+			event.ConsoleWriteError("Package - Release MicrosoftEdgeWebview2Setup.exe", err.Error())
+			return false
+		}
+		defer func() {
+			//_ = os.Remove(filepath.Join(output, "MicrosoftEdgeWebview2Setup.exe"))
+		}()
 	}
-	defer func() {
-		//_ = os.Remove(filepath.Join(output, "MicrosoftEdgeWebview2Setup.exe"))
-	}()
 
 	var (
 		appCompanyName = ""
@@ -180,11 +181,19 @@ func packageNSIS() bool {
 	installNsisScriptTemp = append(utf8Bom, installNsisScriptTemp...)
 	err = WriteFile(nsisInstallScriptPath, installNsisScriptTemp)
 	if err != nil {
+		event.ConsoleWriteError("Package - WriteFile", err.Error())
 		return false
 	}
 	installToolsScript = append(utf8Bom, installToolsScript...)
 	err = WriteFile(nsisToolScriptPath, installToolsScript)
 	if err != nil {
+		event.ConsoleWriteError("Package - WriteFile", err.Error())
+		return false
+	}
+	// 执行 makensis 构建安装包命令
+	err = RunCMD(output, "makensis", "install-nsis.nsi")
+	if err != nil {
+		event.ConsoleWriteError("Package - RunCMD makensis", err.Error())
 		return false
 	}
 	return true

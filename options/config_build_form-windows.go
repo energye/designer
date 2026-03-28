@@ -14,6 +14,7 @@
 package options
 
 import (
+	"fmt"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -42,6 +43,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winMsiCheckBox.SetTop(nextTop(25))
 	m.winMsiCheckBox.SetFont(m.font)
 	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
+	m.winMsiCheckBox.SetEnabled(false) // TODO 先禁用, 还未实现
 	m.winMsiCheckBox.SetParent(m.platformTabPageWindows)
 	m.winExeCheckBox = lcl.NewCheckBox(m)
 	m.winExeCheckBox.SetCaption("EXE 安装包(MakeNsis)")
@@ -95,7 +97,8 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateFilesBtn.SetOnClick(m.AssociateFilesClick)
 	m.winAssociateFileArray = bean.GProject.BuildOption.WinAssociateFileList
 
-	winAssociateProtocolsRect := types.TRect{Left: 210, Top: winAssociateFilesRect.Top}
+	winAssociateProtocolsRect := types.TRect{Left: winAssociateFilesRect.Left + winAssociateFilesRect.Width() + 20,
+		Top: winAssociateFilesRect.Top}
 	winAssociateProtocolsRect.SetWidth(90)
 	winAssociateProtocolsRect.SetHeight(25)
 	m.winAssociateProtocolsBtn = wg.NewButton(m)
@@ -108,6 +111,41 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
 	m.WinAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
+
+	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20,
+		Top: winAssociateFilesRect.Top}
+	bannerRect.SetWidth(90)
+	bannerRect.SetHeight(25)
+	m.bannerBtn = wg.NewButton(m)
+	m.bannerBtn.SetBoundsRect(bannerRect)
+	m.bannerBtn.SetText("设置 Banner")
+	m.bannerBtn.Font().SetColor(colors.ClWhite)
+	m.bannerBtn.SetRadius(3)
+	m.bannerBtn.SetCursor(types.CrHandPoint)
+	m.bannerBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.bannerBtn.SetParent(m.platformTabPageWindows)
+	m.bannerBtn.SetOnClick(m.BannerClick)
+
+	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20,
+		Top: bannerRect.Top}
+	licenseRect.SetWidth(90)
+	licenseRect.SetHeight(25)
+	m.licenseBtn = wg.NewButton(m)
+	m.licenseBtn.SetBoundsRect(licenseRect)
+	m.licenseBtn.SetText("设置许可证")
+	m.licenseBtn.Font().SetColor(colors.ClWhite)
+	m.licenseBtn.SetRadius(3)
+	m.licenseBtn.SetCursor(types.CrHandPoint)
+	m.licenseBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.licenseBtn.SetParent(m.platformTabPageWindows)
+	m.licenseBtn.SetOnClick(m.LicenseClick)
+
+	// 签名 signtool
+	// 授权协议
+	// banner
+	//!define MUI_WELCOMEFINISHPAGE_BITMAP "welcome.bmp"
+	//!define MUI_HEADERIMAGE
+	//!define MUI_HEADERIMAGE_BITMAP "header.bmp"
 }
 
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
@@ -136,21 +174,16 @@ fs | fs soft scheme`)
 	newForm.ShowModal()
 }
 
-type TSetWinAssociateFilesForm struct {
-	*lcl.TEngForm
+func (m *TBuildForm) BannerClick(sender lcl.IObject) {
+	// 选择 png 转为 bmp
 }
 
-func NewSetWinAssociateFilesForm() *TSetWinAssociateFilesForm {
-	newEngForm := lcl.NewEngForm(nil)
-	newForm := &TSetWinAssociateFilesForm{TEngForm: newEngForm.(*lcl.TEngForm)}
-	newForm.FormCreate(newEngForm)
-	return newForm
-}
-
-func (m *TSetWinAssociateFilesForm) FormCreate(sender lcl.IObject) {
-	m.SetWidth(400)
-	m.SetHeight(200)
-	m.SetBorderStyleToFormBorderStyle(types.BsSingle)
-
-	SetWindowCenterByMainWindow(m)
+func (m *TBuildForm) LicenseClick(sender lcl.IObject) {
+	// 文本保存到临时文件在打包
+	newForm := NewCommonMemoForm(600, 400, `设置安装包许可证内容`, m)
+	newForm.SetDefaultText(strings.Join(m.WinAssociateProtocolArray, "\n"))
+	newForm.SetOnOK(func(lines []string) {
+		fmt.Println("lines:", lines)
+	})
+	newForm.ShowModal()
 }
