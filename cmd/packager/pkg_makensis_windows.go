@@ -132,13 +132,12 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
-
 	data["NSISIcon"] = iconIcoFilePath                //
 	data["NSISUnIcon"] = iconIcoFilePath              //
 	data["NSISLanguage"] = "SimpChinese"              // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	data["NSISLicense"] = ""                          // (license.txt) 文件路径
 	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
-
+	
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
 		event.ConsoleWriteError("Package - check nsis RenderTemplate:", err.Error())

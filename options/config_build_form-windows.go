@@ -16,6 +16,9 @@ package options
 import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"github.com/energye/widget/wg"
 )
 
 func (m *TBuildForm) initWindowsOptions() {
@@ -76,4 +79,36 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAddStartMenuCheckBox.SetFont(m.font)
 	m.winAddStartMenuCheckBox.SetChecked(bean.GProject.BuildOption.WinAddStartMenu)
 	m.winAddStartMenuCheckBox.SetParent(m.platformTabPageWindows)
+
+	winAssociateFilesRect := types.TRect{Left: 20, Top: nextTop(30)}
+	winAssociateFilesRect.SetWidth(90)
+	winAssociateFilesRect.SetHeight(25)
+	m.winAssociateFilesBtn = wg.NewButton(m)
+	m.winAssociateFilesBtn.SetBoundsRect(winAssociateFilesRect)
+	m.winAssociateFilesBtn.SetText("设置关联文件")
+	m.winAssociateFilesBtn.Font().SetColor(colors.ClWhite)
+	m.winAssociateFilesBtn.SetRadius(3)
+	m.winAssociateFilesBtn.SetCursor(types.CrHandPoint)
+	m.winAssociateFilesBtn.SetParent(m.platformTabPageWindows)
+	m.winAssociateFilesBtn.SetOnClick(m.AssociateFilesClick)
+
+	winAssociateProtocolsRect := types.TRect{Left: 210, Top: winAssociateFilesRect.Top}
+	winAssociateProtocolsRect.SetWidth(90)
+	winAssociateProtocolsRect.SetHeight(25)
+	m.winAssociateProtocolsBtn = wg.NewButton(m)
+	m.winAssociateProtocolsBtn.SetBoundsRect(winAssociateProtocolsRect)
+	m.winAssociateProtocolsBtn.SetText("设置关联协议")
+	m.winAssociateProtocolsBtn.Font().SetColor(colors.ClWhite)
+	m.winAssociateProtocolsBtn.SetRadius(3)
+	m.winAssociateProtocolsBtn.SetCursor(types.CrHandPoint)
+	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
+	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
+}
+
+func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
+
+}
+
+func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
+
 }

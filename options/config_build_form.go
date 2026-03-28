@@ -91,6 +91,8 @@ type TBuildForm struct {
 	winDefaultInstallEdit      lcl.IEdit
 	winDesktopShortcutCheckBox lcl.ICheckBox
 	winAddStartMenuCheckBox    lcl.ICheckBox
+	winAssociateFilesBtn       *wg.TButton
+	winAssociateProtocolsBtn   *wg.TButton
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox

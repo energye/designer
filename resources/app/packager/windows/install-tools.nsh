@@ -164,15 +164,14 @@
 !macroend
 
 !macro energy.associateFiles
-    {{range .FileAssociations}}
-    !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconName}}.ico" "Open with ${INFO_PRODUCTNAME}" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+    {{range .AssociateFiles}}
+    !insertmacro APP_ASSOCIATE "{{.Ext}}" "{{.Name}}" "{{.Description}}" "$INSTDIR\{{.IconName}}.ico" "Open with ${INFO_ShortCutName}" "$INSTDIR\${INFO_EXECUTE_BINARY} $\"%1$\""
     File "..\{{.IconName}}.ico"
     {{end}}
 !macroend
 
 !macro energy.unAssociateFiles
-    ; Delete app associations
-    {{range .FileAssociations}}
+    {{range .AssociateFiles}}
     !insertmacro APP_UNASSOCIATE "{{.Ext}}" "{{.Name}}"
     Delete "$INSTDIR\{{.IconName}}.ico"
     {{end}}
@@ -195,13 +194,13 @@
 !macroend
 
 !macro energy.customAssociateProtocols
-    {{range .Protocols}}
+    {{range .AssociateProtocols}}
       !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "{{.Scheme}}" "{{.Description}}" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
     {{end}}
 !macroend
 
 !macro energy.unCustomAssociateProtocols
-    {{range .Protocols}}
+    {{range .AssociateProtocols}}
       !insertmacro CUSTOM_PROTOCOL_UNASSOCIATE "{{.Scheme}}"
     {{end}}
 !macroend
