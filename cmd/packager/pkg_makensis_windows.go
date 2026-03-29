@@ -96,6 +96,7 @@ func packageNSIS() bool {
 		output = filepath.Join(bean.GPath, output)
 	}
 	if proj.GUIRenderFramework == "WV" {
+		// webview2 bind MicrosoftEdgeWebview2Setup.exe
 		webview2Setup := lib.Libs().Get(lib.PathWV2Setup)
 		if webview2Setup == nil {
 			event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
@@ -107,7 +108,7 @@ func packageNSIS() bool {
 			return false
 		}
 		defer func() {
-			//_ = os.Remove(filepath.Join(output, "MicrosoftEdgeWebview2Setup.exe"))
+			_ = os.Remove(filepath.Join(output, "MicrosoftEdgeWebview2Setup.exe"))
 		}()
 	}
 
@@ -184,11 +185,11 @@ func packageNSIS() bool {
 	}
 	nsisInstallScriptPath := filepath.Join(output, "install-nsis.nsi")
 	nsisToolScriptPath := filepath.Join(output, "install-tools.nsh")
-
 	defer func() {
-		//_ = os.Remove(nsisInstallScriptPath)
-		//_ = os.Remove(nsisToolScriptPath)
+		_ = os.Remove(nsisInstallScriptPath)
+		_ = os.Remove(nsisToolScriptPath)
 	}()
+	// nsis 脚本
 	utf8Bom := []byte{0xEF, 0xBB, 0xBF}
 	installNsisScriptTemp = append(utf8Bom, installNsisScriptTemp...)
 	err = WriteFile(nsisInstallScriptPath, installNsisScriptTemp)

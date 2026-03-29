@@ -15,6 +15,7 @@ package options
 
 import (
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -124,6 +125,10 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.licenseBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.licenseBtn.SetParent(m.platformTabPageWindows)
 	m.licenseBtn.SetOnClick(m.LicenseClick)
+	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.BuildOption.License)
+	if tool.IsExist(licensePath) {
+		m.license = bean.GProject.BuildOption.License
+	}
 
 	//templateVariablesRect := types.TRect{Left: licenseRect.Left + licenseRect.Width() + 20, Top: licenseRect.Top}
 	//templateVariablesRect.SetWidth(90)
