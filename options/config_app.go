@@ -151,14 +151,14 @@ func updateWindowICON() {
 	// icon.ico
 	embedPath := bean.ResourceEmbedPath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
-	err = os.WriteFile(iconIcoFilePath, icoBuf.Bytes(), 0666)
+	err = os.WriteFile(iconIcoFilePath, icoBuf.Bytes(), 0644)
 	if err != nil {
 		event.ConsoleWriteError("updateWindowICON, 写 windows icon.ico 失败:", err.Error())
 		return
 	}
 	// icon.png
 	iconPngFilePath := filepath.Join(embedPath, "icon.png")
-	err = os.WriteFile(iconPngFilePath, iconData, 0666)
+	err = os.WriteFile(iconPngFilePath, iconData, 0644)
 	if err != nil {
 		event.ConsoleWriteError("updateWindowICON, 写 windows icon.png 失败:", err.Error())
 		return

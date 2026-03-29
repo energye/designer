@@ -148,7 +148,7 @@ func WriteEGPConfig(path string, project *bean.TProject) error {
 		return err
 	}
 	egpFilePath := filepath.Join(path, project.EGPName)
-	err = os.WriteFile(egpFilePath, data, 0666)
+	err = os.WriteFile(egpFilePath, data, 0644)
 	if err != nil {
 		return err
 	}

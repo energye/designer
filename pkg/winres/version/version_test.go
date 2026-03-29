@@ -635,7 +635,7 @@ func checkBytes(t *testing.T, vi *Info) {
 	if !bytes.Equal(ref, b) {
 		t.Error(t.Name() + " output is different")
 		bugFile := refFile[:len(refFile)-7] + ".bug"
-		err := os.WriteFile(bugFile, b, 0666)
+		err := os.WriteFile(bugFile, b, 0644)
 		if err != nil {
 			t.Error(err)
 			return

@@ -25,6 +25,7 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
+	"path/filepath"
 )
 
 var (
@@ -95,7 +96,7 @@ type TBuildForm struct {
 	winAssociateFilesBtn       *wg.TButton
 	winAssociateProtocolsBtn   *wg.TButton
 	winAssociateFileArray      []string
-	WinAssociateProtocolArray  []string
+	winAssociateProtocolArray  []string
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox
@@ -105,6 +106,8 @@ type TBuildForm struct {
 
 	linuxDEBCheckBox lcl.ICheckBox
 	dependsEdit      lcl.IEdit
+
+	license string
 
 	// 操作按钮
 	saveBtn    *wg.TButton
@@ -615,15 +618,20 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
+	licenseFileName := ""
+	if m.license != "" {
+		_, licenseFileName = filepath.Split(m.license)
+	}
 	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
 	bean.GProject.BuildOption.Cert = m.certCheckBox.Checked()
+	bean.GProject.BuildOption.License = licenseFileName
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
 	bean.GProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
 	bean.GProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
 	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
-	bean.GProject.BuildOption.WinAssociateProtocolList = m.WinAssociateProtocolArray
+	bean.GProject.BuildOption.WinAssociateProtocolList = m.winAssociateProtocolArray
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
 	bean.GProject.BuildOption.MacCertList = m.macCertArray

@@ -49,7 +49,7 @@ func extractWV(outputPath string) {
 )`, config.Config.FrameworkDirForLCLRelativePath())
 	data, e := renderModLocalTemplate("github.com/energye/wv", replace)
 	err.CheckErr(e)
-	e = os.WriteFile(gomod, data, 0666)
+	e = os.WriteFile(gomod, data, 0644)
 	err.CheckErr(e)
 	cmd := command.NewCMD()
 	cmd.IsPrint = false

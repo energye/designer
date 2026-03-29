@@ -90,7 +90,7 @@ func createProjectDir() {
 		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)})
 	}
 	for _, file := range files {
-		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0666); err != nil {
+		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0644); err != nil {
 			event.ConsoleWriteError("创建项目文件失败:", err.Error())
 		}
 	}

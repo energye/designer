@@ -304,7 +304,7 @@ func copyAppInfoPList() bool {
 	appRoot := appRootDir()
 	contents := filepath.Join(appRoot, AppContents)
 	copyInfoPlistPath := filepath.Join(contents, "Info.plist")
-	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0666)
+	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0644)
 	if err != nil {
 		event.ConsoleWriteError("App Bundle - Copy App Info.plist WriteFile:", err.Error())
 		return false
@@ -320,7 +320,7 @@ func copyAppPkgInfo() bool {
 	contents := filepath.Join(appRoot, AppContents)
 	copyPkgInfoPath := filepath.Join(contents, "PkgInfo")
 	if !tool.IsExist(copyPkgInfoPath) {
-		err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0666)
+		err := os.WriteFile(copyPkgInfoPath, pkgInfo, 0644)
 		if err != nil {
 			event.ConsoleWriteError("Package - Copy App PkgInfo WriteFile:", err.Error())
 			return false

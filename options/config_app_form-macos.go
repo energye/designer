@@ -148,7 +148,7 @@ func saveOrUpdateMacOSPList() {
 	// 保存到 resources/Info.plist
 	resourcesPath := bean.ResourceMetadataPath()
 	pListOutFile := "Info.plist"
-	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0666)
+	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0644)
 	if err != nil {
 		event.ConsoleWriteError("macOS 应用配置-保存配置-WriteFile: ", err.Error())
 	}
@@ -172,6 +172,6 @@ CFBundleName = "{{CFBundleName}}";
 `
 		localizations = strings.Replace(localizations, "{{CFBundleDisplayName}}", bean.GProject.AppOption.MacOS.PList.CFBundleDisplayName, 1)
 		localizations = strings.Replace(localizations, "{{CFBundleName}}", bean.GProject.AppOption.MacOS.PList.CFBundleName, 1)
-		_ = os.WriteFile(filepath.Join(resourcesLocal, "InfoPlist.strings"), []byte(localizations), 0666)
+		_ = os.WriteFile(filepath.Join(resourcesLocal, "InfoPlist.strings"), []byte(localizations), 0644)
 	}
 }

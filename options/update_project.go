@@ -75,6 +75,6 @@ func updateAppGoFile() error {
 	appRoot := bean.GPath
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName, consts.FormListFileName)
 	code := buildTemplateData(appCodeTemplate, bean.GProject)
-	err := os.WriteFile(appCodePath, []byte(code), 0666)
+	err := os.WriteFile(appCodePath, []byte(code), 0644)
 	return err
 }

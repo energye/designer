@@ -58,6 +58,6 @@ func RunCMD(dir, name string, args ...string) error {
 
 func WriteFile(filePath string, data []byte) error {
 	_ = os.Remove(filePath)
-	err := os.WriteFile(filePath, data, 0666)
+	err := os.WriteFile(filePath, data, 0644)
 	return err
 }

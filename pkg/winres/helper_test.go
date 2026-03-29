@@ -32,7 +32,7 @@ func checkBinary(t *testing.T, data []byte) {
 	if !bytes.Equal(ref, data) {
 		t.Error(t.Name() + " output is different")
 		bugFile := refFile[:len(refFile)-7] + ".bug"
-		err := os.WriteFile(bugFile, data, 0666)
+		err := os.WriteFile(bugFile, data, 0644)
 		if err != nil {
 			t.Error(err)
 			return

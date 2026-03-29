@@ -292,7 +292,7 @@ func saveOrUpdateWindowsManifest() {
 		}
 		sysoOutFile := fmt.Sprintf("%s-%s_%v.syso", bean.GProject.Name, runtime.GOOS, arch)
 		// 保存到项目的 resources 目录
-		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0666)
+		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0644)
 		if err != nil {
 			event.ConsoleWriteError("windows 应用配置-保存配置-WriteFile: ", err.Error())
 		}

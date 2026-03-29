@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
@@ -157,10 +158,12 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
-	data["NSISIcon"] = iconIcoFilePath                // 安装包程序图标
-	data["NSISUnIcon"] = iconIcoFilePath              // 安装包卸载程序图标
-	data["NSISLanguage"] = "SimpChinese"              // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
-	data["NSISLicense"] = ""                          // (license.txt) 文件路径
+	data["NSISIcon"] = iconIcoFilePath   // 安装包程序图标
+	data["NSISUnIcon"] = iconIcoFilePath // 安装包卸载程序图标
+	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
+	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.License); buildOption.License != "" && tool.IsExist(licensePath) {
+		data["NSISLicense"] = licensePath // (license.txt) 文件路径
+	}
 	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
 	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
 	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)

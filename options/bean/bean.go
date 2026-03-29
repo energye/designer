@@ -76,6 +76,7 @@ type TBuildOption struct {
 	// 打包配置
 	PackageName              string   `json:"package_name"`
 	Cert                     bool     `json:"cert"`
+	License                  string   `json:"license"`
 	WinMsi                   bool     `json:"win_msi"`
 	WinExe                   bool     `json:"win_exe"`
 	WinDefaultInstall        string   `json:"win_default_install"`

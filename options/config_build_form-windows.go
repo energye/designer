@@ -14,12 +14,13 @@
 package options
 
 import (
-	"fmt"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -110,7 +111,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolsBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
 	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
-	m.WinAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
+	m.winAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 
 	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20,
 		Top: winAssociateFilesRect.Top}
@@ -163,13 +164,13 @@ eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy pr
 
 func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联协议`, m)
-	newForm.SetDefaultText(strings.Join(m.WinAssociateProtocolArray, "\n"))
+	newForm.SetDefaultText(strings.Join(m.winAssociateProtocolArray, "\n"))
 	newForm.SetDemoText(`多个换行, 每行使用 | 分割
 说明: Scheme(协议头) | DESCRIPTION(协议描述)
 myapp | Open My App
 fs | fs soft scheme`)
 	newForm.SetOnOK(func(lines []string) {
-		m.WinAssociateProtocolArray = lines
+		m.winAssociateProtocolArray = lines
 	})
 	newForm.ShowModal()
 }
@@ -179,11 +180,23 @@ func (m *TBuildForm) BannerClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) LicenseClick(sender lcl.IObject) {
-	// 文本保存到临时文件在打包
-	newForm := NewCommonMemoForm(600, 400, `设置安装包许可证内容`, m)
-	newForm.SetDefaultText(strings.Join(m.WinAssociateProtocolArray, "\n"))
+	// 文本保存到临时文件
+	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.Name+"-license.txt")
+	licenseText := ""
+	if data, err := os.ReadFile(licensePath); err == nil {
+		licenseText = string(data)
+	}
+	newForm := NewCommonMemoForm(600, 400, `设置许可证内容`, m)
+	newForm.SetDefaultText(licenseText)
 	newForm.SetOnOK(func(lines []string) {
-		fmt.Println("lines:", lines)
+		_ = os.Remove(licensePath)
+		if len(lines) > 0 {
+			data := strings.Join(lines, "\n")
+			_ = os.WriteFile(licensePath, []byte(data), 0644)
+			m.license = licensePath
+		} else {
+			m.license = ""
+		}
 	})
 	newForm.ShowModal()
 }
