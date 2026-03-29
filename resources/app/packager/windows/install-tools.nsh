@@ -97,15 +97,20 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 
 ; Webview2
 !macro energy.webview2Install
-    SetRegView 64
     !define WEBVIEW2_CLSID "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
 
     ; 检查 WebView2 是否已经安装
 
-    ; 检查 32位 系统级（WOW6432NODE）
-    ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${If} ${RunningX64}
+        SetRegView 64
+        ReadRegStr $0 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${Else}
+        SetRegView 32
+        ReadRegStr $0 HKLM "SOFTWARE\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${EndIf}
+
     ${If} $0 != ""
-        Goto webview2_done ; 已安装
+        Goto webview2_done
     ${EndIf}
 
     ; 检查 当前用户级（无管理员权限时）
@@ -136,8 +141,13 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     RMDir "$1"
 
     ; 安装后必须再次校验
-    SetRegView 64
-    ReadRegStr $2 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${If} ${RunningX64}
+        SetRegView 64
+        ReadRegStr $2 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${Else}
+        SetRegView 32
+        ReadRegStr $2 HKLM "SOFTWARE\Microsoft\EdgeUpdate\Clients\${WEBVIEW2_CLSID}" "pv"
+    ${EndIf}
 
     ${If} $2 == ""
         ${If} ${REQUEST_EXECUTION_LEVEL} == "user"
