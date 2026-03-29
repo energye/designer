@@ -48,7 +48,9 @@ func RunCMD(dir, name string, args ...string) error {
 	cmd := command.NewCMD()
 	cmd.IsPrint = false
 	cmd.HideWindow = true
-	cmd.Dir = dir
+	if dir != "" {
+		cmd.Dir = dir
+	}
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}

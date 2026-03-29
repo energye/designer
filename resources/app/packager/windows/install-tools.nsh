@@ -7,8 +7,8 @@
 
 ; 脚本自宏定义
 
-!define INFO_EXECUTE_BINARY "{{.BuildName}}"
-!define INFO_EXECUTE_BINARY_PATH "{{.BuildFileNamePath}}"
+!define INFO_EXECUTE_BINARY "{{.BinaryName}}"
+!define INFO_EXECUTE_BINARY_PATH "{{.BinaryFileNamePath}}"
 !define INFO_InstallFileName "{{.InstallFileName}}"
 !define INFO_CompanyName "{{.CompanyName}}"
 !define INFO_ProductName "{{.ProductName}}"

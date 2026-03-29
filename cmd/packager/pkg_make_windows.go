@@ -21,9 +21,11 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
-// signtool.exe
+const signtool = "signtool.exe"
 
 func packager() bool {
 	proj := bean.GProject
@@ -33,11 +35,7 @@ func packager() bool {
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
-	if option.WinSign.Enable {
-		if !cert() {
-			return false
-		}
-	} else {
+	if !option.WinSign.Enable {
 		event.ConsoleWriteInfo("Package - Not Enabled cert")
 	}
 	if option.WinExe {
@@ -46,10 +44,6 @@ func packager() bool {
 
 	}
 	return false
-}
-
-func cert() bool {
-	return true
 }
 
 func createAppBundle() bool {
@@ -72,25 +66,68 @@ func checkToolCMD(name string) bool {
 	return true
 }
 
-func signWindowsBin() {
-	//if options.CertificatePath != "" {
-	//	fmt.Println("Signing MSIX package...")
-	//	signArgs := []string{"sign", "/fd", "SHA256", "/a", "/f", options.CertificatePath}
-	//
-	//	// Add certificate password if provided
-	//	if options.CertificatePassword != "" {
-	//		signArgs = append(signArgs, "/p", options.CertificatePassword)
-	//	}
-	//
-	//	signArgs = append(signArgs, options.OutputPath)
-	//
-	//	cmd = exec.Command("signtool.exe", signArgs...)
-	//	cmd.Stdout = os.Stdout
-	//	cmd.Stderr = os.Stderr
-	//	if err := cmd.Run(); err != nil {
-	//		return fmt.Errorf("error signing MSIX package: %w", err)
-	//	}
-	//}
-	//
-	//fmt.Printf("MSIX package created successfully: %s\n", options.OutputPath)
+// 签名 windows 二进制文件
+func signWindowsBinary(binaryFilePath string) {
+	event.ConsoleWriteInfo("Signing binary file:", binaryFilePath)
+	if bean.GProject.BuildOption.WinSign.Enable {
+		if !checkToolCMD(signtool) {
+			event.ConsoleWriteError("signtool.exe is not installed, is not found in PATH. Please install Windows SDK")
+			return
+		}
+		event.ConsoleWriteInfo("Sign Command Configuration:", strings.Join(bean.GProject.BuildOption.WinSign.Cert, " "))
+		if len(bean.GProject.BuildOption.WinSign.Cert) > 0 {
+			certLine := bean.GProject.BuildOption.WinSign.Cert[0]
+			dataLine := strings.Split(certLine, "=") // file=xxxx  or  auto=xxx
+			if len(dataLine) == 2 {
+				name := strings.TrimSpace(dataLine[0])
+				cmd := strings.TrimSpace(dataLine[1])
+				cmdArray := strings.Split(cmd, " ")
+				if strings.Contains(cmdArray[0], "signtool") {
+					// 删除 signtool
+					cmdArray = cmdArray[1:]
+				}
+				success := false
+				// 检查配置是否正确
+				if success = name == "auto"; success {
+
+				} else if success = name == "file"; success {
+					for i := 0; i < len(cmdArray); i++ {
+						v := strings.TrimSpace(cmdArray[i])
+						if v == "/f" && i < len(cmdArray) {
+							i++             // next
+							v = cmdArray[i] // 证书文件名
+							// 处理证书相对目录
+							if v[0] == '@' {
+								v = v[1:]
+								// 相对目录, 从项目的 resources 目录找证书
+								cmdArray[i] = filepath.Join(bean.ResourcePath(), v)
+							}
+							break
+						}
+					}
+				}
+				if success {
+					args := append(cmdArray, binaryFilePath)
+					err := RunCMD("", signtool, args...)
+					if err != nil {
+						event.ConsoleWriteError(err.Error())
+						return
+					}
+				} else {
+					event.ConsoleWriteError("Signature config must be 'auto' or 'file'. See example.")
+					return
+				}
+			} else {
+				event.ConsoleWriteError("Incorrect certificate signature configuration. Please check the example.")
+				return
+			}
+		} else {
+			// 未配置任何签名参数命令
+			event.ConsoleWriteError("No signature parameters are set. Please check the configuration example.")
+			return
+		}
+		event.ConsoleWriteInfo("Binary file signed successfully.", binaryFilePath)
+	} else {
+		event.ConsoleWriteInfo("Signing not enabled.")
+	}
 }

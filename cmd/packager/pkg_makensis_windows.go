@@ -104,7 +104,7 @@ func packageNSIS() bool {
 		}
 		err := webview2Setup.Release(output)
 		if err != nil {
-			event.ConsoleWriteError("Package - Release MicrosoftEdgeWebview2Setup.exe", err.Error())
+			event.ConsoleWriteError("Package - Extract MicrosoftEdgeWebview2Setup.exe", err.Error())
 			return false
 		}
 		defer func() {
@@ -139,18 +139,26 @@ func packageNSIS() bool {
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
 	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
+	binaryFileNamePath := filepath.Join(output, buildFileName)
+	libEnergyCopyPath := filepath.Join(output, libEnergy)
+	err := tool.CopyFile(libEnergyPath, libEnergyCopyPath)
+	if err != nil {
+		event.ConsoleWriteError("Package - Copy libenergy runtime:", err.Error())
+		return false
+	}
+	defer os.RemoveAll(libEnergyCopyPath)
 
 	data := map[string]any{}
-	data["BuildName"] = buildFileName                                // 应用运行二进制名
-	data["BuildFileNamePath"] = filepath.Join(output, buildFileName) // 二进制文件目录
-	data["InstallFileName"] = packageName                            // 安装包名
-	data["CompanyName"] = appCompanyName                             // 企业名
-	data["ProductName"] = appProductName                             // 产品名
-	data["ShortCutName"] = appOption.Title                           // 快捷方试名
-	data["FileVersion"] = appOption.Version                          //
-	data["ProductVersion"] = appOption.Version                       //
-	data["FileDescription"] = appOption.Desc                         //
-	data["Copyright"] = appOption.Copyright                          //
+	data["BinaryName"] = buildFileName              // 应用运行二进制名
+	data["BinaryFileNamePath"] = binaryFileNamePath // 二进制文件目录
+	data["InstallFileName"] = packageName           // 安装包名
+	data["CompanyName"] = appCompanyName            // 企业名
+	data["ProductName"] = appProductName            // 产品名
+	data["ShortCutName"] = appOption.Title          // 快捷方试名
+	data["FileVersion"] = appOption.Version         //
+	data["ProductVersion"] = appOption.Version      //
+	data["FileDescription"] = appOption.Desc        //
+	data["Copyright"] = appOption.Copyright         //
 	if buildOption.WinDefaultInstall != "" {
 		data["DefaultInstall"] = buildOption.WinDefaultInstall // 自定义安装目录
 	}
@@ -210,6 +218,12 @@ func packageNSIS() bool {
 		event.ConsoleWriteError("Package - WriteFile", err.Error())
 		return false
 	}
+
+	// 签名文件 signtool
+	// 应用二进制文件 和 libenergy.dll
+	signWindowsBinary(binaryFileNamePath)
+	signWindowsBinary(libEnergyCopyPath)
+
 	// 执行 makensis 构建安装包命令
 	err = RunCMD(output, "makensis", "install-nsis.nsi")
 	if err != nil {
@@ -217,7 +231,11 @@ func packageNSIS() bool {
 		return false
 	}
 
-	// 签名 signtool
+	// 签名文件 signtool
+	// 程序安装包
+	installSetup := filepath.Join(output, packageName)
+	signWindowsBinary(installSetup)
+
 	return true
 }
 
