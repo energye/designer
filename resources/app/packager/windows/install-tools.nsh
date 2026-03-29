@@ -35,7 +35,9 @@
 !define INFO_DefaultInstall "$PROGRAMFILES64\${INFO_CompanyName}\${INFO_ProductName}"
 {{end}}
 
+{{if .RuntimeWebView2Setup}}
 !define INFO_RuntimeWebView2Setup "{{.RuntimeWebView2Setup}}"
+{{end}}
 
 ; 唯一 key
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"

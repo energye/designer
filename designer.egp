@@ -21,20 +21,29 @@
     "ui_gtk3": false,
     "output": "./build",
     "build_file_name": "designer",
-    "build_mode_debug": true,
-    "build_mode_release": false,
+    "build_mode_debug": false,
+    "build_mode_release": true,
     "go_args": "",
     "code_obfuscation": false,
     "disable_debug": false,
-    "package_name": "designer",
+    "package_name": "Energy Designer Setup",
+    "cert": false,
+    "license": "",
     "win_msi": false,
     "win_exe": true,
     "win_default_install": "",
-    "win_desktop_shortcut": true,
-    "win_add_start_menu": true,
+    "win_associate_file_list": [
+      "egp | EnergyGUIDesigner | Energy Designer Project | icon.ico | Open ENERGY Designer"
+    ],
+    "win_associate_protocol_list": [
+      "energy | Open ENERGY Designer"
+    ],
+    "nsis": {
+      "welcome_banner": "nsis_welcome_banner.png",
+      "header_banner": "nsis_header_banner.png"
+    },
     "mac_dmg": false,
     "mac_pkg": true,
-    "mac_cert": false,
     "mac_cert_list": [
       "codesign -f -s \"-\" \"$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB\"",
       "codesign -f -s \"-\" --options runtime \"$APP_NAME\""
@@ -45,7 +54,7 @@
   },
   "app_option": {
     "title": "ENERGY Designer",
-    "id": "com.yanghy.designer",
+    "id": "energy.designer",
     "desc": "ENERGY GUI Designer",
     "version": "1.0.0.0",
     "copyright": "Copyright (C) 2026-2026 YangHY. All rights reserved.",
@@ -81,7 +90,7 @@
         "cf_bundle_localizations": [
           "zh_CN"
         ],
-        "cf_bundle_identifier": "com.yanghy.designer",
+        "cf_bundle_identifier": "energy.designer",
         "cf_bundle_version": "1.0.0.0",
         "cf_bundle_short_version_string": "1.0.0.0",
         "cf_bundle_get_info_string": "ENERGY GUI Designer",

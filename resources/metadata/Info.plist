@@ -15,7 +15,7 @@
             <string>zh_CN</string>
         </array>
         <key>CFBundleIdentifier</key>
-        <string>com.yanghy.designer</string>
+        <string>energy.designer</string>
         <key>CFBundleVersion</key>
         <string>1.0.0.0</string>
         <key>CFBundleShortVersionString</key>
