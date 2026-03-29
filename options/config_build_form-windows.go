@@ -68,7 +68,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
 	m.winDefaultInstallEdit.SetParent(m.platformTabPageWindows)
 
-	winAssociateFilesRect := types.TRect{Left: 20, Top: nextTop(40)}
+	winAssociateFilesRect := types.TRect{Left: 15, Top: nextTop(40)}
 	winAssociateFilesRect.SetWidth(90)
 	winAssociateFilesRect.SetHeight(25)
 	m.winAssociateFilesBtn = wg.NewButton(m)
@@ -97,8 +97,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
 	m.winAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 
-	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20,
-		Top: winAssociateFilesRect.Top}
+	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20, Top: winAssociateFilesRect.Top}
 	bannerRect.SetWidth(90)
 	bannerRect.SetHeight(25)
 	m.bannerBtn = wg.NewButton(m)
@@ -111,8 +110,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.bannerBtn.SetParent(m.platformTabPageWindows)
 	m.bannerBtn.SetOnClick(m.BannerClick)
 
-	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20,
-		Top: bannerRect.Top}
+	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20, Top: bannerRect.Top}
 	licenseRect.SetWidth(90)
 	licenseRect.SetHeight(25)
 	m.licenseBtn = wg.NewButton(m)
@@ -126,6 +124,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.licenseBtn.SetOnClick(m.LicenseClick)
 
 	// 签名 signtool
+	// 模板变量
 	// banner
 	//!define MUI_WELCOMEFINISHPAGE_BITMAP "welcome.bmp"
 	//!define MUI_HEADERIMAGE

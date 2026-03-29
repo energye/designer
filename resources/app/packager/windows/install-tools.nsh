@@ -5,7 +5,7 @@
 !include "WinVer.nsh"
 !include "FileFunc.nsh"
 
-; 脚本宏定义
+; 脚本自宏定义
 
 !define INFO_EXECUTE_BINARY "{{.BuildName}}"
 !define INFO_EXECUTE_BINARY_PATH "{{.BuildFileNamePath}}"

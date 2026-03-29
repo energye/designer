@@ -22,7 +22,7 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "立即启动 ${INFO_ShortCutName}"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch Now ${INFO_ShortCutName}"
 !define MUI_FINISHPAGE_RUN_FUNCTION LaunchApp
 
 ; 插入界面
@@ -41,20 +41,19 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "${INFO_LANGUAGE}"
 
-Name "${INFO_ShortCutName}"
+Name "${INFO_ShortCutName} ${INFO_ProductVersion}"
 OutFile ".\${INFO_InstallFileName}"
 InstallDir "${INFO_DefaultInstall}"
 ShowInstDetails show
 ShowUnInstDetails show
 
-; 初始化时判断是否安装过
 Function .onInit
   !insertmacro energy.setShellContext
   SetRegView 64
   ReadRegStr $0 HKLM "${UNINST_KEY}" "UninstallString"
   StrCmp $0 "" done
 
-  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "已安装，是否重新安装？" IDOK done
+  MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "Already installed. Reinstall now?" IDOK done
   Abort
 
 done:
