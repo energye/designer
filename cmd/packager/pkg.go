@@ -15,7 +15,10 @@ package packager
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"text/template"
@@ -23,6 +26,36 @@ import (
 
 // Run 执行打包命令的入口函数
 func Run() bool {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return false
+	}
+	option := proj.BuildOption
+
+	start := func() {
+		fmt.Println("GOARCH:", os.Getenv("GOARCH"))
+		if !build.Run() {
+			return
+		}
+		event.ConsoleWriteInfo("CMD-package-run")
+		packager()
+	}
+	defaultGOARCH := os.Getenv("GOARCH")
+	if option.ArchAmd64 {
+		os.Setenv("GOARCH", "amd64")
+		start()
+	}
+	if option.Arch386 {
+		os.Setenv("GOARCH", "386")
+		start()
+	}
+	os.Setenv("GOARCH", defaultGOARCH)
+
+	return true
+	if !build.Run() {
+		return false
+	}
 	event.ConsoleWriteInfo("CMD-package-run")
 	return packager()
 }

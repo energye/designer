@@ -27,7 +27,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -68,7 +67,8 @@ func packageNSIS() bool {
 		libEnergy   string
 		libWebview2 string
 	)
-	switch runtime.GOARCH {
+	GOARCH := os.Getenv("GOARCH")
+	switch GOARCH {
 	case "amd64":
 		libEnergy = "libenergy-amd64.dll"
 		libWebview2 = "WebView2Loader-amd64.dll"
@@ -88,9 +88,12 @@ func packageNSIS() bool {
 		buildFileName += ".exe"
 	}
 	packageName := buildOption.PackageName
-	if filepath.Ext(packageName) != ".exe" {
-		packageName += ".exe"
+	if exeIdx := strings.LastIndex(packageName, ".exe"); exeIdx != -1 {
+		packageName = packageName[:exeIdx] + "_" + GOARCH + ".exe"
+	} else {
+		packageName = packageName + "_" + GOARCH + ".exe"
 	}
+
 	output := buildOption.Output
 	if !filepath.IsAbs(buildOption.Output) {
 		output = filepath.Join(bean.GPath, output)

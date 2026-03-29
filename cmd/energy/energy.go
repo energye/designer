@@ -64,9 +64,6 @@ func main() {
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
-			if !build.Run() {
-				return
-			}
 			if !packager.Run() {
 				return
 			}

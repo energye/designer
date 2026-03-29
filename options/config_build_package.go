@@ -14,7 +14,6 @@
 package options
 
 import (
-	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
@@ -24,7 +23,6 @@ import (
 func configBuildPackage() {
 	logs.Debug("构建配置-打包")
 	event.ConsoleWriteClear()
-	build.Run()
 	packager.Run()
 	logs.Debug("构建配置-打包-完成")
 }
