@@ -123,6 +123,19 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.licenseBtn.SetParent(m.platformTabPageWindows)
 	m.licenseBtn.SetOnClick(m.LicenseClick)
 
+	//templateVariablesRect := types.TRect{Left: licenseRect.Left + licenseRect.Width() + 20, Top: licenseRect.Top}
+	//templateVariablesRect.SetWidth(90)
+	//templateVariablesRect.SetHeight(25)
+	//m.templateVariablesBtn = wg.NewButton(m)
+	//m.templateVariablesBtn.SetBoundsRect(templateVariablesRect)
+	//m.templateVariablesBtn.SetText("模板变量")
+	//m.templateVariablesBtn.Font().SetColor(colors.ClWhite)
+	//m.templateVariablesBtn.SetRadius(3)
+	//m.templateVariablesBtn.SetCursor(types.CrHandPoint)
+	//m.templateVariablesBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	//m.templateVariablesBtn.SetParent(m.platformTabPageWindows)
+	//m.templateVariablesBtn.SetOnClick(m.TemplateVariablesClick)
+
 	// 签名 signtool
 	// 模板变量
 	// banner
@@ -183,4 +196,7 @@ func (m *TBuildForm) LicenseClick(sender lcl.IObject) {
 		}
 	})
 	newForm.ShowModal()
+}
+
+func (m *TBuildForm) TemplateVariablesClick(sender lcl.IObject) {
 }

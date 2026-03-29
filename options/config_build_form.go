@@ -87,14 +87,14 @@ type TBuildForm struct {
 	certCheckBox    lcl.ICheckBox
 	certListBtn     *wg.TButton
 
-	winMsiCheckBox            lcl.ICheckBox
-	winExeCheckBox            lcl.ICheckBox
-	winDefaultInstallEdit     lcl.IEdit
-	bannerBtn, licenseBtn     *wg.TButton
-	winAssociateFilesBtn      *wg.TButton
-	winAssociateProtocolsBtn  *wg.TButton
-	winAssociateFileArray     []string
-	winAssociateProtocolArray []string
+	winMsiCheckBox                              lcl.ICheckBox
+	winExeCheckBox                              lcl.ICheckBox
+	winDefaultInstallEdit                       lcl.IEdit
+	bannerBtn, licenseBtn, templateVariablesBtn *wg.TButton
+	winAssociateFilesBtn                        *wg.TButton
+	winAssociateProtocolsBtn                    *wg.TButton
+	winAssociateFileArray                       []string
+	winAssociateProtocolArray                   []string
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox
