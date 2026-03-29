@@ -80,8 +80,6 @@ type TBuildOption struct {
 	WinMsi                   bool     `json:"win_msi"`
 	WinExe                   bool     `json:"win_exe"`
 	WinDefaultInstall        string   `json:"win_default_install"`
-	WinDesktopShortcut       bool     `json:"win_desktop_shortcut"`
-	WinAddStartMenu          bool     `json:"win_add_start_menu"`
 	WinAssociateFileList     []string `json:"win_associate_file_list"`
 	WinAssociateProtocolList []string `json:"win_associate_protocol_list"`
 	MacDMG                   bool     `json:"mac_dmg"`
@@ -238,8 +236,6 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.WinMsi = false
 	m.BuildOption.WinExe = true
 	m.BuildOption.WinDefaultInstall = ""
-	m.BuildOption.WinDesktopShortcut = true
-	m.BuildOption.WinAddStartMenu = true
 	m.BuildOption.MacDMG = false
 	m.BuildOption.MacPKG = true
 	m.BuildOption.MacCertList = []string{

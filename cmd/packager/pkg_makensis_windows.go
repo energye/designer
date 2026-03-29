@@ -143,8 +143,6 @@ func packageNSIS() bool {
 	data["CompanyName"] = appCompanyName                             // 企业名
 	data["ProductName"] = appProductName                             // 产品名
 	data["ShortCutName"] = appOption.Title                           // 快捷方试名
-	data["IsShortcut"] = buildOption.WinDesktopShortcut              // 是否快捷方试名
-	data["IsStartMenu"] = buildOption.WinAddStartMenu                // 是否开始菜单
 	data["FileVersion"] = appOption.Version                          //
 	data["ProductVersion"] = appOption.Version                       //
 	data["FileDescription"] = appOption.Desc                         //

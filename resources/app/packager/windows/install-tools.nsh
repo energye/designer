@@ -30,6 +30,7 @@
 
 !define INFO_RuntimeWebView2Setup "{{.RuntimeWebView2Setup}}"
 
+; 唯一 key
 !define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${INFO_UNINST_KEY_NAME}"
 
 ; 授权文件信息
@@ -59,6 +60,7 @@
         File /r "{{$path}}"{{end}}
 !macroend
 
+; 写入卸载信息
 !macro energy.writeUninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
 
@@ -75,6 +77,7 @@
     WriteRegDWORD HKLM "${UNINST_KEY}" "EstimatedSize" "$0"
 !macroend
 
+; 上下文切换
 !macro energy.setShellContext
     ${If} ${REQUEST_EXECUTION_LEVEL} == "admin"
         SetShellVarContext all

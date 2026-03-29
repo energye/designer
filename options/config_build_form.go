@@ -87,16 +87,14 @@ type TBuildForm struct {
 	certCheckBox    lcl.ICheckBox
 	certListBtn     *wg.TButton
 
-	winMsiCheckBox             lcl.ICheckBox
-	winExeCheckBox             lcl.ICheckBox
-	winDefaultInstallEdit      lcl.IEdit
-	winDesktopShortcutCheckBox lcl.ICheckBox
-	winAddStartMenuCheckBox    lcl.ICheckBox
-	bannerBtn, licenseBtn      *wg.TButton
-	winAssociateFilesBtn       *wg.TButton
-	winAssociateProtocolsBtn   *wg.TButton
-	winAssociateFileArray      []string
-	winAssociateProtocolArray  []string
+	winMsiCheckBox            lcl.ICheckBox
+	winExeCheckBox            lcl.ICheckBox
+	winDefaultInstallEdit     lcl.IEdit
+	bannerBtn, licenseBtn     *wg.TButton
+	winAssociateFilesBtn      *wg.TButton
+	winAssociateProtocolsBtn  *wg.TButton
+	winAssociateFileArray     []string
+	winAssociateProtocolArray []string
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox
@@ -628,8 +626,6 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
-	bean.GProject.BuildOption.WinDesktopShortcut = m.winDesktopShortcutCheckBox.Checked()
-	bean.GProject.BuildOption.WinAddStartMenu = m.winAddStartMenuCheckBox.Checked()
 	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
 	bean.GProject.BuildOption.WinAssociateProtocolList = m.winAssociateProtocolArray
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()

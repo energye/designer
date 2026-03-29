@@ -68,23 +68,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
 	m.winDefaultInstallEdit.SetParent(m.platformTabPageWindows)
 
-	m.winDesktopShortcutCheckBox = lcl.NewCheckBox(m)
-	m.winDesktopShortcutCheckBox.SetCaption("创建桌面快捷方式")
-	m.winDesktopShortcutCheckBox.SetLeft(20)
-	m.winDesktopShortcutCheckBox.SetTop(nextTop(40))
-	m.winDesktopShortcutCheckBox.SetFont(m.font)
-	m.winDesktopShortcutCheckBox.SetChecked(bean.GProject.BuildOption.WinDesktopShortcut)
-	m.winDesktopShortcutCheckBox.SetParent(m.platformTabPageWindows)
-
-	m.winAddStartMenuCheckBox = lcl.NewCheckBox(m)
-	m.winAddStartMenuCheckBox.SetCaption("添加到开始菜单")
-	m.winAddStartMenuCheckBox.SetLeft(210)
-	m.winAddStartMenuCheckBox.SetTop(m.winDesktopShortcutCheckBox.Top())
-	m.winAddStartMenuCheckBox.SetFont(m.font)
-	m.winAddStartMenuCheckBox.SetChecked(bean.GProject.BuildOption.WinAddStartMenu)
-	m.winAddStartMenuCheckBox.SetParent(m.platformTabPageWindows)
-
-	winAssociateFilesRect := types.TRect{Left: 20, Top: nextTop(30)}
+	winAssociateFilesRect := types.TRect{Left: 20, Top: nextTop(40)}
 	winAssociateFilesRect.SetWidth(90)
 	winAssociateFilesRect.SetHeight(25)
 	m.winAssociateFilesBtn = wg.NewButton(m)
@@ -142,7 +126,6 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.licenseBtn.SetOnClick(m.LicenseClick)
 
 	// 签名 signtool
-	// 授权协议
 	// banner
 	//!define MUI_WELCOMEFINISHPAGE_BITMAP "welcome.bmp"
 	//!define MUI_HEADERIMAGE
