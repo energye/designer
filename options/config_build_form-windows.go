@@ -159,11 +159,11 @@ func (m *TBuildForm) initWindowsOptions() {
 }
 
 func (m *TBuildForm) winSignCommandList(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(550, 120, `配置签名证书`, m)
+	newForm := NewCommonMemoForm(550, 120, "配置签名命令", m)
 	newForm.SetMultipleLine(false)
 	newForm.SetDefaultText(strings.Join(m.winSignArray, "\n"))
-	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动和指定证书签名
-证书相对目录使用 @ > "@xxx.fpx" 并放到 resources 目录
+	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动(auto=cmd)或指定证书签名(file=cmd)
+说明: 证书相对目录使用 "@xxx.fpx" 并放到 resources 目录
 auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 file=signtool sign /f @cert.pfx /p 密码 /fd SHA256`)
 	newForm.SetOnOK(func(lines []string) {
