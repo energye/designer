@@ -93,9 +93,6 @@ func (m *TCommonMemoForm) SetDefaultText(text string) {
 	textLines := strings.Split(text, "\n")
 	lines := m.memo.Lines()
 	for _, line := range textLines {
-		if line == "" {
-			continue
-		}
 		lines.Add(line)
 	}
 }
