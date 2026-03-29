@@ -2,3 +2,5 @@ github.com/energye/lcl v1.0.1 h1:0z+1rx4wtTllCR0LZRRpdb3GU16tyhd16D2ltEmJILo=
 github.com/energye/lcl v1.0.1/go.mod h1:FZjx6p28FYSv4XHl2cbxmtRWKlel+PNrfvbfF96nDsM=
 github.com/energye/widget v1.0.1 h1:YERARLgsKG5GMX/DWuLnp78dFKsiFjTSKclCQfTn0Ls=
 github.com/energye/widget v1.0.1/go.mod h1:a5/3Mi2aRq+1oRZok11pc2uavPWrnELvap/fVUY6Bso=
+golang.org/x/image v0.24.0 h1:AN7zRgVsbvmTfNyqIbbOraYL8mSwcKncEj8ofjgzcMQ=
+golang.org/x/image v0.24.0/go.mod h1:4b/ITuLfqYq1hqZcjofwctIhi7sZh2WaCjvsBNjjya8=
