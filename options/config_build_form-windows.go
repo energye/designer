@@ -69,7 +69,33 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
 	m.winDefaultInstallEdit.SetParent(m.platformTabPageWindows)
 
-	winAssociateFilesRect := types.TRect{Left: 15, Top: nextTop(40)}
+	m.winSignCheckBox = lcl.NewCheckBox(m)
+	m.winSignCheckBox.SetCaption("签名")
+	m.winSignCheckBox.SetLeft(20)
+	m.winSignCheckBox.SetTop(nextTop(40))
+	m.winSignCheckBox.SetFont(m.font)
+	m.winSignCheckBox.SetChecked(bean.GProject.BuildOption.WinSign.Enable)
+	m.winSignCheckBox.SetParent(m.platformTabPageWindows)
+	m.winSignCheckBox.SetOnChange(func(sender lcl.IObject) {
+		m.winSignListBtn.SetVisible(m.winSignCheckBox.Checked())
+	})
+	winSignListBtnRect := types.TRect{Left: 75, Top: m.winSignCheckBox.Top()}
+	winSignListBtnRect.SetWidth(120)
+	winSignListBtnRect.SetHeight(20)
+	m.winSignListBtn = wg.NewButton(m)
+	m.winSignListBtn.SetVisible(m.winSignCheckBox.Checked())
+	m.winSignListBtn.SetText("二进制签名")
+	m.winSignListBtn.Font().SetColor(colors.ClWhite)
+	m.winSignListBtn.SetRadius(0)
+	m.winSignListBtn.SetBoundsRect(winSignListBtnRect)
+	m.winSignListBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.winSignListBtn.SetRadius(3)
+	m.winSignListBtn.SetCursor(types.CrHandPoint)
+	m.winSignListBtn.SetParent(m.platformTabPageWindows)
+	m.winSignListBtn.SetOnClick(m.winSignCommandList)
+	m.winSignArray = bean.GProject.BuildOption.WinSign.Cert
+
+	winAssociateFilesRect := types.TRect{Left: 15, Top: nextTop(30)}
 	winAssociateFilesRect.SetWidth(90)
 	winAssociateFilesRect.SetHeight(25)
 	m.winAssociateFilesBtn = wg.NewButton(m)
@@ -125,30 +151,32 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.licenseBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.licenseBtn.SetParent(m.platformTabPageWindows)
 	m.licenseBtn.SetOnClick(m.LicenseClick)
-	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.BuildOption.License)
+	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.BuildOption.NSIS.License)
 	if tool.IsExist(licensePath) {
-		m.license = bean.GProject.BuildOption.License
+		m.license = bean.GProject.BuildOption.NSIS.License
 	}
 
-	//templateVariablesRect := types.TRect{Left: licenseRect.Left + licenseRect.Width() + 20, Top: licenseRect.Top}
-	//templateVariablesRect.SetWidth(90)
-	//templateVariablesRect.SetHeight(25)
-	//m.templateVariablesBtn = wg.NewButton(m)
-	//m.templateVariablesBtn.SetBoundsRect(templateVariablesRect)
-	//m.templateVariablesBtn.SetText("模板变量")
-	//m.templateVariablesBtn.Font().SetColor(colors.ClWhite)
-	//m.templateVariablesBtn.SetRadius(3)
-	//m.templateVariablesBtn.SetCursor(types.CrHandPoint)
-	//m.templateVariablesBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	//m.templateVariablesBtn.SetParent(m.platformTabPageWindows)
-	//m.templateVariablesBtn.SetOnClick(m.TemplateVariablesClick)
+}
 
-	// 签名 signtool
-	// 模板变量
-	// banner
-	//!define MUI_WELCOMEFINISHPAGE_BITMAP "welcome.bmp"
-	//!define MUI_HEADERIMAGE
-	//!define MUI_HEADERIMAGE_BITMAP "header.bmp"
+func (m *TBuildForm) winSignCommandList(sender lcl.IObject) {
+	newForm := NewCommonMemoForm(550, 120, `配置签名证书`, m)
+	newForm.SetMultipleLine(false)
+	newForm.SetDefaultText(strings.Join(m.winSignArray, "\n"))
+	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动和指定证书签名
+证书相对目录使用 @ > "@xxx.fpx" 并放到 resources 目录
+auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
+file=signtool sign /f @cert.pfx /p 密码 /fd SHA256`)
+	newForm.SetOnOK(func(lines []string) {
+		var signCMD []string
+		for _, line := range lines {
+			banner := strings.Split(line, "=")
+			if len(banner) == 2 {
+				signCMD = append(signCMD, line)
+			}
+		}
+		m.winSignArray = signCMD
+	})
+	newForm.ShowModal()
 }
 
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {

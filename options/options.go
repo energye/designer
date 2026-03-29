@@ -92,9 +92,19 @@ func (m *TCommonMemoForm) SetOnOK(fn func(lines []string)) {
 func (m *TCommonMemoForm) SetDefaultText(text string) {
 	textLines := strings.Split(text, "\n")
 	lines := m.memo.Lines()
-	for _, line := range textLines {
-		lines.Add(line)
+	lines.Clear()
+	if m.memo.WantReturns() {
+		for _, line := range textLines {
+			lines.Add(line)
+		}
+	} else {
+		lines.SetTextToStr(text)
 	}
+}
+
+func (m *TCommonMemoForm) SetMultipleLine(v bool) {
+	m.memo.SetWantReturns(v)
+	m.memo.SetWordWrap(v)
 }
 
 func (m *TCommonMemoForm) FormCreate(sender lcl.IObject) {

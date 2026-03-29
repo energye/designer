@@ -85,22 +85,25 @@ type TBuildForm struct {
 	platformTabPageLinux   *wg.TPage
 
 	packageNameEdit lcl.ILabeledEdit
-	certCheckBox    lcl.ICheckBox
-	certListBtn     *wg.TButton
 
 	winMsiCheckBox                              lcl.ICheckBox
 	winExeCheckBox                              lcl.ICheckBox
 	winDefaultInstallEdit                       lcl.IEdit
 	bannerBtn, licenseBtn, templateVariablesBtn *wg.TButton
+	winSignCheckBox                             lcl.ICheckBox
+	winSignListBtn                              *wg.TButton
+	winSignArray                                []string
 	winAssociateFilesBtn                        *wg.TButton
 	winAssociateProtocolsBtn                    *wg.TButton
 	winAssociateFileArray                       []string
 	winAssociateProtocolArray                   []string
 	nsisBanner                                  []string
 
-	macDMGCheckBox lcl.ICheckBox
-	macPKGCheckBox lcl.ICheckBox
-	macCertArray   []string
+	macDMGCheckBox  lcl.ICheckBox
+	macPKGCheckBox  lcl.ICheckBox
+	macSignCheckBox lcl.ICheckBox
+	macSignListBtn  *wg.TButton
+	macSignArray    []string
 
 	macCommonLibCheckBox lcl.ICheckBox
 
@@ -618,19 +621,18 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
-	licenseFileName := ""
-	if m.license != "" {
-		_, licenseFileName = filepath.Split(m.license)
-	}
 	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
-	bean.GProject.BuildOption.Cert = m.certCheckBox.Checked()
-	bean.GProject.BuildOption.License = licenseFileName
+	// win
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
 	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
 	bean.GProject.BuildOption.WinAssociateProtocolList = m.winAssociateProtocolArray
-
+	licenseFileName := ""
+	if m.license != "" {
+		_, licenseFileName = filepath.Split(m.license)
+	}
+	bean.GProject.BuildOption.NSIS.License = licenseFileName
 	nsisWelcomeBanner, nsisHeaderBanner := "", ""
 	for _, line := range m.nsisBanner {
 		banner := strings.Split(line, "=")
@@ -646,9 +648,14 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	}
 	bean.GProject.BuildOption.NSIS.WelcomeBanner = nsisWelcomeBanner
 	bean.GProject.BuildOption.NSIS.HeaderBanner = nsisHeaderBanner
+	bean.GProject.BuildOption.WinSign.Enable = m.winSignCheckBox.Checked()
+	bean.GProject.BuildOption.WinSign.Cert = m.winSignArray
+
+	// mac
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
-	bean.GProject.BuildOption.MacCertList = m.macCertArray
+	bean.GProject.BuildOption.MacSign.Enable = m.macSignCheckBox.Checked()
+	bean.GProject.BuildOption.MacSign.Cert = m.macSignArray
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()

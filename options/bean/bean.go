@@ -75,25 +75,30 @@ type TBuildOption struct {
 	DisableDebug     bool   `json:"disable_debug"`
 	// 打包配置
 	PackageName              string   `json:"package_name"`
-	Cert                     bool     `json:"cert"`
-	License                  string   `json:"license"`
 	WinMsi                   bool     `json:"win_msi"`
 	WinExe                   bool     `json:"win_exe"`
 	WinDefaultInstall        string   `json:"win_default_install"`
 	WinAssociateFileList     []string `json:"win_associate_file_list"`
 	WinAssociateProtocolList []string `json:"win_associate_protocol_list"`
-	NSIS                     NSIS     `json:"nsis"`
+	WinSign                  TSign    `json:"win_sign"`
+	NSIS                     TNSIS    `json:"nsis"`
 	MacDMG                   bool     `json:"mac_dmg"`
 	MacPKG                   bool     `json:"mac_pkg"`
-	MacCertList              []string `json:"mac_cert_list"`
+	MacSign                  TSign    `json:"mac_sign"`
 	MacCommonLib             bool     `json:"mac_common_lib"`
 	LinuxDEB                 bool     `json:"linux_deb"`
 	Depends                  string   `json:"depends"`
 }
 
-type NSIS struct {
+type TSign struct {
+	Enable bool     `json:"enable"`
+	Cert   []string `json:"cert"`
+}
+
+type TNSIS struct {
 	WelcomeBanner string `json:"welcome_banner"`
 	HeaderBanner  string `json:"header_banner"`
+	License       string `json:"license"`
 }
 
 // TAppOption 应用配置
@@ -238,13 +243,12 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.DisableDebug = false
 	// 打包配置
 	m.BuildOption.PackageName = m.Name
-	m.BuildOption.Cert = false
 	m.BuildOption.WinMsi = false
 	m.BuildOption.WinExe = true
 	m.BuildOption.WinDefaultInstall = ""
 	m.BuildOption.MacDMG = false
 	m.BuildOption.MacPKG = true
-	m.BuildOption.MacCertList = []string{
+	m.BuildOption.MacSign.Cert = []string{
 		// 默认
 		`codesign -f -s "-" "$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB"`,
 		`codesign -f -s "-" --options runtime "$APP_NAME"`,

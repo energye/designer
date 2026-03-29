@@ -33,7 +33,7 @@ func packager() bool {
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
-	if option.Cert {
+	if option.WinSign.Enable {
 		if !cert() {
 			return false
 		}
@@ -70,4 +70,27 @@ func checkToolCMD(name string) bool {
 		return false
 	}
 	return true
+}
+
+func signWindowsBin() {
+	//if options.CertificatePath != "" {
+	//	fmt.Println("Signing MSIX package...")
+	//	signArgs := []string{"sign", "/fd", "SHA256", "/a", "/f", options.CertificatePath}
+	//
+	//	// Add certificate password if provided
+	//	if options.CertificatePassword != "" {
+	//		signArgs = append(signArgs, "/p", options.CertificatePassword)
+	//	}
+	//
+	//	signArgs = append(signArgs, options.OutputPath)
+	//
+	//	cmd = exec.Command("signtool.exe", signArgs...)
+	//	cmd.Stdout = os.Stdout
+	//	cmd.Stderr = os.Stderr
+	//	if err := cmd.Run(); err != nil {
+	//		return fmt.Errorf("error signing MSIX package: %w", err)
+	//	}
+	//}
+	//
+	//fmt.Printf("MSIX package created successfully: %s\n", options.OutputPath)
 }

@@ -62,59 +62,56 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
 	m.macPKGCheckBox.SetParent(m.platformTabPageMacOS)
 
-	m.certCheckBox = lcl.NewCheckBox(m)
-	m.certCheckBox.SetCaption("签名")
-	m.certCheckBox.SetLeft(20)
-	m.certCheckBox.SetTop(nextTop(30))
-	m.certCheckBox.SetFont(m.font)
-	m.certCheckBox.SetChecked(bean.GProject.BuildOption.Cert)
-	m.certCheckBox.SetParent(m.platformTabPageMacOS)
-	m.certCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.certListBtn.SetVisible(m.certCheckBox.Checked())
+	m.macSignCheckBox = lcl.NewCheckBox(m)
+	m.macSignCheckBox.SetCaption("签名")
+	m.macSignCheckBox.SetLeft(20)
+	m.macSignCheckBox.SetTop(nextTop(30))
+	m.macSignCheckBox.SetFont(m.font)
+	m.macSignCheckBox.SetChecked(bean.GProject.BuildOption.MacSign.Enable)
+	m.macSignCheckBox.SetParent(m.platformTabPageMacOS)
+	m.macSignCheckBox.SetOnChange(func(sender lcl.IObject) {
+		m.macSignListBtn.SetVisible(m.macSignCheckBox.Checked())
 	})
 
 	// 文件签名配置按钮
-	m.certListBtn = wg.NewButton(m)
-	m.certListBtn.SetVisible(m.certCheckBox.Checked())
-	m.certListBtn.SetText("二进制签名")
-	m.certListBtn.Font().SetColor(colors.ClWhite)
-	m.certListBtn.SetRadius(0)
-	certListBtnRect := types.TRect{Left: 75, Top: m.certCheckBox.Top()}
-	certListBtnRect.SetWidth(120)
-	certListBtnRect.SetHeight(20)
-	m.certListBtn.SetBoundsRect(certListBtnRect)
-	m.certListBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.certListBtn.SetRadius(3)
-	m.certListBtn.SetCursor(types.CrHandPoint)
-	m.certListBtn.SetParent(m.platformTabPageMacOS)
-	m.certListBtn.SetOnClick(m.macCertCommandList)
+	macSignBtnRect := types.TRect{Left: 75, Top: m.macSignCheckBox.Top()}
+	macSignBtnRect.SetWidth(120)
+	macSignBtnRect.SetHeight(20)
+	m.macSignListBtn = wg.NewButton(m)
+	m.macSignListBtn.SetVisible(m.macSignCheckBox.Checked())
+	m.macSignListBtn.SetText("二进制签名")
+	m.macSignListBtn.Font().SetColor(colors.ClWhite)
+	m.macSignListBtn.SetRadius(0)
+	m.macSignListBtn.SetBoundsRect(macSignBtnRect)
+	m.macSignListBtn.SetColor(colors.RGBToColor(59, 130, 246))
+	m.macSignListBtn.SetRadius(3)
+	m.macSignListBtn.SetCursor(types.CrHandPoint)
+	m.macSignListBtn.SetParent(m.platformTabPageMacOS)
+	m.macSignListBtn.SetOnClick(m.macCertCommandList)
+	m.macSignArray = bean.GProject.BuildOption.MacSign.Cert
 
-	{
-		// macOS 文件签名配置
-		m.macCertArray = bean.GProject.BuildOption.MacCertList
-		m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-		m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
-		m.macCommonLibCheckBox.SetLeft(210)
-		m.macCommonLibCheckBox.SetTop(m.certCheckBox.Top())
-		m.macCommonLibCheckBox.SetFont(m.font)
-		if version.OSVersion.Major <= 10 {
-			// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
-			bean.GProject.BuildOption.MacCommonLib = false
-			m.macCommonLibCheckBox.SetEnabled(false)
-		}
-		m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
-		m.macCommonLibCheckBox.SetParent(m.platformTabPageMacOS)
+	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
+	m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
+	m.macCommonLibCheckBox.SetLeft(210)
+	m.macCommonLibCheckBox.SetTop(m.macSignCheckBox.Top())
+	m.macCommonLibCheckBox.SetFont(m.font)
+	if version.OSVersion.Major <= 10 {
+		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
+		bean.GProject.BuildOption.MacCommonLib = false
+		m.macCommonLibCheckBox.SetEnabled(false)
 	}
+	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
+	m.macCommonLibCheckBox.SetParent(m.platformTabPageMacOS)
 }
 
 func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
 	newForm := NewCommonMemoForm(400, 150, `签名文件命令列表`, m)
-	newForm.SetDefaultText(strings.Join(m.macCertArray, "\n"))
+	newForm.SetDefaultText(strings.Join(m.macSignArray, "\n"))
 	newForm.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"`)
 	newForm.SetOnOK(func(lines []string) {
-		m.macCertArray = lines
+		m.macSignArray = lines
 	})
 	newForm.ShowModal()
 }

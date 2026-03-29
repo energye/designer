@@ -163,7 +163,7 @@ func packageNSIS() bool {
 	data["NSISIcon"] = iconIcoFilePath   // 安装包程序图标
 	data["NSISUnIcon"] = iconIcoFilePath // 安装包卸载程序图标
 	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
-	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.License); buildOption.License != "" && tool.IsExist(licensePath) {
+	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.NSIS.License); buildOption.NSIS.License != "" && tool.IsExist(licensePath) {
 		data["NSISLicense"] = licensePath // (license.txt) 文件路径
 	}
 	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
@@ -216,6 +216,8 @@ func packageNSIS() bool {
 		event.ConsoleWriteError("Package - RunCMD makensis", err.Error())
 		return false
 	}
+
+	// 签名 signtool
 	return true
 }
 

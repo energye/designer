@@ -56,7 +56,7 @@ func packager() bool {
 	if !createAppBundle() {
 		return false
 	}
-	if option.Cert {
+	if option.MacSign.Enable {
 		if !cert() {
 			return false
 		}
@@ -201,7 +201,7 @@ func cert() bool {
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	certCommandList := option.MacCertList
+	certCommandList := option.MacSign.Cert
 	if len(certCommandList) > 0 {
 		appName := option.PackageName + ".app"
 		runtimeFile := libname.GetDLLName()
