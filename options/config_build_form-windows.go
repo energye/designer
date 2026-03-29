@@ -175,7 +175,9 @@ func (m *TBuildForm) LicenseClick(sender lcl.IObject) {
 		_ = os.Remove(licensePath)
 		if len(lines) > 0 {
 			data := strings.Join(lines, "\n")
-			_ = os.WriteFile(licensePath, []byte(data), 0644)
+			utf8Bom := []byte{0xEF, 0xBB, 0xBF}
+			licenseData := append(utf8Bom, data...)
+			_ = os.WriteFile(licensePath, licenseData, 0644)
 			m.license = licensePath
 		} else {
 			m.license = ""

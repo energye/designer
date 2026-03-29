@@ -21,7 +21,6 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_ABORTWARNING
-
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "立即启动 ${INFO_ShortCutName}"
 !define MUI_FINISHPAGE_RUN_FUNCTION LaunchApp
@@ -31,6 +30,7 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !insertmacro MUI_PAGE_WELCOME
 
 !ifdef NSIS_PAGE_LICENSE
+    !define MUI_LICENSEPAGE_CHECKBOX
     !insertmacro MUI_PAGE_LICENSE "${NSIS_PAGE_LICENSE}"
 !endif
 
