@@ -18,6 +18,8 @@ package packager
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/command"
 	"os/exec"
 )
 
@@ -57,12 +59,15 @@ func createAppBundle() bool {
 
 func checkToolCMD(name string) bool {
 	//_, err := exec.LookPath(name)
-	cmd := exec.Command("where", name)
-	if err := cmd.Run(); err != nil {
-		return false
-	}
 	//if err != nil {
 	//	return false
 	//}
+	cmd := exec.Command("where", name)
+	if tool.IsWindows {
+		cmd.SysProcAttr = command.HideWindow(true)
+	}
+	if err := cmd.Run(); err != nil {
+		return false
+	}
 	return true
 }

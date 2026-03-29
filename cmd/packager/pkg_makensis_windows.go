@@ -61,7 +61,7 @@ func (m *TWinAssociateProtocols) IsEmpty() bool {
 
 func packageNSIS() bool {
 	if !checkToolCMD(makensis) {
-		event.ConsoleWriteInfo("Package - check nsis Not Installed")
+		event.ConsoleWriteError("Package - check nsis Not Installed")
 		return false
 	}
 	var (
@@ -76,7 +76,7 @@ func packageNSIS() bool {
 		libEnergy = "libenergy-386.dll"
 		libWebview2 = "WebView2Loader-386.dll"
 	case "arm64":
-		event.ConsoleWriteInfo("Package - Currently, windows arm64 arch is not support")
+		event.ConsoleWriteWarn("Package - Currently, windows arm64 arch is not support")
 		return false
 	}
 	proj := bean.GProject
@@ -171,11 +171,18 @@ func packageNSIS() bool {
 	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
 
 	// NSIS Banner
-	if NSISBannerWelcome := nsisBannerFMT(buildOption.NSIS.WelcomeBanner); NSISBannerWelcome != "" {
+	var bannerWelcomeIsConvert, bannerHeaderIsConvert bool
+	if NSISBannerWelcome := nsisBannerFMT(buildOption.NSIS.WelcomeBanner, &bannerWelcomeIsConvert); NSISBannerWelcome != "" {
 		data["NSISBannerWelcome"] = NSISBannerWelcome
+		if bannerWelcomeIsConvert {
+			defer os.Remove(NSISBannerWelcome)
+		}
 	}
-	if HeaderBanner := nsisBannerFMT(buildOption.NSIS.HeaderBanner); HeaderBanner != "" {
+	if HeaderBanner := nsisBannerFMT(buildOption.NSIS.HeaderBanner, &bannerHeaderIsConvert); HeaderBanner != "" {
 		data["NSISBannerHeader"] = HeaderBanner
+		if bannerHeaderIsConvert {
+			defer os.Remove(HeaderBanner)
+		}
 	}
 
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
@@ -256,7 +263,7 @@ func paserAssociateProtocol(associateProtocolList []string) (associateFiles []TW
 	return
 }
 
-func nsisBannerFMT(imagePath string) string {
+func nsisBannerFMT(imagePath string, isConvertBmp *bool) string {
 	if !filepath.IsAbs(imagePath) {
 		imagePath = filepath.Join(bean.ResourcePath(), imagePath)
 	}
@@ -264,7 +271,7 @@ func nsisBannerFMT(imagePath string) string {
 		event.ConsoleWriteError("Package - image not exist:", imagePath)
 		return ""
 	}
-	dir, file := filepath.Split(imagePath)
+	_, file := filepath.Split(imagePath)
 	ext := filepath.Ext(file)
 	if ext == ".png" {
 		// 转换 .bmp
@@ -279,7 +286,12 @@ func nsisBannerFMT(imagePath string) string {
 			event.ConsoleWriteError("Package - decode png file:", err.Error())
 			return ""
 		}
-		bmpFilePath := filepath.Join(dir, file+"_convert.bmp")
+		// 转换 bmp 到 构建输出目录
+		outpath := bean.GProject.BuildOption.Output
+		if !filepath.IsAbs(outpath) {
+			outpath = filepath.Join(bean.GPath, outpath)
+		}
+		bmpFilePath := filepath.Join(outpath, file+"_convert.bmp")
 		bmpFile, err := os.Create(bmpFilePath)
 		if err != nil {
 			event.ConsoleWriteError("Package - create bmp file:", err.Error())
@@ -291,6 +303,7 @@ func nsisBannerFMT(imagePath string) string {
 			event.ConsoleWriteError("Package - encode bmp file:", err.Error())
 			return ""
 		}
+		*isConvertBmp = true
 		return bmpFilePath
 	} else if ext == ".bmp" {
 		return imagePath
