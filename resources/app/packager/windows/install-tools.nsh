@@ -22,6 +22,13 @@
 !define INFO_UnIcon "{{.NSISUnIcon}}"
 !define INFO_LANGUAGE "{{.NSISLanguage}}"
 
+{{if .NSISBannerWelcome}}
+!define INFO_NSISBannerWelcome "{{.NSISBannerWelcome}}"
+{{end}}
+{{if .NSISBannerHeader}}
+!define INFO_NSISBannerHeader "{{.NSISBannerHeader}}"
+{{end}}
+
 {{if .DefaultInstall}}
 !define INFO_DefaultInstall "{{.DefaultInstall}}"
 {{else}}
@@ -35,13 +42,13 @@
 
 ; 授权文件信息
 {{if .NSISLicense}}
-    !define NSIS_PAGE_LICENSE "{{.NSISLicense}}"
+!define NSIS_PAGE_LICENSE "{{.NSISLicense}}"
 {{end}}
 
 ; 执行等级
 {{if .NSISRequestExecutionLevel}}
-    !define REQUEST_EXECUTION_LEVEL "{{.NSISRequestExecutionLevel}}"
-    RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
+!define REQUEST_EXECUTION_LEVEL "{{.NSISRequestExecutionLevel}}"
+RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 {{end}}
 
 ; 打包进的文件

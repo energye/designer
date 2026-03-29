@@ -19,6 +19,14 @@ VIAddVersionKey "LegalCopyright"  "${INFO_Copyright}"
 !define MUI_ICON "${INFO_Icon}"
 !define MUI_UNICON "${INFO_UnIcon}"
 
+!ifdef INFO_NSISBannerWelcome
+;!define MUI_WELCOMEFINISHPAGE_BITMAP "${INFO_NSISBannerWelcome}"
+!endif
+!ifdef INFO_NSISBannerHeader
+;!define MUI_HEADERIMAGE
+;!define MUI_HEADERIMAGE_BITMAP "${INFO_NSISBannerHeader}"
+!endif
+
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN
