@@ -174,7 +174,7 @@ fs | fs soft scheme`)
 
 func (m *TBuildForm) BannerClick(sender lcl.IObject) {
 	// 选择 png 转为 bmp
-	newForm := NewCommonMemoForm(500, 150, `配置 NSIS 安装包 Banner`, m)
+	newForm := NewCommonMemoForm(500, 120, `配置 NSIS 安装包 Banner`, m)
 	newForm.SetDefaultText(strings.Join(m.nsisBanner, "\n"))
 	newForm.SetDemoText(`每行一个, welcome 和 header 图片路径, 需 .png 或 .bmp 格式, 相对路径需放在 resources 目录
 welcome=welcome.png
