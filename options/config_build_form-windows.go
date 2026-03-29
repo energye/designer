@@ -109,6 +109,8 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.bannerBtn.SetColor(colors.RGBToColor(59, 130, 246))
 	m.bannerBtn.SetParent(m.platformTabPageWindows)
 	m.bannerBtn.SetOnClick(m.BannerClick)
+	m.nsisBanner = append(m.nsisBanner, "welcome="+bean.GProject.BuildOption.NSIS.WelcomeBanner)
+	m.nsisBanner = append(m.nsisBanner, "header="+bean.GProject.BuildOption.NSIS.HeaderBanner)
 
 	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20, Top: bannerRect.Top}
 	licenseRect.SetWidth(90)
@@ -172,6 +174,22 @@ fs | fs soft scheme`)
 
 func (m *TBuildForm) BannerClick(sender lcl.IObject) {
 	// 选择 png 转为 bmp
+	newForm := NewCommonMemoForm(500, 150, `配置 NSIS 安装包 Banner`, m)
+	newForm.SetDefaultText(strings.Join(m.nsisBanner, "\n"))
+	newForm.SetDemoText(`每行一个, welcome 和 header 图片路径, 需 .png 或 .bmp 格式, 相对路径需放在 resources 目录
+welcome=welcome.png
+header=header.png`)
+	newForm.SetOnOK(func(lines []string) {
+		var banners []string
+		for _, line := range lines {
+			banner := strings.Split(line, "=")
+			if len(banner) == 2 {
+				banners = append(banners, line)
+			}
+		}
+		m.nsisBanner = banners
+	})
+	newForm.ShowModal()
 }
 
 func (m *TBuildForm) LicenseClick(sender lcl.IObject) {

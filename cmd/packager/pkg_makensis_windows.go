@@ -23,6 +23,9 @@ import (
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"golang.org/x/image/bmp"
+	"image/png"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -166,6 +169,14 @@ func packageNSIS() bool {
 	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
 	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
 
+	// NSIS Banner
+	if NSISBannerWelcome := nsisBannerFMT(buildOption.NSIS.WelcomeBanner); NSISBannerWelcome != "" {
+		data["NSISBannerWelcome"] = NSISBannerWelcome
+	}
+	if HeaderBanner := nsisBannerFMT(buildOption.NSIS.HeaderBanner); HeaderBanner != "" {
+		data["NSISBannerHeader"] = HeaderBanner
+	}
+
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
 		event.ConsoleWriteError("Package - check nsis RenderTemplate:", err.Error())
@@ -244,11 +255,44 @@ func paserAssociateProtocol(associateProtocolList []string) (associateFiles []TW
 	return
 }
 
-func copyTmpFile() {
-	proj := bean.GProject
-	buildOption := proj.BuildOption
-	output := buildOption.Output
-	if !filepath.IsAbs(buildOption.Output) {
-		output = filepath.Join(bean.GPath, output)
+func nsisBannerFMT(imagePath string) string {
+	if !filepath.IsAbs(imagePath) {
+		imagePath = filepath.Join(bean.ResourcePath(), imagePath)
 	}
+	if !tool.IsExist(imagePath) {
+		event.ConsoleWriteError("Package - image not exist:", imagePath)
+		return ""
+	}
+	dir, file := filepath.Split(imagePath)
+	ext := filepath.Ext(file)
+	if ext == ".png" {
+		// 转换 .bmp
+		pngFile, err := os.Open(imagePath)
+		if err != nil {
+			event.ConsoleWriteError("Package - open png file:", err.Error())
+			return ""
+		}
+		defer pngFile.Close()
+		img, err := png.Decode(pngFile)
+		if err != nil {
+			event.ConsoleWriteError("Package - decode png file:", err.Error())
+			return ""
+		}
+		bmpFilePath := filepath.Join(dir, file+"_convert.bmp")
+		bmpFile, err := os.Create(bmpFilePath)
+		if err != nil {
+			event.ConsoleWriteError("Package - create bmp file:", err.Error())
+			return ""
+		}
+		defer bmpFile.Close()
+		err = bmp.Encode(bmpFile, img)
+		if err != nil {
+			event.ConsoleWriteError("Package - encode bmp file:", err.Error())
+			return ""
+		}
+		return bmpFilePath
+	} else if ext == ".bmp" {
+		return imagePath
+	}
+	return ""
 }

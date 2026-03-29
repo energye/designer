@@ -82,12 +82,18 @@ type TBuildOption struct {
 	WinDefaultInstall        string   `json:"win_default_install"`
 	WinAssociateFileList     []string `json:"win_associate_file_list"`
 	WinAssociateProtocolList []string `json:"win_associate_protocol_list"`
+	NSIS                     NSIS     `json:"nsis"`
 	MacDMG                   bool     `json:"mac_dmg"`
 	MacPKG                   bool     `json:"mac_pkg"`
 	MacCertList              []string `json:"mac_cert_list"`
 	MacCommonLib             bool     `json:"mac_common_lib"`
 	LinuxDEB                 bool     `json:"linux_deb"`
 	Depends                  string   `json:"depends"`
+}
+
+type NSIS struct {
+	WelcomeBanner string `json:"welcome_banner"`
+	HeaderBanner  string `json:"header_banner"`
 }
 
 // TAppOption 应用配置

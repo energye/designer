@@ -26,6 +26,7 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -95,6 +96,7 @@ type TBuildForm struct {
 	winAssociateProtocolsBtn                    *wg.TButton
 	winAssociateFileArray                       []string
 	winAssociateProtocolArray                   []string
+	nsisBanner                                  []string
 
 	macDMGCheckBox lcl.ICheckBox
 	macPKGCheckBox lcl.ICheckBox
@@ -628,6 +630,22 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
 	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
 	bean.GProject.BuildOption.WinAssociateProtocolList = m.winAssociateProtocolArray
+
+	nsisWelcomeBanner, nsisHeaderBanner := "", ""
+	for _, line := range m.nsisBanner {
+		banner := strings.Split(line, "=")
+		if len(banner) == 2 {
+			name := strings.TrimSpace(banner[0])
+			image := strings.TrimSpace(banner[1])
+			if name == "welcome" && image != "" {
+				nsisWelcomeBanner = image
+			} else if name == "header" && image != "" {
+				nsisHeaderBanner = image
+			}
+		}
+	}
+	bean.GProject.BuildOption.NSIS.WelcomeBanner = nsisWelcomeBanner
+	bean.GProject.BuildOption.NSIS.HeaderBanner = nsisHeaderBanner
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
 	bean.GProject.BuildOption.MacCertList = m.macCertArray
