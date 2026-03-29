@@ -15,7 +15,6 @@ package packager
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -34,7 +33,7 @@ func Run() bool {
 	option := proj.BuildOption
 
 	start := func() {
-		fmt.Println("GOARCH:", os.Getenv("GOARCH"))
+		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
 		if !build.Run() {
 			return
 		}
@@ -53,11 +52,11 @@ func Run() bool {
 	os.Setenv("GOARCH", defaultGOARCH)
 
 	return true
-	if !build.Run() {
-		return false
-	}
-	event.ConsoleWriteInfo("CMD-package-run")
-	return packager()
+	//if !build.Run() {
+	//	return false
+	//}
+	//event.ConsoleWriteInfo("CMD-package-run")
+	//return packager()
 }
 
 // AppBundle 创建 macOS 应用程序包
