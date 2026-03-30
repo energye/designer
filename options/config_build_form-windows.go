@@ -126,11 +126,11 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 
 	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20, Top: winAssociateFilesRect.Top}
-	bannerRect.SetWidth(120)
+	bannerRect.SetWidth(110)
 	bannerRect.SetHeight(25)
 	m.bannerBtn = wg.NewButton(m)
 	m.bannerBtn.SetBoundsRect(bannerRect)
-	m.bannerBtn.SetText("配置 NSIS 图片资源")
+	m.bannerBtn.SetText("配置 NSIS 图片")
 	m.bannerBtn.Font().SetColor(colors.ClWhite)
 	m.bannerBtn.SetRadius(3)
 	m.bannerBtn.SetCursor(types.CrHandPoint)
@@ -210,9 +210,9 @@ fs | fs soft scheme`)
 
 func (m *TBuildForm) BannerClick(sender lcl.IObject) {
 	// 选择 png 转为 bmp
-	newForm := NewCommonMemoForm(500, 150, `配置 NSIS Banner 和 icon 图标`, m)
+	newForm := NewCommonMemoForm(600, 200, `配置 NSIS Banner/ICON 图片资源`, m)
 	newForm.SetDefaultText(strings.Join(m.nsisBanner, "\n"))
-	newForm.SetDemoText(`每行一个, welcome 和 header (.png .bmp), icon(.png .ico) 相对路径需放在 resources/assets
+	newForm.SetDemoText(`welcome 和 header (.png .bmp), icon(.png .ico) 相对路径需放在 resources/assets
 welcome=welcome.png
 header=header.png
 icon=nsis_icon.ico

@@ -208,7 +208,6 @@ func packageAppx() bool {
 			{Name: "ProtocolLogo.png", W: 88, H: 88},
 		}
 		embedPath := bean.ResourceEmbedPath()
-		resourcesPath := bean.ResourcePath()
 		srcIconPng := filepath.Join(embedPath, "icon.png")
 		srcIconPngFile, err := os.Open(srcIconPng)
 		if err != nil {
@@ -221,6 +220,7 @@ func packageAppx() bool {
 			event.ConsoleWriteError("Package - Decode icon.png:", err.Error())
 			return false
 		}
+		resourcesPath := bean.ResourcePath()
 		for _, pngFile := range pngFiles {
 			// 项目目录 resources/assets 查找这个文件, 如果有直接复制到 Assets 打包目录
 			srcPng := filepath.Join(resourcesPath, "assets", pngFile.Name)

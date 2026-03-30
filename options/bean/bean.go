@@ -81,6 +81,7 @@ type TBuildOption struct {
 	WinAssociateFileList     []string `json:"win_associate_file_list"`
 	WinAssociateProtocolList []string `json:"win_associate_protocol_list"`
 	WinSign                  TSign    `json:"win_sign"`
+	WinAppx                  TAppx    `json:"win_appx"`
 	NSIS                     TNSIS    `json:"nsis"`
 	MacDMG                   bool     `json:"mac_dmg"`
 	MacPKG                   bool     `json:"mac_pkg"`
@@ -93,6 +94,10 @@ type TBuildOption struct {
 type TSign struct {
 	Enable bool     `json:"enable"`
 	Cert   []string `json:"cert"`
+}
+
+type TAppx struct {
+	Assets string `json:"assets"`
 }
 
 type TNSIS struct {
