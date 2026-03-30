@@ -87,11 +87,11 @@ func packageNSIS() bool {
 	if filepath.Ext(buildFileName) != ".exe" {
 		buildFileName += ".exe"
 	}
-	packageName := buildOption.PackageName
-	if exeIdx := strings.LastIndex(packageName, ".exe"); exeIdx != -1 {
-		packageName = packageName[:exeIdx] + "_" + GOARCH + ".exe"
+	exePackageName := buildOption.PackageName
+	if exeIdx := strings.LastIndex(exePackageName, ".exe"); exeIdx != -1 {
+		exePackageName = exePackageName[:exeIdx] + "_" + GOARCH + ".exe"
 	} else {
-		packageName = packageName + "_" + GOARCH + ".exe"
+		exePackageName = exePackageName + "_" + GOARCH + ".exe"
 	}
 
 	output := buildOption.Output
@@ -138,12 +138,23 @@ func packageNSIS() bool {
 	installNsisScriptTemp := app.Packager("windows/install-nsis.nsi")
 	installToolsScriptTemp := app.Packager("windows/install-tools.nsh")
 	embedPath := bean.ResourceEmbedPath()
+	resourcesPath := bean.ResourcePath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
 	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
 	binaryFileNamePath := filepath.Join(output, buildFileName)
 	libEnergyCopyPath := filepath.Join(output, libEnergy)
+	nsisIconFilePath := iconIcoFilePath
+	nsisUnIconFilePath := iconIcoFilePath
+
+	if nsisIconFile := filepath.Join(resourcesPath, "assets", "nsis_icon.ico"); tool.IsExist(nsisIconFile) {
+		nsisIconFilePath = nsisIconFile
+	}
+	if nsisUnIconFile := filepath.Join(resourcesPath, "assets", "nsis_unicon.ico"); tool.IsExist(nsisUnIconFile) {
+		nsisIconFilePath = nsisUnIconFile
+	}
+
 	err := tool.CopyFile(libEnergyPath, libEnergyCopyPath)
 	if err != nil {
 		event.ConsoleWriteError("Package - Copy libenergy runtime:", err.Error())
@@ -155,7 +166,7 @@ func packageNSIS() bool {
 	data := map[string]any{}
 	data["BinaryName"] = buildFileName              // 应用运行二进制名
 	data["BinaryFileNamePath"] = binaryFileNamePath // 二进制文件目录
-	data["InstallFileName"] = packageName           // 安装包名
+	data["InstallFileName"] = exePackageName        // 安装包名
 	data["CompanyName"] = appCompanyName            // 企业名
 	data["ProductName"] = appProductName            // 产品名
 	data["ShortCutName"] = appOption.Title          // 快捷方试名
@@ -172,9 +183,9 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
-	data["NSISIcon"] = iconIcoFilePath   // 安装包程序图标
-	data["NSISUnIcon"] = iconIcoFilePath // 安装包卸载程序图标
-	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
+	data["NSISIcon"] = nsisIconFilePath     // 安装包程序图标
+	data["NSISUnIcon"] = nsisUnIconFilePath // 安装包卸载程序图标
+	data["NSISLanguage"] = "SimpChinese"    // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.NSIS.License); buildOption.NSIS.License != "" && tool.IsExist(licensePath) {
 		data["NSISLicense"] = licensePath // (license.txt) 文件路径
 	}
@@ -237,7 +248,7 @@ func packageNSIS() bool {
 
 	// 签名文件 signtool
 	// 程序安装包
-	installSetup := filepath.Join(output, packageName)
+	installSetup := filepath.Join(output, exePackageName)
 	signWindowsBinary(installSetup) // xxx.exe
 
 	return true

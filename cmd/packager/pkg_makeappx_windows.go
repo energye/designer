@@ -16,21 +16,25 @@
 package packager
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/resize"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
+	"github.com/energye/lcl/tool/command"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
-// MakeAppx.exe
+const makeappx = "MakeAppx.exe"
 
 func packageAppx() bool {
 	var (
@@ -60,11 +64,11 @@ func packageAppx() bool {
 	if filepath.Ext(buildFileName) != ".exe" {
 		buildFileName += ".exe"
 	}
-	packageName := buildOption.PackageName
-	if exeIdx := strings.LastIndex(packageName, ".exe"); exeIdx != -1 {
-		packageName = packageName[:exeIdx] + "_" + GOARCH + ".exe"
+	msixPackageName := buildOption.PackageName
+	if exeIdx := strings.LastIndex(msixPackageName, ".msix"); exeIdx != -1 {
+		msixPackageName = msixPackageName[:exeIdx] + "_" + GOARCH + ".msix"
 	} else {
-		packageName = packageName + "_" + GOARCH + ".exe"
+		msixPackageName = msixPackageName + "_" + GOARCH + ".msix"
 	}
 	output := buildOption.Output
 	if !filepath.IsAbs(buildOption.Output) {
@@ -92,7 +96,6 @@ func packageAppx() bool {
 	// └── Assets/
 	//     ├── StoreLogo.png
 	//     ├── Square44x44Logo.png
-	//     ├── Square71x71Logo.png
 	//     ├── Square150x150Logo.png
 	//     ├── Wide310x150Logo.png
 	//     ├── SplashScreen.png
@@ -109,12 +112,27 @@ func packageAppx() bool {
 	// | FileIcon          | 256 x 256 |
 	// | ProtocolLogo      | 88 x 88   |
 
+	publisher := ""
+	if buildOption.WinSign.Enable {
+		// signtool /dump /v codesign.pfx
+		cmdInfo := getSignCMDInfo()
+		if cmdInfo == nil {
+			event.ConsoleWriteError("Package - 已开启签名, 但获取签名命令配置失败")
+			return false
+		}
+		if cmdInfo.Type == "auto" {
+			publisher = publisherFromInstalledCert()
+		} else {
+			publisher = publisherFromPFX(cmdInfo.File, cmdInfo.Password)
+		}
+	}
+
 	// 模板填充数据
 	data := map[string]any{}
 	data["BinaryName"] = buildFileName                    // 应用运行二进制名
 	data["CompanyName"] = appCompanyName                  // 企业名
 	data["ProductIdentity"] = appOption.Id                // app 唯一id, 内部标识
-	data["Publisher"] = ""                                // Publisher，"signtool /dump /v cert.pfx" : CN=MyCompany, O=MyOrg, C=CN
+	data["Publisher"] = publisher                         // Publisher，"signtool /dump /v cert.pfx" : CN=MyCompany, O=MyOrg, C=CN
 	data["ProcessorArchitecture"] = processorArchitecture // ProcessorArchitecture，x86 x64 arm arm64
 	data["DisplayName"] = appOption.Title                 // 显示名
 	data["ProductVersion"] = appOption.Version            // app 版本
@@ -138,6 +156,7 @@ func packageAppx() bool {
 	}
 	copyAppBinary := filepath.Join(energyMsixAppRootDir, buildFileName)
 	copyLibEnergyBinary := filepath.Join(energyMsixAppRootDir, libEnergy)
+
 	{
 		// copy file
 		// app 二进制
@@ -175,20 +194,9 @@ func packageAppx() bool {
 			return false
 		}
 		// Assets dir
-		// | 文件               | 尺寸      |
-		// | ----------------- | -------   |
-		// | Square44x44Logo   | 44x44     |
-		// | Square71x71Logo   | 71x71     |
-		// | Square150x150Logo | 150x150   |
-		// | Wide310x150Logo   | 310x150   |
-		// | SplashScreen      | 620x300   |
-		// | StoreLogo         | 50x50     |
-		// | FileIcon          | 256 x 256 |
-		// | ProtocolLogo      | 88 x 88   |
 		pngFiles := []assetsPng{
 			{Name: "StoreLogo.png", W: 50, H: 50},
 			{Name: "Square44x44Logo.png", W: 44, H: 44},
-			{Name: "Square71x71Logo.png", W: 71, H: 71},
 			{Name: "Square150x150Logo.png", W: 150, H: 150},
 			{Name: "Wide310x150Logo.png", W: 310, H: 150},
 			{Name: "SplashScreen.png", W: 6200, H: 300},
@@ -230,7 +238,7 @@ func packageAppx() bool {
 				} else if pngFile.Name == "ProtocolLogo.png" {
 					// 使用 icon.png 88x88
 					newIconPng := resize.Resize(88, 88, srcIconPngSrcImg, resize.Lanczos3)
-					err = savePNG(newIconPng, filepath.Join(assetsDir, "ProtocolLogo.png"))
+					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, "ProtocolLogo.png"))
 					if err != nil {
 						event.ConsoleWriteError("Package - Resize And Save ProtocolLogo.png:", err.Error())
 						return false
@@ -242,7 +250,7 @@ func packageAppx() bool {
 						event.ConsoleWriteError("Package - Create Empty", pngFile.Name, err.Error())
 						return false
 					}
-					err = savePNG(newIconPng, filepath.Join(assetsDir, pngFile.Name))
+					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, pngFile.Name))
 					if err != nil {
 						event.ConsoleWriteError("Package - Save", pngFile.Name, err.Error())
 						return false
@@ -257,6 +265,16 @@ func packageAppx() bool {
 	signWindowsBinary(copyAppBinary)
 	signWindowsBinary(copyLibEnergyBinary)
 
+	// 执行 makeappx 构建安装包命令
+	packageArgs := []string{"pack", "/d", energyMsixAppRootDir, "/p", msixPackageName}
+	event.ConsoleWriteInfo("Package:", strings.Join(packageArgs, " "))
+	err = RunCMD(output, makeappx, packageArgs...)
+	if err != nil {
+		event.ConsoleWriteError("Package - RunCMD", makeappx, err.Error())
+		return false
+	}
+	msixPackagePath := filepath.Join(output, msixPackageName)
+	signWindowsBinary(msixPackagePath)
 	return true
 }
 
@@ -275,7 +293,7 @@ func createTransparentPNG(width, height int) (image.Image, error) {
 	return img, nil
 }
 
-func savePNG(srcPng image.Image, outputPath string) error {
+func saveAccessPNG(srcPng image.Image, outputPath string) error {
 	newPngFile, err := os.Create(outputPath)
 	if err != nil {
 		return err
@@ -283,4 +301,51 @@ func savePNG(srcPng image.Image, outputPath string) error {
 	defer newPngFile.Close()
 	err = png.Encode(newPngFile, srcPng)
 	return err
+}
+
+// 根据指定证书获取 Subject
+func publisherFromPFX(pfxPath, pfxPassword string) string {
+	cmdStr := fmt.Sprintf(`
+$pfxPath = "%s";
+$password = "%s";
+$securePass = ConvertTo-SecureString $password -AsPlainText -Force;
+$cert = (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2);
+$cert.Import($pfxPath, $securePass, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet);
+$cert.Subject;
+	`, pfxPath, pfxPassword)
+
+	cmd := exec.Command("powershell", "-NoProfile", "-Command", cmdStr)
+	cmd.SysProcAttr = command.HideWindow(true)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return ""
+	}
+	publisher := strings.TrimSpace(stdout.String())
+	return publisher
+}
+
+// 根据已安装证书获取 Subject
+func publisherFromInstalledCert() string {
+	cmdStr := `
+	Get-ChildItem -Path Cert:\CurrentUser\My | 
+	Where-Object { $_.HasPrivateKey -and $_.EnhancedKeyUsageList -match 'CodeSigning' } | 
+	Select-Object -ExpandProperty Subject -First 1
+	`
+	cmd := exec.Command("powershell", "-NoProfile", "-Command", cmdStr)
+	cmd.SysProcAttr = command.HideWindow(true)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		return ""
+	}
+	publisher := strings.TrimSpace(stdout.String())
+	if publisher == "" {
+		return ""
+	}
+	return publisher
 }

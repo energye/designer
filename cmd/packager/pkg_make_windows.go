@@ -80,50 +80,11 @@ func signWindowsBinary(binaryFilePath string) {
 			return
 		}
 		event.ConsoleWriteInfo("Sign Command Configuration:", strings.Join(bean.GProject.BuildOption.WinSign.Cert, " "))
-		if len(bean.GProject.BuildOption.WinSign.Cert) > 0 {
-			certLine := bean.GProject.BuildOption.WinSign.Cert[0]
-			dataLine := strings.Split(certLine, "=") // file=xxxx  or  auto=xxx
-			if len(dataLine) == 2 {
-				name := strings.TrimSpace(dataLine[0])
-				cmd := strings.TrimSpace(dataLine[1])
-				cmdArray := strings.Split(cmd, " ")
-				if strings.Contains(cmdArray[0], "signtool") {
-					// 删除 signtool
-					cmdArray = cmdArray[1:]
-				}
-				success := false
-				// 检查配置是否正确
-				if success = name == "auto"; success {
-
-				} else if success = name == "file"; success {
-					for i := 0; i < len(cmdArray); i++ {
-						v := strings.TrimSpace(cmdArray[i])
-						if v == "/f" && i < len(cmdArray) {
-							i++             // next
-							v = cmdArray[i] // 证书文件名
-							// 处理证书相对目录
-							if v[0] == '@' {
-								v = v[1:]
-								// 相对目录, 从项目的 resources 目录找证书
-								cmdArray[i] = filepath.Join(bean.ResourcePath(), v)
-							}
-							break
-						}
-					}
-				}
-				if success {
-					args := append(cmdArray, binaryFilePath)
-					err := RunCMD("", signtool, args...)
-					if err != nil {
-						event.ConsoleWriteError(err.Error())
-						return
-					}
-				} else {
-					event.ConsoleWriteError("Signature config must be 'auto' or 'file'. See example.")
-					return
-				}
-			} else {
-				event.ConsoleWriteError("Incorrect certificate signature configuration. Please check the example.")
+		if cmdInfo := getSignCMDInfo(); cmdInfo != nil {
+			args := append(cmdInfo.Args, binaryFilePath)
+			err := RunCMD("", signtool, args...)
+			if err != nil {
+				event.ConsoleWriteError(err.Error())
 				return
 			}
 		} else {
@@ -135,4 +96,65 @@ func signWindowsBinary(binaryFilePath string) {
 	} else {
 		event.ConsoleWriteInfo("Signing not enabled.")
 	}
+}
+
+func getSignCMDInfo() *signCMDInfo {
+	if bean.GProject.BuildOption.WinSign.Enable {
+		if len(bean.GProject.BuildOption.WinSign.Cert) > 0 {
+			certLine := bean.GProject.BuildOption.WinSign.Cert[0]
+			dataLine := strings.Split(certLine, "=") // file=xxxx  or  auto=xxx
+			if len(dataLine) == 2 {
+				info := &signCMDInfo{}
+				name := strings.TrimSpace(dataLine[0])
+				cmd := strings.TrimSpace(dataLine[1])
+				cmdArray := strings.Split(cmd, " ")
+				if strings.Contains(cmdArray[0], "signtool") {
+					// 删除 signtool
+					cmdArray = cmdArray[1:]
+				}
+				success := false
+				// 检查配置是否正确
+				if success = name == "auto"; success {
+					info.Type = "auto"
+				} else if success = name == "file"; success {
+					info.Type = "file"
+					for i := 0; i < len(cmdArray); i++ {
+						v := strings.TrimSpace(cmdArray[i])
+						if v == "/f" && i < len(cmdArray) {
+							// 证书路径
+							i++             // next
+							v = cmdArray[i] // 证书文件名
+							// 处理证书相对目录
+							if v[0] == '@' {
+								v = v[1:]
+								// 相对目录, 从项目的 resources 目录找证书
+								cmdArray[i] = filepath.Join(bean.ResourcePath(), v)
+							}
+							info.File = cmdArray[i]
+						} else if v == "/p" && i < len(cmdArray) {
+							// 密码
+							i++ // next
+							password := strings.TrimSpace(cmdArray[i])
+							info.Password = password
+						}
+					}
+				} else {
+					event.ConsoleWriteError("Signature config must be 'auto' or 'file'. See example.")
+					return nil
+				}
+				info.Args = cmdArray
+				return info
+			} else {
+				event.ConsoleWriteError("Incorrect certificate signature configuration. Please check the example.")
+			}
+		}
+	}
+	return nil
+}
+
+type signCMDInfo struct {
+	Type     string
+	Args     []string
+	File     string
+	Password string
 }
