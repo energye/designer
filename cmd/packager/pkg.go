@@ -42,14 +42,14 @@ func Run() bool {
 	}
 	defaultGOARCH := os.Getenv("GOARCH")
 	if option.ArchAmd64 {
-		os.Setenv("GOARCH", "amd64")
+		_ = os.Setenv("GOARCH", "amd64")
 		start()
 	}
 	if option.Arch386 {
-		os.Setenv("GOARCH", "386")
+		_ = os.Setenv("GOARCH", "386")
 		start()
 	}
-	os.Setenv("GOARCH", defaultGOARCH)
+	_ = os.Setenv("GOARCH", defaultGOARCH)
 
 	return true
 	//if !build.Run() {

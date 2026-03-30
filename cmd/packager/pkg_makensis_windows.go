@@ -18,12 +18,12 @@ package packager
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/bmp"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
-	"golang.org/x/image/bmp"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -151,6 +151,7 @@ func packageNSIS() bool {
 	}
 	defer os.RemoveAll(libEnergyCopyPath)
 
+	// 模板填充数据
 	data := map[string]any{}
 	data["BinaryName"] = buildFileName              // 应用运行二进制名
 	data["BinaryFileNamePath"] = binaryFileNamePath // 二进制文件目录
@@ -198,7 +199,7 @@ func packageNSIS() bool {
 
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
-		event.ConsoleWriteError("Package - check nsis RenderTemplate:", err.Error())
+		event.ConsoleWriteError("Package - Render install-nsis.nsi:", err.Error())
 		return false
 	}
 	nsisInstallScriptPath := filepath.Join(output, "install-nsis.nsi")
@@ -224,8 +225,8 @@ func packageNSIS() bool {
 
 	// 签名文件 signtool
 	// 应用二进制文件 和 libenergy.dll
-	signWindowsBinary(binaryFileNamePath)
-	signWindowsBinary(libEnergyCopyPath)
+	signWindowsBinary(binaryFileNamePath) // app.exe
+	signWindowsBinary(libEnergyCopyPath)  // libenergy.dll
 
 	// 执行 makensis 构建安装包命令
 	err = RunCMD(output, "makensis", "install-nsis.nsi")
@@ -237,7 +238,7 @@ func packageNSIS() bool {
 	// 签名文件 signtool
 	// 程序安装包
 	installSetup := filepath.Join(output, packageName)
-	signWindowsBinary(installSetup)
+	signWindowsBinary(installSetup) // xxx.exe
 
 	return true
 }
