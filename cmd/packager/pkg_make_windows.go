@@ -27,6 +27,7 @@ import (
 
 const signtool = "signtool.exe"
 
+// 打包程序流程
 func packager() bool {
 	proj := bean.GProject
 	if proj == nil {
@@ -38,19 +39,23 @@ func packager() bool {
 	if !option.WinSign.Enable {
 		event.ConsoleWriteInfo("Package - Not Enabled cert")
 	}
+
 	if option.WinExe {
 		packageNSIS()
-	} else if option.WinMsi {
+	}
+	if option.WinMsi {
 		packageAppx()
 	}
 	return false
 }
 
+// 一个空的实现函数
 func createAppBundle() bool {
 	// empty impl
 	return true
 }
 
+// 检查命令工具
 func checkToolCMD(name string) bool {
 	//_, err := exec.LookPath(name)
 	//if err != nil {
