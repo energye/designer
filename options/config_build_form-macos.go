@@ -105,7 +105,7 @@ func (m *TBuildForm) initMacOSOptions() {
 }
 
 func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(400, 150, `签名文件命令列表`, m)
+	newForm := NewCommonMemoForm(550, 150, `配置 MacOS codesign 签名命令列表`, m)
 	newForm.SetDefaultText(strings.Join(m.macSignArray, "\n"))
 	newForm.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"

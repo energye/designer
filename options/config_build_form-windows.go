@@ -159,7 +159,7 @@ func (m *TBuildForm) initWindowsOptions() {
 }
 
 func (m *TBuildForm) winSignCommandList(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(550, 120, "配置签名命令", m)
+	newForm := NewCommonMemoForm(550, 120, "配置 Windows SDK signtool 签名命令", m)
 	newForm.SetMultipleLine(false)
 	newForm.SetDefaultText(strings.Join(m.winSignArray, "\n"))
 	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动(auto=cmd)或指定证书签名(file=cmd)
