@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap uap3 desktop rescap">
+
+  <!-- 应用身份 -->
+  <Identity 
+    Name="{{.ProductIdentity}}"
+    Publisher="{{.Publisher}}"
+    Version="{{.ProductVersion}}"
+    ProcessorArchitecture="{{.ProcessorArchitecture}}" />
+
+  <!-- 基本信息 -->
+  <Properties>
+    <DisplayName>{{.DisplayName}}</DisplayName>
+    <PublisherDisplayName>{{.CompanyName}}</PublisherDisplayName>
+    <Description>{{.Description}}</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <!-- 系统兼容性 -->
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <!-- 多语言支持 -->
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  
+  <Applications>
+    <Application Id="{{.ProductIdentity}}" Executable="{{.BinaryName}}" EntryPoint="Windows.FullTrustApplication">
+      <!-- UI 资源 -->
+      <uap:VisualElements
+        DisplayName="{{.DisplayName}}"
+        Description="{{.Description}}"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+      
+      <Extensions>
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="{{.BinaryName}}" />
+        <!-- 文件关联 -->
+        {{if .AssociateFiles}}
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="{{.ProductIdentity}}">
+            <uap:DisplayName>{{.DisplayName}}</uap:DisplayName>
+            <uap:Logo>Assets\FileIcon.png</uap:Logo>
+            <uap:InfoTip>{{.DisplayName}} File</uap:InfoTip>
+            <uap:SupportedFileTypes>
+              {{range .AssociateFiles}}
+              <uap:FileType>.{{.Ext}}</uap:FileType>
+              {{end}}
+            </uap:SupportedFileTypes>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+        {{end}}
+        <!-- URI 协议 -->
+        {{range .AssociateProtocols}}
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="{{.Scheme}}">
+            <uap:DisplayName>{{.Description}}</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+        {{end}}
+      </Extensions>
+    </Application>
+  </Applications>
+  
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <!-- 常用权限 -->
+    <!-- <uap:Capability Name="documentsLibrary" /> -->
+    <!-- <uap:Capability Name="picturesLibrary" /> -->
+    <!-- <uap:Capability Name="videosLibrary" /> -->
+    <!-- <uap:Capability Name="musicLibrary" /> -->
+    <!-- <uap:Capability Name="enterpriseAuthentication" /> -->
+    <!-- <uap:Capability Name="sharedUserCertificates" /> -->
+  </Capabilities>
+</Package>
