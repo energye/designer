@@ -143,11 +143,15 @@ func packageAppx() bool {
 
 	// 创建 app 打包目录
 	energyMsixAppRootDir := filepath.Join(output, "energy_msix_"+GOARCH)
+	_ = os.RemoveAll(energyMsixAppRootDir)
 	err := os.MkdirAll(energyMsixAppRootDir, 0755)
 	if err != nil {
 		event.ConsoleWriteError("Package - Failed to create directory for energy_msix_app:", err.Error())
 		return false
 	}
+	msixPackagePath := filepath.Join(output, msixPackageName)
+	_ = os.Remove(msixPackagePath)
+
 	assetsDir := filepath.Join(energyMsixAppRootDir, "Assets")
 	err = os.MkdirAll(assetsDir, 0755)
 	if err != nil {
@@ -273,7 +277,6 @@ func packageAppx() bool {
 		event.ConsoleWriteError("Package - RunCMD", makeappx, err.Error())
 		return false
 	}
-	msixPackagePath := filepath.Join(output, msixPackageName)
 	signWindowsBinary(msixPackagePath)
 	return true
 }

@@ -29,7 +29,7 @@
 
   <!-- 多语言支持 -->
   <Resources>
-    <Resource Language="x-generate" />
+    <Resource Language="en-us" />
   </Resources>
   
   <Applications>
