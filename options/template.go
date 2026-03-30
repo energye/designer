@@ -72,9 +72,15 @@ const appCodeTemplate = `// ====================================================
 package {{.Package}}
 
 import (
+	"github.com/energye/energy/v3/application/pack"
 	"github.com/energye/lcl/lcl"
 	"os"
 	"runtime"
+)
+
+var (
+	// Identity app id
+	Identity = pack.Identity
 )
 
 // Forms 应用使用的窗体列表

@@ -89,6 +89,9 @@ func build() bool {
 	tags := tool.MergeTags(buildMode, customTags)
 	// 合并 ldflags
 	ldflags := tool.MergeLdflags("", customLdflags)
+	for _, pack := range xBuildPackVar() {
+		ldflags = tool.MergeLdflags(pack, strings.Join(ldflags, " "))
+	}
 	// 其它参数
 	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
 	args := []string{"build", "-v"}
