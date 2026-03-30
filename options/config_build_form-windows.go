@@ -45,7 +45,6 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winMsiCheckBox.SetTop(nextTop(25))
 	m.winMsiCheckBox.SetFont(m.font)
 	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
-	m.winMsiCheckBox.SetEnabled(false) // TODO 先禁用, 还未实现
 	m.winMsiCheckBox.SetParent(m.platformTabPageWindows)
 	m.winExeCheckBox = lcl.NewCheckBox(m)
 	m.winExeCheckBox.SetCaption("EXE 安装包(MakeNsis)")

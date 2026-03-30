@@ -41,7 +41,7 @@ func packager() bool {
 	if option.WinExe {
 		packageNSIS()
 	} else if option.WinMsi {
-
+		packageAppx()
 	}
 	return false
 }
