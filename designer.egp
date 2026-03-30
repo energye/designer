@@ -27,8 +27,6 @@
     "code_obfuscation": false,
     "disable_debug": false,
     "package_name": "Energy Designer Setup",
-    "cert": false,
-    "license": "",
     "win_msi": false,
     "win_exe": true,
     "win_default_install": "",
@@ -38,16 +36,21 @@
     "win_associate_protocol_list": [
       "energy | Open ENERGY Designer"
     ],
+    "win_sign": {
+      "enable": false,
+      "cert": null
+    },
     "nsis": {
       "welcome_banner": "nsis_welcome_banner.png",
-      "header_banner": "nsis_header_banner.png"
+      "header_banner": "nsis_header_banner.png",
+      "license": ""
     },
     "mac_dmg": false,
     "mac_pkg": true,
-    "mac_cert_list": [
-      "codesign -f -s \"-\" \"$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB\"",
-      "codesign -f -s \"-\" --options runtime \"$APP_NAME\""
-    ],
+    "mac_sign": {
+      "enable": false,
+      "cert": null
+    },
     "mac_common_lib": false,
     "linux_deb": true,
     "depends": ""
