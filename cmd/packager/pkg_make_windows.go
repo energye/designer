@@ -125,8 +125,7 @@ func getSignCMDInfo() *signCMDInfo {
 							i++             // next
 							v = cmdArray[i] // 证书文件名
 							// 处理证书相对目录
-							if v[0] == '@' {
-								v = v[1:]
+							if !filepath.IsAbs(v) {
 								// 相对目录, 从项目的 resources 目录找证书
 								cmdArray[i] = filepath.Join(bean.ResourcePath(), v)
 							}
