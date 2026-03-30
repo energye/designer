@@ -79,8 +79,8 @@ import (
 )
 
 var (
-	// Identity app id
-	Identity = pack.Identity
+	// Info app pack info
+	Info = pack.Info
 )
 
 // Forms 应用使用的窗体列表
