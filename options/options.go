@@ -54,7 +54,7 @@ func NewCommonMemoForm(w, h int32, title string, relativeWindow lcl.IEngForm) *T
 
 func (m *TCommonMemoForm) SetDemoText(text string) {
 	if text != "" && m.demoBtn == nil {
-		demoBtnRect := types.TRect{Left: 7, Top: m.memo.Height() + m.memo.Top() + 5}
+		demoBtnRect := types.TRect{Left: 7, Top: m.memo.Height() + m.memo.Top() + 3}
 		demoBtnRect.SetWidth(50)
 		demoBtnRect.SetHeight(25)
 		m.demoBtn = wg.NewButton(m.baseForm)
@@ -80,7 +80,7 @@ func (m *TCommonMemoForm) SetDemoText(text string) {
 		demoTextMemo.SetBorderStyle(types.BsNone)
 		demoTextMemo.SetColor(colors.ClInfoBk)
 		demoTextMemo.SetReadOnly(true)
-		demoTextMemo.SetBounds(0, memoRect.Height()+memoRect.Top+35, m.w, 95)
+		demoTextMemo.SetBounds(0, memoRect.Height()+memoRect.Top+33, m.w, 98)
 		demoTextMemo.SetParent(m.box)
 	}
 }

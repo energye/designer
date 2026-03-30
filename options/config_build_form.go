@@ -633,7 +633,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		_, licenseFileName = filepath.Split(m.license)
 	}
 	bean.GProject.BuildOption.NSIS.License = licenseFileName
-	nsisWelcomeBanner, nsisHeaderBanner := "", ""
+	var nsisWelcomeBanner, nsisHeaderBanner, icon, unIcon string
 	for _, line := range m.nsisBanner {
 		banner := strings.Split(line, "=")
 		if len(banner) == 2 {
@@ -643,11 +643,17 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 				nsisWelcomeBanner = image
 			} else if name == "header" && image != "" {
 				nsisHeaderBanner = image
+			} else if name == "icon" && image != "" {
+				icon = image
+			} else if name == "unicon" && image != "" {
+				unIcon = image
 			}
 		}
 	}
 	bean.GProject.BuildOption.NSIS.WelcomeBanner = nsisWelcomeBanner
 	bean.GProject.BuildOption.NSIS.HeaderBanner = nsisHeaderBanner
+	bean.GProject.BuildOption.NSIS.ICON = icon
+	bean.GProject.BuildOption.NSIS.UnICON = unIcon
 	bean.GProject.BuildOption.WinSign.Enable = m.winSignCheckBox.Checked()
 	bean.GProject.BuildOption.WinSign.Cert = m.winSignArray
 

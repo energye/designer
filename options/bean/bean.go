@@ -98,6 +98,8 @@ type TSign struct {
 type TNSIS struct {
 	WelcomeBanner string `json:"welcome_banner"`
 	HeaderBanner  string `json:"header_banner"`
+	ICON          string `json:"icon"`
+	UnICON        string `json:"unicon"`
 	License       string `json:"license"`
 }
 

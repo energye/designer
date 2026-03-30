@@ -53,6 +53,8 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winExeCheckBox.SetFont(m.font)
 	m.winExeCheckBox.SetChecked(bean.GProject.BuildOption.WinExe)
 	m.winExeCheckBox.SetParent(m.platformTabPageWindows)
+	m.winExeCheckBox.SetShowHint(true)
+	m.winExeCheckBox.SetHint(`Enable the makensis command to create an installation package program`)
 
 	winDefaultInstallTitle := lcl.NewLabel(m)
 	winDefaultInstallTitle.SetCaption("默认安装路径")
@@ -99,7 +101,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	winAssociateFilesRect.SetHeight(25)
 	m.winAssociateFilesBtn = wg.NewButton(m)
 	m.winAssociateFilesBtn.SetBoundsRect(winAssociateFilesRect)
-	m.winAssociateFilesBtn.SetText("设置关联文件")
+	m.winAssociateFilesBtn.SetText("配置关联文件")
 	m.winAssociateFilesBtn.Font().SetColor(colors.ClWhite)
 	m.winAssociateFilesBtn.SetRadius(3)
 	m.winAssociateFilesBtn.SetCursor(types.CrHandPoint)
@@ -114,7 +116,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	winAssociateProtocolsRect.SetHeight(25)
 	m.winAssociateProtocolsBtn = wg.NewButton(m)
 	m.winAssociateProtocolsBtn.SetBoundsRect(winAssociateProtocolsRect)
-	m.winAssociateProtocolsBtn.SetText("设置关联协议")
+	m.winAssociateProtocolsBtn.SetText("配置关联协议")
 	m.winAssociateProtocolsBtn.Font().SetColor(colors.ClWhite)
 	m.winAssociateProtocolsBtn.SetRadius(3)
 	m.winAssociateProtocolsBtn.SetCursor(types.CrHandPoint)
@@ -124,11 +126,11 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
 
 	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20, Top: winAssociateFilesRect.Top}
-	bannerRect.SetWidth(90)
+	bannerRect.SetWidth(120)
 	bannerRect.SetHeight(25)
 	m.bannerBtn = wg.NewButton(m)
 	m.bannerBtn.SetBoundsRect(bannerRect)
-	m.bannerBtn.SetText("设置 Banner")
+	m.bannerBtn.SetText("配置 NSIS 图片资源")
 	m.bannerBtn.Font().SetColor(colors.ClWhite)
 	m.bannerBtn.SetRadius(3)
 	m.bannerBtn.SetCursor(types.CrHandPoint)
@@ -137,13 +139,15 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.bannerBtn.SetOnClick(m.BannerClick)
 	m.nsisBanner = append(m.nsisBanner, "welcome="+bean.GProject.BuildOption.NSIS.WelcomeBanner)
 	m.nsisBanner = append(m.nsisBanner, "header="+bean.GProject.BuildOption.NSIS.HeaderBanner)
+	m.nsisBanner = append(m.nsisBanner, "icon="+bean.GProject.BuildOption.NSIS.ICON)
+	m.nsisBanner = append(m.nsisBanner, "unicon="+bean.GProject.BuildOption.NSIS.UnICON)
 
 	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20, Top: bannerRect.Top}
-	licenseRect.SetWidth(90)
+	licenseRect.SetWidth(120)
 	licenseRect.SetHeight(25)
 	m.licenseBtn = wg.NewButton(m)
 	m.licenseBtn.SetBoundsRect(licenseRect)
-	m.licenseBtn.SetText("设置许可证")
+	m.licenseBtn.SetText("配置 NSIS 许可证")
 	m.licenseBtn.Font().SetColor(colors.ClWhite)
 	m.licenseBtn.SetRadius(3)
 	m.licenseBtn.SetCursor(types.CrHandPoint)
@@ -162,7 +166,7 @@ func (m *TBuildForm) winSignCommandList(sender lcl.IObject) {
 	newForm.SetMultipleLine(false)
 	newForm.SetDefaultText(strings.Join(m.winSignArray, "\n"))
 	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动(auto=cmd)或指定证书签名(file=cmd)
-说明: 证书相对路径需放在 resources 目录
+说明: 证书相对路径需放在 resources/assets 目录
 auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 file=signtool sign /f cert.pfx /p 密码 /fd SHA256`)
 	newForm.SetOnOK(func(lines []string) {
@@ -181,8 +185,8 @@ file=signtool sign /f cert.pfx /p 密码 /fd SHA256`)
 func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
 	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
-	newForm.SetDemoText(`多个换行, 每行使用 | 分割
-说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
+	newForm.SetDemoText(`多个换行, 字段使用 | 分割
+字段说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
 eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project`)
 	newForm.SetOnOK(func(lines []string) {
@@ -194,8 +198,8 @@ eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy pr
 func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
 	newForm := NewCommonMemoForm(600, 200, `配置应用关联协议`, m)
 	newForm.SetDefaultText(strings.Join(m.winAssociateProtocolArray, "\n"))
-	newForm.SetDemoText(`多个换行, 每行使用 | 分割
-说明: Scheme(协议头) | DESCRIPTION(协议描述)
+	newForm.SetDemoText(`多个换行, 字段使用 | 分割
+字段说明: Scheme(协议头) | DESCRIPTION(协议描述)
 myapp | Open My App
 fs | fs soft scheme`)
 	newForm.SetOnOK(func(lines []string) {
@@ -206,11 +210,13 @@ fs | fs soft scheme`)
 
 func (m *TBuildForm) BannerClick(sender lcl.IObject) {
 	// 选择 png 转为 bmp
-	newForm := NewCommonMemoForm(500, 120, `配置 NSIS 安装包 Banner`, m)
+	newForm := NewCommonMemoForm(500, 150, `配置 NSIS Banner 和 icon 图标`, m)
 	newForm.SetDefaultText(strings.Join(m.nsisBanner, "\n"))
-	newForm.SetDemoText(`每行一个, welcome 和 header 图片路径, 需 .png 或 .bmp 格式, 相对路径需放在 resources 目录
+	newForm.SetDemoText(`每行一个, welcome 和 header (.png .bmp), icon(.png .ico) 相对路径需放在 resources/assets
 welcome=welcome.png
-header=header.png`)
+header=header.png
+icon=nsis_icon.ico
+unicon=nsis_unicon.ico`)
 	newForm.SetOnOK(func(lines []string) {
 		var banners []string
 		for _, line := range lines {

@@ -16,6 +16,7 @@
 package packager
 
 import (
+	"bytes"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/bmp"
@@ -138,22 +139,12 @@ func packageNSIS() bool {
 	installNsisScriptTemp := app.Packager("windows/install-nsis.nsi")
 	installToolsScriptTemp := app.Packager("windows/install-tools.nsh")
 	embedPath := bean.ResourceEmbedPath()
-	resourcesPath := bean.ResourcePath()
 	iconIcoFilePath := filepath.Join(embedPath, "icon.ico")
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
 	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
 	binaryFileNamePath := filepath.Join(output, buildFileName)
 	libEnergyCopyPath := filepath.Join(output, libEnergy)
-	nsisIconFilePath := iconIcoFilePath
-	nsisUnIconFilePath := iconIcoFilePath
-
-	if nsisIconFile := filepath.Join(resourcesPath, "assets", "nsis_icon.ico"); tool.IsExist(nsisIconFile) {
-		nsisIconFilePath = nsisIconFile
-	}
-	if nsisUnIconFile := filepath.Join(resourcesPath, "assets", "nsis_unicon.ico"); tool.IsExist(nsisUnIconFile) {
-		nsisIconFilePath = nsisUnIconFile
-	}
 
 	err := tool.CopyFile(libEnergyPath, libEnergyCopyPath)
 	if err != nil {
@@ -183,9 +174,24 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
-	data["NSISIcon"] = nsisIconFilePath     // 安装包程序图标
-	data["NSISUnIcon"] = nsisUnIconFilePath // 安装包卸载程序图标
-	data["NSISLanguage"] = "SimpChinese"    // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
+
+	data["NSISIcon"] = iconIcoFilePath   // 安装程序图标
+	data["NSISUnIcon"] = iconIcoFilePath // 安装程序卸载图标
+	var iconIsConvert, unIconIsConvert bool
+	if NSISIcon := nsisIconFMT(buildOption.NSIS.ICON, &iconIsConvert); NSISIcon != "" {
+		data["NSISIcon"] = NSISIcon // 安装程序图标
+		if iconIsConvert {
+			defer os.Remove(NSISIcon)
+		}
+	}
+	if NSISUnIcon := nsisIconFMT(buildOption.NSIS.UnICON, &unIconIsConvert); NSISUnIcon != "" {
+		data["NSISUnIcon"] = NSISUnIcon // 安装程序卸载图标
+		if iconIsConvert {
+			defer os.Remove(NSISUnIcon)
+		}
+	}
+
+	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
 	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.NSIS.License); buildOption.NSIS.License != "" && tool.IsExist(licensePath) {
 		data["NSISLicense"] = licensePath // (license.txt) 文件路径
 	}
@@ -296,6 +302,57 @@ func paserAssociateProtocol(associateProtocolList []string) (associateFiles []TW
 		}
 	}
 	return
+}
+
+func nsisIconFMT(imagePath string, isConvertIco *bool) string {
+	if !filepath.IsAbs(imagePath) {
+		imagePath = filepath.Join(bean.ResourcePath(), "assets", imagePath)
+	}
+	if !tool.IsExist(imagePath) {
+		event.ConsoleWriteError("Package - image not exist:", imagePath)
+		return ""
+	}
+	_, file := filepath.Split(imagePath)
+	ext := filepath.Ext(file)
+	if ext == ".png" {
+		// 转换 .ico
+		iconData, err := os.ReadFile(imagePath)
+		if err != nil {
+			event.ConsoleWriteError("Package - ReadFile:", err.Error())
+			return ""
+		}
+		pngBuf := new(bytes.Buffer)
+		pngBuf.Write(iconData)
+		pngImage, err := png.Decode(pngBuf)
+		if err != nil {
+			event.ConsoleWriteError("updateWindowICON, 图标转为 png 对象失败:", err.Error())
+			return ""
+		}
+		icoBuf := new(bytes.Buffer)
+		err = tool.Encode(icoBuf, pngImage)
+		if err != nil {
+			event.ConsoleWriteError("updateWindowICON, png 转为 ico 对象失败:", err.Error())
+			return ""
+		}
+		outpath := bean.GProject.BuildOption.Output
+		if !filepath.IsAbs(outpath) {
+			outpath = filepath.Join(bean.GPath, outpath)
+		}
+
+		icoFilePath := filepath.Join(outpath, file+"_convert.ico")
+		icoFile, err := os.Create(icoFilePath)
+		if err != nil {
+			event.ConsoleWriteError("Package - create bmp file:", err.Error())
+			return ""
+		}
+		defer icoFile.Close()
+		icoFile.Write(icoBuf.Bytes())
+		*isConvertIco = true
+		return icoFilePath
+	} else if ext == ".ico" {
+		return imagePath
+	}
+	return ""
 }
 
 func nsisBannerFMT(imagePath string, isConvertBmp *bool) string {
