@@ -193,3 +193,122 @@ func (m *TCommonMemoForm) demoBtnClick(sender lcl.IObject) {
 	}
 	m.baseForm.SetBoundsRect(rect)
 }
+
+type TCommonMemoBox struct {
+	parent lcl.IWinControl
+	box    lcl.IPanel
+	memo   lcl.IMemo
+	rect   types.TRect
+	title  string
+	change func(lines []string)
+}
+
+func NewCommonMemoBox(rect types.TRect, title string, parent lcl.IWinControl) *TCommonMemoBox {
+	newMemo := &TCommonMemoBox{rect: rect, title: title, parent: parent}
+	newMemo.Create()
+	return newMemo
+}
+
+func (m *TCommonMemoBox) SetOnChange(fn func(lines []string)) {
+	m.change = fn
+}
+
+func (m *TCommonMemoBox) Create() {
+	m.box = lcl.NewPanel(m.parent)
+	m.box.SetBoundsRect(m.rect)
+	m.box.SetColor(m.parent.Color())
+	m.box.SetBevelOuter(types.BvNone)
+	m.box.SetBevelOuter(types.BvNone)
+	m.box.SetBorderStyleToBorderStyle(types.BsNone)
+	m.box.SetParent(m.parent)
+
+	memoTop := int32(0)
+	if m.title != "" {
+		titleLbl := lcl.NewLabel(m.parent)
+		titleFont := titleLbl.Font()
+		titleFont.SetSize(10)
+		titleLbl.SetCaption(m.title)
+		titleLbl.SetTop(7)
+		titleLbl.SetLeft(7)
+		titleLbl.SetParent(m.box)
+		memoTop += 35
+	}
+	memoRect := types.TRect{Left: 0, Top: memoTop}
+	memoRect.SetWidth(m.rect.Width())
+	memoRect.SetHeight(m.rect.Height() - (memoRect.Top + m.rect.Top))
+	m.memo = lcl.NewMemo(m.parent)
+	m.memo.SetBoundsRect(memoRect)
+	m.memo.SetBorderStyle(types.BsNone)
+	m.memo.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
+	m.memo.SetColor(colors.ClInfoBk)
+	m.memo.Font().SetSize(8)
+	m.memo.SetOnChange(func(sender lcl.IObject) {
+		if m.change != nil {
+			m.change(m.Lines())
+		}
+	})
+}
+
+func (m *TCommonMemoBox) SetAnchors(v types.TAnchors) {
+	m.box.SetAnchors(v)
+}
+
+func (m *TCommonMemoBox) SetMultipleLine(v bool) {
+	m.memo.SetWantReturns(v)
+	m.memo.SetWordWrap(v)
+}
+
+func (m *TCommonMemoBox) SetDefaultText(text string) {
+	textLines := strings.Split(text, "\n")
+	lines := m.memo.Lines()
+	lines.Clear()
+	if m.memo.WantReturns() {
+		for _, line := range textLines {
+			lines.Add(line)
+		}
+	} else {
+		lines.SetTextToStr(text)
+	}
+}
+
+func (m *TCommonMemoBox) SetDemoText(text string) {
+	if text != "" {
+		textLines := strings.Split(text, "\n")
+		demoTextMemo := lcl.NewMemo(m.parent)
+		demoTextMemo.Font().SetSize(8)
+		lines := demoTextMemo.Lines()
+		for _, line := range textLines {
+			if line == "" {
+				continue
+			}
+			lines.Add(line)
+		}
+		height := int32(100)
+		memoRect := m.memo.BoundsRect()
+		demoTextMemoRect := types.TRect{Left: 0, Top: (memoRect.Height() + memoRect.Top) - height}
+		demoTextMemoRect.SetWidth(memoRect.Width())
+		demoTextMemoRect.SetHeight(100)
+		demoTextMemo.SetBorderStyle(types.BsNone)
+		demoTextMemo.SetColor(colors.ClInfoBk)
+		demoTextMemo.SetReadOnly(true)
+		demoTextMemo.SetAnchors(types.NewSet(types.AkLeft, types.AkRight, types.AkBottom))
+		demoTextMemo.SetBoundsRect(demoTextMemoRect)
+		demoTextMemo.SetParent(m.box)
+
+		m.memo.SetHeight(memoRect.Height() - demoTextMemoRect.Height())
+	}
+}
+
+func (m *TCommonMemoBox) Show() {
+	m.memo.SetParent(m.box)
+}
+
+func (m *TCommonMemoBox) Lines() []string {
+	memoLines := m.memo.Lines()
+	count := memoLines.Count()
+	var lines []string
+	for i := int32(0); i < count; i++ {
+		lines = append(lines, memoLines.Strings(i))
+	}
+	return lines
+}

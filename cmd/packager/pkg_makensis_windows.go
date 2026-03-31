@@ -175,6 +175,7 @@ func packageNSIS() bool {
 		data["RuntimeWebView2Setup"] = "MicrosoftEdgeWebview2Setup.exe" // webview2 setup exe
 	}
 
+	// NSIS ICON
 	data["NSISIcon"] = iconIcoFilePath   // 安装程序图标
 	data["NSISUnIcon"] = iconIcoFilePath // 安装程序卸载图标
 	var iconIsConvert, unIconIsConvert bool
@@ -190,15 +191,6 @@ func packageNSIS() bool {
 			defer os.Remove(NSISUnIcon)
 		}
 	}
-
-	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
-	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.NSIS.License); buildOption.NSIS.License != "" && tool.IsExist(licensePath) {
-		data["NSISLicense"] = licensePath // (license.txt) 文件路径
-	}
-	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
-	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
-	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
-
 	// NSIS Banner
 	var bannerWelcomeIsConvert, bannerHeaderIsConvert bool
 	if NSISBannerWelcome := nsisBannerFMT(buildOption.NSIS.WelcomeBanner, &bannerWelcomeIsConvert); NSISBannerWelcome != "" {
@@ -213,6 +205,14 @@ func packageNSIS() bool {
 			defer os.Remove(HeaderBanner)
 		}
 	}
+
+	data["NSISLanguage"] = "SimpChinese" // 中文: SimpChinese, 英文: English, 语言在 NSIS_HOME/Contrib/Language files
+	if licensePath := filepath.Join(bean.ResourcePath(), buildOption.NSIS.License); buildOption.NSIS.License != "" && tool.IsExist(licensePath) {
+		data["NSISLicense"] = licensePath // (license.txt) 文件路径
+	}
+	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
+	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
+	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
 
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {

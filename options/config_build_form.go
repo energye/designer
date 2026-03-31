@@ -16,7 +16,6 @@ package options
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -25,13 +24,14 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"github.com/energye/widget/wg"
+	"os"
 	"path/filepath"
 	"strings"
 )
 
 var (
 	buildFormWidth  = int32(555)
-	buildFormHeight = int32(555)
+	buildFormHeight = int32(600)
 )
 
 func NewBuildForm() *TBuildForm {
@@ -50,7 +50,7 @@ type TBuildForm struct {
 	titleFont    lcl.IFont
 	titleFontTwo lcl.IFont
 	selectDir    lcl.ISelectDirectoryDialog
-	openFile     lcl.IOpenDialog
+	//openFile     lcl.IOpenDialog
 
 	buildTab            *wg.TTab
 	buildTabPageConfig  *wg.TPage
@@ -86,18 +86,25 @@ type TBuildForm struct {
 
 	packageNameEdit lcl.ILabeledEdit
 
-	winMsiCheckBox                              lcl.ICheckBox
-	winExeCheckBox                              lcl.ICheckBox
-	winDefaultInstallEdit                       lcl.IEdit
-	bannerBtn, licenseBtn, templateVariablesBtn *wg.TButton
-	winSignCheckBox                             lcl.ICheckBox
-	winSignListBtn                              *wg.TButton
-	winSignArray                                []string
-	winAssociateFilesBtn                        *wg.TButton
-	winAssociateProtocolsBtn                    *wg.TButton
-	winAssociateFileArray                       []string
-	winAssociateProtocolArray                   []string
-	nsisBanner                                  []string
+	// 打包配置
+	winPackConfigTab                              *wg.TTab
+	winPackConfigTabPageBinSign                   *wg.TPage
+	winPackConfigTabPageAssociateFiles            *wg.TPage
+	winPackConfigTabPageAssociateProtocols        *wg.TPage
+	winPackConfigTabPageAppxAssets                *wg.TPage
+	winPackConfigTabPageNSISAssets                *wg.TPage
+	winPackConfigTabPageNSISLicense               *wg.TPage
+	winPackConfigTabPageBinSignMemoBox            *TCommonMemoBox
+	winPackConfigTabPageAssociateFilesMemoBox     *TCommonMemoBox
+	winPackConfigTabPageAssociateProtocolsMemoBox *TCommonMemoBox
+	winPackConfigTabPageAppxAssetsMemoBox         *TCommonMemoBox
+	winPackConfigTabPageNSISAssetsMemoBox         *TCommonMemoBox
+	winPackConfigTabPageNSISLicenseMemoBox        *TCommonMemoBox
+
+	winMsiCheckBox        lcl.ICheckBox
+	winExeCheckBox        lcl.ICheckBox
+	winDefaultInstallEdit lcl.ILabeledEdit
+	winSignEnable         *wg.TButton
 
 	macDMGCheckBox  lcl.ICheckBox
 	macPKGCheckBox  lcl.ICheckBox
@@ -109,8 +116,6 @@ type TBuildForm struct {
 
 	linuxDEBCheckBox lcl.ICheckBox
 	dependsEdit      lcl.IEdit
-
-	license string
 
 	// 操作按钮
 	saveBtn    *wg.TButton
@@ -129,8 +134,8 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.SetWidth(buildFormWidth)
 	m.SetHeight(buildFormHeight)
 	constr := m.Constraints()
-	constr.SetMaxWidth(buildFormWidth)
-	constr.SetMaxHeight(buildFormHeight)
+	//constr.SetMaxWidth(buildFormWidth)
+	//constr.SetMaxHeight(buildFormHeight)
 	constr.SetMinWidth(buildFormWidth)
 	constr.SetMinHeight(buildFormHeight)
 	m.SetVisible(false)
@@ -144,12 +149,12 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.SetColor(colors.ClWhite)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
-	m.openFile = lcl.NewOpenDialog(m)
 
 	{
-		m.openFile.SetTitle("打开证书")
-		m.openFile.SetFilter(config.DialogFilter.MacCertFilter())
-		m.openFile.SetFilterIndex(1)
+		//m.openFile = lcl.NewOpenDialog(m)
+		//m.openFile.SetTitle("打开证书")
+		//m.openFile.SetFilter(config.DialogFilter.MacCertFilter())
+		//m.openFile.SetFilterIndex(1)
 	}
 
 	{
@@ -161,6 +166,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.buildTab.SetBoundsRect(tabBR)
 		m.buildTab.SetColor(colors.ClWhite)
 		m.buildTab.EnableScrollButton(false)
+		m.buildTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.buildTab.SetParent(m)
 		m.buildTab.SetOnChange(func(sender lcl.IObject) {
 			//for _, page := range m.buildTab.Pages() {
@@ -201,31 +207,33 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		btnFont.SetSize(10)
 		btnFont.SetStyle(types.NewSet(types.FsBold))
 
+		saveBtnRect := types.TRect{Left: 390, Top: 0}
+		saveBtnRect.SetWidth(75)
+		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
 		m.saveBtn.SetText("保存配置")
 		m.saveBtn.SetFont(btnFont)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
 		m.saveBtn.SetCursor(types.CrHandPoint)
-		saveBtnRect := types.TRect{Left: 390, Top: 0}
-		saveBtnRect.SetWidth(75)
-		saveBtnRect.SetHeight(25)
 		m.saveBtn.SetBoundsRect(saveBtnRect)
 		m.saveBtn.SetColor(colors.RGBToColor(59, 130, 246))
+		m.saveBtn.SetAnchors(types.NewSet(types.AkRight, types.AkTop))
 		m.saveBtn.SetParent(m.buildTab)
 		m.saveBtn.SetOnClick(m.saveClick)
 
+		buildBtnRect := types.TRect{Left: saveBtnRect.Left + saveBtnRect.Width() + 10, Top: saveBtnRect.Top}
+		buildBtnRect.SetWidth(75)
+		buildBtnRect.SetHeight(25)
 		m.packageBtn = wg.NewButton(m)
 		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetFont(btnFont)
 		m.packageBtn.SetCursor(types.CrHandPoint)
 		m.packageBtn.Font().SetColor(colors.ClWhite)
 		m.packageBtn.SetRadius(3)
-		buildBtnRect := types.TRect{Left: saveBtnRect.Left + saveBtnRect.Width() + 10, Top: saveBtnRect.Top}
-		buildBtnRect.SetWidth(75)
-		buildBtnRect.SetHeight(25)
 		m.packageBtn.SetBoundsRect(buildBtnRect)
 		m.packageBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.packageBtn.SetAnchors(types.NewSet(types.AkRight, types.AkTop))
 		m.packageBtn.SetParent(m.buildTab)
 		m.packageBtn.SetOnClick(m.packageClick)
 	}
@@ -492,17 +500,11 @@ func (m *TBuildForm) initConfigComponent() {
 }
 
 func (m *TBuildForm) initBuildComponent() {
-	//packageNameTitle := lcl.NewLabel(m)
-	//packageNameTitle.SetFont(m.titleFontTwo)
-	//packageNameTitle.SetCaption("安装包名称")
-	//packageNameTitle.SetTop(10)
-	//packageNameTitle.SetLeft(10)
-	//packageNameTitle.SetParent(m.buildTabPagePackage)
-
 	m.packageNameEdit = lcl.NewLabeledEdit(m)
-	m.packageNameEdit.SetBounds(80, 5, 435, 30)
+	m.packageNameEdit.SetBounds(80, 5, buildFormWidth-100, 30)
 	m.packageNameEdit.SetFont(m.font)
 	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
+	m.packageNameEdit.SetAnchors(types.NewSet(types.AkLeft, types.AkRight, types.AkTop))
 	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
 	editLabel := m.packageNameEdit.EditLabel()
 	editLabel.SetCaption("安装包名称")
@@ -514,14 +516,15 @@ func (m *TBuildForm) initBuildComponent() {
 		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
 		btnColor := colors.RGBToColor(0, 120, 212)
 
-		m.platformTab = wg.NewTab(m)
-		m.platformTab.Margin = 5
-		tabBR := types.TRect{Left: 0, Top: 35}
+		tabBR := types.TRect{Left: 0, Top: 40}
 		tabBR.SetWidth(m.buildTabPagePackage.Width())
 		tabBR.SetHeight(m.buildTabPagePackage.Height() - tabBR.Top)
+		m.platformTab = wg.NewTab(m)
+		m.platformTab.Margin = 5
 		m.platformTab.SetBoundsRect(tabBR)
 		m.platformTab.SetColor(colors.ClWhite)
 		m.platformTab.EnableScrollButton(false)
+		m.platformTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.platformTab.SetParent(m.buildTabPagePackage)
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
@@ -545,6 +548,7 @@ func (m *TBuildForm) initBuildComponent() {
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
 		m.platformTabPageWindows.SetCaption("Windows")
+		m.platformTabPageWindows.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		setTabPageStyle(m.platformTabPageWindows)
 		m.initWindowsOptions()
 
@@ -622,41 +626,85 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
 	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
-	// win
+	// windows
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()
 	bean.GProject.BuildOption.WinDefaultInstall = m.winDefaultInstallEdit.Text()
-	bean.GProject.BuildOption.WinAssociateFileList = m.winAssociateFileArray
-	bean.GProject.BuildOption.WinAssociateProtocolList = m.winAssociateProtocolArray
-	licenseFileName := ""
-	if m.license != "" {
-		_, licenseFileName = filepath.Split(m.license)
+	if m.winPackConfigTabPageAssociateFilesMemoBox != nil {
+		bean.GProject.BuildOption.WinAssociateFileList = m.winPackConfigTabPageAssociateFilesMemoBox.Lines()
 	}
-	bean.GProject.BuildOption.NSIS.License = licenseFileName
-	var nsisWelcomeBanner, nsisHeaderBanner, icon, unIcon string
-	for _, line := range m.nsisBanner {
-		banner := strings.Split(line, "=")
-		if len(banner) == 2 {
-			name := strings.TrimSpace(banner[0])
-			image := strings.TrimSpace(banner[1])
-			if name == "welcome" && image != "" {
-				nsisWelcomeBanner = image
-			} else if name == "header" && image != "" {
-				nsisHeaderBanner = image
-			} else if name == "icon" && image != "" {
-				icon = image
-			} else if name == "unicon" && image != "" {
-				unIcon = image
+	if m.winPackConfigTabPageAssociateProtocolsMemoBox != nil {
+		bean.GProject.BuildOption.WinAssociateProtocolList = m.winPackConfigTabPageAssociateProtocolsMemoBox.Lines()
+	}
+	if m.winPackConfigTabPageNSISLicenseMemoBox != nil {
+		licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.Name+"-license.txt")
+		licenseFileName := ""
+		_ = os.Remove(licensePath)
+		lines := m.winPackConfigTabPageNSISLicenseMemoBox.Lines()
+		if len(lines) > 0 {
+			data := strings.Join(lines, "\n")
+			utf8Bom := []byte{0xEF, 0xBB, 0xBF}
+			licenseData := append(utf8Bom, data...)
+			_ = os.WriteFile(licensePath, licenseData, 0644)
+			_, licenseFileName = filepath.Split(licensePath)
+		}
+		bean.GProject.BuildOption.NSIS.License = licenseFileName
+	}
+	if m.winPackConfigTabPageAppxAssetsMemoBox != nil {
+		assets := tool.Buffer{}
+		for _, line := range m.winPackConfigTabPageAppxAssetsMemoBox.Lines() {
+			line = strings.TrimSpace(line)
+			if line != "" {
+				if assets.Len() > 0 {
+					assets.WriteByte('\n')
+				}
+				assets.WriteString(line)
 			}
 		}
+		bean.GProject.BuildOption.WinAppx.Assets = assets.String()
 	}
-	bean.GProject.BuildOption.NSIS.WelcomeBanner = nsisWelcomeBanner
-	bean.GProject.BuildOption.NSIS.HeaderBanner = nsisHeaderBanner
-	bean.GProject.BuildOption.NSIS.ICON = icon
-	bean.GProject.BuildOption.NSIS.UnICON = unIcon
-	bean.GProject.BuildOption.WinSign.Enable = m.winSignCheckBox.Checked()
-	bean.GProject.BuildOption.WinSign.Cert = m.winSignArray
+	if m.winPackConfigTabPageNSISAssetsMemoBox != nil {
+		var winNsisAssets []string
+		var nsisWelcomeBanner, nsisHeaderBanner, icon, unIcon string
+		for _, line := range m.winPackConfigTabPageNSISAssetsMemoBox.Lines() {
+			banner := strings.Split(line, "=")
+			if len(banner) == 2 {
+				winNsisAssets = append(winNsisAssets, line)
+			}
+		}
+		for _, line := range winNsisAssets {
+			banner := strings.Split(line, "=")
+			if len(banner) == 2 {
+				name := strings.TrimSpace(banner[0])
+				image := strings.TrimSpace(banner[1])
+				if name == "welcome" && image != "" {
+					nsisWelcomeBanner = image
+				} else if name == "header" && image != "" {
+					nsisHeaderBanner = image
+				} else if name == "icon" && image != "" {
+					icon = image
+				} else if name == "unicon" && image != "" {
+					unIcon = image
+				}
+			}
+		}
+		bean.GProject.BuildOption.NSIS.WelcomeBanner = nsisWelcomeBanner
+		bean.GProject.BuildOption.NSIS.HeaderBanner = nsisHeaderBanner
+		bean.GProject.BuildOption.NSIS.ICON = icon
+		bean.GProject.BuildOption.NSIS.UnICON = unIcon
+	}
 
+	bean.GProject.BuildOption.WinSign.Enable = !m.winSignEnable.Disable()
+	if m.winPackConfigTabPageBinSignMemoBox != nil {
+		var signCMD []string
+		for _, line := range m.winPackConfigTabPageBinSignMemoBox.Lines() {
+			banner := strings.Split(line, "=")
+			if len(banner) == 2 {
+				signCMD = append(signCMD, line)
+			}
+		}
+		bean.GProject.BuildOption.WinSign.Cert = signCMD
+	}
 	// mac
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()

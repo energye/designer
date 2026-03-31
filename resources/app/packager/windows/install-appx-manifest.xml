@@ -19,7 +19,7 @@
     <DisplayName>{{.DisplayName}}</DisplayName>
     <PublisherDisplayName>{{.CompanyName}}</PublisherDisplayName>
     <Description>{{.Description}}</Description>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\PropertiesLogo.png</Logo>
   </Properties>
 
   <!-- 系统兼容性 -->
@@ -54,7 +54,7 @@
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="{{.ProductIdentity}}">
             <uap:DisplayName>{{.DisplayName}}</uap:DisplayName>
-            <uap:Logo>Assets\FileIcon.png</uap:Logo>
+            <uap:Logo>Assets\AssociateFileIcon.png</uap:Logo>
             <uap:InfoTip>{{.AssociateFileInfoTip}}</uap:InfoTip>
             <uap:SupportedFileTypes>
               {{range .AssociateFiles}}
@@ -69,7 +69,7 @@
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="{{.Scheme}}">
             <uap:DisplayName>{{.Description}}</uap:DisplayName>
-            <uap:Logo>Assets\ProtocolLogo.png</uap:Logo>
+            <uap:Logo>Assets\AssociateProtocolLogo.png</uap:Logo>
           </uap:Protocol>
         </uap:Extension>
         {{end}}

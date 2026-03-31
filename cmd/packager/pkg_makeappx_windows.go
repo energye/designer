@@ -98,23 +98,22 @@ func packageAppx() bool {
 	// ├── 其它 DLL / 资源
 	// │
 	// └── Assets/
-	//     ├── StoreLogo.png
 	//     ├── Square44x44Logo.png
 	//     ├── Square150x150Logo.png
 	//     ├── Wide310x150Logo.png
 	//     ├── SplashScreen.png
-	//     ├── FileIcon.png
-	//     └── ProtocolLogo.png
-	// | 文件               | 尺寸      |
-	// | ----------------- | -------   |
-	// | Square44x44Logo   | 44x44     |
-	// | Square71x71Logo   | 71x71     |
-	// | Square150x150Logo | 150x150   |
-	// | Wide310x150Logo   | 310x150   |
-	// | SplashScreen      | 620x300   |
-	// | StoreLogo         | 50x50     |
-	// | FileIcon          | 256 x 256 |
-	// | ProtocolLogo      | 88 x 88   |
+	//     ├── PropertiesLogo.png
+	//     ├── AssociateFileIcon.png
+	//     └── AssociateProtocolLogo.png
+	// | 文件               		| 尺寸      |
+	// | ---------------------- | -------   |
+	// | Square44x44Logo   		| 44x44     |
+	// | Square150x150Logo 		| 150x150   |
+	// | Wide310x150Logo   		| 310x150   |
+	// | SplashScreen      		| 620x300   |
+	// | PropertiesLogo    		| 50x50     |
+	// | AssociateFileIcon      | 256 x 256 |
+	// | AssociateProtocolLogo  | 88 x 88   |
 
 	publisher := ""
 	if buildOption.WinSign.Enable {
@@ -203,13 +202,13 @@ func packageAppx() bool {
 		}
 		// Assets dir
 		pngFiles := []assetsPng{
-			{Name: "StoreLogo.png", W: 50, H: 50},
+			{Name: "PropertiesLogo.png", W: 50, H: 50},
 			{Name: "Square44x44Logo.png", W: 44, H: 44},
 			{Name: "Square150x150Logo.png", W: 150, H: 150},
 			{Name: "Wide310x150Logo.png", W: 310, H: 150},
 			{Name: "SplashScreen.png", W: 6200, H: 300},
-			{Name: "FileIcon.png", W: 256, H: 256},
-			{Name: "ProtocolLogo.png", W: 88, H: 88},
+			{Name: "AssociateFileIcon.png", W: 256, H: 256},
+			{Name: "AssociateProtocolLogo.png", W: 88, H: 88},
 		}
 		embedPath := bean.ResourceEmbedPath()
 		srcIconPng := filepath.Join(embedPath, "icon.png")
@@ -236,19 +235,19 @@ func packageAppx() bool {
 				}
 			} else {
 				// 项目目录 resources/assets 没有这个文件
-				if pngFile.Name == "FileIcon.png" {
+				if pngFile.Name == "AssociateFileIcon.png" {
 					// 使用 icon.png 256x256
 					err = tool.CopyFile(srcIconPng, filepath.Join(assetsDir, pngFile.Name))
 					if err != nil {
-						event.ConsoleWriteError("Package - Copy FileIcon.png:", err.Error())
+						event.ConsoleWriteError("Package - Copy AssociateFileIcon.png:", err.Error())
 						return false
 					}
-				} else if pngFile.Name == "ProtocolLogo.png" {
+				} else if pngFile.Name == "AssociateProtocolLogo.png" {
 					// 使用 icon.png 88x88
 					newIconPng := resize.Resize(88, 88, srcIconPngSrcImg, resize.Lanczos3)
-					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, "ProtocolLogo.png"))
+					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, "AssociateProtocolLogo.png"))
 					if err != nil {
-						event.ConsoleWriteError("Package - Resize And Save ProtocolLogo.png:", err.Error())
+						event.ConsoleWriteError("Package - Resize And Save AssociateProtocolLogo.png:", err.Error())
 						return false
 					}
 				} else {

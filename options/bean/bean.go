@@ -97,15 +97,15 @@ type TSign struct {
 }
 
 type TAppx struct {
-	Assets string `json:"assets"`
+	Assets string `json:"assets"` // 存放文件名, 在 resources/assets 目录
 }
 
 type TNSIS struct {
-	WelcomeBanner string `json:"welcome_banner"`
-	HeaderBanner  string `json:"header_banner"`
-	ICON          string `json:"icon"`
-	UnICON        string `json:"unicon"`
-	License       string `json:"license"`
+	WelcomeBanner string `json:"welcome_banner"` // 存放文件名, 在 resources/assets 目录
+	HeaderBanner  string `json:"header_banner"`  // 存放文件名, 在 resources/assets 目录
+	ICON          string `json:"icon"`           // 存放文件名, 在 resources/assets 目录
+	UnICON        string `json:"unicon"`         // 存放文件名, 在 resources/assets 目录
+	License       string `json:"license"`        // 存放文件名, 在 resources 目录
 }
 
 // TAppOption 应用配置

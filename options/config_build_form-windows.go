@@ -15,7 +15,6 @@ package options
 
 import (
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -56,202 +55,264 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winExeCheckBox.SetShowHint(true)
 	m.winExeCheckBox.SetHint(`Enable the makensis command to create an installation package program`)
 
-	winDefaultInstallTitle := lcl.NewLabel(m)
-	winDefaultInstallTitle.SetCaption("默认安装路径")
-	winDefaultInstallTitle.SetLeft(10)
-	winDefaultInstallTitle.SetTop(nextTop(30))
-	winDefaultInstallTitle.SetFont(m.titleFontTwo)
-	winDefaultInstallTitle.SetParent(m.platformTabPageWindows)
-
-	m.winDefaultInstallEdit = lcl.NewEdit(m)
-	m.winDefaultInstallEdit.SetBounds(20, nextTop(25), 515, 30)
+	m.winDefaultInstallEdit = lcl.NewLabeledEdit(m)
+	m.winDefaultInstallEdit.SetBounds(90, nextTop(30), buildFormWidth-110, 30)
 	m.winDefaultInstallEdit.SetFont(m.font)
 	m.winDefaultInstallEdit.SetTextHint("Windows 应用的默认安装路径 如: C:\\Program Files")
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
+	m.winDefaultInstallEdit.SetAnchors(types.NewSet(types.AkLeft, types.AkRight, types.AkTop))
+	winDefaultInstallEditLabel := m.winDefaultInstallEdit.EditLabel()
+	winDefaultInstallEditLabel.SetCaption("默认安装路径")
+	winDefaultInstallEditLabel.SetFont(m.titleFontTwo)
+	m.winDefaultInstallEdit.SetLabelPosition(types.LpLeft)
 	m.winDefaultInstallEdit.SetParent(m.platformTabPageWindows)
 
-	m.winSignCheckBox = lcl.NewCheckBox(m)
-	m.winSignCheckBox.SetCaption("签名")
-	m.winSignCheckBox.SetLeft(20)
-	m.winSignCheckBox.SetTop(nextTop(40))
-	m.winSignCheckBox.SetFont(m.font)
-	m.winSignCheckBox.SetChecked(bean.GProject.BuildOption.WinSign.Enable)
-	m.winSignCheckBox.SetParent(m.platformTabPageWindows)
-	m.winSignCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.winSignListBtn.SetVisible(m.winSignCheckBox.Checked())
-	})
-	winSignListBtnRect := types.TRect{Left: 75, Top: m.winSignCheckBox.Top()}
-	winSignListBtnRect.SetWidth(120)
-	winSignListBtnRect.SetHeight(20)
-	m.winSignListBtn = wg.NewButton(m)
-	m.winSignListBtn.SetVisible(m.winSignCheckBox.Checked())
-	m.winSignListBtn.SetText("二进制签名")
-	m.winSignListBtn.Font().SetColor(colors.ClWhite)
-	m.winSignListBtn.SetRadius(0)
-	m.winSignListBtn.SetBoundsRect(winSignListBtnRect)
-	m.winSignListBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.winSignListBtn.SetRadius(3)
-	m.winSignListBtn.SetCursor(types.CrHandPoint)
-	m.winSignListBtn.SetParent(m.platformTabPageWindows)
-	m.winSignListBtn.SetOnClick(m.winSignCommandList)
-	m.winSignArray = bean.GProject.BuildOption.WinSign.Cert
+	winConfigTitle := lcl.NewLabel(m)
+	winConfigTitle.SetCaption("配置选项")
+	winConfigTitle.SetLeft(10)
+	winConfigTitle.SetTop(nextTop(35))
+	winConfigTitle.SetFont(m.titleFontTwo)
+	winConfigTitle.SetParent(m.platformTabPageWindows)
 
-	winAssociateFilesRect := types.TRect{Left: 15, Top: nextTop(30)}
-	winAssociateFilesRect.SetWidth(90)
-	winAssociateFilesRect.SetHeight(25)
-	m.winAssociateFilesBtn = wg.NewButton(m)
-	m.winAssociateFilesBtn.SetBoundsRect(winAssociateFilesRect)
-	m.winAssociateFilesBtn.SetText("配置关联文件")
-	m.winAssociateFilesBtn.Font().SetColor(colors.ClWhite)
-	m.winAssociateFilesBtn.SetRadius(3)
-	m.winAssociateFilesBtn.SetCursor(types.CrHandPoint)
-	m.winAssociateFilesBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.winAssociateFilesBtn.SetParent(m.platformTabPageWindows)
-	m.winAssociateFilesBtn.SetOnClick(m.AssociateFilesClick)
-	m.winAssociateFileArray = bean.GProject.BuildOption.WinAssociateFileList
-
-	winAssociateProtocolsRect := types.TRect{Left: winAssociateFilesRect.Left + winAssociateFilesRect.Width() + 20,
-		Top: winAssociateFilesRect.Top}
-	winAssociateProtocolsRect.SetWidth(90)
-	winAssociateProtocolsRect.SetHeight(25)
-	m.winAssociateProtocolsBtn = wg.NewButton(m)
-	m.winAssociateProtocolsBtn.SetBoundsRect(winAssociateProtocolsRect)
-	m.winAssociateProtocolsBtn.SetText("配置关联协议")
-	m.winAssociateProtocolsBtn.Font().SetColor(colors.ClWhite)
-	m.winAssociateProtocolsBtn.SetRadius(3)
-	m.winAssociateProtocolsBtn.SetCursor(types.CrHandPoint)
-	m.winAssociateProtocolsBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.winAssociateProtocolsBtn.SetParent(m.platformTabPageWindows)
-	m.winAssociateProtocolsBtn.SetOnClick(m.AssociateProtocolsClick)
-	m.winAssociateProtocolArray = bean.GProject.BuildOption.WinAssociateProtocolList
-
-	bannerRect := types.TRect{Left: winAssociateProtocolsRect.Left + winAssociateProtocolsRect.Width() + 20, Top: winAssociateFilesRect.Top}
-	bannerRect.SetWidth(110)
-	bannerRect.SetHeight(25)
-	m.bannerBtn = wg.NewButton(m)
-	m.bannerBtn.SetBoundsRect(bannerRect)
-	m.bannerBtn.SetText("配置 NSIS 图片")
-	m.bannerBtn.Font().SetColor(colors.ClWhite)
-	m.bannerBtn.SetRadius(3)
-	m.bannerBtn.SetCursor(types.CrHandPoint)
-	m.bannerBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.bannerBtn.SetParent(m.platformTabPageWindows)
-	m.bannerBtn.SetOnClick(m.BannerClick)
-	m.nsisBanner = append(m.nsisBanner, "welcome="+bean.GProject.BuildOption.NSIS.WelcomeBanner)
-	m.nsisBanner = append(m.nsisBanner, "header="+bean.GProject.BuildOption.NSIS.HeaderBanner)
-	m.nsisBanner = append(m.nsisBanner, "icon="+bean.GProject.BuildOption.NSIS.ICON)
-	m.nsisBanner = append(m.nsisBanner, "unicon="+bean.GProject.BuildOption.NSIS.UnICON)
-
-	licenseRect := types.TRect{Left: bannerRect.Left + bannerRect.Width() + 20, Top: bannerRect.Top}
-	licenseRect.SetWidth(120)
-	licenseRect.SetHeight(25)
-	m.licenseBtn = wg.NewButton(m)
-	m.licenseBtn.SetBoundsRect(licenseRect)
-	m.licenseBtn.SetText("配置 NSIS 许可证")
-	m.licenseBtn.Font().SetColor(colors.ClWhite)
-	m.licenseBtn.SetRadius(3)
-	m.licenseBtn.SetCursor(types.CrHandPoint)
-	m.licenseBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.licenseBtn.SetParent(m.platformTabPageWindows)
-	m.licenseBtn.SetOnClick(m.LicenseClick)
-	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.BuildOption.NSIS.License)
-	if tool.IsExist(licensePath) {
-		m.license = bean.GProject.BuildOption.NSIS.License
+	winPackConfigBR := types.TRect{Left: 0, Top: nextTop(25)}
+	winPackConfigBR.SetWidth(m.platformTabPageWindows.Width())
+	winPackConfigBR.SetHeight(m.platformTabPageWindows.Height() - winPackConfigBR.Top)
+	tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
+	btnColor := colors.RGBToColor(234, 239, 249)
+	setWinPackConfigTabPageStyle := func(page *wg.TPage) {
+		//page.SetTop(25)
+		page.SetHeight(m.winPackConfigTab.Height() - page.Top())
+		page.SetColor(btnColor) // 设置背景色
+		page.Button().SetWidth(80)
+		page.Button().SetHeight(25)
+		page.Button().SetLeft(0)
+		page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop)
+		page.Button().Font().SetColor(colors.ClBlack)
+		page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(btnColor, 0.8))
+		page.Button().SetRadius(5)
+		page.Button().SetColor(tabColor)
+		page.Button().SetDownColor(wg.LightenColor(btnColor, 0.3), wg.LightenColor(btnColor, 0.5))
+		page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.3))
+		page.SetDefaultColor(tabColor)
+		page.SetActiveColor(btnColor)
+		page.Button().SetCursor(types.CrHandPoint)
 	}
-
+	m.winPackConfigTab = wg.NewTab(m)
+	m.winPackConfigTab.Margin = 0
+	m.winPackConfigTab.SetBoundsRect(winPackConfigBR)
+	m.winPackConfigTab.SetColor(colors.ClWhite)
+	m.winPackConfigTab.EnableScrollButton(false)
+	m.winPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+	m.winPackConfigTab.SetParent(m.platformTabPageWindows)
+	m.winPackConfigTab.SetOnChange(func(sender lcl.IObject) {
+		page := sender.(*wg.TPage)
+		if page == m.winPackConfigTabPageBinSign {
+			m.createWinSignCommandList()
+		} else if page == m.winPackConfigTabPageAssociateFiles {
+			m.createWinAssociateFiles()
+		} else if page == m.winPackConfigTabPageAssociateProtocols {
+			m.createWinAssociateProtocols()
+		} else if page == m.winPackConfigTabPageAppxAssets {
+			m.createWinAppxAssets()
+		} else if page == m.winPackConfigTabPageNSISAssets {
+			m.createWinNSISAssets()
+		} else if page == m.winPackConfigTabPageNSISLicense {
+			m.createWinNSISLicense()
+		}
+	})
+	{
+		m.winPackConfigTabPageBinSign = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageBinSign.SetCaption("签 名")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageBinSign)
+		m.winPackConfigTabPageBinSign.SetActive(true)
+		winSignEnableRect := types.TRect{Left: 10, Top: 5}
+		winSignEnableRect.SetWidth(50)
+		winSignEnableRect.SetHeight(35)
+		winSignEnableEnableColor := colors.RGBToColor(66, 133, 244)
+		winSignEnableDisableColor := colors.RGBToColor(224, 224, 224)
+		winSignEnableEnableFont := lcl.NewFont()
+		winSignEnableEnableFont.SetName("微软雅黑")
+		winSignEnableEnableFont.SetSize(10)
+		winSignEnableEnableFont.SetStyle(types.NewSet(types.FsBold))
+		winSignEnableEnableFont.SetColor(colors.RGBToColor(255, 255, 255))
+		winSignEnableDisableFont := lcl.NewFont()
+		winSignEnableDisableFont.SetName("微软雅黑")
+		winSignEnableDisableFont.SetSize(10)
+		winSignEnableDisableFont.SetStyle(types.NewSet(types.FsBold))
+		winSignEnableDisableFont.SetColor(colors.RGBToColor(158, 158, 158))
+		m.winSignEnable = wg.NewButton(m)
+		m.winSignEnable.Font().SetColor(colors.ClWhite)
+		m.winSignEnable.SetRadius(10)
+		m.winSignEnable.SetCursor(types.CrHandPoint)
+		m.winSignEnable.SetBoundsRect(winSignEnableRect)
+		m.winSignEnable.SetColor(winSignEnableEnableColor)
+		m.winSignEnable.SetDownColor(winSignEnableEnableColor, winSignEnableEnableColor)
+		m.winSignEnable.SetEnterColor(winSignEnableEnableColor, winSignEnableEnableColor)
+		m.winSignEnable.SetDisabledColor(winSignEnableDisableColor, winSignEnableDisableColor)
+		m.winSignEnable.SetParent(m.winPackConfigTabPageBinSign)
+		m.winSignEnable.SetOnClick(func(sender lcl.IObject) {
+			if m.winSignEnable.Disable() {
+				m.winSignEnable.SetText("已启用")
+				m.winSignEnable.SetDisable(false)
+				m.winSignEnable.SetFont(winSignEnableEnableFont)
+			} else {
+				m.winSignEnable.SetText("已禁用")
+				m.winSignEnable.SetDisable(true)
+				m.winSignEnable.SetFont(winSignEnableDisableFont)
+			}
+		})
+		m.winSignEnable.SetDisable(!bean.GProject.BuildOption.WinSign.Enable)
+		if m.winSignEnable.Disable() {
+			m.winSignEnable.SetText("已禁用")
+		} else {
+			m.winSignEnable.SetText("已启用")
+		}
+	}
+	{
+		m.winPackConfigTabPageAssociateFiles = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageAssociateFiles.SetCaption("关联文件")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateFiles)
+	}
+	{
+		m.winPackConfigTabPageAssociateProtocols = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageAssociateProtocols.SetCaption("关联协议")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateProtocols)
+	}
+	{
+		m.winPackConfigTabPageAppxAssets = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageAppxAssets.SetCaption("Appx Assets")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAppxAssets)
+	}
+	{
+		m.winPackConfigTabPageNSISAssets = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageNSISAssets.SetCaption("NSIS Assets")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageNSISAssets)
+	}
+	{
+		m.winPackConfigTabPageNSISLicense = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageNSISLicense.SetCaption("NSIS License")
+		setWinPackConfigTabPageStyle(m.winPackConfigTabPageNSISLicense)
+	}
 }
 
-func (m *TBuildForm) winSignCommandList(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(550, 120, "配置 Windows SDK signtool 签名命令", m)
-	newForm.SetMultipleLine(false)
-	newForm.SetDefaultText(strings.Join(m.winSignArray, "\n"))
-	newForm.SetDemoText(`使用 signtool.exe 工具签名证书. 自动(auto=cmd)或指定证书签名(file=cmd)
-说明: 证书相对路径需放在 resources/assets 目录
+func (m *TBuildForm) createWinSignCommandList() {
+	if m.winPackConfigTabPageBinSignMemoBox == nil {
+		rect := types.TRect{Top: 40, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageBinSign.Width())
+		rect.SetHeight(m.winPackConfigTabPageBinSign.Height())
+		m.winPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, "配置 Windows SDK signtool 签名命令", m.winPackConfigTabPageBinSign)
+		m.winPackConfigTabPageBinSignMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageBinSignMemoBox.SetMultipleLine(false)
+		m.winPackConfigTabPageBinSignMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinSign.Cert, "\n"))
+		m.winPackConfigTabPageBinSignMemoBox.SetDemoText(`使用说明: signtool.exe 工具签名. 自动(auto=cmd)或指定证书签名(file=cmd)
+备注: 证书相对路径需放在 resources/assets 目录
 auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 file=signtool sign /f cert.pfx /p 密码 /fd SHA256`)
-	newForm.SetOnOK(func(lines []string) {
-		var signCMD []string
-		for _, line := range lines {
-			banner := strings.Split(line, "=")
-			if len(banner) == 2 {
-				signCMD = append(signCMD, line)
-			}
-		}
-		m.winSignArray = signCMD
-	})
-	newForm.ShowModal()
+		m.winPackConfigTabPageBinSignMemoBox.Show()
+	}
 }
 
-func (m *TBuildForm) AssociateFilesClick(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(600, 200, `配置应用关联文件`, m)
-	newForm.SetDefaultText(strings.Join(m.winAssociateFileArray, "\n"))
-	newForm.SetDemoText(`多个换行, 字段使用 | 分割
+func (m *TBuildForm) createWinAssociateFiles() {
+	if m.winPackConfigTabPageAssociateFilesMemoBox == nil {
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageAssociateFiles.Width())
+		rect.SetHeight(m.winPackConfigTabPageAssociateFiles.Height())
+		m.winPackConfigTabPageAssociateFilesMemoBox = NewCommonMemoBox(rect, "配置应用关联文件", m.winPackConfigTabPageAssociateFiles)
+		m.winPackConfigTabPageAssociateFilesMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageAssociateFilesMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateFileList, "\n"))
+		m.winPackConfigTabPageAssociateFilesMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
 字段说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
 eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project`)
-	newForm.SetOnOK(func(lines []string) {
-		m.winAssociateFileArray = lines
-	})
-	newForm.ShowModal()
+		m.winPackConfigTabPageAssociateFilesMemoBox.Show()
+	}
 }
 
-func (m *TBuildForm) AssociateProtocolsClick(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(600, 200, `配置应用关联协议`, m)
-	newForm.SetDefaultText(strings.Join(m.winAssociateProtocolArray, "\n"))
-	newForm.SetDemoText(`多个换行, 字段使用 | 分割
+func (m *TBuildForm) createWinAssociateProtocols() {
+	if m.winPackConfigTabPageAssociateProtocolsMemoBox == nil {
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageAssociateProtocols.Width())
+		rect.SetHeight(m.winPackConfigTabPageAssociateProtocols.Height())
+		m.winPackConfigTabPageAssociateProtocolsMemoBox = NewCommonMemoBox(rect, "配置应用关联协议", m.winPackConfigTabPageAssociateProtocols)
+		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateProtocolList, "\n"))
+		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
 字段说明: Scheme(协议头) | DESCRIPTION(协议描述)
 myapp | Open My App
 fs | fs soft scheme`)
-	newForm.SetOnOK(func(lines []string) {
-		m.winAssociateProtocolArray = lines
-	})
-	newForm.ShowModal()
+		m.winPackConfigTabPageAssociateProtocolsMemoBox.Show()
+	}
 }
 
-func (m *TBuildForm) BannerClick(sender lcl.IObject) {
-	// 选择 png 转为 bmp
-	newForm := NewCommonMemoForm(600, 200, `配置 NSIS Banner/ICON 图片资源`, m)
-	newForm.SetDefaultText(strings.Join(m.nsisBanner, "\n"))
-	newForm.SetDemoText(`welcome 和 header (.png .bmp), icon(.png .ico) 相对路径需放在 resources/assets
+func (m *TBuildForm) createWinAppxAssets() {
+	if m.winPackConfigTabPageAppxAssetsMemoBox == nil {
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageAppxAssets.Width())
+		rect.SetHeight(m.winPackConfigTabPageAppxAssets.Height())
+		m.winPackConfigTabPageAppxAssetsMemoBox = NewCommonMemoBox(rect, "配置 Appx Assets 图片资源", m.winPackConfigTabPageAppxAssets)
+		m.winPackConfigTabPageAppxAssetsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageAppxAssetsMemoBox.SetDefaultText(bean.GProject.BuildOption.WinAppx.Assets)
+		m.winPackConfigTabPageAppxAssetsMemoBox.SetDemoText(`使用说明: 自定义 Assets 图片, 需放在 resources/assets 目录
+备注: 使用 | 分隔, 图片名固定
+PropertiesLogo.png | Square44x44Logo.png | Square150x150Logo.png | 
+Wide310x150Logo.png | SplashScreen.png | AssociateFileIcon.png | AssociateProtocolLogo.png`)
+		m.winPackConfigTabPageAppxAssetsMemoBox.Show()
+	}
+}
+
+func (m *TBuildForm) createWinNSISAssets() {
+	if m.winPackConfigTabPageNSISAssetsMemoBox == nil {
+		var winNsisBanner []string
+		winNsisBanner = append(winNsisBanner, "welcome="+bean.GProject.BuildOption.NSIS.WelcomeBanner)
+		winNsisBanner = append(winNsisBanner, "header="+bean.GProject.BuildOption.NSIS.HeaderBanner)
+		winNsisBanner = append(winNsisBanner, "icon="+bean.GProject.BuildOption.NSIS.ICON)
+		winNsisBanner = append(winNsisBanner, "unicon="+bean.GProject.BuildOption.NSIS.UnICON)
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageNSISAssets.Width())
+		rect.SetHeight(m.winPackConfigTabPageNSISAssets.Height())
+		m.winPackConfigTabPageNSISAssetsMemoBox = NewCommonMemoBox(rect, "配置 NSIS Banner/ICON 图片资源", m.winPackConfigTabPageNSISAssets)
+		m.winPackConfigTabPageNSISAssetsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageNSISAssetsMemoBox.SetDefaultText(strings.Join(winNsisBanner, "\n"))
+		m.winPackConfigTabPageNSISAssetsMemoBox.SetDemoText(`使用说明: welcome 和 header (.png .bmp), icon(.png .ico) 需放在 resources/assets 目录
 welcome=welcome.png
 header=header.png
 icon=nsis_icon.ico
 unicon=nsis_unicon.ico`)
-	newForm.SetOnOK(func(lines []string) {
-		var banners []string
-		for _, line := range lines {
-			banner := strings.Split(line, "=")
-			if len(banner) == 2 {
-				banners = append(banners, line)
-			}
-		}
-		m.nsisBanner = banners
-	})
-	newForm.ShowModal()
+		m.winPackConfigTabPageNSISAssetsMemoBox.Show()
+	}
 }
 
-func (m *TBuildForm) LicenseClick(sender lcl.IObject) {
-	// 文本保存到临时文件
-	licensePath := filepath.Join(bean.ResourcePath(), bean.GProject.Name+"-license.txt")
-	licenseText := ""
-	if data, err := os.ReadFile(licensePath); err == nil {
-		licenseText = string(data)
-	}
-	newForm := NewCommonMemoForm(600, 400, `设置许可证内容`, m)
-	newForm.SetDefaultText(licenseText)
-	newForm.SetOnOK(func(lines []string) {
-		_ = os.Remove(licensePath)
-		if len(lines) > 0 {
-			data := strings.Join(lines, "\n")
-			utf8Bom := []byte{0xEF, 0xBB, 0xBF}
-			licenseData := append(utf8Bom, data...)
-			_ = os.WriteFile(licensePath, licenseData, 0644)
-			m.license = licensePath
-		} else {
-			m.license = ""
+func (m *TBuildForm) createWinNSISLicense() {
+	if m.winPackConfigTabPageNSISLicenseMemoBox == nil {
+		licenseName := bean.GProject.BuildOption.NSIS.License
+		if licenseName == "" {
+			licenseName = bean.GProject.Name + "-license.txt"
 		}
-	})
-	newForm.ShowModal()
+		// 读取保存到 resource/xxx-license.txt 的内容
+		licensePath := filepath.Join(bean.ResourcePath(), licenseName)
+		licenseText := ""
+		if data, err := os.ReadFile(licensePath); err == nil {
+			licenseText = string(data)
+		}
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.winPackConfigTabPageNSISLicense.Width())
+		rect.SetHeight(m.winPackConfigTabPageNSISLicense.Height())
+		m.winPackConfigTabPageNSISLicenseMemoBox = NewCommonMemoBox(rect, "配置 NSIS 许可证内容", m.winPackConfigTabPageNSISLicense)
+		m.winPackConfigTabPageNSISLicenseMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.winPackConfigTabPageNSISLicenseMemoBox.SetDefaultText(licenseText)
+		m.winPackConfigTabPageNSISLicenseMemoBox.Show()
+	}
+	// 文本保存到临时文件
+	//_ = os.Remove(licensePath)
+	//if len(lines) > 0 {
+	//	data := strings.Join(lines, "\n")
+	//	utf8Bom := []byte{0xEF, 0xBB, 0xBF}
+	//	licenseData := append(utf8Bom, data...)
+	//	_ = os.WriteFile(licensePath, licenseData, 0644)
+	//	m.license = licensePath
+	//} else {
+	//	m.license = ""
+	//}
 }
 
 func (m *TBuildForm) TemplateVariablesClick(sender lcl.IObject) {
