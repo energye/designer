@@ -61,7 +61,7 @@ func (m *TWinAssociateProtocols) IsEmpty() bool {
 
 func packageNSIS() bool {
 	if !checkToolCMD(makensis) {
-		event.ConsoleWriteError("Package - check nsis Not Installed")
+		event.ConsoleWriteError("Package - check ", makensis, " Not Installed")
 		return false
 	}
 	var (

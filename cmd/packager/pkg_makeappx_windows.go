@@ -37,6 +37,10 @@ import (
 const makeappx = "MakeAppx.exe"
 
 func packageAppx() bool {
+	if !checkToolCMD(makeappx) {
+		event.ConsoleWriteError("Package - check", makeappx, " Not Installed")
+		return false
+	}
 	var (
 		libEnergy   string
 		libWebview2 string
