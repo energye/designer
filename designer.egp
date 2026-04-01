@@ -11,7 +11,7 @@
     "macos": true,
     "linux": true,
     "arch_amd64": true,
-    "arch_386": true,
+    "arch_386": false,
     "arch_arm64": true,
     "arch_arm": true,
     "arch_loong64": false,
@@ -40,9 +40,20 @@
       "enable": false,
       "cert": null
     },
+    "win_appx": {
+      "properties_logo": "",
+      "square_44_x_44_logo": "",
+      "square_150_x_150_logo": "",
+      "wide_310_x_150_logo": "",
+      "splash_screen": "",
+      "associate_file_icon": "",
+      "associate_protocol_logo": ""
+    },
     "nsis": {
       "welcome_banner": "nsis_welcome_banner.png",
       "header_banner": "nsis_header_banner.png",
+      "icon": "",
+      "unicon": "",
       "license": ""
     },
     "mac_dmg": false,

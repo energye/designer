@@ -643,10 +643,12 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		lines := m.winPackConfigTabPageNSISLicenseMemoBox.Lines()
 		if len(lines) > 0 {
 			data := strings.Join(lines, "\n")
-			utf8Bom := []byte{0xEF, 0xBB, 0xBF}
-			licenseData := append(utf8Bom, data...)
-			_ = os.WriteFile(licensePath, licenseData, 0644)
-			_, licenseFileName = filepath.Split(licensePath)
+			if strings.TrimSpace(data) != "" {
+				utf8Bom := []byte{0xEF, 0xBB, 0xBF}
+				licenseData := append(utf8Bom, data...)
+				_ = os.WriteFile(licensePath, licenseData, 0644)
+				_, licenseFileName = filepath.Split(licensePath)
+			}
 		}
 		bean.GProject.BuildOption.NSIS.License = licenseFileName
 	}
