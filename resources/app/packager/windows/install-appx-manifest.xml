@@ -19,7 +19,7 @@
     <DisplayName>{{.DisplayName}}</DisplayName>
     <PublisherDisplayName>{{.CompanyName}}</PublisherDisplayName>
     <Description>{{.Description}}</Description>
-    <Logo>Assets\PropertiesLogo.png</Logo>
+    <Logo>Assets\{{.PropertiesLogo}}</Logo>
   </Properties>
 
   <!-- 系统兼容性 -->
@@ -39,12 +39,12 @@
         DisplayName="{{.DisplayName}}"
         Description="{{.Description}}"
         BackgroundColor="transparent"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png">
+        Square150x150Logo="Assets\{{.Square150x150Logo}}"
+        Square44x44Logo="Assets\{{.Square44x44Logo}}">
 
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:DefaultTile Wide310x150Logo="Assets\{{.Wide310x150Logo}}" />
 
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\{{.SplashScreen}}" />
       </uap:VisualElements>
       
       <Extensions>
@@ -54,7 +54,7 @@
         <uap:Extension Category="windows.fileTypeAssociation">
           <uap:FileTypeAssociation Name="{{.ProductIdentity}}">
             <uap:DisplayName>{{.DisplayName}}</uap:DisplayName>
-            <uap:Logo>Assets\AssociateFileIcon.png</uap:Logo>
+            <uap:Logo>Assets\{{.AssociateFileIcon}}</uap:Logo>
             <uap:InfoTip>{{.AssociateFileInfoTip}}</uap:InfoTip>
             <uap:SupportedFileTypes>
               {{range .AssociateFiles}}
@@ -65,11 +65,12 @@
         </uap:Extension>
         {{end}}
         <!-- URI 协议 -->
+        {{$AssociateProtocolLogo := .AssociateProtocolLogo}}
         {{range .AssociateProtocols}}
         <uap:Extension Category="windows.protocol">
           <uap:Protocol Name="{{.Scheme}}">
             <uap:DisplayName>{{.Description}}</uap:DisplayName>
-            <uap:Logo>Assets\AssociateProtocolLogo.png</uap:Logo>
+            <uap:Logo>Assets\{{$AssociateProtocolLogo}}</uap:Logo>
           </uap:Protocol>
         </uap:Extension>
         {{end}}

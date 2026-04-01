@@ -85,6 +85,8 @@ func packageAppx() bool {
 	if ids := strings.Split(appID, "."); len(ids) >= 2 {
 		appCompanyName = ids[0]
 	}
+	resourcesPath := bean.ResourcePath()
+	embedPath := bean.ResourceEmbedPath()
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
 	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
@@ -117,7 +119,6 @@ func packageAppx() bool {
 
 	publisher := ""
 	if buildOption.WinSign.Enable {
-		// signtool /dump /v codesign.pfx
 		cmdInfo := getSignCMDInfo()
 		if cmdInfo == nil {
 			event.ConsoleWriteError("Package - 已开启签名, 但获取签名命令配置失败")
@@ -129,21 +130,6 @@ func packageAppx() bool {
 			publisher = publisherFromPFX(cmdInfo.File, cmdInfo.Password)
 		}
 	}
-
-	// 模板填充数据
-	data := map[string]any{}
-	data["BinaryName"] = buildFileName                    // 应用运行二进制名
-	data["CompanyName"] = appCompanyName                  // 企业名
-	data["ProductIdentity"] = appOption.Id                // app 唯一id, 内部标识
-	data["Publisher"] = publisher                         // Publisher，"signtool /dump /v cert.pfx" : CN=MyCompany, O=MyOrg, C=CN
-	data["ProcessorArchitecture"] = processorArchitecture // ProcessorArchitecture，x86 x64 arm arm64
-	data["DisplayName"] = appOption.Title                 // 显示名
-	data["ProductVersion"] = appOption.Version            // app 版本
-	data["Description"] = appOption.Desc                  //
-	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
-	data["AssociateFileInfoTip"] = "使用 " + appOption.Title + " 打开" // TODO 需换成自动语言
-	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
-
 	// 创建 app 打包目录
 	energyMsixAppRootDir := filepath.Join(output, "energy_msix_"+GOARCH)
 	_ = os.RemoveAll(energyMsixAppRootDir)
@@ -163,6 +149,99 @@ func packageAppx() bool {
 	}
 	copyAppBinary := filepath.Join(energyMsixAppRootDir, buildFileName)
 	copyLibEnergyBinary := filepath.Join(energyMsixAppRootDir, libEnergy)
+
+	// 应用二进制程序使用的图片
+	srcIconPng := filepath.Join(embedPath, "icon.png")
+	srcIconPngFile, err := os.Open(srcIconPng)
+	if err != nil {
+		event.ConsoleWriteError("Package - Open icon.png:", err.Error())
+		return false
+	}
+	defer srcIconPngFile.Close()
+	srcIconPngSrcImg, _, err := image.Decode(srcIconPngFile)
+	if err != nil {
+		event.ConsoleWriteError("Package - Decode icon.png:", err.Error())
+		return false
+	}
+	// Assets dir
+	PropertiesLogo := &assetsPng{Name: "PropertiesLogo.png", W: 50, H: 50}
+	Square44x44Logo := &assetsPng{Name: "Square44x44Logo.png", W: 44, H: 44}
+	Square150x150Logo := &assetsPng{Name: "Square150x150Logo.png", W: 150, H: 150}
+	Wide310x150Logo := &assetsPng{Name: "Wide310x150Logo.png", W: 310, H: 150}
+	SplashScreen := &assetsPng{Name: "SplashScreen.png", W: 620, H: 300}
+	AssociateFileIcon := &assetsPng{Name: "AssociateFileIcon.png", W: 256, H: 256}
+	AssociateProtocolLogo := &assetsPng{Name: "AssociateProtocolLogo.png", W: 88, H: 88}
+
+	// 模板填充数据
+	data := map[string]any{}
+	data["BinaryName"] = buildFileName                    // 应用运行二进制名
+	data["CompanyName"] = appCompanyName                  // 企业名
+	data["ProductIdentity"] = appOption.Id                // app 唯一id, 内部标识
+	data["Publisher"] = publisher                         // Publisher，"signtool /dump /v cert.pfx" : CN=MyCompany, O=MyOrg, C=CN
+	data["ProcessorArchitecture"] = processorArchitecture // ProcessorArchitecture，x86 x64 arm arm64
+	data["DisplayName"] = appOption.Title                 // 显示名
+	data["ProductVersion"] = appOption.Version            // app 版本
+	data["Description"] = appOption.Desc                  //
+	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
+	data["AssociateFileInfoTip"] = "Use " + appOption.Title + " Open" // TODO 需换成自动语言
+	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
+
+	// 处理 appx/Assets 图片资源
+	handleAssets := func(logo, customLogoName string, useSrcIconPng bool, assPng *assetsPng) bool {
+		if srcLogoPath := filepath.Join(resourcesPath, "assets", customLogoName); tool.IsExist(srcLogoPath) && customLogoName != "" {
+			// 使用自定义图
+			err = tool.CopyFile(srcLogoPath, filepath.Join(assetsDir, customLogoName))
+			if err != nil {
+				event.ConsoleWriteError("Package - Custom Resize And Save", srcLogoPath, err.Error())
+				return false
+			}
+			data[logo] = customLogoName
+		} else if useSrcIconPng {
+			// 使用应用二进制图
+			newIconPng := resize.Resize(assPng.W, assPng.H, srcIconPngSrcImg, resize.Lanczos3)
+			err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, assPng.Name))
+			if err != nil {
+				event.ConsoleWriteError("Package - Use src icon Resize And Save", assPng.Name, err.Error())
+				return false
+			}
+			data[logo] = assPng.Name
+		} else {
+			// 使用创建空透明图
+			newIconPng, err := createTransparentPNG(int(assPng.W), int(assPng.H))
+			if err != nil {
+				event.ConsoleWriteError("Package - Create Transparent PNG", assPng.Name, err.Error())
+				return false
+			}
+			err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, assPng.Name))
+			if err != nil {
+				event.ConsoleWriteError("Package - Save", assPng.Name, err.Error())
+				return false
+			}
+			data[logo] = assPng.Name
+		}
+		return true
+	}
+	if !handleAssets("PropertiesLogo", bean.GProject.BuildOption.WinAppx.PropertiesLogo, true, PropertiesLogo) {
+		return false
+	}
+	if !handleAssets("Square44x44Logo", bean.GProject.BuildOption.WinAppx.Square44x44Logo, true, Square44x44Logo) {
+		return false
+	}
+	if !handleAssets("Square150x150Logo", bean.GProject.BuildOption.WinAppx.Square150x150Logo, true, Square150x150Logo) {
+		return false
+	}
+	if !handleAssets("Wide310x150Logo", bean.GProject.BuildOption.WinAppx.Wide310x150Logo, false, Wide310x150Logo) {
+		return false
+	}
+	if !handleAssets("SplashScreen", bean.GProject.BuildOption.WinAppx.SplashScreen, false, SplashScreen) {
+		return false
+	}
+	if !handleAssets("AssociateFileIcon", bean.GProject.BuildOption.WinAppx.AssociateFileIcon, true, AssociateFileIcon) {
+		return false
+	}
+	if !handleAssets("AssociateProtocolLogo", bean.GProject.BuildOption.WinAppx.AssociateProtocolLogo, true, AssociateProtocolLogo) {
+		return false
+	}
 
 	{
 		// copy file
@@ -200,71 +279,6 @@ func packageAppx() bool {
 			event.ConsoleWriteError("Package - Create AppxManifest.xml:", err.Error())
 			return false
 		}
-		// Assets dir
-		pngFiles := []assetsPng{
-			{Name: "PropertiesLogo.png", W: 50, H: 50},
-			{Name: "Square44x44Logo.png", W: 44, H: 44},
-			{Name: "Square150x150Logo.png", W: 150, H: 150},
-			{Name: "Wide310x150Logo.png", W: 310, H: 150},
-			{Name: "SplashScreen.png", W: 6200, H: 300},
-			{Name: "AssociateFileIcon.png", W: 256, H: 256},
-			{Name: "AssociateProtocolLogo.png", W: 88, H: 88},
-		}
-		embedPath := bean.ResourceEmbedPath()
-		srcIconPng := filepath.Join(embedPath, "icon.png")
-		srcIconPngFile, err := os.Open(srcIconPng)
-		if err != nil {
-			event.ConsoleWriteError("Package - Open icon.png:", err.Error())
-			return false
-		}
-		defer srcIconPngFile.Close()
-		srcIconPngSrcImg, _, err := image.Decode(srcIconPngFile)
-		if err != nil {
-			event.ConsoleWriteError("Package - Decode icon.png:", err.Error())
-			return false
-		}
-		resourcesPath := bean.ResourcePath()
-		for _, pngFile := range pngFiles {
-			// 项目目录 resources/assets 查找这个文件, 如果有直接复制到 Assets 打包目录
-			srcPng := filepath.Join(resourcesPath, "assets", pngFile.Name)
-			if tool.IsExist(srcPng) {
-				err = tool.CopyFile(srcPng, filepath.Join(assetsDir, pngFile.Name))
-				if err != nil {
-					event.ConsoleWriteError("Package - Copy Assets:", err.Error())
-					return false
-				}
-			} else {
-				// 项目目录 resources/assets 没有这个文件
-				if pngFile.Name == "AssociateFileIcon.png" {
-					// 使用 icon.png 256x256
-					err = tool.CopyFile(srcIconPng, filepath.Join(assetsDir, pngFile.Name))
-					if err != nil {
-						event.ConsoleWriteError("Package - Copy AssociateFileIcon.png:", err.Error())
-						return false
-					}
-				} else if pngFile.Name == "AssociateProtocolLogo.png" {
-					// 使用 icon.png 88x88
-					newIconPng := resize.Resize(88, 88, srcIconPngSrcImg, resize.Lanczos3)
-					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, "AssociateProtocolLogo.png"))
-					if err != nil {
-						event.ConsoleWriteError("Package - Resize And Save AssociateProtocolLogo.png:", err.Error())
-						return false
-					}
-				} else {
-					// 创建空文件代替
-					newIconPng, err := createTransparentPNG(pngFile.W, pngFile.H)
-					if err != nil {
-						event.ConsoleWriteError("Package - Create Empty", pngFile.Name, err.Error())
-						return false
-					}
-					err = saveAccessPNG(newIconPng, filepath.Join(assetsDir, pngFile.Name))
-					if err != nil {
-						event.ConsoleWriteError("Package - Save", pngFile.Name, err.Error())
-						return false
-					}
-				}
-			}
-		}
 	}
 
 	// 签名文件 signtool
@@ -286,7 +300,7 @@ func packageAppx() bool {
 
 type assetsPng struct {
 	Name string
-	W, H int
+	W, H uint
 }
 
 func createTransparentPNG(width, height int) (image.Image, error) {

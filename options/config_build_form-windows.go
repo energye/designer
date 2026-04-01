@@ -246,16 +246,28 @@ fs | fs soft scheme`)
 
 func (m *TBuildForm) createWinAppxAssets() {
 	if m.winPackConfigTabPageAppxAssetsMemoBox == nil {
+		var winAppxAssets []string
+		winAppxAssets = append(winAppxAssets, "propertiesLogo="+bean.GProject.BuildOption.WinAppx.PropertiesLogo)
+		winAppxAssets = append(winAppxAssets, "square44x44Logo="+bean.GProject.BuildOption.WinAppx.Square44x44Logo)
+		winAppxAssets = append(winAppxAssets, "square150x150Logo="+bean.GProject.BuildOption.WinAppx.Square150x150Logo)
+		winAppxAssets = append(winAppxAssets, "wide310x150Logo="+bean.GProject.BuildOption.WinAppx.Wide310x150Logo)
+		winAppxAssets = append(winAppxAssets, "splashScreen="+bean.GProject.BuildOption.WinAppx.SplashScreen)
+		winAppxAssets = append(winAppxAssets, "associateFileIcon="+bean.GProject.BuildOption.WinAppx.AssociateFileIcon)
+		winAppxAssets = append(winAppxAssets, "associateProtocolLogo="+bean.GProject.BuildOption.WinAppx.AssociateProtocolLogo)
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageAppxAssets.Width())
 		rect.SetHeight(m.winPackConfigTabPageAppxAssets.Height())
 		m.winPackConfigTabPageAppxAssetsMemoBox = NewCommonMemoBox(rect, "配置 Appx Assets 图片资源", m.winPackConfigTabPageAppxAssets)
 		m.winPackConfigTabPageAppxAssetsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
-		m.winPackConfigTabPageAppxAssetsMemoBox.SetDefaultText(bean.GProject.BuildOption.WinAppx.Assets)
+		m.winPackConfigTabPageAppxAssetsMemoBox.SetDefaultText(strings.Join(winAppxAssets, "\n"))
 		m.winPackConfigTabPageAppxAssetsMemoBox.SetDemoText(`使用说明: 自定义 Assets 图片, 需放在 resources/assets 目录
-备注: 使用 | 分隔, 图片名固定
-PropertiesLogo.png | Square44x44Logo.png | Square150x150Logo.png | 
-Wide310x150Logo.png | SplashScreen.png | AssociateFileIcon.png | AssociateProtocolLogo.png`)
+propertiesLogo=PropertiesLogo.png
+square44x44Logo=Square44x44Logo.png
+square150x150Logo=Square150x150Logo.png
+wide310x150Logo=Wide310x150Logo.png
+splashScreen=SplashScreen.png
+associateFileIcon=AssociateFileIcon.png
+associateProtocolLogo=AssociateProtocolLogo.png`)
 		m.winPackConfigTabPageAppxAssetsMemoBox.Show()
 	}
 }

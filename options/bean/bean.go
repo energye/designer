@@ -97,7 +97,13 @@ type TSign struct {
 }
 
 type TAppx struct {
-	Assets string `json:"assets"` // 存放文件名, 在 resources/assets 目录
+	PropertiesLogo        string `json:"properties_logo"`
+	Square44x44Logo       string `json:"square_44_x_44_logo"`
+	Square150x150Logo     string `json:"square_150_x_150_logo"`
+	Wide310x150Logo       string `json:"wide_310_x_150_logo"`
+	SplashScreen          string `json:"splash_screen"`
+	AssociateFileIcon     string `json:"associate_file_icon"`
+	AssociateProtocolLogo string `json:"associate_protocol_logo"`
 }
 
 type TNSIS struct {

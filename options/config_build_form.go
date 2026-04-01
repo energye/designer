@@ -651,17 +651,38 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		bean.GProject.BuildOption.NSIS.License = licenseFileName
 	}
 	if m.winPackConfigTabPageAppxAssetsMemoBox != nil {
-		assets := tool.Buffer{}
+		var PropertiesLogo, Square44x44Logo, Square150x150Logo, Wide310x150Logo, SplashScreen, AssociateFileIcon, AssociateProtocolLogo string
 		for _, line := range m.winPackConfigTabPageAppxAssetsMemoBox.Lines() {
 			line = strings.TrimSpace(line)
-			if line != "" {
-				if assets.Len() > 0 {
-					assets.WriteByte('\n')
+			assets := strings.Split(line, "=")
+			if len(assets) == 2 {
+				name := strings.ToLower(strings.TrimSpace(assets[0]))
+				image := strings.TrimSpace(assets[1])
+				switch name {
+				case "propertieslogo":
+					PropertiesLogo = image
+				case "square44x44logo":
+					Square44x44Logo = image
+				case "square150x150logo":
+					Square150x150Logo = image
+				case "wide310x150logo":
+					Wide310x150Logo = image
+				case "splashscreen":
+					SplashScreen = image
+				case "associatefileicon":
+					AssociateFileIcon = image
+				case "associateprotocollogo":
+					AssociateProtocolLogo = image
 				}
-				assets.WriteString(line)
 			}
 		}
-		bean.GProject.BuildOption.WinAppx.Assets = assets.String()
+		bean.GProject.BuildOption.WinAppx.PropertiesLogo = PropertiesLogo
+		bean.GProject.BuildOption.WinAppx.Square44x44Logo = Square44x44Logo
+		bean.GProject.BuildOption.WinAppx.Square150x150Logo = Square150x150Logo
+		bean.GProject.BuildOption.WinAppx.Wide310x150Logo = Wide310x150Logo
+		bean.GProject.BuildOption.WinAppx.SplashScreen = SplashScreen
+		bean.GProject.BuildOption.WinAppx.AssociateFileIcon = AssociateFileIcon
+		bean.GProject.BuildOption.WinAppx.AssociateProtocolLogo = AssociateProtocolLogo
 	}
 	if m.winPackConfigTabPageNSISAssetsMemoBox != nil {
 		var winNsisAssets []string
@@ -675,7 +696,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		for _, line := range winNsisAssets {
 			banner := strings.Split(line, "=")
 			if len(banner) == 2 {
-				name := strings.TrimSpace(banner[0])
+				name := strings.ToLower(strings.TrimSpace(banner[0]))
 				image := strings.TrimSpace(banner[1])
 				if name == "welcome" && image != "" {
 					nsisWelcomeBanner = image
