@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	_ "github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/frameworks"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"os"
@@ -36,8 +37,10 @@ func main() {
 	logs.Level = logs.LevelDebug
 	//logs.Level = logs.LevelInfo
 	//logs.Level = logs.LevelError
+	//os.Setenv("--ws", "gtk3")
 	libname.LibName = frameworks.ExtractLibrary()
 	lcl.Init(nil, nil)
+	println("Widget:", api.Widget())
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
 	designer.Run()
