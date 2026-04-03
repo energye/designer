@@ -46,6 +46,7 @@ var {{$Form.Form.Name}} T{{$Form.Form.Name}}
 
 // FormCreate 窗体创建接口实现. 自动调用
 func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
+	m.TWindow.InternalBeforeFormCreate()
 	// 设置窗体属性
 	{{$formComp := $Form.Form}}
 	{{- range $propIndex, $prop := $formComp.Properties -}}
