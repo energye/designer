@@ -18,6 +18,7 @@ package packager
 import (
 	"embed"
 	"fmt"
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -44,6 +45,31 @@ const (
 
 //go:embed dmg
 var images embed.FS
+
+func platformPackage() {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return
+	}
+	option := proj.BuildOption
+	packageStart := func() {
+		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
+		if !build.Run() {
+			return
+		}
+		event.ConsoleWriteInfo("CMD-package-run")
+		packager()
+	}
+	if option.ArchAmd64 {
+		_ = os.Setenv("GOARCH", "amd64")
+		packageStart()
+	}
+	if option.ArchArm64 {
+		_ = os.Setenv("GOARCH", "arm64")
+		packageStart()
+	}
+}
 
 func packager() bool {
 	proj := bean.GProject

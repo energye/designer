@@ -1,0 +1,79 @@
+// Copyright © yanghy. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+
+//go:build linux
+
+package packager
+
+import (
+	"github.com/energye/designer/cmd/build"
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
+	"os"
+)
+
+func platformPackage() {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return
+	}
+	option := proj.BuildOption
+	packageStart := func() {
+		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
+		if !build.Run() {
+			return
+		}
+		event.ConsoleWriteInfo("CMD-package-run")
+		packager()
+	}
+	if option.ArchAmd64 {
+		_ = os.Setenv("GOARCH", "amd64")
+		packageStart()
+	}
+	if option.Arch386 {
+		_ = os.Setenv("GOARCH", "386")
+		packageStart()
+	}
+	if option.ArchArm64 {
+		_ = os.Setenv("GOARCH", "arm64")
+		packageStart()
+	}
+	if option.ArchArm {
+		_ = os.Setenv("GOARCH", "arm")
+		packageStart()
+	}
+}
+
+func packager() bool {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Package - GProject is nil")
+		return false
+	}
+	event.ConsoleWriteInfo("Package - project check config options")
+	option := proj.BuildOption
+	if !option.WinSign.Enable {
+		event.ConsoleWriteInfo("Package - Not Enabled cert")
+	}
+
+	if option.LinuxDEB {
+	}
+	if option.LinuxRPM {
+	}
+	return true
+}
+
+func createAppBundle() bool {
+	return true
+}

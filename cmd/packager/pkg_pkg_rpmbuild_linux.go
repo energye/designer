@@ -11,18 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package options
+//go:build linux
 
-import (
-	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/lcl/lcl"
-)
-
-func (m *TConfigProjectForm) initLinuxOptions() {
-	logs.Debug("TConfigProjectForm initLinuxOptions")
-	test := lcl.NewLabel(m)
-	test.SetLeft(m.platformTabPageLinux.Width()/2 - 20)
-	test.SetTop(m.platformTabPageLinux.Height()/2 - 20)
-	test.SetParent(m.platformTabPageLinux)
-	test.SetCaption("无")
-}
+package packager

@@ -40,8 +40,16 @@ func (m *TBuildForm) initLinuxOptions() {
 	m.linuxDEBCheckBox.SetChecked(bean.GProject.BuildOption.LinuxDEB)
 	m.linuxDEBCheckBox.SetParent(m.platformTabPageLinux)
 
+	m.linuxRPMCheckBox = lcl.NewCheckBox(m)
+	m.linuxRPMCheckBox.SetCaption("RPM 包")
+	m.linuxRPMCheckBox.SetLeft(210)
+	m.linuxRPMCheckBox.SetTop(m.linuxDEBCheckBox.Top())
+	m.linuxRPMCheckBox.SetFont(m.font)
+	m.linuxRPMCheckBox.SetChecked(bean.GProject.BuildOption.LinuxRPM)
+	m.linuxRPMCheckBox.SetParent(m.platformTabPageLinux)
+
 	dependsTitle := lcl.NewLabel(m)
-	dependsTitle.SetCaption("依赖项")
+	dependsTitle.SetCaption("配置选项")
 	dependsTitle.SetLeft(10)
 	dependsTitle.SetTop(nextTop(35))
 	dependsTitle.SetFont(m.titleFontTwo)

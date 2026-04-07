@@ -16,16 +16,43 @@
 package packager
 
 import (
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 )
 
 const signtool = "signtool.exe"
+
+func platformPackage() {
+	proj := bean.GProject
+	if proj == nil {
+		event.ConsoleWriteError("Build - project GProject is nil")
+		return
+	}
+	option := proj.BuildOption
+	packageStart := func() {
+		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
+		if !build.Run() {
+			return
+		}
+		event.ConsoleWriteInfo("CMD-package-run")
+		packager()
+	}
+	if option.ArchAmd64 {
+		_ = os.Setenv("GOARCH", "amd64")
+		packageStart()
+	}
+	if option.Arch386 {
+		_ = os.Setenv("GOARCH", "386")
+		packageStart()
+	}
+}
 
 // 打包程序流程
 func packager() bool {

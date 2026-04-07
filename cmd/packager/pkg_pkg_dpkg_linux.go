@@ -14,11 +14,3 @@
 //go:build linux
 
 package packager
-
-func packager() bool {
-	return true
-}
-
-func createAppBundle() bool {
-	return true
-}

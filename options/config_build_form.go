@@ -115,6 +115,7 @@ type TBuildForm struct {
 	macCommonLibCheckBox lcl.ICheckBox
 
 	linuxDEBCheckBox lcl.ICheckBox
+	linuxRPMCheckBox lcl.ICheckBox
 	dependsEdit      lcl.IEdit
 
 	// 操作按钮
@@ -735,6 +736,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.MacSign.Cert = m.macSignArray
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
+	bean.GProject.BuildOption.LinuxRPM = m.linuxRPMCheckBox.Checked()
 	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()
 	go func() {
 		// 更新项目配置文件

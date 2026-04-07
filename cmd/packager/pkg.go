@@ -15,7 +15,6 @@ package packager
 
 import (
 	"bytes"
-	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/tool/command"
@@ -30,33 +29,13 @@ func Run() bool {
 		event.ConsoleWriteError("Build - project GProject is nil")
 		return false
 	}
-	option := proj.BuildOption
 
-	start := func() {
-		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
-		if !build.Run() {
-			return
-		}
-		event.ConsoleWriteInfo("CMD-package-run")
-		packager()
-	}
 	defaultGOARCH := os.Getenv("GOARCH")
-	if option.ArchAmd64 {
-		_ = os.Setenv("GOARCH", "amd64")
-		start()
-	}
-	if option.Arch386 {
-		_ = os.Setenv("GOARCH", "386")
-		start()
-	}
-	_ = os.Setenv("GOARCH", defaultGOARCH)
+	defer os.Setenv("GOARCH", defaultGOARCH)
+
+	platformPackage()
 
 	return true
-	//if !build.Run() {
-	//	return false
-	//}
-	//event.ConsoleWriteInfo("CMD-package-run")
-	//return packager()
 }
 
 // AppBundle 创建 macOS 应用程序包

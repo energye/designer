@@ -88,6 +88,7 @@ type TBuildOption struct {
 	MacSign                  TSign    `json:"mac_sign"`
 	MacCommonLib             bool     `json:"mac_common_lib"`
 	LinuxDEB                 bool     `json:"linux_deb"`
+	LinuxRPM                 bool     `json:"linux_rpm"`
 	Depends                  string   `json:"depends"`
 }
 
