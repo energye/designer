@@ -27,6 +27,7 @@ func Run() bool {
 	return build()
 }
 
+// 编译打包信息到执行文件
 func xBuildPackVar() (result []string) {
 	if bean.GProject == nil {
 		return nil
