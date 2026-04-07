@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"os"
+	"os/exec"
 )
 
 func platformPackage() {
@@ -75,5 +76,14 @@ func packager() bool {
 }
 
 func createAppBundle() bool {
+	return true
+}
+
+// 检查命令工具
+func checkToolCMD(name string) bool {
+	_, err := exec.LookPath(name)
+	if err != nil {
+		return false
+	}
 	return true
 }

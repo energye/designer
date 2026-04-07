@@ -1,6 +1,8 @@
-github.com/energye/lcl v1.0.1 h1:0z+1rx4wtTllCR0LZRRpdb3GU16tyhd16D2ltEmJILo=
-github.com/energye/lcl v1.0.1/go.mod h1:FZjx6p28FYSv4XHl2cbxmtRWKlel+PNrfvbfF96nDsM=
-github.com/energye/widget v1.0.1 h1:YERARLgsKG5GMX/DWuLnp78dFKsiFjTSKclCQfTn0Ls=
-github.com/energye/widget v1.0.1/go.mod h1:a5/3Mi2aRq+1oRZok11pc2uavPWrnELvap/fVUY6Bso=
-golang.org/x/image v0.24.0 h1:AN7zRgVsbvmTfNyqIbbOraYL8mSwcKncEj8ofjgzcMQ=
-golang.org/x/image v0.24.0/go.mod h1:4b/ITuLfqYq1hqZcjofwctIhi7sZh2WaCjvsBNjjya8=
+github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/ISU=
+github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
+github.com/energye/energy/v3 v3.0.3 h1:lvLWu2HDmeFOJQ31whtfSr1iT5JXwGpHz5/SUaJVnzo=
+github.com/energye/energy/v3 v3.0.3/go.mod h1:Ku4l7pJJTtUx/ktyvLAghviD6Ln7C6F7chX49YsAWcw=
+github.com/energye/lcl v1.0.2 h1:3Y+qrjxmYin9oyhQ1ndrol4cbDSjhl+QY1Xuow0CVVc=
+github.com/energye/lcl v1.0.2/go.mod h1:k9apUIp1r1FMg1e+S3psbS4rQigEiyOmqxMsIOOz+Rs=
+github.com/energye/widget v1.0.2 h1:7ighzs5qXEJACSwJPWtAl7VMRYMj+FLjZlcZVn8MD7A=
+github.com/energye/widget v1.0.2/go.mod h1:NHVu7HT5xYU30abf5vQEDjSE1woZtDKTmVYf7w0EL+s=
