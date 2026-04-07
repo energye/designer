@@ -27,6 +27,8 @@ import (
 	"strings"
 )
 
+// Linux 环境: sudo apt install gdb make binutils build-essential libx11-dev libgtk2.0-dev libgdk-pixbuf2.0-dev libcairo2-dev libpango1.0-dev
+
 // go build -ldflags="-H windowsgui -s -w" -trimpath -o build/designer.exe
 // go build -ldflags="-H windowsgui -s -w -buildid=" -trimpath -o build/designer.exe
 // go build -ldflags="-H windowsgui" -trimpath -o build/designer.exe
