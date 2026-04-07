@@ -358,7 +358,6 @@ func copyAppPkgInfo() bool {
 
 func copyFiles() bool {
 	event.ConsoleWriteInfo("App Bundle - Copy App Files")
-	cfg := config.Config
 	proj := bean.GProject
 	appRoot := appRootDir()
 	frameworksRuntime := config.Config.FrameworkRuntimePath()
