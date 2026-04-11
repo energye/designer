@@ -82,7 +82,7 @@ func UpdateDesignerTitle(title string) {
 	} else {
 		title = fmt.Sprintf("%v %v - %v", title, config.DesignerConfig.Title, config.DesignerConfig.Version)
 	}
-	lcl.RunOnMainThreadSync(func() {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
 		logs.Println("UpdateDesignerTitle:", title)
 		MainWindow.SetCaption(title)
 	})
