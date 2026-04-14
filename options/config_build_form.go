@@ -74,6 +74,7 @@ type TBuildForm struct {
 	buildFileNameEdit       lcl.IEdit
 	buildModeDebugRdo       lcl.IRadioButton
 	buildModeReleaseRdo     lcl.IRadioButton
+	buildCGOEnabledChk      lcl.ICheckBox
 	buildArgsEdit           lcl.IEdit
 	codeObfuscationCheckBox lcl.ICheckBox
 	disableDebugCheckBox    lcl.ICheckBox
@@ -442,18 +443,29 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeDebugRdo.SetFont(m.font)
 	m.buildModeDebugRdo.SetChecked(true)
 	m.buildModeDebugRdo.SetShowHint(true)
-	m.buildModeDebugRdo.SetHint("调试模式保留调试信息")
+	m.buildModeDebugRdo.SetHint("以发开发模式运行, 调试模式保留调试信息")
 	m.buildModeDebugRdo.SetChecked(bean.GProject.BuildOption.BuildModeDebug)
 	m.buildModeDebugRdo.SetParent(m.buildTabPageConfig)
+
 	m.buildModeReleaseRdo = lcl.NewRadioButton(m)
 	m.buildModeReleaseRdo.SetCaption("发布模式")
-	m.buildModeReleaseRdo.SetLeft(210)
+	m.buildModeReleaseRdo.SetLeft(120)
 	m.buildModeReleaseRdo.SetTop(m.buildModeDebugRdo.Top())
 	m.buildModeReleaseRdo.SetFont(m.font)
 	m.buildModeReleaseRdo.SetShowHint(true)
-	m.buildModeReleaseRdo.SetHint("发布模式优化体积, 去除调试信息和符号")
+	m.buildModeReleaseRdo.SetHint("以发布模式运行, 发布模式优化体积, 去除调试信息和符号")
 	m.buildModeReleaseRdo.SetChecked(bean.GProject.BuildOption.BuildModeRelease)
 	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
+
+	m.buildCGOEnabledChk = lcl.NewCheckBox(m)
+	m.buildCGOEnabledChk.SetCaption("启用CGO")
+	m.buildCGOEnabledChk.SetShowHint(true)
+	m.buildCGOEnabledChk.SetHint("CGO 启用/关闭")
+	m.buildCGOEnabledChk.SetLeft(210)
+	m.buildCGOEnabledChk.SetTop(m.buildModeDebugRdo.Top())
+	m.buildCGOEnabledChk.SetFont(m.font)
+	m.buildCGOEnabledChk.SetChecked(bean.GProject.BuildOption.BuildCGOEnabled)
+	m.buildCGOEnabledChk.SetParent(m.buildTabPageConfig)
 
 	buildArgsTitle := lcl.NewLabel(m)
 	buildArgsTitle.SetFont(m.titleFontTwo)
@@ -622,6 +634,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.BuildFileName = m.buildFileNameEdit.Text()
 	bean.GProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
 	bean.GProject.BuildOption.BuildModeRelease = m.buildModeReleaseRdo.Checked()
+	bean.GProject.BuildOption.BuildCGOEnabled = m.buildCGOEnabledChk.Checked()
 	bean.GProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()

@@ -70,6 +70,7 @@ type TBuildOption struct {
 	BuildFileName    string `json:"build_file_name"`
 	BuildModeDebug   bool   `json:"build_mode_debug"`
 	BuildModeRelease bool   `json:"build_mode_release"`
+	BuildCGOEnabled  bool   `json:"build_cgo_enabled"`
 	GoArgs           string `json:"go_args"`
 	CodeObfuscation  bool   `json:"code_obfuscation"`
 	DisableDebug     bool   `json:"disable_debug"`
