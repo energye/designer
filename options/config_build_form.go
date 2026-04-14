@@ -458,9 +458,9 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
 
 	m.buildCGOEnabledChk = lcl.NewCheckBox(m)
-	m.buildCGOEnabledChk.SetCaption("启用CGO")
+	m.buildCGOEnabledChk.SetCaption("CGO(启用/关闭)")
 	m.buildCGOEnabledChk.SetShowHint(true)
-	m.buildCGOEnabledChk.SetHint("CGO 启用/关闭")
+	m.buildCGOEnabledChk.SetHint("未选中(关闭), 在构建时可编译其它平台二进制")
 	m.buildCGOEnabledChk.SetLeft(210)
 	m.buildCGOEnabledChk.SetTop(m.buildModeDebugRdo.Top())
 	m.buildCGOEnabledChk.SetFont(m.font)
