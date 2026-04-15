@@ -49,7 +49,7 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macDMGCheckBox = lcl.NewCheckBox(m)
 	m.macDMGCheckBox.SetCaption("DMG 镜像")
 	m.macDMGCheckBox.SetLeft(20)
-	m.macDMGCheckBox.SetTop(nextTop(30))
+	m.macDMGCheckBox.SetTop(nextTop(25))
 	m.macDMGCheckBox.SetFont(m.font)
 	m.macDMGCheckBox.SetChecked(bean.GProject.BuildOption.MacDMG)
 	m.macDMGCheckBox.SetParent(m.platformTabPageMacOS)
@@ -62,57 +62,10 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macPKGCheckBox.SetChecked(bean.GProject.BuildOption.MacPKG)
 	m.macPKGCheckBox.SetParent(m.platformTabPageMacOS)
 
-	m.macSignCheckBox = lcl.NewCheckBox(m)
-	m.macSignCheckBox.SetCaption("签名")
-	m.macSignCheckBox.SetLeft(20)
-	m.macSignCheckBox.SetTop(nextTop(30))
-	m.macSignCheckBox.SetFont(m.font)
-	m.macSignCheckBox.SetChecked(bean.GProject.BuildOption.MacSign.Enable)
-	m.macSignCheckBox.SetParent(m.platformTabPageMacOS)
-	m.macSignCheckBox.SetOnChange(func(sender lcl.IObject) {
-		m.macSignListBtn.SetVisible(m.macSignCheckBox.Checked())
-	})
-
-	macConfigTitle := lcl.NewLabel(m)
-	macConfigTitle.SetCaption("配置选项")
-	macConfigTitle.SetLeft(10)
-	macConfigTitle.SetTop(nextTop(35))
-	macConfigTitle.SetFont(m.titleFontTwo)
-	macConfigTitle.SetParent(m.platformTabPageMacOS)
-
-	macPackConfigBR := types.TRect{Left: 0, Top: nextTop(25)}
-	macPackConfigBR.SetWidth(m.platformTabPageMacOS.Width())
-	macPackConfigBR.SetHeight(m.platformTabPageMacOS.Height() - macPackConfigBR.Top)
-
-	m.winPackConfigTab = wg.NewTab(m)
-	m.winPackConfigTab.Margin = 0
-	m.winPackConfigTab.SetBoundsRect(macPackConfigBR)
-	m.winPackConfigTab.SetColor(colors.ClWhite)
-	m.winPackConfigTab.EnableScrollButton(false)
-	m.winPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
-	m.winPackConfigTab.SetParent(m.platformTabPageMacOS)
-
-	// 文件签名配置按钮
-	macSignBtnRect := types.TRect{Left: 75, Top: m.macSignCheckBox.Top()}
-	macSignBtnRect.SetWidth(120)
-	macSignBtnRect.SetHeight(20)
-	m.macSignListBtn = wg.NewButton(m)
-	m.macSignListBtn.SetVisible(m.macSignCheckBox.Checked())
-	m.macSignListBtn.SetText("二进制签名")
-	m.macSignListBtn.Font().SetColor(colors.ClWhite)
-	m.macSignListBtn.SetRadius(0)
-	m.macSignListBtn.SetBoundsRect(macSignBtnRect)
-	m.macSignListBtn.SetColor(colors.RGBToColor(59, 130, 246))
-	m.macSignListBtn.SetRadius(3)
-	m.macSignListBtn.SetCursor(types.CrHandPoint)
-	m.macSignListBtn.SetParent(m.platformTabPageMacOS)
-	m.macSignListBtn.SetOnClick(m.macCertCommandList)
-	m.macSignArray = bean.GProject.BuildOption.MacSign.Cert
-
 	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
 	m.macCommonLibCheckBox.SetCaption("‌通用二进制(Universal Binary)")
-	m.macCommonLibCheckBox.SetLeft(210)
-	m.macCommonLibCheckBox.SetTop(m.macSignCheckBox.Top())
+	m.macCommonLibCheckBox.SetLeft(20)
+	m.macCommonLibCheckBox.SetTop(nextTop(30))
 	m.macCommonLibCheckBox.SetFont(m.font)
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
@@ -121,18 +74,89 @@ func (m *TBuildForm) initMacOSOptions() {
 	}
 	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
 	m.macCommonLibCheckBox.SetParent(m.platformTabPageMacOS)
+
+	macConfigTitle := lcl.NewLabel(m)
+	macConfigTitle.SetCaption("配置选项")
+	macConfigTitle.SetLeft(10)
+	macConfigTitle.SetTop(nextTop(35))
+	macConfigTitle.SetFont(m.titleFontTwo)
+	macConfigTitle.SetParent(m.platformTabPageMacOS)
+
+	tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
+	btnColor := colors.RGBToColor(234, 239, 249)
+	setMacPackConfigTabPageStyle := func(page *wg.TPage) {
+		page.SetHeight(m.winPackConfigTab.Height() - page.Top())
+		page.SetColor(btnColor) // 设置背景色
+		page.Button().SetWidth(80)
+		page.Button().SetHeight(25)
+		page.Button().SetLeft(0)
+		page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop)
+		page.Button().Font().SetColor(colors.ClBlack)
+		page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(btnColor, 0.8))
+		page.Button().SetRadius(5)
+		page.Button().SetColor(tabColor)
+		page.Button().SetDownColor(wg.LightenColor(btnColor, 0.3), wg.LightenColor(btnColor, 0.5))
+		page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.3))
+		page.SetDefaultColor(tabColor)
+		page.SetActiveColor(btnColor)
+		page.Button().SetCursor(types.CrHandPoint)
+	}
+	macPackConfigBR := types.TRect{Left: 0, Top: nextTop(25)}
+	macPackConfigBR.SetWidth(m.platformTabPageMacOS.Width())
+	macPackConfigBR.SetHeight(m.platformTabPageMacOS.Height() - macPackConfigBR.Top)
+	m.macPackConfigTab = wg.NewTab(m)
+	m.macPackConfigTab.Margin = 0
+	m.macPackConfigTab.SetBoundsRect(macPackConfigBR)
+	m.macPackConfigTab.SetColor(colors.ClWhite)
+	m.macPackConfigTab.EnableScrollButton(false)
+	m.macPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+	m.macPackConfigTab.SetParent(m.platformTabPageMacOS)
+	m.macPackConfigTab.SetOnChange(func(sender lcl.IObject) {
+		page := sender.(*wg.TPage)
+		if page == m.macPackConfigTabPageBinSign {
+			m.createMacSignCommandList()
+		} else if page == m.macPackConfigTabPageAssociateFiles {
+			m.createMacAssociateFiles()
+		}
+	})
+
+	{
+		m.macPackConfigTabPageBinSign = m.macPackConfigTab.NewPage()
+		m.macPackConfigTabPageBinSign.SetCaption("签 名")
+		setMacPackConfigTabPageStyle(m.macPackConfigTabPageBinSign)
+		m.macPackConfigTabPageBinSign.SetActive(true)
+		m.macSignEnable = NewEnableButton(m.macPackConfigTabPageBinSign)
+		m.macSignEnable.DisableText = "已启用"
+		m.macSignEnable.EnableText = "已禁用"
+		m.macSignEnable.SetDisable(!bean.GProject.BuildOption.MacSign.Enable)
+	}
+	{
+		m.macPackConfigTabPageAssociateFiles = m.macPackConfigTab.NewPage()
+		m.macPackConfigTabPageAssociateFiles.SetCaption("关联文件")
+		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateFiles)
+	}
 }
 
-func (m *TBuildForm) macCertCommandList(sender lcl.IObject) {
-	newForm := NewCommonMemoForm(550, 150, `配置 MacOS codesign 签名命令列表`, m)
-	newForm.SetDefaultText(strings.Join(m.macSignArray, "\n"))
-	newForm.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
+func (m *TBuildForm) createMacAssociateFiles() {
+	if m.macPackConfigTabPageAssociateFilesBox == nil {
+
+	}
+}
+
+func (m *TBuildForm) createMacSignCommandList() {
+	if m.macPackConfigTabPageBinSignMemoBox == nil {
+		rect := types.TRect{Top: 40, Left: 0}
+		rect.SetWidth(m.macPackConfigTabPageBinSign.Width())
+		rect.SetHeight(m.macPackConfigTabPageBinSign.Height())
+		m.macPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, "配置 MacOS codesign 签名命令列表", m.macPackConfigTabPageBinSign)
+		m.macPackConfigTabPageBinSignMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.macPackConfigTabPageBinSignMemoBox.SetMultipleLine(false)
+		m.macPackConfigTabPageBinSignMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacSign.Cert, "\n"))
+		m.macPackConfigTabPageBinSignMemoBox.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"`)
-	newForm.SetOnOK(func(lines []string) {
-		m.macSignArray = lines
-	})
-	newForm.ShowModal()
+		m.macPackConfigTabPageBinSignMemoBox.Show()
+	}
 }
 
 func (m *TBuildForm) mergeMacOSUniversalBinary() error {

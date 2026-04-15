@@ -106,19 +106,19 @@ type TBuildForm struct {
 	winMsiCheckBox        lcl.ICheckBox
 	winExeCheckBox        lcl.ICheckBox
 	winDefaultInstallEdit lcl.ILabeledEdit
-	winSignEnable         *wg.TButton
+	winSignEnable         *TEnableButton
 
-	macDMGCheckBox  lcl.ICheckBox
-	macPKGCheckBox  lcl.ICheckBox
-	macSignCheckBox lcl.ICheckBox
-	macSignListBtn  *wg.TButton
-	macSignArray    []string
+	macDMGCheckBox       lcl.ICheckBox
+	macPKGCheckBox       lcl.ICheckBox
+	macCommonLibCheckBox lcl.ICheckBox
 
 	// 打包配置
-	macPackConfigTab                   *wg.TTab
-	macPackConfigTabPageBinSign        *wg.TPage
-	macPackConfigTabPageAssociateFiles *wg.TPage
-	macCommonLibCheckBox               lcl.ICheckBox
+	macPackConfigTab                      *wg.TTab
+	macPackConfigTabPageBinSign           *wg.TPage
+	macPackConfigTabPageAssociateFiles    *wg.TPage
+	macPackConfigTabPageBinSignMemoBox    *TCommonMemoBox
+	macPackConfigTabPageAssociateFilesBox *TCommonMemoBox
+	macSignEnable                         *TEnableButton
 
 	linuxDEBCheckBox lcl.ICheckBox
 	linuxRPMCheckBox lcl.ICheckBox
@@ -190,7 +190,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.buildTabPageConfig.Button().SetCursor(types.CrHandPoint)
 
 		m.buildTabPagePackage = m.buildTab.NewPage()
-		m.buildTabPagePackage.SetCaption("构建打包")
+		m.buildTabPagePackage.SetCaption("打包配置")
 		m.buildTabPagePackage.Button().SetWidth(80)
 		m.buildTabPagePackage.Button().SetCursor(types.CrHandPoint)
 
@@ -772,8 +772,15 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	// mac
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
-	bean.GProject.BuildOption.MacSign.Enable = m.macSignCheckBox.Checked()
-	bean.GProject.BuildOption.MacSign.Cert = m.macSignArray
+	bean.GProject.BuildOption.MacSign.Enable = !m.macSignEnable.Disable()
+	if m.macPackConfigTabPageBinSignMemoBox != nil {
+		var signCMD []string
+		for _, line := range m.macPackConfigTabPageBinSignMemoBox.Lines() {
+			signCMD = append(signCMD, line)
+		}
+		bean.GProject.BuildOption.MacSign.Cert = signCMD
+	}
+
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxRPM = m.linuxRPMCheckBox.Checked()

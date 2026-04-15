@@ -122,48 +122,10 @@ func (m *TBuildForm) initWindowsOptions() {
 		m.winPackConfigTabPageBinSign.SetCaption("签 名")
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageBinSign)
 		m.winPackConfigTabPageBinSign.SetActive(true)
-		winSignEnableRect := types.TRect{Left: 10, Top: 5}
-		winSignEnableRect.SetWidth(50)
-		winSignEnableRect.SetHeight(35)
-		winSignEnableEnableColor := colors.RGBToColor(66, 133, 244)
-		winSignEnableDisableColor := colors.RGBToColor(224, 224, 224)
-		winSignEnableEnableFont := lcl.NewFont()
-		winSignEnableEnableFont.SetName("微软雅黑")
-		winSignEnableEnableFont.SetSize(10)
-		winSignEnableEnableFont.SetStyle(types.NewSet(types.FsBold))
-		winSignEnableEnableFont.SetColor(colors.RGBToColor(255, 255, 255))
-		winSignEnableDisableFont := lcl.NewFont()
-		winSignEnableDisableFont.SetName("微软雅黑")
-		winSignEnableDisableFont.SetSize(10)
-		winSignEnableDisableFont.SetStyle(types.NewSet(types.FsBold))
-		winSignEnableDisableFont.SetColor(colors.RGBToColor(158, 158, 158))
-		m.winSignEnable = wg.NewButton(m)
-		m.winSignEnable.Font().SetColor(colors.ClWhite)
-		m.winSignEnable.SetRadius(10)
-		m.winSignEnable.SetCursor(types.CrHandPoint)
-		m.winSignEnable.SetBoundsRect(winSignEnableRect)
-		m.winSignEnable.SetColor(winSignEnableEnableColor)
-		m.winSignEnable.SetDownColor(winSignEnableEnableColor, winSignEnableEnableColor)
-		m.winSignEnable.SetEnterColor(winSignEnableEnableColor, winSignEnableEnableColor)
-		m.winSignEnable.SetDisabledColor(winSignEnableDisableColor, winSignEnableDisableColor)
-		m.winSignEnable.SetParent(m.winPackConfigTabPageBinSign)
-		m.winSignEnable.SetOnClick(func(sender lcl.IObject) {
-			if m.winSignEnable.Disable() {
-				m.winSignEnable.SetText("已启用")
-				m.winSignEnable.SetDisable(false)
-				m.winSignEnable.SetFont(winSignEnableEnableFont)
-			} else {
-				m.winSignEnable.SetText("已禁用")
-				m.winSignEnable.SetDisable(true)
-				m.winSignEnable.SetFont(winSignEnableDisableFont)
-			}
-		})
+		m.winSignEnable = NewEnableButton(m.winPackConfigTabPageBinSign)
+		m.winSignEnable.DisableText = "已启用"
+		m.winSignEnable.EnableText = "已禁用"
 		m.winSignEnable.SetDisable(!bean.GProject.BuildOption.WinSign.Enable)
-		if m.winSignEnable.Disable() {
-			m.winSignEnable.SetText("已禁用")
-		} else {
-			m.winSignEnable.SetText("已启用")
-		}
 	}
 	{
 		m.winPackConfigTabPageAssociateFiles = m.winPackConfigTab.NewPage()

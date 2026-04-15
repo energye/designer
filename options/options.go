@@ -327,3 +327,61 @@ func (m *TCommonMemoBox) Lines() []string {
 	}
 	return lines
 }
+
+type TEnableButton struct {
+	button      *wg.TButton
+	EnableText  string
+	DisableText string
+}
+
+func NewEnableButton(owner lcl.IWinControl) *TEnableButton {
+	m := &TEnableButton{}
+	rect := types.TRect{Left: 10, Top: 5}
+	rect.SetWidth(40)
+	rect.SetHeight(30)
+	enableColor := colors.RGBToColor(66, 133, 244)
+	disableColor := colors.RGBToColor(224, 224, 224)
+	enableFont := lcl.NewFont()
+	enableFont.SetSize(8)
+	enableFont.SetColor(colors.RGBToColor(255, 255, 255))
+	disableFont := lcl.NewFont()
+	disableFont.SetSize(8)
+	disableFont.SetColor(colors.RGBToColor(158, 158, 158))
+	button := wg.NewButton(owner)
+	button.Font().SetColor(colors.ClWhite)
+	button.Font().SetSize(8)
+	button.SetRadius(10)
+	button.SetCursor(types.CrHandPoint)
+	button.SetBoundsRect(rect)
+	button.SetColor(enableColor)
+	button.SetDownColor(enableColor, enableColor)
+	button.SetEnterColor(enableColor, enableColor)
+	button.SetDisabledColor(disableColor, disableColor)
+	button.SetParent(owner)
+	button.SetOnClick(func(sender lcl.IObject) {
+		if button.Disable() {
+			button.SetText(m.DisableText)
+			button.SetDisable(false)
+			button.SetFont(enableFont)
+		} else {
+			button.SetText(m.EnableText)
+			button.SetDisable(true)
+			button.SetFont(disableFont)
+		}
+	})
+	m.button = button
+	return m
+}
+
+func (m *TEnableButton) SetDisable(v bool) {
+	m.button.SetDisable(v)
+	if v {
+		m.button.SetText(m.EnableText)
+	} else {
+		m.button.SetText(m.DisableText)
+	}
+}
+
+func (m *TEnableButton) Disable() bool {
+	return m.button.Disable()
+}
