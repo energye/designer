@@ -73,6 +73,25 @@ func (m *TBuildForm) initMacOSOptions() {
 		m.macSignListBtn.SetVisible(m.macSignCheckBox.Checked())
 	})
 
+	macConfigTitle := lcl.NewLabel(m)
+	macConfigTitle.SetCaption("配置选项")
+	macConfigTitle.SetLeft(10)
+	macConfigTitle.SetTop(nextTop(35))
+	macConfigTitle.SetFont(m.titleFontTwo)
+	macConfigTitle.SetParent(m.platformTabPageMacOS)
+
+	macPackConfigBR := types.TRect{Left: 0, Top: nextTop(25)}
+	macPackConfigBR.SetWidth(m.platformTabPageMacOS.Width())
+	macPackConfigBR.SetHeight(m.platformTabPageMacOS.Height() - macPackConfigBR.Top)
+
+	m.winPackConfigTab = wg.NewTab(m)
+	m.winPackConfigTab.Margin = 0
+	m.winPackConfigTab.SetBoundsRect(macPackConfigBR)
+	m.winPackConfigTab.SetColor(colors.ClWhite)
+	m.winPackConfigTab.EnableScrollButton(false)
+	m.winPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+	m.winPackConfigTab.SetParent(m.platformTabPageMacOS)
+
 	// 文件签名配置按钮
 	macSignBtnRect := types.TRect{Left: 75, Top: m.macSignCheckBox.Top()}
 	macSignBtnRect.SetWidth(120)
@@ -91,7 +110,7 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macSignArray = bean.GProject.BuildOption.MacSign.Cert
 
 	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-	m.macCommonLibCheckBox.SetCaption("‌通用二进制文件(Universal Binary)")
+	m.macCommonLibCheckBox.SetCaption("‌通用二进制(Universal Binary)")
 	m.macCommonLibCheckBox.SetLeft(210)
 	m.macCommonLibCheckBox.SetTop(m.macSignCheckBox.Top())
 	m.macCommonLibCheckBox.SetFont(m.font)

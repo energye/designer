@@ -38,7 +38,7 @@ var (
 // 该函数初始化一个 TConfigProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewConfigProjectForm() *TConfigProjectForm {
 	newEngForm := lcl.NewEngForm(nil)
-	newForm := &TConfigProjectForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	newForm := &TConfigProjectForm{TEngForm: *newEngForm.(*lcl.TEngForm)}
 	//lcl.Application.NewForm(newForm) // 不使用原因：go debug 模式有问题
 	newForm.FormCreate(newEngForm)
 	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
@@ -47,7 +47,7 @@ func NewConfigProjectForm() *TConfigProjectForm {
 }
 
 type TConfigProjectForm struct {
-	*lcl.TEngForm
+	lcl.TEngForm
 	closing   bool
 	one       sync.Once
 	box       lcl.IPanel
@@ -57,20 +57,14 @@ type TConfigProjectForm struct {
 
 	appConfigTitle lcl.ILabel
 
-	appTitleText lcl.ILabel
-	appTitleEdit lcl.IEdit
-
 	appIconBtn       *wg.TButton
 	appRemoveIconBtn *wg.TButton
 	appIconData      bean.TAppIcon // 应用配置窗口打开时默认从项目配置读取并设置
-	appIdText        lcl.ILabel
-	appIdEdit        lcl.IEdit
-	appDescText      lcl.ILabel
-	appDescEdit      lcl.IEdit
-	appVersionText   lcl.ILabel
-	appVersionEdit   lcl.IEdit
-	appCopyrightText lcl.ILabel
-	appCopyrightEdit lcl.IEdit
+	appTitleEdit     lcl.ILabeledEdit
+	appIdEdit        lcl.ILabeledEdit
+	appDescEdit      lcl.ILabeledEdit
+	appVersionEdit   lcl.ILabeledEdit
+	appCopyrightEdit lcl.ILabeledEdit
 
 	platformTitle lcl.ILabel
 
@@ -100,10 +94,8 @@ type TConfigProjectForm struct {
 	useCommonControlsV6Box               lcl.ICheckBox
 
 	// macos
-	CFBundleNameText           lcl.ILabel
-	CFBundleNameEdit           lcl.IEdit
-	CFBundleLocalizationsText  lcl.ILabel
-	CFBundleLocalizationsEdit  lcl.IEdit
+	CFBundleNameEdit           lcl.ILabeledEdit
+	CFBundleLocalizationsEdit  lcl.ILabeledEdit
 	LSUIElementText            lcl.ILabel
 	LSUIElementBox             lcl.IComboBox
 	LSMinimumSystemVersionText lcl.ILabel
@@ -131,6 +123,7 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
+	SetWindowCenterByMainWindow(m)
 
 	//(&hook.TWindowHook{Form: m}).Hook()
 }
@@ -157,7 +150,6 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		constr.SetMaxHeight(configProjectFormHeight + addSize)
 		constr.SetMinWidth(configProjectFormWidth)
 		constr.SetMinHeight(configProjectFormHeight + addSize)
-		SetWindowCenterByMainWindow(m)
 		// 初始时设置图标
 		m.appIconData = bean.GProject.AppOption.Icon
 		go func() {
@@ -198,69 +190,57 @@ func (m *TConfigProjectForm) initComponents() {
 	m.appConfigTitle.SetParent(m.box)
 
 	baseTop := int32(40)
+	nextTop := func(v int32) int32 {
+		baseTop += v
+		return baseTop
+	}
 	{
-		m.appTitleText = lcl.NewLabel(m)
-		m.appTitleText.SetLeft(left)
-		m.appTitleText.SetTop(baseTop)
-		m.appTitleText.SetCaption("标题")
-		m.appTitleText.SetFont(m.font)
-		m.appTitleText.SetParent(m.box)
-
-		m.appTitleEdit = lcl.NewEdit(m)
-		m.appTitleEdit.SetBounds(textLeft, baseTop-5, 340, 30)
+		m.appTitleEdit = lcl.NewLabeledEdit(m)
+		m.appTitleEdit.EditLabel().SetCaption("标题")
+		m.appTitleEdit.SetBounds(textLeft, nextTop(0), 340, 30)
 		m.appTitleEdit.SetFont(m.font)
 		m.appTitleEdit.SetTextHint("my energy app")
 		m.appTitleEdit.SetText(bean.GProject.AppOption.Title)
+		m.appTitleEdit.SetLabelPosition(types.LpLeft)
 		m.appTitleEdit.SetParent(m.box)
 	}
 
 	{
-		m.appIdText = lcl.NewLabel(m)
-		m.appIdText.SetLeft(left)
-		m.appIdText.SetTop(baseTop + 40)
-		m.appIdText.SetCaption("标识")
-		m.appIdText.SetParent(m.box)
-		m.appIdEdit = lcl.NewEdit(m)
-		m.appIdEdit.SetBounds(textLeft, baseTop+35, 340, 30)
+		m.appIdEdit = lcl.NewLabeledEdit(m)
+		m.appIdEdit.EditLabel().SetCaption("标识")
+		m.appIdEdit.SetBounds(textLeft, nextTop(35), 340, 30)
 		m.appIdEdit.SetFont(m.font)
 		m.appIdEdit.SetTextHint("company.product.app")
 		m.appIdEdit.SetText(bean.GProject.AppOption.Id)
+		m.appIdEdit.SetLabelPosition(types.LpLeft)
 		m.appIdEdit.SetParent(m.box)
 
-		m.appDescText = lcl.NewLabel(m)
-		m.appDescText.SetLeft(left)
-		m.appDescText.SetTop(baseTop + 80)
-		m.appDescText.SetCaption("描述")
-		m.appDescText.SetParent(m.box)
-		m.appDescEdit = lcl.NewEdit(m)
-		m.appDescEdit.SetBounds(textLeft, baseTop+75, 340, 30)
+		m.appDescEdit = lcl.NewLabeledEdit(m)
+		m.appDescEdit.EditLabel().SetCaption("描述")
+		m.appDescEdit.SetBounds(textLeft, nextTop(35), 340, 30)
 		m.appDescEdit.SetFont(m.font)
 		m.appDescEdit.SetTextHint("your application description.")
 		m.appDescEdit.SetText(bean.GProject.AppOption.Desc)
+		m.appDescEdit.SetLabelPosition(types.LpLeft)
 		m.appDescEdit.SetParent(m.box)
 
-		m.appVersionText = lcl.NewLabel(m)
-		m.appVersionText.SetLeft(left)
-		m.appVersionText.SetTop(baseTop + 120)
-		m.appVersionText.SetCaption("版本")
-		m.appVersionText.SetParent(m.box)
-		m.appVersionEdit = lcl.NewEdit(m)
-		m.appVersionEdit.SetBounds(textLeft, baseTop+115, 100, 30)
+		m.appVersionEdit = lcl.NewLabeledEdit(m)
+		m.appVersionEdit.EditLabel().SetCaption("版本")
+		m.appVersionEdit.SetBounds(textLeft, nextTop(35), 100, 30)
 		m.appVersionEdit.SetFont(m.font)
 		m.appVersionEdit.SetTextHint("1.2.3.4")
 		m.appVersionEdit.SetText(bean.GProject.AppOption.Version)
+		m.appVersionEdit.SetLabelPosition(types.LpLeft)
 		m.appVersionEdit.SetParent(m.box)
 
-		m.appCopyrightText = lcl.NewLabel(m)
-		m.appCopyrightText.SetLeft(m.appVersionEdit.Left() + m.appVersionEdit.Width() + left)
-		m.appCopyrightText.SetTop(baseTop + 120)
-		m.appCopyrightText.SetCaption("版权")
-		m.appCopyrightText.SetParent(m.box)
-		m.appCopyrightEdit = lcl.NewEdit(m)
-		m.appCopyrightEdit.SetBounds(m.appCopyrightText.Left()+35, baseTop+115, 195, 30)
+		m.appCopyrightEdit = lcl.NewLabeledEdit(m)
+		m.appCopyrightEdit.EditLabel().SetCaption("版权")
+		m.appCopyrightEdit.SetBounds(m.appVersionEdit.Left()+m.appVersionEdit.Width()+left+35,
+			m.appVersionEdit.Top(), 195, 30)
 		m.appCopyrightEdit.SetFont(m.font)
 		m.appCopyrightEdit.SetTextHint("Copyright (C)")
 		m.appCopyrightEdit.SetText(bean.GProject.AppOption.Copyright)
+		m.appCopyrightEdit.SetLabelPosition(types.LpLeft)
 		m.appCopyrightEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
@@ -268,7 +248,7 @@ func (m *TConfigProjectForm) initComponents() {
 		//m.appIconBtn.SetIconCloseFormBytes(resources.Images("button/remove_16x16.png"))
 		//m.appIconBtn.SetIconCloseHighlightFormBytes(resources.Images("button/remove_16x16_highlight.png"))
 		m.appIconBtn.SetRadius(3)
-		appIconRect := types.TRect{Left: m.Width() - 158, Top: baseTop - 5}
+		appIconRect := types.TRect{Left: m.Width() - 158, Top: 35}
 		appIconRect.SetWidth(145)
 		appIconRect.SetHeight(145)
 		m.appIconBtn.TextOffSetY = 50
@@ -280,6 +260,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
 		m.appIconBtn.SetBorderWidth(wg.BbdNone, 1)
 		m.appIconBtn.SetColor(0xF3F4F6)
+		m.appIconBtn.SetCursor(types.CrHandPoint)
 		m.appIconBtn.SetParent(m.box)
 		m.appIconBtn.SetOnMouseUp(m.appIconBtnClick)
 
@@ -300,7 +281,7 @@ func (m *TConfigProjectForm) initComponents() {
 	{
 		m.platformTitle = lcl.NewLabel(m)
 		m.platformTitle.SetLeft(10)
-		m.platformTitle.SetTop(baseTop + 155)
+		m.platformTitle.SetTop(nextTop(30))
 		m.platformTitle.SetCaption("平台配置")
 		m.platformTitle.SetFont(m.font)
 		m.platformTitle.Font().SetSize(10)
@@ -308,9 +289,6 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 
 	{
-
-		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
-		btnColor := colors.RGBToColor(0, 120, 212)
 
 		type Button struct {
 			iconDefault []byte
@@ -331,7 +309,7 @@ func (m *TConfigProjectForm) initComponents() {
 		})
 
 		m.platformTab = wg.NewTab(m)
-		m.platformTab.Margin = 10
+		m.platformTab.Margin = 2
 		tabBR := types.TRect{Left: 0, Top: m.platformTitle.Top() + 25}
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - (tabBR.Top - 10))
@@ -342,13 +320,13 @@ func (m *TConfigProjectForm) initComponents() {
 		m.platformTab.SetOnChange(func(sender lcl.IObject) {
 			for _, page := range m.platformTab.Pages() {
 				if page.Active() {
-					page.Button().SetBorderDirections(0)
-					page.Button().Font().SetColor(colors.ClWhite)
-					page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconActive)
+					page.Button().SetColor(tabActiveBgColor)
+					page.Button().Font().SetColor(tabActiveTextColor)
+					page.Button().SetBorderColor(wg.BbdNone, tabActiveBorderColor)
 				} else {
-					page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom, wg.BbdLeft, wg.BbdTop, wg.BbdRight))
-					page.Button().Font().SetColor(colors.ClBlack)
-					page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconDefault)
+					page.Button().SetColor(tabNoActiveBgColor)
+					page.Button().Font().SetColor(tabNoActiveTextColor)
+					page.Button().SetBorderColor(wg.BbdNone, tabNoActiveBorderColor)
 				}
 			}
 		})
@@ -358,17 +336,10 @@ func (m *TConfigProjectForm) initComponents() {
 			page.SetHeight(m.platformTab.Height() - 40)
 			page.SetColor(m.platformTab.Color()) // 设置背景色
 			page.Button().SetWidth(95)
-			page.Button().SetHeight(35)
+			page.Button().SetHeight(30)
 			page.Button().SetLeft(10)
-			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
-			page.Button().Font().SetColor(colors.ClBlack)
-			page.Button().SetBorderColor(wg.BbdNone, wg.DarkenColor(tabColor, 0.1))
-			page.Button().SetRadius(20)
-			page.Button().SetColor(tabColor)
-			page.Button().SetDownColor(wg.LightenColor(btnColor, 0.15), wg.LightenColor(btnColor, 0.15))
-			page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.1))
-			page.SetDefaultColor(tabColor)
-			page.SetActiveColor(btnColor)
+			page.Button().SetRadius(0)
+			page.Button().SetCursor(types.CrHandPoint)
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()
@@ -399,29 +370,30 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 
 	{
+		cancelBtnRect := types.TRect{Left: 400, Top: 530}
+		cancelBtnRect.SetWidth(60)
+		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
 		m.cancelBtn.SetText("关　闭")
-		m.cancelBtn.SetFont(m.font)
-		m.cancelBtn.Font().SetColor(colors.ClWhite)
+		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 315, Top: 530}
-		cancelBtnRect.SetWidth(100)
-		cancelBtnRect.SetHeight(35)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
-		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.cancelBtn.SetColor(grayBtnColor)
+		m.cancelBtn.SetCursor(types.CrHandPoint)
 		m.cancelBtn.SetParent(m.box)
 		m.cancelBtn.SetOnClick(m.closeClick)
 
+		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 20, Top: cancelBtnRect.Top}
+		saveBtnRect.SetWidth(60)
+		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
 		m.saveBtn.SetText("保　存")
-		m.saveBtn.SetFont(m.font)
+		m.saveBtn.Font().SetSize(8)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
-		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
-		saveBtnRect.SetWidth(100)
-		saveBtnRect.SetHeight(35)
 		m.saveBtn.SetBoundsRect(saveBtnRect)
-		m.saveBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.saveBtn.SetColor(blueBtnColor)
+		m.saveBtn.SetCursor(types.CrHandPoint)
 		m.saveBtn.SetParent(m.box)
 		m.saveBtn.SetOnClick(m.saveClick)
 	}

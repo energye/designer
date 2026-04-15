@@ -22,11 +22,26 @@ import (
 	"strings"
 )
 
+var (
+	grayBtnColor = colors.RGBToColor(240, 240, 240)
+	blueBtnColor = colors.RGBToColor(0, 122, 255)
+
+	tabActiveBgColor       = colors.RGBToColor(59, 130, 246)
+	tabActiveTextColor     = colors.RGBToColor(255, 255, 255)
+	tabActiveBorderColor   = colors.RGBToColor(37, 99, 235)
+	tabNoActiveBgColor     = colors.RGBToColor(243, 244, 246)
+	tabNoActiveTextColor   = colors.RGBToColor(55, 65, 81)
+	tabNoActiveBorderColor = colors.RGBToColor(209, 213, 219)
+)
+
 func SetWindowCenterByMainWindow(window lcl.IEngForm) {
 	SetWindowCenterByRelativeWindow(window, &designer.MainWindow)
 }
 
 func SetWindowCenterByRelativeWindow(window, relativeWindow lcl.IEngForm) {
+	if window == nil || relativeWindow == nil {
+		return
+	}
 	windowRect := relativeWindow.BoundsRect()
 	window.SetLeft(windowRect.Left + (windowRect.Width()-window.Width())/2)
 	window.SetTop(windowRect.Top + (windowRect.Height()-window.Height())/2)

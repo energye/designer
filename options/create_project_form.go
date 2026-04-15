@@ -26,7 +26,6 @@ import (
 	"github.com/energye/lcl/tool/exec"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"github.com/energye/lcl/types/font"
 	"github.com/energye/widget/wg"
 	"path/filepath"
 	"strconv"
@@ -44,23 +43,16 @@ import (
 // 4. 模块模式： go.mod (✔️), go.work
 
 var (
-	createProjectFormWidth  = int32(525)
-	createProjectFormHeight = int32(355)
+	createProjectFormWidth  = int32(500)
+	createProjectFormHeight = int32(210)
 	minGoVersion            = "1.20"
-)
-
-var (
-	bgColor     = colors.RGBToColor(56, 57, 60)
-	bgTextColor = colors.ClGray
-	//modSelectOptions = []string{"本地路径 (内置框架)", "远程仓库 (远程拉取)"}
-	modSelectOptions = []string{"远程仓库 (远程拉取)"}
 )
 
 // NewCreateProjectForm 创建一个新的项目创建表单实例
 // 该函数初始化一个 TCreateProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewCreateProjectForm() *TCreateProjectForm {
 	newEngForm := lcl.NewEngForm(nil)
-	newForm := &TCreateProjectForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	newForm := &TCreateProjectForm{TEngForm: *newEngForm.(*lcl.TEngForm)}
 	//lcl.Application.NewForm(newForm) // 不使用原因：go debug 模式有问题
 	newForm.FormCreate(newForm)
 	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
@@ -69,7 +61,7 @@ func NewCreateProjectForm() *TCreateProjectForm {
 }
 
 type TCreateProjectForm struct {
-	*lcl.TEngForm
+	lcl.TEngForm
 	closing     bool
 	goVersionOK bool
 	one         sync.Once
@@ -77,36 +69,14 @@ type TCreateProjectForm struct {
 	selectDir   lcl.ISelectDirectoryDialog
 
 	// 基础信息部分
-	baseGroupBox   lcl.ILabel
-	baseErrorLabel lcl.ILabel
-	projNameText   lcl.ILabel
-	projNameEdit   lcl.IEdit
-	projPathText   lcl.ILabel
-	projPathEdit   lcl.IEdit
-	projPathBtn    *wg.TButton
-	//projTempText    lcl.ILabel
-	//projTempBox     lcl.IComboBox
-	goVersionText   lcl.ILabel
+	projNameEdit    lcl.ILabeledEdit
+	projPathEdit    lcl.ILabeledEdit
+	projPathBtn     *wg.TButton
 	goVersionStatus *wg.TButton
-
-	// 模块部分
-	modGroupBox   lcl.ILabel
-	modErrorLabel lcl.ILabel
-	modText       lcl.ILabel
-	modBox        lcl.IComboBox
 
 	// GUI 渲染框架
 	guiRenderFrameworkText lcl.ILabel
 	guiRenderFrameworkBox  lcl.IComboBox
-	//modLocalBox   lcl.IPanel
-	//modRemoteBox  lcl.IPanel
-
-	//modLocalDirText    lcl.ILabel
-	//modLocalDirEdit    lcl.IEdit
-	//modLocalDirBtn     *wg.TButton
-	//modLCLCheckBox     lcl.ICheckBox
-	//modCEFCheckBox     lcl.ICheckBox
-	//modWebviewCheckBox lcl.ICheckBox
 
 	// 操作按钮
 	cancelBtn *wg.TButton
@@ -128,6 +98,7 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetParent(m)
 	m.SetOnShow(m.onShow)
 	m.initComponents()
+	SetWindowCenterByMainWindow(m)
 
 	//(&hook.TWindowHook{Form: m}).Hook()
 }
@@ -141,21 +112,7 @@ func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TClo
 }
 
 func (m *TCreateProjectForm) initComponents() {
-	fontSize := int32(12)
-	if tool.IsLinux {
-		fontSize = 10
-	}
-	fontLabel := lcl.NewFont()
-	fontLabel.SetName("微软雅黑")
-	//fontLabel.SetStyle(types.NewSet(types.FsBold))
-	fontLabel.SetSize(12)
-	fontLabel.SetCharSet(font.CHINESEBIG5_CHARSET)
-	//fontLabel.SetColor(colors.ClGreen)
-	fontText := lcl.NewFont()
-	fontText.SetName("微软雅黑 Light")
-	fontText.SetSize(fontSize)
-
-	left := int32(35)
+	left := int32(45)
 	textWidth := int32(355)
 	gTop := int32(0)
 	nextTop := func(top int32) int32 {
@@ -163,161 +120,82 @@ func (m *TCreateProjectForm) initComponents() {
 		return gTop
 	}
 
-	m.baseGroupBox = lcl.NewLabel(m)
-	m.baseGroupBox.SetLeft(10)
-	m.baseGroupBox.SetTop(nextTop(10))
-	m.baseGroupBox.SetCaption("新建项目-基础信息")
-	m.baseGroupBox.SetFont(fontLabel)
-	m.baseGroupBox.Font().SetSize(10)
-	m.baseGroupBox.SetParent(m.box)
-
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	{
-		errorFont := lcl.NewFont()
-		errorFont.SetColor(colors.RGBToColor(255, 127, 127))
-		errorFont.SetName("微软雅黑 Light")
-		errorFont.SetCharSet(font.CHINESEBIG5_CHARSET)
-		errorFont.SetSize(8)
-		m.baseErrorLabel = lcl.NewLabel(m)
-		m.baseErrorLabel.SetFont(errorFont)
-		m.baseErrorLabel.SetVisible(false)
-		m.baseErrorLabel.SetParent(m.box)
-		m.modErrorLabel = lcl.NewLabel(m)
-		m.modErrorLabel.SetFont(errorFont)
-		m.modErrorLabel.SetVisible(false)
-		m.modErrorLabel.SetParent(m.box)
-	}
-	{
-		m.projNameText = lcl.NewLabel(m)
-		m.projNameText.SetLeft(left)
-		m.projNameText.SetTop(nextTop(35))
-		m.projNameText.SetCaption("项目名称")
-		m.projNameText.SetFont(fontLabel)
-		m.projNameText.SetParent(m.box)
-
-		m.projNameEdit = lcl.NewEdit(m)
-		m.projNameEdit.SetLeft(120)
-		m.projNameEdit.SetTop(m.projNameText.Top() - 5)
+		m.projNameEdit = lcl.NewLabeledEdit(m)
+		m.projNameEdit.SetLeft(100)
+		m.projNameEdit.SetTop(nextTop(20))
 		m.projNameEdit.SetWidth(textWidth)
-		m.projNameEdit.SetFont(fontText)
 		m.projNameEdit.SetDoubleBuffered(true)
 		m.projNameEdit.SetParentColor(false)
 		m.projNameEdit.SetParent(m.box)
-		m.projNameEdit.SetTextHint("YourProjectName")
+		m.projNameEdit.SetTextHint("your project name. example: myapp")
+		m.projNameEdit.SetLabelPosition(types.LpLeft)
+		projNameText := m.projNameEdit.EditLabel()
+		projNameText.SetCaption("项目名称")
 	}
 	{
-		m.projPathText = lcl.NewLabel(m)
-		m.projPathText.SetLeft(left)
-		m.projPathText.SetTop(nextTop(50))
-		m.projPathText.SetCaption("项目路径")
-		m.projPathText.SetFont(fontLabel)
-		m.projPathText.SetParent(m.box)
-
-		m.projPathEdit = lcl.NewEdit(m)
-		m.projPathEdit.SetLeft(120)
-		m.projPathEdit.SetTop(m.projPathText.Top() - 5)
-		m.projPathEdit.SetWidth(textWidth - 65) // 是目录选择按钮的 宽度+Left(5)
-		m.projPathEdit.SetFont(fontText)
+		m.projPathEdit = lcl.NewLabeledEdit(m)
+		m.projPathEdit.SetLeft(100)
+		m.projPathEdit.SetTop(nextTop(30))
+		m.projPathEdit.SetWidth(textWidth - 40)
 		m.projPathEdit.SetDoubleBuffered(true)
-		//m.projPathEdit.SetReadOnly(true)
 		m.projPathEdit.SetTextHint("/your/app/path/name")
 		m.projPathEdit.SetParent(m.box)
+		m.projPathEdit.SetLabelPosition(types.LpLeft)
+		projPathText := m.projPathEdit.EditLabel()
+		projPathText.SetCaption("项目路径")
 
 		m.projPathBtn = wg.NewButton(m)
-		m.projPathBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+		m.projPathBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
 		m.projPathBtn.SetRadius(3)
-		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: m.projPathEdit.Top()}
-		cusRect.SetWidth(60)
+		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: m.projPathEdit.Top() - 2}
+		cusRect.SetWidth(35)
 		if tool.IsLinux {
 			cusRect.SetHeight(35)
 		} else {
-			cusRect.SetHeight(30)
+			cusRect.SetHeight(25)
 		}
 		m.projPathBtn.SetBoundsRect(cusRect)
+		m.projPathBtn.SetColor(grayBtnColor)
+		m.projPathBtn.SetBorderColor(wg.BbdNone, grayBtnColor)
+		m.projPathBtn.SetCursor(types.CrHandPoint)
 		m.projPathBtn.SetParent(m.box)
 		m.projPathBtn.SetOnClick(m.projPathClick)
 	}
 	{
-		//m.projTempText = lcl.NewLabel(m)
-		//m.projTempText.SetLeft(left)
-		//m.projTempText.SetTop(baseTop + 100)
-		//m.projTempText.SetCaption("项目模板")
-		//m.projTempText.SetFont(fontLabel)
-		//m.projTempText.SetParent(m.box)
-		//
-		//m.projTempBox = lcl.NewComboBox(m)
-		//m.projTempBox.SetBounds(120, baseTop+95, textWidth, 35)
-		//m.projTempBox.SetFont(fontText)
-		//m.projTempBox.SetReadOnly(true)
-		//m.projTempBox.SetStyle(types.CsDropDownList)
-		//m.projTempBox.SetBorderStyle(types.BsSingle)
-		//m.projTempBox.SetDoubleBuffered(true)
-		//m.projTempBox.Items().Add("默认预设模板")
-		//m.projTempBox.SetItemIndex(0)
-		//m.projTempBox.SetParent(m.box)
-	}
-	{
-		m.goVersionText = lcl.NewLabel(m)
-		m.goVersionText.SetLeft(left)
-		m.goVersionText.SetTop(nextTop(50))
-		m.goVersionText.SetCaption(" Go 版本")
-		m.goVersionText.SetFont(fontLabel)
-		m.goVersionText.SetParent(m.box)
+		goVersionText := lcl.NewLabel(m)
+		goVersionText.SetLeft(left)
+		goVersionText.SetTop(nextTop(40))
+		goVersionText.SetCaption(" Go 版本")
+		goVersionText.SetParent(m.box)
 
 		m.goVersionStatus = wg.NewButton(m)
 		m.goVersionStatus.SetText("检测本地")
-		m.goVersionStatus.SetFont(fontText)
-		m.goVersionStatus.Font().SetColor(colors.ClWhite)
-		m.goVersionStatus.Font().SetStyle(types.NewSet(types.FsBold))
-		m.goVersionStatus.SetRadius(3)
-		goVersionRect := types.TRect{Left: 120, Top: m.goVersionText.Top() - 5}
+		m.goVersionStatus.SetRadius(0)
+		goVersionRect := types.TRect{Left: 100, Top: goVersionText.Top() - 5}
 		goVersionRect.SetWidth(textWidth)
-		goVersionRect.SetHeight(30)
+		goVersionRect.SetHeight(25)
+		color := wg.LightenColor(colors.RGBToColor(214, 234, 242), 0.5)
 		m.goVersionStatus.SetBoundsRect(goVersionRect)
-		m.goVersionStatus.SetColor(colors.ClGray)
 		m.goVersionStatus.SetShowHint(true)
 		m.goVersionStatus.SetHint("在本机检测已安装可用的 Go 版本\n绿色: 支持\n红色: 不支持")
+		m.goVersionStatus.SetColor(color)
+		m.goVersionStatus.SetBorderColor(wg.BbdNone, wg.DarkenColor(color, 0.2))
+		m.goVersionStatus.SetEnterColor(color, color)
+		m.goVersionStatus.SetDownColor(color, color)
 		m.goVersionStatus.SetParent(m.box)
 	}
 
-	m.modGroupBox = lcl.NewLabel(m)
-	m.modGroupBox.SetTop(nextTop(35))
-	m.modGroupBox.SetLeft(10)
-	m.modGroupBox.SetCaption("ENERGY框架-模块依赖")
-	m.modGroupBox.SetFont(fontLabel)
-	m.modGroupBox.Font().SetSize(10)
-	m.modGroupBox.SetParent(m.box)
 	{
-		m.modText = lcl.NewLabel(m)
-		m.modText.SetLeft(left)
-		m.modText.SetTop(nextTop(35))
-		m.modText.SetCaption("模块来源")
-		m.modText.SetFont(fontLabel)
-		m.modText.SetParent(m.box)
-
-		m.modBox = lcl.NewComboBox(m)
-		m.modBox.SetBounds(120, m.modText.Top()-5, textWidth, 36)
-		m.modBox.SetFont(fontText)
-		m.modBox.SetReadOnly(true)
-		m.modBox.SetStyle(types.CsDropDownList)
-		m.modBox.SetBorderStyle(types.BsSingle)
-		for _, option := range modSelectOptions {
-			m.modBox.Items().Add(option)
-		}
-		m.modBox.SetItemIndex(0)
-		m.modBox.SetParent(m.box)
-		//m.modBox.SetOnChange(m.modBoxChange)
-
 		m.guiRenderFrameworkText = lcl.NewLabel(m)
 		m.guiRenderFrameworkText.SetLeft(left)
-		m.guiRenderFrameworkText.SetTop(nextTop(50))
-		m.guiRenderFrameworkText.SetCaption("渲染框架")
-		m.guiRenderFrameworkText.SetFont(fontLabel)
+		m.guiRenderFrameworkText.SetTop(nextTop(35))
+		m.guiRenderFrameworkText.SetCaption(" UI 模板")
 		m.guiRenderFrameworkText.SetParent(m.box)
 
 		m.guiRenderFrameworkBox = lcl.NewComboBox(m)
-		m.guiRenderFrameworkBox.SetBounds(120, m.guiRenderFrameworkText.Top()-5, textWidth, 36)
-		m.guiRenderFrameworkBox.SetFont(fontText)
+		m.guiRenderFrameworkBox.SetBounds(100, m.guiRenderFrameworkText.Top(), textWidth, 36)
 		m.guiRenderFrameworkBox.SetReadOnly(true)
 		m.guiRenderFrameworkBox.SetStyle(types.CsDropDownList)
 		m.guiRenderFrameworkBox.SetBorderStyle(types.BsSingle)
@@ -329,31 +207,30 @@ func (m *TCreateProjectForm) initComponents() {
 		m.guiRenderFrameworkBox.SetParent(m.box)
 	}
 	{
+		cancelBtnRect := types.TRect{Left: 325, Top: nextTop(45)}
+		cancelBtnRect.SetWidth(50)
+		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
 		m.cancelBtn.SetText("关 闭")
-		m.cancelBtn.SetFont(fontText)
-		m.cancelBtn.Font().SetColor(colors.ClWhite)
-		m.cancelBtn.Font().SetStyle(types.NewSet(types.FsBold))
+		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 245, Top: nextTop(45)}
-		cancelBtnRect.SetWidth(100)
-		cancelBtnRect.SetHeight(40)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
-		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.cancelBtn.SetColor(grayBtnColor)
+		m.cancelBtn.SetCursor(types.CrHandPoint)
 		m.cancelBtn.SetParent(m.box)
 		m.cancelBtn.SetOnClick(m.closeClick)
 
+		createBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 20, Top: cancelBtnRect.Top}
+		createBtnRect.SetWidth(60)
+		createBtnRect.SetHeight(25)
 		m.createBtn = wg.NewButton(m)
 		m.createBtn.SetText("创 建")
-		m.createBtn.SetFont(fontText)
-		m.createBtn.Font().SetStyle(types.NewSet(types.FsBold))
 		m.createBtn.Font().SetColor(colors.ClWhite)
+		m.createBtn.Font().SetSize(8)
 		m.createBtn.SetRadius(3)
-		createBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
-		createBtnRect.SetWidth(100)
-		createBtnRect.SetHeight(40)
 		m.createBtn.SetBoundsRect(createBtnRect)
-		m.createBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.createBtn.SetColor(blueBtnColor)
+		m.createBtn.SetCursor(types.CrHandPoint)
 		m.createBtn.SetParent(m.box)
 		m.createBtn.SetOnClick(m.createClick)
 	}
@@ -363,17 +240,15 @@ func (m *TCreateProjectForm) initComponents() {
 func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 	logs.Debug("TCreateProjectForm Show")
 	m.one.Do(func() {
-		addSize := int32(20)
 		br := m.BoundsRect()
 		br.SetWidth(createProjectFormWidth)
-		br.SetHeight(createProjectFormHeight + addSize)
+		br.SetHeight(createProjectFormHeight)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
 		constr := m.Constraints()
 		constr.SetMaxWidth(createProjectFormWidth)
-		constr.SetMaxHeight(createProjectFormHeight + addSize)
+		constr.SetMaxHeight(createProjectFormHeight)
 		constr.SetMinWidth(createProjectFormWidth)
-		constr.SetMinHeight(createProjectFormHeight + addSize)
-		SetWindowCenterByMainWindow(m)
+		constr.SetMinHeight(createProjectFormHeight)
 		go m.checkGoVersion()
 	})
 }
@@ -406,11 +281,9 @@ func (m *TCreateProjectForm) checkGoVersion() {
 			m.goVersionOK = compareVersions(version, minGoVersion) == 1
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				if m.goVersionOK {
-					m.goVersionStatus.SetColor(colors.ClGreen)
-					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/laugh.png"))
+					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/ok_btn_16x16.png"))
 				} else {
-					m.goVersionStatus.SetColor(colors.ClRed)
-					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/weep.png"))
+					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/err_btn_16x16.png"))
 				}
 				m.goVersionStatus.SetText(buf.String())
 			})
@@ -539,16 +412,6 @@ func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, 
 	canvas.CopyRectWithRectX2Canvas(rect, bmpCanvas, sourceRect)
 }
 
-// 模块选择
-func (m *TCreateProjectForm) modBoxChange(sender lcl.IObject) {
-	if m.modBox.ItemIndex() == 1 {
-		m.showError(m.modErrorLabel, m.modText.BoundsRect(), "＊暂不支持从远程下载")
-		return
-	}
-	m.baseErrorLabel.Hide()
-	m.modErrorLabel.Hide()
-}
-
 // 统一错误显示方法
 func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message string) {
 	label.SetLeft(br.Left)
@@ -561,34 +424,13 @@ func (m *TCreateProjectForm) showError(label lcl.ILabel, br types.TRect, message
 func (m *TCreateProjectForm) validateInputs() bool {
 	if strings.TrimSpace(m.projNameEdit.Text()) == "" {
 		m.projNameEdit.SetFocus()
-		m.showError(m.baseErrorLabel, m.projNameText.BoundsRect(), "＊项目名为空")
 		return false
 	}
 	selectProjectPath := strings.TrimSpace(m.projPathEdit.Text())
 	if selectProjectPath == "" {
 		m.projPathEdit.SetFocus()
-		m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊项目目录为空")
 		return false
 	}
-	//if !tool.IsExist(selectProjectPath) {
-	//	//m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊目录不存在")
-	//	//isCreate := api.MessageDlg("目录不存在是否创建？", types.MtCustom,
-	//	//	types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
-	//	//if isCreate {
-	//	err := os.MkdirAll(selectProjectPath, os.ModePerm)
-	//	if err != nil {
-	//		m.showError(m.baseErrorLabel, m.projPathText.BoundsRect(), "＊创建目录失败")
-	//		return false
-	//	}
-	//	//}
-	//}
-	if m.modBox.ItemIndex() == 1 {
-		m.showError(m.modErrorLabel, m.modText.BoundsRect(), "＊暂不支持从远程下载")
-		return false
-	}
-
-	m.baseErrorLabel.Hide()
-	m.modErrorLabel.Hide()
 	return true
 }
 

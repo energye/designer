@@ -28,71 +28,42 @@ import (
 
 func (m *TConfigProjectForm) initMacOSOptions() {
 	logs.Debug("TConfigProjectForm initMacOSOptions")
-	// macOS plist.info
-
-	//box := lcl.NewScrollBox(m)
-	//box.SetAlign(types.AlClient)
-	//box.SetBorderStyleToBorderStyle(types.BsNone)
-	//box.VertScrollBar().SetVisible(true)
-	//box.VertScrollBar().SetTracking(true)
-	//box.HorzScrollBar().SetVisible(false)
-	//box.SetParent(m.platformTabPageMacOS)
-
-	/**
-	   	CFBundleExecutable 可执行文件名称 = 在编译选项配置
-	   	CFBundleDisplayName 应用的短显示名称 = 应用标题
-	    CFBundleIdentifier 应用的唯一标识 = 标识
-		CFBundleVersion 内部版本号 = 版本
-		CFBundleShortVersionString 对外版本号 = 版本
-		CFBundleGetInfoString 应用备注信息 = 描述
-		CFBundleIconFile 应用图标 = 图标需生成 xxx.icns
-		NSHumanReadableCopyright 应用版权信息 = 版权
-
-	   	CFBundleName 应用的短显示名称 = 新增
-		CFBundleLocalizations 应用本地化语言列表 = 新增, 文本框 格式 豆号分隔 zh-CN,en-US
-		LSUIElement 控制运行模式 = 新增
-			- true：无 Dock 图标 / 菜单栏，仅状态栏运行（后台应用）；
-			- false：常规前台应用。 设为true后需通过状态栏触发界面，不可与 LSBackgroundOnly 同时为true。
-		LSMinimumSystemVersion 系统最低版本 = 新增 10.15 或 11.0
-
-	*/
 	baseTop := int32(10)
+	baseLeft := int32(110)
+	nextTop := func(v int32) int32 {
+		baseTop += v
+		return baseTop
+	}
 
-	m.CFBundleNameText = lcl.NewLabel(m)
-	m.CFBundleNameText.SetLeft(10)
-	m.CFBundleNameText.SetTop(baseTop)
-	m.CFBundleNameText.SetCaption("　　　　短标题")
-	m.CFBundleNameText.SetParent(m.platformTabPageMacOS)
-	m.CFBundleNameEdit = lcl.NewEdit(m)
-	m.CFBundleNameEdit.SetBounds(m.CFBundleNameText.Left()+100, baseTop-5, 430, 30)
+	m.CFBundleNameEdit = lcl.NewLabeledEdit(m)
+	m.CFBundleNameEdit.EditLabel().SetCaption("短标题")
+	m.CFBundleNameEdit.SetBounds(baseLeft, nextTop(0), 430, 30)
 	m.CFBundleNameEdit.SetFont(m.font)
 	m.CFBundleNameEdit.SetShowHint(true)
 	m.CFBundleNameEdit.SetTextHint("应用的短显示名称, 默认: 构建二进制文件名")
 	m.CFBundleNameEdit.SetHint("应用的短显示名称, 默认: 构建二进制文件名")
 	m.CFBundleNameEdit.SetText(bean.GProject.AppOption.MacOS.PList.CFBundleName)
+	m.CFBundleNameEdit.SetLabelPosition(types.LpLeft)
 	m.CFBundleNameEdit.SetParent(m.platformTabPageMacOS)
 
-	m.CFBundleLocalizationsText = lcl.NewLabel(m)
-	m.CFBundleLocalizationsText.SetLeft(10)
-	m.CFBundleLocalizationsText.SetTop(baseTop + 40)
-	m.CFBundleLocalizationsText.SetCaption("本地化语言列表")
-	m.CFBundleLocalizationsText.SetParent(m.platformTabPageMacOS)
-	m.CFBundleLocalizationsEdit = lcl.NewEdit(m)
-	m.CFBundleLocalizationsEdit.SetBounds(m.CFBundleLocalizationsText.Left()+100, baseTop+35, 230, 30)
+	m.CFBundleLocalizationsEdit = lcl.NewLabeledEdit(m)
+	m.CFBundleLocalizationsEdit.EditLabel().SetCaption("本地化语言列表")
+	m.CFBundleLocalizationsEdit.SetBounds(baseLeft, nextTop(35), 230, 30)
 	m.CFBundleLocalizationsEdit.SetFont(m.font)
 	m.CFBundleLocalizationsEdit.SetShowHint(true)
 	m.CFBundleLocalizationsEdit.SetTextHint("本地化语言列表, 豆号分隔 zh_CN,en")
 	m.CFBundleLocalizationsEdit.SetHint("本地化语言列表, 豆号分隔 zh_CN,en")
 	m.CFBundleLocalizationsEdit.SetText(strings.Join(bean.GProject.AppOption.MacOS.PList.CFBundleLocalizations, ","))
+	m.CFBundleLocalizationsEdit.SetLabelPosition(types.LpLeft)
 	m.CFBundleLocalizationsEdit.SetParent(m.platformTabPageMacOS)
 
 	m.LSUIElementText = lcl.NewLabel(m)
-	m.LSUIElementText.SetLeft(10)
-	m.LSUIElementText.SetTop(baseTop + 80)
+	m.LSUIElementText.SetLeft(15)
+	m.LSUIElementText.SetTop(nextTop(35))
 	m.LSUIElementText.SetCaption("　控制运行模式")
 	m.LSUIElementText.SetParent(m.platformTabPageMacOS)
 	m.LSUIElementBox = lcl.NewComboBox(m)
-	m.LSUIElementBox.SetBounds(m.LSUIElementText.Left()+100, baseTop+75, 430, 30)
+	m.LSUIElementBox.SetBounds(baseLeft, m.LSUIElementText.Top(), 430, 30)
 	m.LSUIElementBox.SetFont(m.font)
 	m.LSUIElementBox.SetReadOnly(true)
 	m.LSUIElementBox.SetStyle(types.CsDropDownList)
@@ -101,12 +72,12 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 	m.LSUIElementBox.SetParent(m.platformTabPageMacOS)
 
 	m.LSMinimumSystemVersionText = lcl.NewLabel(m)
-	m.LSMinimumSystemVersionText.SetLeft(10)
-	m.LSMinimumSystemVersionText.SetTop(baseTop + 120)
+	m.LSMinimumSystemVersionText.SetLeft(15)
+	m.LSMinimumSystemVersionText.SetTop(nextTop(35))
 	m.LSMinimumSystemVersionText.SetCaption("　最低系统版本")
 	m.LSMinimumSystemVersionText.SetParent(m.platformTabPageMacOS)
 	m.LSMinimumSystemVersionBox = lcl.NewComboBox(m)
-	m.LSMinimumSystemVersionBox.SetBounds(m.LSMinimumSystemVersionText.Left()+100, baseTop+115, 430, 30)
+	m.LSMinimumSystemVersionBox.SetBounds(baseLeft, m.LSMinimumSystemVersionText.Top(), 430, 30)
 	m.LSMinimumSystemVersionBox.SetFont(m.font)
 	m.LSMinimumSystemVersionBox.SetReadOnly(true)
 	m.LSMinimumSystemVersionBox.SetStyle(types.CsDropDownList)

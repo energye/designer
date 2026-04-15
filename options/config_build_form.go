@@ -36,7 +36,7 @@ var (
 
 func NewBuildForm() *TBuildForm {
 	newEngForm := lcl.NewEngForm(nil)
-	newForm := &TBuildForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	newForm := &TBuildForm{TEngForm: *newEngForm.(*lcl.TEngForm)}
 	newForm.FormCreate(newEngForm)
 	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
 	newForm.SetOnClose(newForm.OnClose)
@@ -44,7 +44,7 @@ func NewBuildForm() *TBuildForm {
 }
 
 type TBuildForm struct {
-	*lcl.TEngForm
+	lcl.TEngForm
 	closing      bool
 	font         lcl.IFont
 	titleFont    lcl.IFont
@@ -114,7 +114,11 @@ type TBuildForm struct {
 	macSignListBtn  *wg.TButton
 	macSignArray    []string
 
-	macCommonLibCheckBox lcl.ICheckBox
+	// 打包配置
+	macPackConfigTab                   *wg.TTab
+	macPackConfigTabPageBinSign        *wg.TPage
+	macPackConfigTabPageAssociateFiles *wg.TPage
+	macCommonLibCheckBox               lcl.ICheckBox
 
 	linuxDEBCheckBox lcl.ICheckBox
 	linuxRPMCheckBox lcl.ICheckBox
@@ -161,41 +165,39 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	}
 
 	{
-		m.buildTab = wg.NewTab(m)
-		m.buildTab.Margin = 5
 		tabBR := types.TRect{Left: 0, Top: 5}
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - tabBR.Top)
+		m.buildTab = wg.NewTab(m)
+		m.buildTab.Margin = 2
 		m.buildTab.SetBoundsRect(tabBR)
 		m.buildTab.SetColor(colors.ClWhite)
 		m.buildTab.EnableScrollButton(false)
 		m.buildTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.buildTab.SetParent(m)
 		m.buildTab.SetOnChange(func(sender lcl.IObject) {
-			//for _, page := range m.buildTab.Pages() {
-			//	if page.Active() {
-			//		page.Button().SetBorderDirections(0)
-			//		page.Button().Font().SetColor(colors.ClWhite)
-			//		page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconActive)
-			//	} else {
-			//		page.Button().SetBorderDirections(types.NewSet(wg.BbdBottom, wg.BbdLeft, wg.BbdTop, wg.BbdRight))
-			//		page.Button().Font().SetColor(colors.ClBlack)
-			//		page.Button().SetIconFavoriteFormBytes(buttons.Get(page.Button().Text()).iconDefault)
-			//	}
-			//}
+			for _, page := range m.buildTab.Pages() {
+				if page.Active() {
+					page.Button().SetColor(tabActiveBgColor)
+					page.Button().Font().SetColor(tabActiveTextColor)
+					page.Button().SetBorderColor(wg.BbdNone, tabActiveBorderColor)
+				} else {
+					page.Button().SetColor(tabNoActiveBgColor)
+					page.Button().Font().SetColor(tabNoActiveTextColor)
+					page.Button().SetBorderColor(wg.BbdNone, tabNoActiveBorderColor)
+				}
+			}
 		})
 
 		m.buildTabPageConfig = m.buildTab.NewPage()
 		m.buildTabPageConfig.SetCaption("基础配置")
+		m.buildTabPageConfig.Button().SetWidth(80)
 		m.buildTabPageConfig.Button().SetCursor(types.CrHandPoint)
-		//m.buildTabPageConfig.Button().SetIconFavoriteFormBytes(buttons.Get("Windows").iconDefault)
-		//setTabPageStyle(m.platformTabPageWindows)
 
 		m.buildTabPagePackage = m.buildTab.NewPage()
 		m.buildTabPagePackage.SetCaption("构建打包")
+		m.buildTabPagePackage.Button().SetWidth(80)
 		m.buildTabPagePackage.Button().SetCursor(types.CrHandPoint)
-		//m.buildTabPageConfig.Button().SetIconFavoriteFormBytes(buttons.Get("Windows").iconDefault)
-		//setTabPageStyle(m.platformTabPageWindows)
 
 		m.buildTabPageConfig.SetActive(true)
 	}
@@ -206,9 +208,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 
 	{
 		btnFont := lcl.NewFont()
-		btnFont.SetName("微软雅黑")
 		btnFont.SetSize(10)
-		btnFont.SetStyle(types.NewSet(types.FsBold))
 
 		saveBtnRect := types.TRect{Left: 390, Top: 0}
 		saveBtnRect.SetWidth(75)
@@ -216,11 +216,11 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.saveBtn = wg.NewButton(m)
 		m.saveBtn.SetText("保存配置")
 		m.saveBtn.SetFont(btnFont)
-		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
 		m.saveBtn.SetCursor(types.CrHandPoint)
 		m.saveBtn.SetBoundsRect(saveBtnRect)
-		m.saveBtn.SetColor(colors.RGBToColor(59, 130, 246))
+		m.saveBtn.SetColor(colors.RGBToColor(243, 244, 246))
+		m.saveBtn.Font().SetColor(colors.RGBToColor(55, 65, 81))
 		m.saveBtn.SetAnchors(types.NewSet(types.AkRight, types.AkTop))
 		m.saveBtn.SetParent(m.buildTab)
 		m.saveBtn.SetOnClick(m.saveClick)
@@ -235,7 +235,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.packageBtn.Font().SetColor(colors.ClWhite)
 		m.packageBtn.SetRadius(3)
 		m.packageBtn.SetBoundsRect(buildBtnRect)
-		m.packageBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.packageBtn.SetColor(colors.RGBToColor(34, 197, 94))
 		m.packageBtn.SetAnchors(types.NewSet(types.AkRight, types.AkTop))
 		m.packageBtn.SetParent(m.buildTab)
 		m.packageBtn.SetOnClick(m.packageClick)
@@ -396,14 +396,16 @@ func (m *TBuildForm) initConfigComponent() {
 	m.outputEdit.SetParent(m.buildTabPageConfig)
 
 	m.selectOutputDirBtn = wg.NewButton(m)
-	m.selectOutputDirBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+	m.selectOutputDirBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
 	m.selectOutputDirBtn.SetRadius(3)
-	selectOutputDirRect := types.TRect{Left: m.outputEdit.Left() + m.outputEdit.Width() + 5, Top: m.outputEdit.Top()}
+	m.selectOutputDirBtn.SetCursor(types.CrHandPoint)
+	m.selectOutputDirBtn.SetColor(grayBtnColor)
+	selectOutputDirRect := types.TRect{Left: m.outputEdit.Left() + m.outputEdit.Width() + 5, Top: m.outputEdit.Top() - 2}
 	selectOutputDirRect.SetWidth(30)
 	if tool.IsLinux {
 		selectOutputDirRect.SetHeight(35)
 	} else {
-		selectOutputDirRect.SetHeight(30)
+		selectOutputDirRect.SetHeight(25)
 	}
 	m.selectOutputDirBtn.SetBoundsRect(selectOutputDirRect)
 	m.selectOutputDirBtn.SetParent(m.buildTabPageConfig)
@@ -550,37 +552,38 @@ func (m *TBuildForm) initBuildComponent() {
 	m.packageNameEdit.SetParent(m.buildTabPagePackage)
 
 	{
-		tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
-		btnColor := colors.RGBToColor(0, 120, 212)
-
 		tabBR := types.TRect{Left: 0, Top: 40}
 		tabBR.SetWidth(m.buildTabPagePackage.Width())
 		tabBR.SetHeight(m.buildTabPagePackage.Height() - tabBR.Top)
 		m.platformTab = wg.NewTab(m)
-		m.platformTab.Margin = 5
+		m.platformTab.Margin = 2
 		m.platformTab.SetBoundsRect(tabBR)
 		m.platformTab.SetColor(colors.ClWhite)
 		m.platformTab.EnableScrollButton(false)
 		m.platformTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.platformTab.SetParent(m.buildTabPagePackage)
+		m.platformTab.SetOnChange(func(sender lcl.IObject) {
+			for _, page := range m.platformTab.Pages() {
+				if page.Active() {
+					page.Button().SetColor(colors.RGBToColor(219, 234, 254))
+					page.Button().Font().SetColor(colors.RGBToColor(29, 78, 216))
+					page.Button().SetBorderColor(wg.BbdNone, colors.RGBToColor(219, 234, 254))
+				} else {
+					page.Button().SetColor(tabNoActiveBgColor)
+					page.Button().Font().SetColor(tabNoActiveTextColor)
+					page.Button().SetBorderColor(wg.BbdNone, tabNoActiveBorderColor)
+				}
+			}
+		})
 		// 设置标签按钮样式
 		setTabPageStyle := func(page *wg.TPage) {
 			page.SetTop(30)
-			page.SetHeight(m.platformTab.Height() - page.Top())
 			page.SetColor(m.platformTab.Color()) // 设置背景色
+			page.SetHeight(m.platformTab.Height() - page.Top())
+			page.Button().SetRadius(0)
+			page.Button().SetCursor(types.CrHandPoint)
 			page.Button().SetWidth(80)
 			page.Button().SetHeight(25)
-			page.Button().SetLeft(0)
-			page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop, wg.RcLeftBottom, wg.RcRightBottom)
-			page.Button().Font().SetColor(colors.ClBlack)
-			page.Button().SetBorderColor(wg.BbdNone, tabColor)
-			page.Button().SetRadius(5)
-			page.Button().SetColor(tabColor)
-			page.Button().SetDownColor(wg.LightenColor(btnColor, 0.3), wg.LightenColor(btnColor, 0.5))
-			page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.3))
-			page.SetDefaultColor(tabColor)
-			page.SetActiveColor(btnColor)
-			page.Button().SetCursor(types.CrHandPoint)
 		}
 
 		m.platformTabPageWindows = m.platformTab.NewPage()

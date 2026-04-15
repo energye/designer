@@ -33,7 +33,7 @@ import (
 
 var (
 	envFormWidth  = int32(555)
-	envFormHeight = int32(115)
+	envFormHeight = int32(90)
 )
 
 // 运行项目(环境)配置窗口
@@ -48,7 +48,7 @@ func runEnvConfig() {
 
 func NewEnvForm() *TEnvForm {
 	newEngForm := lcl.NewEngForm(nil)
-	newForm := &TEnvForm{TEngForm: newEngForm.(*lcl.TEngForm)}
+	newForm := &TEnvForm{TEngForm: *newEngForm.(*lcl.TEngForm)}
 	newForm.FormCreate(newEngForm)
 	newForm.SetOnCloseQuery(newForm.OnCloseQuery)
 	newForm.SetOnClose(newForm.OnClose)
@@ -56,7 +56,7 @@ func NewEnvForm() *TEnvForm {
 }
 
 type TEnvForm struct {
-	*lcl.TEngForm
+	lcl.TEngForm
 	closing   bool
 	font      lcl.IFont
 	selectDir lcl.ISelectDirectoryDialog
@@ -128,44 +128,48 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		}
 
 		m.goRootBtn = wg.NewButton(m)
-		m.goRootBtn.SetIconFormBytes(resources.Images("actions/add.png"))
+		m.goRootBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
 		m.goRootBtn.SetRadius(3)
 		cusRect := types.TRect{Left: m.goRootBox.Left() + m.goRootBox.Width() + 5, Top: 10}
 		cusRect.SetWidth(30)
 		if tool.IsLinux {
 			cusRect.SetHeight(35)
 		} else {
-			cusRect.SetHeight(30)
+			cusRect.SetHeight(25)
 		}
 		m.goRootBtn.SetBoundsRect(cusRect)
+		m.goRootBtn.SetColor(grayBtnColor)
+		m.goRootBtn.SetBorderColor(wg.BbdNone, grayBtnColor)
+		m.goRootBtn.SetCursor(types.CrHandPoint)
 		m.goRootBtn.SetParent(m)
 		m.goRootBtn.SetOnClick(m.goRootClick)
 	}
 
 	{
+		cancelBtnRect := types.TRect{Left: 400, Top: 50}
+		cancelBtnRect.SetWidth(60)
+		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
 		m.cancelBtn.SetText("关　闭")
-		m.cancelBtn.SetFont(m.font)
-		m.cancelBtn.Font().SetColor(colors.ClWhite)
+		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
-		cancelBtnRect := types.TRect{Left: 315, Top: 70}
-		cancelBtnRect.SetWidth(100)
-		cancelBtnRect.SetHeight(35)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
-		m.cancelBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.cancelBtn.SetColor(grayBtnColor)
+		m.cancelBtn.SetCursor(types.CrHandPoint)
 		m.cancelBtn.SetParent(m)
 		m.cancelBtn.SetOnClick(m.closeClick)
 
+		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 20, Top: cancelBtnRect.Top}
+		saveBtnRect.SetWidth(60)
+		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
 		m.saveBtn.SetText("保　存")
-		m.saveBtn.SetFont(m.font)
+		m.saveBtn.Font().SetSize(8)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
-		saveBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 30, Top: cancelBtnRect.Top}
-		saveBtnRect.SetWidth(100)
-		saveBtnRect.SetHeight(35)
 		m.saveBtn.SetBoundsRect(saveBtnRect)
-		m.saveBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.saveBtn.SetColor(blueBtnColor)
+		m.saveBtn.SetCursor(types.CrHandPoint)
 		m.saveBtn.SetParent(m)
 		m.saveBtn.SetOnClick(m.saveClick)
 	}
