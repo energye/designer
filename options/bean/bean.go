@@ -54,26 +54,27 @@ type TUIForm struct {
 // TBuildOption 构建配置
 type TBuildOption struct {
 	// 基础配置
-	PlatformWindows  bool   `json:"windows"`
-	PlatformMacOS    bool   `json:"macos"`
-	PlatformLinux    bool   `json:"linux"`
-	ArchAmd64        bool   `json:"arch_amd64"`
-	Arch386          bool   `json:"arch_386"`
-	ArchArm64        bool   `json:"arch_arm64"`
-	ArchArm          bool   `json:"arch_arm"`
-	ArchLoong64      bool   `json:"arch_loong64"`
-	UIWin32          bool   `json:"ui_win32"`
-	UICocoa          bool   `json:"ui_cocoa"`
-	UIGtk2           bool   `json:"ui_gtk2"`
-	UIGtk3           bool   `json:"ui_gtk3"`
-	Output           string `json:"output"`
-	BuildFileName    string `json:"build_file_name"`
-	BuildModeDebug   bool   `json:"build_mode_debug"`
-	BuildModeRelease bool   `json:"build_mode_release"`
-	BuildCGOEnabled  bool   `json:"build_cgo_enabled"`
-	GoArgs           string `json:"go_args"`
-	CodeObfuscation  bool   `json:"code_obfuscation"`
-	DisableDebug     bool   `json:"disable_debug"`
+	PlatformWindows    bool   `json:"windows"`
+	PlatformMacOS      bool   `json:"macos"`
+	PlatformLinux      bool   `json:"linux"`
+	ArchAmd64          bool   `json:"arch_amd64"`
+	Arch386            bool   `json:"arch_386"`
+	ArchArm64          bool   `json:"arch_arm64"`
+	ArchArm            bool   `json:"arch_arm"`
+	ArchLoong64        bool   `json:"arch_loong64"`
+	UIWin32            bool   `json:"ui_win32"`
+	UICocoa            bool   `json:"ui_cocoa"`
+	UIGtk2             bool   `json:"ui_gtk2"`
+	UIGtk3             bool   `json:"ui_gtk3"`
+	Output             string `json:"output"`
+	BuildFileName      string `json:"build_file_name"`
+	BuildModeDebug     bool   `json:"build_mode_debug"`
+	BuildModeRelease   bool   `json:"build_mode_release"`
+	BuildCGOEnabled    bool   `json:"build_cgo_enabled"`
+	BuildOtherPlatform bool   `json:"build_other_platform"`
+	GoArgs             string `json:"go_args"`
+	CodeObfuscation    bool   `json:"code_obfuscation"`
+	DisableDebug       bool   `json:"disable_debug"`
 	// 打包配置
 	PackageName              string   `json:"package_name"`
 	WinMsi                   bool     `json:"win_msi"`

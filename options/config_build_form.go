@@ -75,6 +75,7 @@ type TBuildForm struct {
 	buildModeDebugRdo       lcl.IRadioButton
 	buildModeReleaseRdo     lcl.IRadioButton
 	buildCGOEnabledChk      lcl.ICheckBox
+	buildOtherPlatformChk   lcl.ICheckBox
 	buildArgsEdit           lcl.IEdit
 	codeObfuscationCheckBox lcl.ICheckBox
 	disableDebugCheckBox    lcl.ICheckBox
@@ -458,14 +459,37 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildModeReleaseRdo.SetParent(m.buildTabPageConfig)
 
 	m.buildCGOEnabledChk = lcl.NewCheckBox(m)
-	m.buildCGOEnabledChk.SetCaption("CGO(启用/关闭)")
 	m.buildCGOEnabledChk.SetShowHint(true)
-	m.buildCGOEnabledChk.SetHint("未选中(关闭), 在构建时可编译其它平台二进制")
+	m.buildCGOEnabledChk.SetHint("禁用 CGO 在构建时可编译其它平台二进制")
 	m.buildCGOEnabledChk.SetLeft(210)
 	m.buildCGOEnabledChk.SetTop(m.buildModeDebugRdo.Top())
 	m.buildCGOEnabledChk.SetFont(m.font)
 	m.buildCGOEnabledChk.SetChecked(bean.GProject.BuildOption.BuildCGOEnabled)
 	m.buildCGOEnabledChk.SetParent(m.buildTabPageConfig)
+	setBuildCGOEnabledChkCaption := func() {
+		if m.buildCGOEnabledChk.Checked() {
+			m.buildCGOEnabledChk.SetCaption("已启用CGO")
+			m.buildOtherPlatformChk.SetEnabled(false)
+		} else {
+			m.buildCGOEnabledChk.SetCaption("已关闭CGO")
+			m.buildOtherPlatformChk.SetEnabled(true)
+		}
+	}
+	m.buildCGOEnabledChk.SetOnChange(func(sender lcl.IObject) {
+		setBuildCGOEnabledChkCaption()
+	})
+
+	m.buildOtherPlatformChk = lcl.NewCheckBox(m)
+	m.buildOtherPlatformChk.SetCaption("构建其它平台")
+	m.buildOtherPlatformChk.SetShowHint(true)
+	m.buildOtherPlatformChk.SetHint("关闭 CGO 后可同时生成 Windows、Linux、macOS 可执行文件")
+	m.buildOtherPlatformChk.SetLeft(310)
+	m.buildOtherPlatformChk.SetTop(m.buildCGOEnabledChk.Top())
+	m.buildOtherPlatformChk.SetFont(m.font)
+	m.buildOtherPlatformChk.SetChecked(bean.GProject.BuildOption.BuildOtherPlatform)
+	m.buildOtherPlatformChk.SetParent(m.buildTabPageConfig)
+
+	setBuildCGOEnabledChkCaption()
 
 	buildArgsTitle := lcl.NewLabel(m)
 	buildArgsTitle.SetFont(m.titleFontTwo)
@@ -635,6 +659,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.BuildModeDebug = m.buildModeDebugRdo.Checked()
 	bean.GProject.BuildOption.BuildModeRelease = m.buildModeReleaseRdo.Checked()
 	bean.GProject.BuildOption.BuildCGOEnabled = m.buildCGOEnabledChk.Checked()
+	bean.GProject.BuildOption.BuildOtherPlatform = m.buildOtherPlatformChk.Checked()
 	bean.GProject.BuildOption.GoArgs = m.buildArgsEdit.Text()
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
