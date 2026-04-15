@@ -78,7 +78,6 @@ func (m *TBuildForm) initWindowsOptions() {
 	tabColor := colors.ClWhite //colors.TColor(0xF3F4F6)
 	btnColor := colors.RGBToColor(234, 239, 249)
 	setWinPackConfigTabPageStyle := func(page *wg.TPage) {
-		//page.SetTop(25)
 		page.SetHeight(m.winPackConfigTab.Height() - page.Top())
 		page.SetColor(btnColor) // 设置背景色
 		page.Button().SetWidth(80)

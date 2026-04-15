@@ -128,6 +128,8 @@ type TBuildForm struct {
 	saveBtn    *wg.TButton
 	packageBtn *wg.TButton
 	packageing bool
+
+	statusBar lcl.IStatusBar
 }
 
 func (m *TBuildForm) FormCreate(sender lcl.IObject) {
@@ -234,6 +236,10 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.packageBtn.SetOnClick(m.packageClick)
 	}
 	//(&hook.TWindowHook{Form: m}).Hook()
+
+	m.statusBar = lcl.NewStatusBar(m)
+	m.statusBar.SetParent(m)
+	m.statusBar.SetAutoHint(true)
 }
 
 func (m *TBuildForm) initConfigComponent() {
@@ -787,6 +793,9 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 			return
 		}
 		event.ConsoleWriteInfo("构建配置-保存-完成")
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.statusBar.SetSimpleText("构建配置-保存-完成")
+		})
 	}()
 }
 
@@ -806,5 +815,8 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetDisable(false)
 		m.packageing = false
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.statusBar.SetSimpleText("打包完成")
+		})
 	}()
 }

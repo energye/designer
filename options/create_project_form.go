@@ -171,15 +171,12 @@ func (m *TCreateProjectForm) initComponents() {
 		goVersionText.SetParent(m.box)
 
 		m.goVersionStatus = wg.NewButton(m)
-		m.goVersionStatus.SetText("检测本地")
 		m.goVersionStatus.SetRadius(0)
 		goVersionRect := types.TRect{Left: 100, Top: goVersionText.Top() - 5}
 		goVersionRect.SetWidth(textWidth)
 		goVersionRect.SetHeight(25)
 		color := wg.LightenColor(colors.RGBToColor(214, 234, 242), 0.5)
 		m.goVersionStatus.SetBoundsRect(goVersionRect)
-		m.goVersionStatus.SetShowHint(true)
-		m.goVersionStatus.SetHint("在本机检测已安装可用的 Go 版本\n绿色: 支持\n红色: 不支持")
 		m.goVersionStatus.SetColor(color)
 		m.goVersionStatus.SetBorderColor(wg.BbdNone, wg.DarkenColor(color, 0.2))
 		m.goVersionStatus.SetEnterColor(color, color)
@@ -191,7 +188,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.guiRenderFrameworkText = lcl.NewLabel(m)
 		m.guiRenderFrameworkText.SetLeft(left)
 		m.guiRenderFrameworkText.SetTop(nextTop(35))
-		m.guiRenderFrameworkText.SetCaption(" UI 模板")
+		m.guiRenderFrameworkText.SetCaption("  UI 模板")
 		m.guiRenderFrameworkText.SetParent(m.box)
 
 		m.guiRenderFrameworkBox = lcl.NewComboBox(m)

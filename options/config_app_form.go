@@ -106,6 +106,8 @@ type TConfigProjectForm struct {
 	// 操作按钮
 	cancelBtn *wg.TButton
 	saveBtn   *wg.TButton
+
+	statusBar lcl.IStatusBar
 }
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
@@ -397,6 +399,10 @@ func (m *TConfigProjectForm) initComponents() {
 		m.saveBtn.SetParent(m.box)
 		m.saveBtn.SetOnClick(m.saveClick)
 	}
+
+	m.statusBar = lcl.NewStatusBar(m)
+	m.statusBar.SetParent(m)
+	m.statusBar.SetAutoHint(true)
 }
 
 func (m *TConfigProjectForm) closeClick(sender lcl.IObject) {
@@ -434,6 +440,9 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 		// 更新图标
 		updateWindowICON()
 		event.ConsoleWriteInfo("项目配置-保存-完成")
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.statusBar.SetSimpleText("项目配置-保存-完成")
+		})
 	}()
 }
 
