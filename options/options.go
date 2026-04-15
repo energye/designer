@@ -255,7 +255,7 @@ func (m *TCommonMemoBox) Create() {
 	m.memo.SetBoundsRect(memoRect)
 	m.memo.SetBorderStyle(types.BsNone)
 	m.memo.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
-	m.memo.SetColor(colors.ClInfoBk)
+	m.memo.SetColor(colors.ClWhite)
 	m.memo.Font().SetSize(8)
 	m.memo.SetOnChange(func(sender lcl.IObject) {
 		if m.change != nil {

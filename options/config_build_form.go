@@ -158,18 +158,11 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
 	{
-		//m.openFile = lcl.NewOpenDialog(m)
-		//m.openFile.SetTitle("打开证书")
-		//m.openFile.SetFilter(config.DialogFilter.MacCertFilter())
-		//m.openFile.SetFilterIndex(1)
-	}
-
-	{
 		tabBR := types.TRect{Left: 0, Top: 5}
 		tabBR.SetWidth(m.Width())
 		tabBR.SetHeight(m.Height() - tabBR.Top)
 		m.buildTab = wg.NewTab(m)
-		m.buildTab.Margin = 2
+		m.buildTab.Margin = 0
 		m.buildTab.SetBoundsRect(tabBR)
 		m.buildTab.SetColor(colors.ClWhite)
 		m.buildTab.EnableScrollButton(false)
@@ -542,7 +535,7 @@ func (m *TBuildForm) initBuildComponent() {
 	m.packageNameEdit = lcl.NewLabeledEdit(m)
 	m.packageNameEdit.SetBounds(80, 5, buildFormWidth-100, 30)
 	m.packageNameEdit.SetFont(m.font)
-	m.packageNameEdit.SetTextHint("安装包名称, 默认可执行文件名称")
+	m.packageNameEdit.SetTextHint("Installer package name")
 	m.packageNameEdit.SetAnchors(types.NewSet(types.AkLeft, types.AkRight, types.AkTop))
 	m.packageNameEdit.SetText(bean.GProject.BuildOption.PackageName)
 	editLabel := m.packageNameEdit.EditLabel()
@@ -556,7 +549,7 @@ func (m *TBuildForm) initBuildComponent() {
 		tabBR.SetWidth(m.buildTabPagePackage.Width())
 		tabBR.SetHeight(m.buildTabPagePackage.Height() - tabBR.Top)
 		m.platformTab = wg.NewTab(m)
-		m.platformTab.Margin = 2
+		m.platformTab.Margin = 0
 		m.platformTab.SetBoundsRect(tabBR)
 		m.platformTab.SetColor(colors.ClWhite)
 		m.platformTab.EnableScrollButton(false)
