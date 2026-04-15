@@ -117,6 +117,8 @@ func (m *TBuildForm) initMacOSOptions() {
 			m.createMacSignCommandList()
 		} else if page == m.macPackConfigTabPageAssociateFiles {
 			m.createMacAssociateFiles()
+		} else if page == m.macPackConfigTabPageAssociateProtocols {
+			m.createMacAssociateProtocols()
 		}
 	})
 
@@ -134,6 +136,17 @@ func (m *TBuildForm) initMacOSOptions() {
 		m.macPackConfigTabPageAssociateFiles = m.macPackConfigTab.NewPage()
 		m.macPackConfigTabPageAssociateFiles.SetCaption("关联文件")
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateFiles)
+	}
+	{
+		m.macPackConfigTabPageAssociateProtocols = m.macPackConfigTab.NewPage()
+		m.macPackConfigTabPageAssociateProtocols.SetCaption("关联协议")
+		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateProtocols)
+	}
+}
+
+func (m *TBuildForm) createMacAssociateProtocols() {
+	if m.macPackConfigTabPageAssociateProtocolsBox == nil {
+
 	}
 }
 

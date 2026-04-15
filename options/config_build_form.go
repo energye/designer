@@ -113,12 +113,14 @@ type TBuildForm struct {
 	macCommonLibCheckBox lcl.ICheckBox
 
 	// 打包配置
-	macPackConfigTab                      *wg.TTab
-	macPackConfigTabPageBinSign           *wg.TPage
-	macPackConfigTabPageAssociateFiles    *wg.TPage
-	macPackConfigTabPageBinSignMemoBox    *TCommonMemoBox
-	macPackConfigTabPageAssociateFilesBox *TCommonMemoBox
-	macSignEnable                         *TEnableButton
+	macPackConfigTab                          *wg.TTab
+	macPackConfigTabPageBinSign               *wg.TPage
+	macPackConfigTabPageAssociateFiles        *wg.TPage
+	macPackConfigTabPageAssociateProtocols    *wg.TPage
+	macPackConfigTabPageBinSignMemoBox        *TCommonMemoBox
+	macPackConfigTabPageAssociateFilesBox     *TCommonMemoBox
+	macPackConfigTabPageAssociateProtocolsBox *TCommonMemoBox
+	macSignEnable                             *TEnableButton
 
 	linuxDEBCheckBox lcl.ICheckBox
 	linuxRPMCheckBox lcl.ICheckBox
