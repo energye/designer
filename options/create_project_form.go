@@ -129,7 +129,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit.SetDoubleBuffered(true)
 		m.projNameEdit.SetParentColor(false)
 		m.projNameEdit.SetParent(m.box)
-		m.projNameEdit.SetTextHint("your project name. example: myapp")
+		m.projNameEdit.SetTextHint("your project name, e.g: myapp")
 		m.projNameEdit.SetLabelPosition(types.LpLeft)
 		projNameText := m.projNameEdit.EditLabel()
 		projNameText.SetCaption("项目名称")
