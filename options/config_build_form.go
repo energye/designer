@@ -771,6 +771,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		}
 		bean.GProject.BuildOption.WinSign.Cert = signCMD
 	}
+
 	// mac
 	bean.GProject.BuildOption.MacDMG = m.macDMGCheckBox.Checked()
 	bean.GProject.BuildOption.MacPKG = m.macPKGCheckBox.Checked()
@@ -782,7 +783,12 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 		}
 		bean.GProject.BuildOption.MacSign.Cert = signCMD
 	}
-
+	if m.macPackConfigTabPageAssociateFilesBox != nil {
+		bean.GProject.BuildOption.MacAssociateFileList = m.macPackConfigTabPageAssociateFilesBox.Lines()
+	}
+	if m.macPackConfigTabPageAssociateProtocolsBox != nil {
+		bean.GProject.BuildOption.MacAssociateProtocolList = m.macPackConfigTabPageAssociateProtocolsBox.Lines()
+	}
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxRPM = m.linuxRPMCheckBox.Checked()

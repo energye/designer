@@ -146,13 +146,27 @@ func (m *TBuildForm) initMacOSOptions() {
 
 func (m *TBuildForm) createMacAssociateProtocols() {
 	if m.macPackConfigTabPageAssociateProtocolsBox == nil {
-
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.macPackConfigTabPageAssociateProtocols.Width())
+		rect.SetHeight(m.macPackConfigTabPageAssociateProtocols.Height())
+		m.macPackConfigTabPageAssociateProtocolsBox = NewCommonMemoBox(rect, "配置应用关联协议", m.macPackConfigTabPageAssociateProtocols)
+		m.macPackConfigTabPageAssociateProtocolsBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.macPackConfigTabPageAssociateProtocolsBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateProtocolList, "\n"))
+		m.macPackConfigTabPageAssociateProtocolsBox.SetDemoText(``)
+		m.macPackConfigTabPageAssociateProtocolsBox.Show()
 	}
 }
 
 func (m *TBuildForm) createMacAssociateFiles() {
 	if m.macPackConfigTabPageAssociateFilesBox == nil {
-
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.macPackConfigTabPageAssociateFiles.Width())
+		rect.SetHeight(m.macPackConfigTabPageAssociateFiles.Height())
+		m.macPackConfigTabPageAssociateFilesBox = NewCommonMemoBox(rect, "配置应用关联文件", m.macPackConfigTabPageAssociateFiles)
+		m.macPackConfigTabPageAssociateFilesBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.macPackConfigTabPageAssociateFilesBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateFileList, "\n"))
+		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(``)
+		m.macPackConfigTabPageAssociateFilesBox.Show()
 	}
 }
 

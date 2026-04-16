@@ -87,6 +87,8 @@ type TBuildOption struct {
 	NSIS                     TNSIS    `json:"nsis"`
 	MacDMG                   bool     `json:"mac_dmg"`
 	MacPKG                   bool     `json:"mac_pkg"`
+	MacAssociateFileList     []string `json:"mac_associate_file_list"`
+	MacAssociateProtocolList []string `json:"mac_associate_protocol_list"`
 	MacSign                  TSign    `json:"mac_sign"`
 	MacCommonLib             bool     `json:"mac_common_lib"`
 	LinuxDEB                 bool     `json:"linux_deb"`
