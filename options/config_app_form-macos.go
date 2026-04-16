@@ -18,7 +18,6 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/resources/app"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"os"
@@ -102,27 +101,6 @@ func (m *TConfigProjectForm) pListDataInit() {
 		return false
 	})
 	m.LSMinimumSystemVersionBox.SetItemIndex(bean.GProject.AppOption.MacOS.PList.LSMinimumSystemVersionIndex)
-}
-
-// 保存或更新 macOS 配置并生成程序信息
-func saveOrUpdateMacOSPList() {
-	pListInfoTemplate := app.Packager("darwin/Info.plist")
-	if pListInfoTemplate == nil {
-		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
-		return
-	}
-	pListInfo, err := tool.RenderTemplate(string(pListInfoTemplate), bean.GProject.AppOption.MacOS)
-	if err != nil {
-		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
-		return
-	}
-	// 保存到 resources/Info.plist
-	resourcesPath := bean.ResourceMetadataPath()
-	pListOutFile := "Info.plist"
-	err = os.WriteFile(filepath.Join(resourcesPath, pListOutFile), pListInfo, 0644)
-	if err != nil {
-		event.ConsoleWriteError("macOS 应用配置-保存配置-WriteFile: ", err.Error())
-	}
 }
 
 func createAppLocalizations() {

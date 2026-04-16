@@ -24,6 +24,7 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/app"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
@@ -45,6 +46,29 @@ const (
 
 //go:embed dmg
 var images embed.FS
+
+type TMacAssociateFiles struct {
+	CFBundleTypeExtensions string // 扩展名 不带点
+	CFBundleTypeName       string // 名称
+	CFBundleTypeRole       string // 角色 Editor/Viewer
+	LSHandlerRank          string // 优先级 Owner/Default
+	CFBundleTypeIconFile   string // 图标 png/.icns
+	CFBundleTypeMimeType   string // MIME(允许空)
+}
+
+func (m *TMacAssociateFiles) IsEmpty() bool {
+	return m.CFBundleTypeExtensions == "" || m.CFBundleTypeName == "" ||
+		m.CFBundleTypeRole == ""
+}
+
+type TMacAssociateProtocols struct {
+	Scheme      string // 协议名 如 myapp, 调用格式：myapp://xxx
+	Description string // 描述 系统显示的协议名称
+}
+
+func (m *TMacAssociateProtocols) IsEmpty() bool {
+	return m.Scheme == "" || m.Description == ""
+}
 
 func platformPackage() {
 	proj := bean.GProject
@@ -317,20 +341,26 @@ func createApp() bool {
 
 func copyAppInfoPList() bool {
 	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist")
-	resourcesPath := filepath.Join(bean.GPath, "resources", "metadata", "Info.plist")
-	if !tool.IsExist(resourcesPath) {
-		event.ConsoleWriteError("App Bundle - Info.plist not exist", resourcesPath)
+
+	pListInfoTemplate := app.Packager("darwin/Info.plist")
+	if pListInfoTemplate == nil {
+		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
 		return false
 	}
-	infoPlistData, err := os.ReadFile(resourcesPath)
+	data := make(map[string]any)
+	data["PList"] = bean.GProject.AppOption.MacOS.PList
+	data["AssociateFiles"] = parserAssociateFile(bean.GProject.BuildOption.MacAssociateFileList)
+	data["AssociateProtocols"] = parserAssociateProtocol(bean.GProject.BuildOption.WinAssociateProtocolList)
+	pListInfoData, err := tool.RenderTemplate(string(pListInfoTemplate), data)
 	if err != nil {
-		event.ConsoleWriteError("App Bundle - Copy App Info.plist ReadFile:", err.Error())
+		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
 		return false
 	}
+	// copy to app contents
 	appRoot := appRootDir()
 	contents := filepath.Join(appRoot, AppContents)
 	copyInfoPlistPath := filepath.Join(contents, "Info.plist")
-	err = os.WriteFile(copyInfoPlistPath, infoPlistData, 0644)
+	err = os.WriteFile(copyInfoPlistPath, pListInfoData, 0644)
 	if err != nil {
 		event.ConsoleWriteError("App Bundle - Copy App Info.plist WriteFile:", err.Error())
 		return false
@@ -450,4 +480,46 @@ func copyFiles() bool {
 
 	event.ConsoleWriteInfo("App Bundle - Copy App Files. END")
 	return true
+}
+
+func parserAssociateFile(associateFileList []string) (associateFiles []TMacAssociateFiles) {
+	embedPath := bean.ResourceEmbedPath()
+	for _, line := range associateFileList {
+		associates := strings.Split(line, "|")
+		if len(associates) >= 6 {
+			icon := strings.TrimSpace(associates[4])
+			srcIcon := icon
+			if !filepath.IsAbs(srcIcon) {
+				srcIcon = filepath.Join(embedPath, srcIcon)
+			}
+			associate := TMacAssociateFiles{
+				CFBundleTypeExtensions: strings.TrimSpace(associates[0]),
+				CFBundleTypeName:       strings.TrimSpace(associates[1]),
+				CFBundleTypeRole:       strings.TrimSpace(associates[2]),
+				LSHandlerRank:          strings.TrimSpace(associates[3]),
+				CFBundleTypeIconFile:   srcIcon,
+				CFBundleTypeMimeType:   strings.TrimSpace(associates[5]),
+			}
+			if !associate.IsEmpty() {
+				associateFiles = append(associateFiles, associate)
+			}
+		}
+	}
+	return
+}
+
+func parserAssociateProtocol(associateProtocolList []string) (associateFiles []TMacAssociateProtocols) {
+	for _, line := range associateProtocolList {
+		associates := strings.Split(line, "|")
+		if len(associates) >= 2 {
+			associate := TMacAssociateProtocols{
+				Scheme:      strings.TrimSpace(associates[0]),
+				Description: strings.TrimSpace(associates[1]),
+			}
+			if !associate.IsEmpty() {
+				associateFiles = append(associateFiles, associate)
+			}
+		}
+	}
+	return
 }

@@ -211,8 +211,8 @@ func packageNSIS() bool {
 		data["NSISLicense"] = licensePath // (license.txt) 文件路径
 	}
 	data["NSISRequestExecutionLevel"] = nsisExecLevel // run_level NSISRequestExecutionLevel
-	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
-	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
+	data["AssociateFiles"] = parserAssociateFile(buildOption.WinAssociateFileList)
+	data["AssociateProtocols"] = parserAssociateProtocol(buildOption.WinAssociateProtocolList)
 
 	installToolsScript, err := RenderTemplate(data, string(installToolsScriptTemp))
 	if err != nil {
@@ -260,7 +260,7 @@ func packageNSIS() bool {
 	return true
 }
 
-func paserAssociateFile(associateFileList []string) (associateFiles []TWinAssociateFiles) {
+func parserAssociateFile(associateFileList []string) (associateFiles []TWinAssociateFiles) {
 	embedPath := bean.ResourceEmbedPath()
 	for _, line := range associateFileList {
 		associates := strings.Split(line, "|")
@@ -288,7 +288,7 @@ func paserAssociateFile(associateFileList []string) (associateFiles []TWinAssoci
 	return
 }
 
-func paserAssociateProtocol(associateProtocolList []string) (associateFiles []TWinAssociateProtocols) {
+func parserAssociateProtocol(associateProtocolList []string) (associateFiles []TWinAssociateProtocols) {
 	for _, line := range associateProtocolList {
 		associates := strings.Split(line, "|")
 		if len(associates) >= 2 {

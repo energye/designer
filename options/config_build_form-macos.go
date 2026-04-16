@@ -169,7 +169,7 @@ func (m *TBuildForm) createMacAssociateFiles() {
 		m.macPackConfigTabPageAssociateFilesBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageAssociateFilesBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateFileList, "\n"))
 		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 扩展名 | 名称 | 角色(Editor/Viewer) | 优先级(Owner/Default) | 图标(png/.icns)｜ MIME
+字段说明: 扩展名 | 名称 | 角色(Editor/Viewer) | 优先级(Owner/Default) | 图标(png/.icns)｜ MIME(允许空)
 txt | AppTxtFile | Editor | Owner | MyIcon.icns | application/x-gproj
 eng | MyProductEngFile | Editor | Owner | MyIcon.png | application/x-gproj`)
 		m.macPackConfigTabPageAssociateFilesBox.Show()

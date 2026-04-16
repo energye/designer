@@ -43,23 +43,55 @@
         <string>APPL</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
+        <key>NSHighResolutionCapable</key>
+        <true/>
+{{- if .AssociateFiles}}
         <key>CFBundleDocumentTypes</key>
         <array>
             <dict>
+                <key>CFBundleTypeName</key>
+                <string>Project File</string>
                 <key>CFBundleTypeRole</key>
-                <string>Viewer</string>
-                <key>CFBundleTypeExtensions</key>
+                <string>Editor</string>
+                <key>LSHandlerRank</key>
+                <string>Owner</string>
+                <key>LSItemContentTypes</key>
                 <array>
-                    <string>*</string>
-                </array>
-                <key>CFBundleTypeOSTypes</key>
-                <array>
-                    <string>fold</string>
-                    <string>disk</string>
+                    <string>com.demo.gproj</string>
                 </array>
             </dict>
         </array>
-        <key>NSHighResolutionCapable</key>
-        <true/>
+        <key>UTExportedTypeDeclarations</key>
+        <array>
+            <dict>
+                <key>UTTypeIdentifier</key>
+                <string>com.demo.gproj</string>
+                <key>UTTypeConformsTo</key>
+                <array>
+                    <string>public.data</string>
+                </array>
+                <key>UTTypeTagSpecification</key>
+                <dict>
+                    <key>public.filename-extension</key>
+                    <array>
+                        <string>gproj</string>
+                    </array>
+                </dict>
+            </dict>
+        </array>
+{{- end}}
+{{- if .AssociateProtocols}}
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>yourapp</string>
+                </array>
+                <key>CFBundleURLName</key>
+                <string>MyApp URL Scheme</string>
+            </dict>
+        </array>
+{{- end}}
     </dict>
 </plist>
