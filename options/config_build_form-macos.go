@@ -183,7 +183,6 @@ func (m *TBuildForm) createMacSignCommandList() {
 		rect.SetHeight(m.macPackConfigTabPageBinSign.Height())
 		m.macPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, "配置 MacOS codesign 签名命令列表", m.macPackConfigTabPageBinSign)
 		m.macPackConfigTabPageBinSignMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
-		m.macPackConfigTabPageBinSignMemoBox.SetMultipleLine(false)
 		m.macPackConfigTabPageBinSignMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacSign.Cert, "\n"))
 		m.macPackConfigTabPageBinSignMemoBox.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
 codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
