@@ -36,7 +36,7 @@ func downloadMod(dir *modCacheDir) bool {
 	wvVer := dependencies.Get(config.WVModPath)
 	energyVer := dependencies.Get(config.ENERGYModPath)
 	dependenciesInfo := fmt.Sprintf("Dependencies LCL: %s, CEF: %s, WV: %s, ENERGY: %s", lclVer, cefVer, wvVer, energyVer)
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: dependenciesInfo}})
+	event.ConsoleWriteInfo(dependenciesInfo)
 
 	// 处理依赖模块路径
 	modCachePath := config.GGoEnv.Get("GOMODCACHE")
