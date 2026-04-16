@@ -85,7 +85,7 @@ func packageAppx() bool {
 	if ids := strings.Split(appID, "."); len(ids) >= 2 {
 		appCompanyName = ids[0]
 	}
-	resourcesPath := bean.ResourcePath()
+	assetsPath := bean.ResourceAssetsPath()
 	embedPath := bean.ResourceEmbedPath()
 	frameworkRuntime := config.Config.FrameworkRuntimePath()
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
@@ -188,7 +188,7 @@ func packageAppx() bool {
 
 	// 处理 appx/Assets 图片资源
 	handleAssets := func(logo, customLogoName string, useSrcIconPng bool, assPng *assetsPng) bool {
-		if srcLogoPath := filepath.Join(resourcesPath, "assets", customLogoName); tool.IsExist(srcLogoPath) && customLogoName != "" {
+		if srcLogoPath := filepath.Join(assetsPath, customLogoName); tool.IsExist(srcLogoPath) && customLogoName != "" {
 			// 使用自定义图
 			err = tool.CopyFile(srcLogoPath, filepath.Join(assetsDir, customLogoName))
 			if err != nil {

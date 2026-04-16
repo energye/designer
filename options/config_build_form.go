@@ -668,7 +668,11 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.CodeObfuscation = m.codeObfuscationCheckBox.Checked()
 	bean.GProject.BuildOption.DisableDebug = m.disableDebugCheckBox.Checked()
 	// 打包配置
-	bean.GProject.BuildOption.PackageName = m.packageNameEdit.Text()
+	packageName := strings.TrimSpace(m.packageNameEdit.Text())
+	if packageName == "" {
+		packageName = bean.GProject.Name
+	}
+	bean.GProject.BuildOption.PackageName = packageName
 	// windows
 	bean.GProject.BuildOption.WinMsi = m.winMsiCheckBox.Checked()
 	bean.GProject.BuildOption.WinExe = m.winExeCheckBox.Checked()

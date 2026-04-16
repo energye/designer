@@ -337,3 +337,8 @@ func ResourceMetadataPath() string {
 func ResourceEmbedPath() string {
 	return filepath.Join(ResourcePath(), "embed")
 }
+
+// 返回当前项目外部资源目录
+func ResourceAssetsPath() string {
+	return filepath.Join(ResourcePath(), "assets")
+}

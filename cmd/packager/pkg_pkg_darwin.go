@@ -23,6 +23,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/icns"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/lcl/api"
@@ -342,24 +343,52 @@ func createApp() bool {
 func copyAppInfoPList() bool {
 	event.ConsoleWriteInfo("App Bundle - Copy App Info.plist")
 
+	appRoot := appRootDir()
+	appContentsPath := filepath.Join(appRoot, AppContents)
+	appResourcesPath := filepath.Join(appContentsPath, AppContentsResources)
+
 	pListInfoTemplate := app.Packager("darwin/Info.plist")
 	if pListInfoTemplate == nil {
 		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 模板获取失败, 模板内容为 nil")
 		return false
 	}
+	associateFiles := parserAssociateFile(bean.GProject.BuildOption.MacAssociateFileList)
+	associateProtocols := parserAssociateProtocol(bean.GProject.BuildOption.MacAssociateProtocolList)
+	// 处理 associateFiles.CFBundleTypeIconFile 图标处理
+	// 如果配置 png 转 icns 复制到 xxx.app/Contents/Resources/ 目录
+	for _, associateFile := range associateFiles {
+		iconFile := associateFile.CFBundleTypeIconFile
+		associateFile.CFBundleTypeIconFile = "" // 设置为空, 在下面赋值
+		ext := filepath.Ext(iconFile)
+		if ext != ".png" && ext != ".icns" || !tool.IsExist(iconFile) {
+			continue
+		}
+		// 为了保证唯一，重新命名
+		newIcnsName := "AssociateFile_" + associateFile.CFBundleTypeExtensions + ".icns"
+		outIcnsFilePath := filepath.Join(appResourcesPath, newIcnsName)
+		if ext == ".png" {
+			// png 转 icns, 并保存到 xxx.app/Contents/Resources/xxx.icns
+			if err := icns.PngToIcns(iconFile, outIcnsFilePath); err == nil {
+				associateFile.CFBundleTypeIconFile = newIcnsName
+			}
+		} else {
+			// 复制 icns, 保存到 xxx.app/Contents/Resources/xxx.icns
+			if err := tool.CopyFile(iconFile, outIcnsFilePath); err == nil {
+				associateFile.CFBundleTypeIconFile = newIcnsName
+			}
+		}
+	}
 	data := make(map[string]any)
 	data["PList"] = bean.GProject.AppOption.MacOS.PList
-	data["AssociateFiles"] = parserAssociateFile(bean.GProject.BuildOption.MacAssociateFileList)
-	data["AssociateProtocols"] = parserAssociateProtocol(bean.GProject.BuildOption.WinAssociateProtocolList)
+	data["AssociateFiles"] = associateFiles
+	data["AssociateProtocols"] = associateProtocols
 	pListInfoData, err := tool.RenderTemplate(string(pListInfoTemplate), data)
 	if err != nil {
 		event.ConsoleWriteError("macOS 应用配置-保存配置 info.plist 内容渲染失败:", err.Error())
 		return false
 	}
 	// copy to app contents
-	appRoot := appRootDir()
-	contents := filepath.Join(appRoot, AppContents)
-	copyInfoPlistPath := filepath.Join(contents, "Info.plist")
+	copyInfoPlistPath := filepath.Join(appContentsPath, "Info.plist")
 	err = os.WriteFile(copyInfoPlistPath, pListInfoData, 0644)
 	if err != nil {
 		event.ConsoleWriteError("App Bundle - Copy App Info.plist WriteFile:", err.Error())
@@ -482,22 +511,21 @@ func copyFiles() bool {
 	return true
 }
 
-func parserAssociateFile(associateFileList []string) (associateFiles []TMacAssociateFiles) {
-	embedPath := bean.ResourceEmbedPath()
+func parserAssociateFile(associateFileList []string) (associateFiles []*TMacAssociateFiles) {
+	assetsPath := bean.ResourceAssetsPath()
 	for _, line := range associateFileList {
 		associates := strings.Split(line, "|")
 		if len(associates) >= 6 {
 			icon := strings.TrimSpace(associates[4])
-			srcIcon := icon
-			if !filepath.IsAbs(srcIcon) {
-				srcIcon = filepath.Join(embedPath, srcIcon)
+			if !filepath.IsAbs(icon) {
+				icon = filepath.Join(assetsPath, icon)
 			}
-			associate := TMacAssociateFiles{
+			associate := &TMacAssociateFiles{
 				CFBundleTypeExtensions: strings.TrimSpace(associates[0]),
 				CFBundleTypeName:       strings.TrimSpace(associates[1]),
 				CFBundleTypeRole:       strings.TrimSpace(associates[2]),
 				LSHandlerRank:          strings.TrimSpace(associates[3]),
-				CFBundleTypeIconFile:   srcIcon,
+				CFBundleTypeIconFile:   icon,
 				CFBundleTypeMimeType:   strings.TrimSpace(associates[5]),
 			}
 			if !associate.IsEmpty() {

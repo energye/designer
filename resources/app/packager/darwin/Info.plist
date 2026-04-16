@@ -45,27 +45,35 @@
         <string>6.0</string>
         <key>NSHighResolutionCapable</key>
         <true/>
-{{- if .AssociateFiles}}
+    {{- $CFBundleIdentifier := .PList.CFBundleIdentifier}}
+    {{- if .AssociateFiles}}
         <key>CFBundleDocumentTypes</key>
         <array>
+            {{- range .AssociateFiles}}
             <dict>
                 <key>CFBundleTypeName</key>
-                <string>Project File</string>
+                <string>{{.CFBundleTypeName}}</string>
                 <key>CFBundleTypeRole</key>
-                <string>Editor</string>
+                <string>{{.CFBundleTypeRole}}</string>
                 <key>LSHandlerRank</key>
-                <string>Owner</string>
+                <string>{{.LSHandlerRank}}</string>
                 <key>LSItemContentTypes</key>
                 <array>
-                    <string>com.demo.gproj</string>
+                    <string>{{$CFBundleIdentifier}}.{{.CFBundleTypeExtensions}}</string>
                 </array>
+            {{- if .CFBundleTypeIconFile}}
+                <key>CFBundleTypeIconFile</key>
+                <string>{{.CFBundleTypeIconFile}}</string>
+            {{- end}}
             </dict>
+            {{- end}}
         </array>
         <key>UTExportedTypeDeclarations</key>
         <array>
+            {{- range .AssociateFiles}}
             <dict>
                 <key>UTTypeIdentifier</key>
-                <string>com.demo.gproj</string>
+                <string>{{$CFBundleIdentifier}}.{{.CFBundleTypeExtensions}}</string>
                 <key>UTTypeConformsTo</key>
                 <array>
                     <string>public.data</string>
@@ -74,24 +82,31 @@
                 <dict>
                     <key>public.filename-extension</key>
                     <array>
-                        <string>gproj</string>
+                        <string>{{.CFBundleTypeExtensions}}</string>
                     </array>
+                    {{- if .CFBundleTypeMimeType}}
+                    <key>public.mime-type</key>
+                    <string>{{.CFBundleTypeMimeType}}</string>
+                    {{- end}}
                 </dict>
             </dict>
+            {{- end}}
         </array>
-{{- end}}
-{{- if .AssociateProtocols}}
+    {{- end}}
+    {{- if .AssociateProtocols}}
         <key>CFBundleURLTypes</key>
         <array>
+            {{- range .AssociateProtocols}}
             <dict>
                 <key>CFBundleURLSchemes</key>
                 <array>
-                    <string>yourapp</string>
+                    <string>{{.Scheme}}</string>
                 </array>
                 <key>CFBundleURLName</key>
-                <string>MyApp URL Scheme</string>
+                <string>{{.Description}}</string>
             </dict>
+            {{- end}}
         </array>
-{{- end}}
+    {{- end}}
     </dict>
 </plist>

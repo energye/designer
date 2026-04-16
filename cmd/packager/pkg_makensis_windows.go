@@ -306,7 +306,7 @@ func parserAssociateProtocol(associateProtocolList []string) (associateFiles []T
 
 func nsisIconFMT(imagePath string, isConvertIco *bool) string {
 	if !filepath.IsAbs(imagePath) {
-		imagePath = filepath.Join(bean.ResourcePath(), "assets", imagePath)
+		imagePath = filepath.Join(bean.ResourceAssetsPath(), imagePath)
 	}
 	if !tool.IsExist(imagePath) {
 		event.ConsoleWriteError("Package - image not exist:", imagePath)
@@ -357,7 +357,7 @@ func nsisIconFMT(imagePath string, isConvertIco *bool) string {
 
 func nsisBannerFMT(imagePath string, isConvertBmp *bool) string {
 	if !filepath.IsAbs(imagePath) {
-		imagePath = filepath.Join(bean.ResourcePath(), "assets", imagePath)
+		imagePath = filepath.Join(bean.ResourceAssetsPath(), imagePath)
 	}
 	if !tool.IsExist(imagePath) {
 		event.ConsoleWriteError("Package - image not exist:", imagePath)
