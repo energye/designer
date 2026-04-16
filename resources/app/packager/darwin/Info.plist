@@ -37,8 +37,6 @@
         </dict>
         <key>LSHasLocalizedDisplayName</key>
         <true/>
-        <key>NSDarkModeAware</key>
-        <true/>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
         <key>CFBundleInfoDictionaryVersion</key>

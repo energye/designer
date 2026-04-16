@@ -61,7 +61,7 @@
     "mac_dmg": false,
     "mac_pkg": true,
     "mac_associate_file_list": [
-      "egp | EnergyGUIDesigner | Editor | Owner | ext_egp.png | application/x-gproj"
+      "egp | EnergyGUIDesigner | Editor | Owner | ext_egp.png | application/x-energy-designer-project"
     ],
     "mac_associate_protocol_list": [
       "energy | Open ENERGY Designer"
@@ -69,7 +69,8 @@
     "mac_sign": {
       "enable": false,
       "cert": [
-        ""
+        "codesign -f -s \"-\" \"$APP_NAME/Contents/Frameworks/$ENERGY.DYLIB\"",
+        "codesign -f -s \"-\" --options runtime \"$APP_NAME\""
       ]
     },
     "mac_common_lib": false,
@@ -79,7 +80,7 @@
   },
   "app_option": {
     "title": "ENERGY Designer",
-    "id": "energy.designer",
+    "id": "com.energy.designer",
     "desc": "ENERGY GUI Designer",
     "version": "1.0.1.0",
     "copyright": "Copyright (C) 2026-2026 YangHY. All rights reserved.",
@@ -115,7 +116,7 @@
         "cf_bundle_localizations": [
           "zh_CN"
         ],
-        "cf_bundle_identifier": "energy.designer",
+        "cf_bundle_identifier": "com.energy.designer",
         "cf_bundle_version": "1.0.1.0",
         "cf_bundle_short_version_string": "1.0.1.0",
         "cf_bundle_get_info_string": "ENERGY GUI Designer",

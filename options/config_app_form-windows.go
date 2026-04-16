@@ -30,7 +30,6 @@ import (
 	"github.com/energye/widget/wg"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 )
 
@@ -276,7 +275,7 @@ func saveOrUpdateWindowsManifest() {
 			event.ConsoleWriteError("windows 应用配置-保存配置-WriteObject: ", err.Error())
 			return
 		}
-		sysoOutFile := fmt.Sprintf("%s-%s_%v.syso", bean.GProject.Name, runtime.GOOS, arch)
+		sysoOutFile := fmt.Sprintf("%s-windows_%v.syso", bean.GProject.Name, arch)
 		// 保存到项目的 resources 目录
 		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0644)
 		if err != nil {
