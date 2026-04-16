@@ -180,7 +180,7 @@ func (m *TBuildForm) createWinAssociateFiles() {
 		m.winPackConfigTabPageAssociateFilesMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageAssociateFilesMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateFileList, "\n"))
 		m.winPackConfigTabPageAssociateFilesMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: EXT(后缀名) | FILECLASS(唯一类名) | DESCRIPTION(类型描述)  | ICON(图标路径) | COMMANDTEXT(右键菜单显示文字)
+字段说明: 扩展名 | 唯一类名 | 类型描述 | 图标 | 右键菜单显示文字
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
 eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project`)
 		m.winPackConfigTabPageAssociateFilesMemoBox.Show()
@@ -196,7 +196,7 @@ func (m *TBuildForm) createWinAssociateProtocols() {
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateProtocolList, "\n"))
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: Scheme(协议头) | DESCRIPTION(协议描述)
+字段说明: 协议名称 | 协议描述
 myapp | Open My App
 fs | fs soft scheme`)
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.Show()

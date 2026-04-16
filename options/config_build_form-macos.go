@@ -152,7 +152,10 @@ func (m *TBuildForm) createMacAssociateProtocols() {
 		m.macPackConfigTabPageAssociateProtocolsBox = NewCommonMemoBox(rect, "配置应用关联协议", m.macPackConfigTabPageAssociateProtocols)
 		m.macPackConfigTabPageAssociateProtocolsBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageAssociateProtocolsBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateProtocolList, "\n"))
-		m.macPackConfigTabPageAssociateProtocolsBox.SetDemoText(``)
+		m.macPackConfigTabPageAssociateProtocolsBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
+字段说明: 协议名称 | 协议描述
+myapp | Open My App
+fs | fs soft scheme`)
 		m.macPackConfigTabPageAssociateProtocolsBox.Show()
 	}
 }
@@ -165,7 +168,10 @@ func (m *TBuildForm) createMacAssociateFiles() {
 		m.macPackConfigTabPageAssociateFilesBox = NewCommonMemoBox(rect, "配置应用关联文件", m.macPackConfigTabPageAssociateFiles)
 		m.macPackConfigTabPageAssociateFilesBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageAssociateFilesBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateFileList, "\n"))
-		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(``)
+		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
+字段说明: 扩展名 | 名称 | 角色(Editor/Viewer) | 优先级(Owner/Default) | 图标(png/.icns)｜ MIME
+txt | AppTxtFile | Editor | Owner | MyIcon.icns | application/x-gproj
+eng | MyProductEngFile | Editor | Owner | MyIcon.png | application/x-gproj`)
 		m.macPackConfigTabPageAssociateFilesBox.Show()
 	}
 }
