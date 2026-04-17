@@ -16,7 +16,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/energy/v3/application/pack"
 	"github.com/energye/energy/v3/logger"
 	"github.com/energye/energy/v3/platform/darwin/cocoa"
@@ -60,7 +59,6 @@ func init() {
 func beforeRun() {
 	cocoa.NSApp.InitAppDelegate()
 	cocoa.NSApp.SetOnOpenURLs(func(urls []string) {
-		fmt.Println("SetOnOpenURLs:", strings.Join(urls, " "))
 		log.Info("SetOnOpenURLs:", strings.Join(urls, " "))
 		if urls != nil && len(urls) > 0 {
 			openUrl := urls[0]
@@ -72,7 +70,8 @@ func beforeRun() {
 			if pUrl.Scheme == "file" {
 				// 文件关联 file:///Users/yanghy/app/lazdemo/myapp/myapp.egp
 				associateFile = pUrl.Path
-				projectLoad(OpenFile())
+				stopAutoAssociateProjectLoad()
+				loadProject(OpenFile())
 			} else if pUrl.Scheme == "http" || pUrl.Scheme == "https" {
 				// 通用链接 https://example.com/action?id=1
 				fullLink := pUrl.Path
@@ -91,7 +90,6 @@ func beforeRun() {
 		}
 	})
 	cocoa.NSApp.SetOnUniversalLink(func(link string) {
-		fmt.Println("SetOnUniversalLink:", link)
 		log.Info("SetOnUniversalLink:", link)
 		pUrl, err := url.Parse(link)
 		if err != nil {

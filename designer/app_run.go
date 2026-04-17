@@ -23,6 +23,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/locales"
 	"strings"
+	"time"
 )
 
 var (
@@ -47,11 +48,46 @@ func Run() {
 	logs.Println("ENERGY Designer RUN END.")
 }
 
-func projectLoad(egpFilePath string) {
-	isEgp := strings.HasSuffix(egpFilePath, consts.EGPExt)
+// 是否停止加载关联项目
+var isAssociateStopLoading = false
+
+// 主动停止关联项目加载
+func stopAutoAssociateProjectLoad() {
+	log.Info("stopAutoAssociateProjectLoad")
+	isAssociateStopLoading = true
+}
+
+// 自动尝试关联项目加载
+// 1. 尝试获取关联文件
+// 2. 尝试从最后一次打开项目
+func autoAssociateProjectLoad() {
+	log.Info("autoAssociateProjectLoad")
+	isAssociateStopLoading = false
+	var filePath string
+	// 轮训获取 openFile
+	for i := 0; i < 10; i++ {
+		if isAssociateStopLoading {
+			break
+		}
+		filePath = OpenFile()
+		if filePath != "" {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if !isAssociateStopLoading {
+		log.Info("autoAssociateProjectLoad filePath:", filePath)
+		loadProject(filePath)
+	}
+	isAssociateStopLoading = false
+	log.Info("autoAssociateProjectLoad end")
+}
+
+func loadProject(filePath string) {
+	isEgp := strings.HasSuffix(filePath, consts.EGPExt)
 	if isEgp {
 		// 自动打开 energy 项目
-		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: egpFilePath}})
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 	} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
 		// 自动打开 最后一次打开的项目
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})

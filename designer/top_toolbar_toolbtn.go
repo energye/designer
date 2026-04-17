@@ -155,6 +155,8 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 
 func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 打开项目/打开UI布局")
+	// 停止自动关联项目加载
+	stopAutoAssociateProjectLoad()
 	MainWindow.openDialog.SetTitle("打开项目/打开UI布局")
 	MainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
 	MainWindow.openDialog.SetFilterIndex(1)

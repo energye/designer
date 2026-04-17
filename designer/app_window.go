@@ -159,11 +159,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 		// 初始化依赖模块信息 ast
 		dependmod.InitDependencyModule(m.ReadBounds(), func(ok bool) {
 			if ok { // 一个开关, 动态配置
-				if !tool.IsDarwin {
-					projectLoad(OpenFile())
-				} else {
-					// macOS 在 NSApp.SetOnOpenURLs 事件里处理
-				}
+				autoAssociateProjectLoad()
 			}
 		})
 		// 检查框架 frameworks 框架是否设置安装目录，并正确安装
