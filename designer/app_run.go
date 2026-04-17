@@ -14,11 +14,21 @@
 package designer
 
 import (
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/locales"
+	"strings"
+)
+
+var (
+	associateProtocol string
+	associateFile     string
+	universalLink     string
 )
 
 func Run() {
@@ -35,4 +45,27 @@ func Run() {
 
 	lcl.Application.Run()
 	logs.Println("ENERGY Designer RUN END.")
+}
+
+func projectLoad(egpFilePath string) {
+	isEgp := strings.HasSuffix(egpFilePath, consts.EGPExt)
+	if isEgp {
+		// 自动打开 energy 项目
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: egpFilePath}})
+	} else if config.Config.LastProject != "" && tool.IsExist(config.Config.LastProject) {
+		// 自动打开 最后一次打开的项目
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: config.Config.LastProject}})
+	}
+}
+
+func OpenFile() string {
+	return associateFile
+}
+
+func OpenURL() string {
+	return associateProtocol
+}
+
+func UniversalLink() string {
+	return universalLink
 }
