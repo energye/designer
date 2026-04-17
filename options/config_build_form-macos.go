@@ -119,6 +119,8 @@ func (m *TBuildForm) initMacOSOptions() {
 			m.createMacAssociateFiles()
 		} else if page == m.macPackConfigTabPageAssociateProtocols {
 			m.createMacAssociateProtocols()
+		} else if page == m.macPackConfigTabPageUniversalLink {
+			m.createMacAssociateUniversalLink()
 		}
 	})
 
@@ -141,6 +143,26 @@ func (m *TBuildForm) initMacOSOptions() {
 		m.macPackConfigTabPageAssociateProtocols = m.macPackConfigTab.NewPage()
 		m.macPackConfigTabPageAssociateProtocols.SetCaption("关联协议")
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateProtocols)
+	}
+	{
+		m.macPackConfigTabPageUniversalLink = m.macPackConfigTab.NewPage()
+		m.macPackConfigTabPageUniversalLink.SetCaption("通用链接")
+		setMacPackConfigTabPageStyle(m.macPackConfigTabPageUniversalLink)
+	}
+}
+
+func (m *TBuildForm) createMacAssociateUniversalLink() {
+	if m.macPackConfigTabPageUniversalLinkBox == nil {
+		rect := types.TRect{Top: 0, Left: 0}
+		rect.SetWidth(m.macPackConfigTabPageAssociateProtocols.Width())
+		rect.SetHeight(m.macPackConfigTabPageAssociateProtocols.Height())
+		m.macPackConfigTabPageUniversalLinkBox = NewCommonMemoBox(rect, "配置通用链接", m.macPackConfigTabPageUniversalLink)
+		m.macPackConfigTabPageUniversalLinkBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
+		m.macPackConfigTabPageUniversalLinkBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacUniversalLink, "\n"))
+		m.macPackConfigTabPageUniversalLinkBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
+字段说明: 还没写 | 还没写
+`)
+		m.macPackConfigTabPageUniversalLinkBox.Show()
 	}
 }
 

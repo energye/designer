@@ -66,6 +66,9 @@
     "mac_associate_protocol_list": [
       "energy | Open ENERGY Designer"
     ],
+    "mac_universal_link": [
+      ""
+    ],
     "mac_sign": {
       "enable": false,
       "cert": [

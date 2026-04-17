@@ -117,9 +117,11 @@ type TBuildForm struct {
 	macPackConfigTabPageBinSign               *wg.TPage
 	macPackConfigTabPageAssociateFiles        *wg.TPage
 	macPackConfigTabPageAssociateProtocols    *wg.TPage
+	macPackConfigTabPageUniversalLink         *wg.TPage
 	macPackConfigTabPageBinSignMemoBox        *TCommonMemoBox
 	macPackConfigTabPageAssociateFilesBox     *TCommonMemoBox
 	macPackConfigTabPageAssociateProtocolsBox *TCommonMemoBox
+	macPackConfigTabPageUniversalLinkBox      *TCommonMemoBox
 	macSignEnable                             *TEnableButton
 
 	linuxDEBCheckBox lcl.ICheckBox
@@ -792,6 +794,9 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	}
 	if m.macPackConfigTabPageAssociateProtocolsBox != nil {
 		bean.GProject.BuildOption.MacAssociateProtocolList = m.macPackConfigTabPageAssociateProtocolsBox.Lines()
+	}
+	if m.macPackConfigTabPageUniversalLinkBox != nil {
+		bean.GProject.BuildOption.MacUniversalLink = m.macPackConfigTabPageUniversalLinkBox.Lines()
 	}
 	bean.GProject.BuildOption.MacCommonLib = m.macCommonLibCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
