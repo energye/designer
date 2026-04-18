@@ -1,12 +1,10 @@
 name: Release Build
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
   push:
     tags:
-      - 'v*'
-  workflow_dispatch:
+      - 'v*.*.*'
 
 env:
   APP_NAME: 'designer'
