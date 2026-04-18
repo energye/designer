@@ -313,6 +313,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.amd64CheckBox.SetFont(m.font)
 	m.amd64CheckBox.SetChecked(bean.GProject.BuildOption.ArchAmd64)
 	m.amd64CheckBox.SetParent(m.buildTabPageConfig)
+
 	m.i386CheckBox = lcl.NewCheckBox(m)
 	m.i386CheckBox.SetCaption("386")
 	m.i386CheckBox.SetLeft(120)
@@ -320,13 +321,17 @@ func (m *TBuildForm) initConfigComponent() {
 	m.i386CheckBox.SetFont(m.font)
 	m.i386CheckBox.SetChecked(bean.GProject.BuildOption.Arch386)
 	m.i386CheckBox.SetParent(m.buildTabPageConfig)
+
 	m.arm64CheckBox = lcl.NewCheckBox(m)
 	m.arm64CheckBox.SetCaption("arm64")
 	m.arm64CheckBox.SetLeft(210)
 	m.arm64CheckBox.SetTop(m.amd64CheckBox.Top())
 	m.arm64CheckBox.SetFont(m.font)
 	m.arm64CheckBox.SetChecked(bean.GProject.BuildOption.ArchArm64)
+	m.arm64CheckBox.SetShowHint(true)
+	m.arm64CheckBox.SetHint("Windows 不支持")
 	m.arm64CheckBox.SetParent(m.buildTabPageConfig)
+
 	m.armCheckBox = lcl.NewCheckBox(m)
 	m.armCheckBox.SetCaption("arm")
 	m.armCheckBox.SetLeft(300)
@@ -334,6 +339,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.armCheckBox.SetFont(m.font)
 	m.armCheckBox.SetChecked(bean.GProject.BuildOption.ArchArm)
 	m.armCheckBox.SetParent(m.buildTabPageConfig)
+
 	m.loong64CheckBox = lcl.NewCheckBox(m)
 	m.loong64CheckBox.SetCaption("loong64")
 	m.loong64CheckBox.SetLeft(390)
@@ -341,6 +347,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.loong64CheckBox.SetFont(m.font)
 	m.loong64CheckBox.SetEnabled(false)
 	m.loong64CheckBox.SetChecked(bean.GProject.BuildOption.ArchLoong64)
+	m.loong64CheckBox.SetShowHint(true)
+	m.loong64CheckBox.SetHint("暂时不支持")
 	m.loong64CheckBox.SetParent(m.buildTabPageConfig)
 
 	widgetTitle := lcl.NewLabel(m)
@@ -357,6 +365,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiWin32Box.SetFont(m.font)
 	//m.uiWin32Box.SetChecked(gProject.BuildOption.UIWin32)
 	m.uiWin32Box.SetChecked(true)
+	m.uiWin32Box.SetShowHint(true)
+	m.uiWin32Box.SetHint("Windows: 固定")
 	m.uiWin32Box.SetParent(m.buildTabPageConfig)
 
 	m.uiCocoaBox = lcl.NewCheckBox(m)
@@ -366,6 +376,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiCocoaBox.SetFont(m.font)
 	//m.uiCocoaBox.SetChecked(gProject.BuildOption.UICocoa)
 	m.uiCocoaBox.SetChecked(true)
+	m.uiCocoaBox.SetShowHint(true)
+	m.uiCocoaBox.SetHint("MacOS: 固定")
 	m.uiCocoaBox.SetParent(m.buildTabPageConfig)
 
 	m.uiGtk2Box = lcl.NewCheckBox(m)
@@ -374,6 +386,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk2Box.SetTop(m.uiWin32Box.Top())
 	m.uiGtk2Box.SetFont(m.font)
 	m.uiGtk2Box.SetChecked(bean.GProject.BuildOption.UIGtk2)
+	m.uiGtk2Box.SetShowHint(true)
+	m.uiGtk2Box.SetHint("Linux: 当 UI 是 LCL 默认")
 	m.uiGtk2Box.SetParent(m.buildTabPageConfig)
 
 	m.uiGtk3Box = lcl.NewCheckBox(m)
@@ -382,6 +396,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk3Box.SetTop(m.uiWin32Box.Top())
 	m.uiGtk3Box.SetFont(m.font)
 	m.uiGtk3Box.SetChecked(bean.GProject.BuildOption.UIGtk3)
+	m.uiGtk3Box.SetShowHint(true)
+	m.uiGtk3Box.SetHint("Linux: 当 UI 是 LCL + (WV CEF) 默认")
 	m.uiGtk3Box.SetParent(m.buildTabPageConfig)
 
 	outputTitle := lcl.NewLabel(m)
@@ -394,6 +410,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.outputEdit = lcl.NewEdit(m)
 	m.outputEdit.SetBounds(20, nextTop(30), 260, 30)
 	m.outputEdit.SetFont(m.font)
+	m.outputEdit.SetShowHint(true)
+	m.outputEdit.SetHint("构建二进制输出目录")
 	m.outputEdit.SetTextHint("构建二进制输出目录, 默认: ./build")
 	m.outputEdit.SetText(bean.GProject.BuildOption.Output)
 	m.outputEdit.SetParent(m.buildTabPageConfig)
