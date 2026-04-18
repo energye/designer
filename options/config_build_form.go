@@ -320,6 +320,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.i386CheckBox.SetTop(m.amd64CheckBox.Top())
 	m.i386CheckBox.SetFont(m.font)
 	m.i386CheckBox.SetChecked(bean.GProject.BuildOption.Arch386)
+	m.i386CheckBox.SetShowHint(true)
+	m.i386CheckBox.SetHint("macOS 不支持")
 	m.i386CheckBox.SetParent(m.buildTabPageConfig)
 
 	m.arm64CheckBox = lcl.NewCheckBox(m)
@@ -329,7 +331,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.arm64CheckBox.SetFont(m.font)
 	m.arm64CheckBox.SetChecked(bean.GProject.BuildOption.ArchArm64)
 	m.arm64CheckBox.SetShowHint(true)
-	m.arm64CheckBox.SetHint("Windows 不支持")
+	m.arm64CheckBox.SetHint("windows 不支持")
 	m.arm64CheckBox.SetParent(m.buildTabPageConfig)
 
 	m.armCheckBox = lcl.NewCheckBox(m)
@@ -338,6 +340,8 @@ func (m *TBuildForm) initConfigComponent() {
 	m.armCheckBox.SetTop(m.amd64CheckBox.Top())
 	m.armCheckBox.SetFont(m.font)
 	m.armCheckBox.SetChecked(bean.GProject.BuildOption.ArchArm)
+	m.armCheckBox.SetShowHint(true)
+	m.armCheckBox.SetHint("windows, macOS 不支持")
 	m.armCheckBox.SetParent(m.buildTabPageConfig)
 
 	m.loong64CheckBox = lcl.NewCheckBox(m)
@@ -505,7 +509,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildOtherPlatformChk = lcl.NewCheckBox(m)
 	m.buildOtherPlatformChk.SetCaption("构建其它平台")
 	m.buildOtherPlatformChk.SetShowHint(true)
-	m.buildOtherPlatformChk.SetHint("关闭 CGO 后可同时生成 Windows、Linux、macOS 可执行文件")
+	m.buildOtherPlatformChk.SetHint("关闭 CGO 后, 打包时构建 Windows、Linux、macOS 可执行文件")
 	m.buildOtherPlatformChk.SetLeft(310)
 	m.buildOtherPlatformChk.SetTop(m.buildCGOEnabledChk.Top())
 	m.buildOtherPlatformChk.SetFont(m.font)
