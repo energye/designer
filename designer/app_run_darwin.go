@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	log *logger.Logger
+	macOSLog *logger.Logger
 )
 
 func init() {
@@ -46,25 +46,25 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	log = logger.New(logger.Config{
+	macOSLog = logger.New(logger.Config{
 		Level:  logger.InfoLevel,
 		Output: file,
 	})
 	api.SetOnReleaseCallback(func() {
 		_ = file.Close()
-		log.Close()
+		macOSLog.Close()
 	})
 }
 
 func beforeRun() {
 	cocoa.NSApp.InitAppDelegate()
 	cocoa.NSApp.SetOnOpenURLs(func(urls []string) {
-		log.Info("SetOnOpenURLs:", strings.Join(urls, " "))
+		macOSLog.Info("SetOnOpenURLs:", strings.Join(urls, " "))
 		if urls != nil && len(urls) > 0 {
 			openUrl := urls[0]
 			pUrl, err := url.Parse(openUrl)
 			if err != nil {
-				log.Error("SetOnOpenURLs", err.Error())
+				macOSLog.Error("SetOnOpenURLs", err.Error())
 				return
 			}
 			if pUrl.Scheme == "file" {
@@ -90,7 +90,7 @@ func beforeRun() {
 		}
 	})
 	cocoa.NSApp.SetOnUniversalLink(func(link string) {
-		log.Info("SetOnUniversalLink:", link)
+		macOSLog.Info("SetOnUniversalLink:", link)
 		pUrl, err := url.Parse(link)
 		if err != nil {
 			return

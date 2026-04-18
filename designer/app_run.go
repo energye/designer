@@ -53,7 +53,7 @@ var isAssociateStopLoading = false
 
 // 主动停止关联项目加载
 func stopAutoAssociateProjectLoad() {
-	log.Info("stopAutoAssociateProjectLoad")
+	logs.Info("stopAutoAssociateProjectLoad")
 	isAssociateStopLoading = true
 }
 
@@ -61,7 +61,7 @@ func stopAutoAssociateProjectLoad() {
 // 1. 尝试获取关联文件
 // 2. 尝试从最后一次打开项目
 func autoAssociateProjectLoad() {
-	log.Info("autoAssociateProjectLoad")
+	logs.Info("autoAssociateProjectLoad")
 	isAssociateStopLoading = false
 	var filePath string
 	// 轮训获取 openFile
@@ -76,11 +76,11 @@ func autoAssociateProjectLoad() {
 		time.Sleep(100 * time.Millisecond)
 	}
 	if !isAssociateStopLoading {
-		log.Info("autoAssociateProjectLoad filePath:", filePath)
+		logs.Info("autoAssociateProjectLoad filePath:", filePath)
 		loadProject(filePath)
 	}
 	isAssociateStopLoading = false
-	log.Info("autoAssociateProjectLoad end")
+	logs.Info("autoAssociateProjectLoad end")
 }
 
 func loadProject(filePath string) {
