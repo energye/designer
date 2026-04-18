@@ -32,16 +32,20 @@ func xBuildPackVar() (result []string) {
 	if bean.GProject == nil {
 		return nil
 	}
-	GOARCH := os.Getenv("GOARCH")
-	if GOARCH == "" {
-		GOARCH = runtime.GOARCH
-	}
 	packMap := make(map[string]string)
 	packMap["name"] = bean.GProject.Name
 	packMap["id"] = bean.GProject.AppOption.Id
 	packMap["version"] = bean.GProject.AppOption.Version
-	packMap["arch"] = GOARCH
+	packMap["arch"] = goARCH()
 	data, _ := json.Marshal(packMap)
 	result = append(result, "-X github.com/energye/energy/v3/application/pack.JSON="+string(data))
+	return
+}
+
+func goARCH() (arch string) {
+	arch = os.Getenv("GOARCH")
+	if arch == "" {
+		arch = runtime.GOARCH
+	}
 	return
 }

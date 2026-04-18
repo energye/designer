@@ -24,7 +24,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -40,10 +39,10 @@ func build() bool {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
 		return false
 	}
-	isAmd64 := runtime.GOARCH == "amd64"
-	is386 := runtime.GOARCH == "386"
-	isArm64 := runtime.GOARCH == "arm64"
-	isArm := runtime.GOARCH == "arm"
+	isAmd64 := goARCH() == "amd64"
+	is386 := goARCH() == "386"
+	isArm64 := goARCH() == "arm64"
+	isArm := goARCH() == "arm"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
@@ -68,8 +67,8 @@ func build() bool {
 			return false
 		}
 	}
-	if !option.UIWin32 {
-		event.ConsoleWriteWarn("Build - UI Win32 is not enabled for the project.Project Settings > Build Configurations")
+	if !option.UIGtk3 && !option.UIGtk2 {
+		event.ConsoleWriteWarn("Build - UI Gtk2 or Gtk3 is not enabled for the project.Project Settings > Build Configurations")
 		return false
 	}
 	event.ConsoleWriteInfo("Build - start build", proj.Name)

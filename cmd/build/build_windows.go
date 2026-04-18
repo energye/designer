@@ -24,7 +24,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 )
 
@@ -40,8 +39,8 @@ func build() bool {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
 		return false
 	}
-	isAmd64 := runtime.GOARCH == "amd64"
-	is386 := runtime.GOARCH == "386"
+	isAmd64 := goARCH() == "amd64"
+	is386 := goARCH() == "386"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")

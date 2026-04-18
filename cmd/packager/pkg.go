@@ -15,6 +15,7 @@ package packager
 
 import (
 	"bytes"
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/tool/command"
@@ -26,14 +27,20 @@ import (
 func Run() bool {
 	proj := bean.GProject
 	if proj == nil {
-		event.ConsoleWriteError("Build - project GProject is nil")
+		event.ConsoleWriteError("Package - project GProject is nil")
 		return false
 	}
 
+	// 构建环境 arch
 	defaultGOARCH := os.Getenv("GOARCH")
 	defer os.Setenv("GOARCH", defaultGOARCH)
 
+	// 平台打包
 	platformPackage()
+
+	// 构建全平台
+	// 如果禁用CGO并启用了其它平台构建
+	build.All()
 
 	return true
 }
