@@ -182,9 +182,9 @@ func packageAppx() bool {
 	data["DisplayName"] = appOption.Title                 // 显示名
 	data["ProductVersion"] = appOption.Version            // app 版本
 	data["Description"] = appOption.Desc                  //
-	data["AssociateFiles"] = paserAssociateFile(buildOption.WinAssociateFileList)
+	data["AssociateFiles"] = parserAssociateFile(buildOption.WinAssociateFileList)
 	data["AssociateFileInfoTip"] = "Use " + appOption.Title + " Open" // TODO 需换成自动语言
-	data["AssociateProtocols"] = paserAssociateProtocol(buildOption.WinAssociateProtocolList)
+	data["AssociateProtocols"] = parserAssociateProtocol(buildOption.WinAssociateProtocolList)
 
 	// 处理 appx/Assets 图片资源
 	handleAssets := func(logo, customLogoName string, useSrcIconPng bool, assPng *assetsPng) bool {
