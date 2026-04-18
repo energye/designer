@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-func init() {
+func Init() {
 	event.On(event.GenUI, func(trigger event.TTrigger) {
 		payload, ok := trigger.Payload.(event.TPayload)
 		if !ok {

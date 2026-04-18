@@ -70,6 +70,9 @@ func On(name string, trigger func(trigger TTrigger), cancel func()) {
 
 // Emit 触发事件
 func Emit(trigger TTrigger) {
+	if event == nil {
+		return
+	}
 	event.Trigger(trigger)
 }
 
@@ -95,7 +98,7 @@ func (m *TEvent) run() {
 // Trigger 触发事件
 func (m *TEvent) Trigger(trigger TTrigger) {
 	if m == nil {
-		logs.Error("触发事件失败, 当前实例为空")
+		//logs.Error("触发事件失败, 当前实例为空")
 		return
 	}
 	m.trigger <- trigger
@@ -117,7 +120,7 @@ func CancelAll() {
 	event.Cancel()
 }
 
-func init() {
+func Init() {
 	event = new(TEvent)
 	event.list = make(map[string]*TCallback)
 	event.trigger = make(chan TTrigger, cache)

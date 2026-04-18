@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 )
 
-func init() {
+func Init() {
 	event.On(event.Preview, func(trigger event.TTrigger) {
 		ps, ok := trigger.Payload.(consts.PreviewState)
 		if ok {

@@ -23,7 +23,7 @@ import (
 
 var cmdGoRoot string
 
-func init() {
+func Init() {
 	event.On(event.Project, func(trigger event.TTrigger) {
 		logs.Debug("项目管理事件 Payload:", trigger.Payload)
 		payload, ok := trigger.Payload.(event.TPayload)

@@ -14,11 +14,16 @@
 package main
 
 import (
+	"github.com/energye/designer/codegen"
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/event"
 	_ "github.com/energye/designer/internal"
+	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/preview"
 	_ "github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/frameworks"
+	"github.com/energye/designer/uigen"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
@@ -49,6 +54,19 @@ func main() {
 }
 
 func init() {
+	// 初始化事件系统
+	event.Init()
+	// 初始化预览功能
+	preview.Init()
+	// 初始化项目配置和选项管理
+	options.Init()
+	// 初始化 UI 代码生成触发器
+	uigen.Init()
+	// 初始化代码生成引擎
+	codegen.Init()
+	// 初始化设计器核心功能
+	designer.Init()
+
 	if runtime.GOOS == "darwin" {
 		isAmd64 := runtime.GOARCH == "amd64"
 		isArm64 := runtime.GOARCH == "arm64"

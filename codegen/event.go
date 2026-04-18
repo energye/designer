@@ -21,7 +21,7 @@ import (
 
 // Go代码生成
 
-func init() {
+func Init() {
 	// 代码生成事件监听
 	event.On(event.GenCode, func(trigger event.TTrigger) {
 		if payload, ok := trigger.Payload.(event.TPayload); ok {
