@@ -1,0 +1,256 @@
+name: Release Build
+
+on:
+  release:
+    types: [created]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  APP_NAME: 'designer'
+
+jobs:
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [amd64, 386]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Install energy command
+        run: |
+          go install ./cmd/energy
+          energy help
+
+      - name: Build Windows ${{ matrix.arch }}
+        env:
+          GOOS: windows
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          Write-Host "Building for Windows ${{ matrix.arch }}..."
+          energy build
+          
+          Write-Host "Build completed"
+          
+          # Rename binary according to platform and architecture
+          $outputName = "designer-windows-${{ matrix.arch }}.exe"
+          if (Test-Path "build\designer.exe") {
+            Move-Item -Path "build\designer.exe" -Destination "build\$outputName" -Force
+            Write-Host "Renamed to: $outputName"
+          }
+          
+          Get-ChildItem -Path build | Select-Object Name, Length
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: designer-windows-${{ matrix.arch }}
+          path: build/designer-windows-${{ matrix.arch }}.exe
+          retention-days: 1
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Install create-dmg
+        run: |
+          brew install create-dmg
+          which create-dmg
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Install energy command
+        run: |
+          go install ./cmd/energy
+          energy help
+
+      - name: Build and Package macOS ${{ matrix.arch }}
+        env:
+          GOOS: darwin
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          echo "Building and packaging for macOS ${{ matrix.arch }}..."
+
+          # energy package 会自动执行 build 并生成 .app 和 .pkg
+          energy package
+
+          echo "Build and package completed"
+
+          # Verify that essential files exist
+          if [ ! -f "build/Energy Designer Setup.pkg" ]; then
+            echo "::error::PKG file not found! Packaging failed."
+            exit 1
+          fi
+
+          # Rename binary (extracted from .app)
+          outputName="designer-macos-${{ matrix.arch }}"
+          if [ -f "build/designer" ]; then
+            mv "build/designer" "build/${outputName}"
+            echo "Renamed binary to: ${outputName}"
+          fi
+
+          # Rename installer packages
+          if [ -f "build/Energy Designer Setup.pkg" ]; then
+            mv "build/Energy Designer Setup.pkg" "build/designer-macos-${{ matrix.arch }}.pkg"
+            echo "Renamed pkg to: designer-macos-${{ matrix.arch }}.pkg"
+          fi
+
+          ls -lh build/
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: designer-macos-${{ matrix.arch }}
+          path: |
+            build/designer-macos-${{ matrix.arch }}
+            build/designer-macos-${{ matrix.arch }}.pkg
+          retention-days: 1
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        arch: [amd64, arm64, arm, 386]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Install energy command
+        run: |
+          go install ./cmd/energy
+          energy help
+
+      - name: Build Linux ${{ matrix.arch }}
+        env:
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: |
+          echo "Building for Linux ${{ matrix.arch }}..."
+          energy build
+          
+          echo "Build completed"
+          
+          # Rename binary according to platform and architecture
+          outputName="designer-linux-${{ matrix.arch }}"
+          if [ -f "build/designer" ]; then
+            mv "build/designer" "build/${outputName}"
+            echo "Renamed to: ${outputName}"
+          fi
+          
+          ls -lh build/
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: designer-linux-${{ matrix.arch }}
+          path: build/designer-linux-${{ matrix.arch }}
+          retention-days: 1
+
+  create-release-assets:
+    name: Create Release Assets
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux]
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          
+          # Copy all artifacts to release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+          
+          # Make binaries executable
+          chmod +x release-assets/*
+          
+          # List all assets
+          echo "Release assets:"
+          ls -lh release-assets/
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-checksums:
+    name: Create Checksums
+    runs-on: ubuntu-latest
+    needs: create-release-assets
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          
+          # Generate SHA256 checksums
+          sha256sum */* > ../CHECKSUMS_SHA256.txt
+          
+          echo "Checksums generated:"
+          cat ../CHECKSUMS_SHA256.txt
+
+      - name: Upload checksums to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: CHECKSUMS_SHA256.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
