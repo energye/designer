@@ -1,62 +1,87 @@
-## ENERGY GUI Designer
+# ENERGY GUI Designer
 
 ![go-version](https://img.shields.io/github/go-mod/go-version/energye/designer?logo=git&logoColor=green)
 [![github](https://img.shields.io/github/last-commit/energye/energy/main.svg?logo=github&logoColor=green&label=commit)](https://github.com/energye/designer)
 ![repo](https://img.shields.io/github/repo-size/energye/designer.svg?logo=github&logoColor=green&label=repo-size)
+
 ---
 
-### 🌟 项目简介
+## Project Overview
 
-ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架打造、且基于该框架开发的可视化设计器，它采用 Go LCL 组件库实现，提供所见即所得的设计体验与简化的 GUI 设计功能，开发者可通过拖拽控件、设置属性直观操作，快速创建和编辑 GUI 界面的同时，还能自动生成对应的 Go 代码。
+ENERGY Designer is a visual designer specifically built for the ENERGY cross-platform GUI framework, developed using the Go LCL component library. It provides a what-you-see-is-what-you-get (WYSIWYG) design experience with simplified GUI design capabilities. Developers can intuitively create and edit GUI interfaces by dragging controls and setting properties, while automatically generating corresponding Go source code.
 
-### 核心特性
+## Core Features
 
-####  设计器功能
-- **可视化设计**：所见即所得的 GUI 界面设计体验
-- **控件拖拽**：支持标准控件的拖拽布局
-- **属性编辑**：实时属性和事件设置
-- **组件管理**：完整的组件树查看和管理
-- **预览运行**：实时预览设计效果
+### Designer Functionality
 
-###  使用场景
+- Visual Design: WYSIWYG GUI interface design experience
+- Drag-and-Drop Controls: Support for standard control drag-and-drop layout
+- Property Editing: Real-time property and event configuration
+- Component Management: Complete component tree viewing and management
+- Preview and Run: Preview design effects
+- Code Generation: Automatically convert UI designs to Go source code
+- Multi-Form Support: Support for multi-tab form design
+- Undo/Redo: Support for undoing and redoing design operations
 
-1. **快速原型开发**：快速构建 GUI 应用
-2. **界面设计**：可视化设计复杂的用户界面
-3. **代码生成**：自动生 ENERGY GUI 的代码
-4. **丰富的组件**：原生控件, CEF控件, Webview控件
+### Supported Component Types
 
-*ENERGY Designer - 让 GUI 开发更简单*
+- LCL Native Controls: Standard desktop application controls
+- CEF Controls: Chromium Embedded Framework browser controls
+- WebView Controls: System-native Webview controls (Windows WebView2, Linux WebKit2, macOS WKWebView)
 
-### 安装 Designer
+### Cross-Platform Support
 
-#### 环境
-- 安装 git
-- 安装 golang
-- 执行下面命令
+- Windows: Supports 386 and amd64 architectures
+- macOS: Supports Intel (amd64) and Apple Silicon (arm64) architectures
+- Linux: Supports amd64, 386, arm64, arm architectures
+
+### Use Cases
+
+1. Rapid Prototyping: Quickly build GUI application prototypes
+2. Interface Design: Visually design complex user interfaces
+3. Code Generation: Automatically generate Go code compliant with ENERGY standards
+4. Learning Tool: Help beginners understand GUI programming concepts
+
+*ENERGY Designer - Making GUI Development Easier*
+
+### Installing Designer
+
+#### Requirements
+
+- Install Git
+- Install Golang
+- Execute the following commands
+
 ```cmd
-# 克隆
+Clone the repository
 git clone https://github.com/energye/designer.git
-
-# 进入 designer 目录, 更新模块依赖
+Enter the designer directory and update module dependencies
 go mod tidy
 ```
-- 运行进入 designer 目录
+
+- Run from the designer directory
 
 `go run main.go`
 
-如果有需求，请提 issue, 或加入 QQ 群进行交流（541258627）
+If you have any requirements, please submit an issue or join the QQ group for discussion (541258627).
 
-### 截图
+### Screenshots
 
 ![ENERGY-designer-create-project.png](docs/image/ENERGY-designer-create-project.png)
+![ENERGY-designer-home.png](docs/image/ENERGY-designer-home.png)
+![ENERGY-designer-widget.png](docs/image/ENERGY-designer-widget.png)
+![ENERGY-designer-run.png](docs/image/ENERGY-designer-run.png)
+![ENERGY-designer-config-app.png](docs/image/ENERGY-designer-config-app.png)
+![ENERGY-designer-config-build-1.png](docs/image/ENERGY-designer-config-build-1.png)
+![ENERGY-designer-config-build-2.png](docs/image/ENERGY-designer-config-build-2.png)
+- menu
 
+![ENERGY-designer-menu-run.png](docs/image/ENERGY-designer-menu-run.png)
+![ENERGY-designer-menu-options.png](docs/image/ENERGY-designer-menu-options.png)
+![ENERGY-designer-menu-file.png](docs/image/ENERGY-designer-menu-file.png)
+- main.go
 
-![ENERGY-designer-macOSrun.png.png](docs%2Fimage%2FENERGY-designer-macOSrun.png.png)
+![ENERGY-project-main.go.png](docs/image/ENERGY-project-main.go.png)
+- form1.go
 
-![ENERGY-designer.png](docs%2Fimage%2FENERGY-designer.png)
-
-![ENERGY-designer-linux.png](docs/image/ENERGY-designer-linux.png)
-
-![ENERGY-designer-preview.png](docs%2Fimage%2FENERGY-designer-preview.png)
-
-![ENERGY-designer-linux-preview.png](docs/image/ENERGY-designer-linux-preview.png)
+![ENERGY-project-form1.go.png](docs/image/ENERGY-project-form1.go.png)
