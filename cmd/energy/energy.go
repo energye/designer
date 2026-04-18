@@ -39,7 +39,7 @@ func main() {
 	cmd := dflag.New()
 	cmd.Add(&dflag.Command{
 		Name: "run",
-		Long: "energy run, 运行应用",
+		Long: "energy run, Run the application",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
@@ -51,7 +51,7 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "build",
-		Long: "energy build, 构建应用二进制程序",
+		Long: "energy build, Build the application binary",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
@@ -60,13 +60,20 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "package",
-		Long: "energy package, 制作应用安装包",
+		Long: "energy package, Build the application installer package",
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
 			if !packager.Run() {
 				return
 			}
+		},
+	})
+	cmd.Add(&dflag.Command{
+		Name: "help",
+		Long: "energy help",
+		Run: func(args dflag.Args) {
+			cmd.Help()
 		},
 	})
 	cmd.Parse()

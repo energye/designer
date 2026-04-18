@@ -60,16 +60,20 @@ func (m *dFlag) Add(cmd *Command) {
 	m.commands.Add(cmd.Name, cmd)
 }
 
+func (m *dFlag) Help() {
+	keys := m.commands.Keys()
+	println("energy command")
+	for _, name := range keys {
+		println("  ", name)
+		cmd := m.commands.Get(name)
+		println("    ", cmd.Long)
+	}
+}
+
 func (m *dFlag) Parse() {
 	newArgs := os.Args[1:]
 	if len(newArgs) == 0 {
-		keys := m.commands.Keys()
-		println("energy command")
-		for _, name := range keys {
-			println("  ", name)
-			cmd := m.commands.Get(name)
-			println("    ", cmd.Long)
-		}
+		m.Help()
 		return
 	}
 	if cmd := m.commands.Get(newArgs[0]); cmd != nil {
