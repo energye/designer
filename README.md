@@ -8,7 +8,9 @@
 
 ## Project Overview
 
-ENERGY Designer is a visual designer specifically built for the ENERGY cross-platform GUI framework, developed using the Go LCL component library. It provides a what-you-see-is-what-you-get (WYSIWYG) design experience with simplified GUI design capabilities. Developers can intuitively create and edit GUI interfaces by dragging controls and setting properties, while automatically generating corresponding Go source code.
+ENERGY Designer is a visual designer built exclusively for the ENERGY cross-platform GUI framework. 
+Developed based on the Go LCL component library, it supports LCL native controls, CEF browser controls, 
+and system-native WebView controls.
 
 ## Core Features
 
@@ -21,7 +23,6 @@ ENERGY Designer is a visual designer specifically built for the ENERGY cross-pla
 - Preview and Run: Preview design effects
 - Code Generation: Automatically convert UI designs to Go source code
 - Multi-Form Support: Support for multi-tab form design
-- Undo/Redo: Support for undoing and redoing design operations
 
 ### Supported Component Types
 
@@ -35,27 +36,17 @@ ENERGY Designer is a visual designer specifically built for the ENERGY cross-pla
 - macOS: Supports Intel (amd64) and Apple Silicon (arm64) architectures
 - Linux: Supports amd64, 386, arm64, arm architectures
 
-### Use Cases
-
-1. Rapid Prototyping: Quickly build GUI application prototypes
-2. Interface Design: Visually design complex user interfaces
-3. Code Generation: Automatically generate Go code compliant with ENERGY standards
-4. Learning Tool: Help beginners understand GUI programming concepts
-
-*ENERGY Designer - Making GUI Development Easier*
 
 ### Installing Designer
 
 #### Requirements
 
-- Install Git
-- Install Golang
+- Install Git and Golang
 - Execute the following commands
 
 ```cmd
-Clone the repository
 git clone https://github.com/energye/designer.git
-Enter the designer directory and update module dependencies
+cd designer
 go mod tidy
 ```
 
