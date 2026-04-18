@@ -15,7 +15,6 @@ package packager
 
 import (
 	"bytes"
-	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/tool/command"
@@ -37,10 +36,6 @@ func Run() bool {
 
 	// 平台打包
 	platformPackage()
-
-	// 构建全平台
-	// 如果禁用CGO并启用了其它平台构建
-	build.All()
 
 	return true
 }

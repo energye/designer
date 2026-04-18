@@ -45,7 +45,7 @@ func runPreview(state chan<- any) {
 	}
 	// macOS > xxx.app, windows > xxx.exe, linux > xxx
 	output := run.AppExecutable()
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "运行预览: " + output}})
+	event.ConsoleWriteInfo("运行预览: " + output)
 	// 开始运行
 	state <- consts.PsStarted // 运行命令
 	runCmd = command.NewCMD()
@@ -55,7 +55,7 @@ func runPreview(state chan<- any) {
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
-	event.Emit(event.TTrigger{Name: event.Console, Payload: event.TPayload{Type: event.ConsoleInfo, Data: "结束预览"}}) //运行结束消息
+	event.ConsoleWriteInfo("结束预览")
 }
 
 // 停止预览

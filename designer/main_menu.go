@@ -14,10 +14,12 @@
 package designer
 
 import (
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	desTool "github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -40,7 +42,8 @@ type TMainMenu struct {
 	//save          lcl.IMenuItem
 
 	build      lcl.IMenuItem
-	cleanBuild lcl.IMenuItem
+	buildClean lcl.IMenuItem
+	buildAll   lcl.IMenuItem
 	runApp     lcl.IMenuItem
 
 	buildOption       lcl.IMenuItem
@@ -94,17 +97,28 @@ func (m *TAppWindow) createMainMenu() {
 //	该函数在主线程中异步执行，确保线程安全性。它会同时设置多个菜单项的启用状态，
 //	包括创建窗口、打开、保存、构建、清理构建、运行应用、构建选项、环境选项和项目选项菜单项。
 func (m *TMainMenu) SetEnableMenuItems(enable bool) {
-	lcl.RunOnMainThreadAsync(func(id uint32) {
+	enabled := func() {
+		logs.Info("设置菜单项的启用状态 enable:", enable)
 		m.createWindow.SetEnabled(enable)
 		//m.open.SetEnabled(enable)
 		//m.save.SetEnabled(enable)
 		m.build.SetEnabled(enable)
-		m.cleanBuild.SetEnabled(enable)
+		m.buildClean.SetEnabled(enable)
+		m.buildAll.SetEnabled(enable)
 		m.runApp.SetEnabled(enable)
 		m.buildOption.SetEnabled(enable)
 		m.environmentOption.SetEnabled(enable)
 		m.projectOption.SetEnabled(enable)
-	})
+	}
+	if desTool.IsMainThread() {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			enabled()
+		})
+	} else {
+		lcl.RunOnMainThreadSync(func() {
+			enabled()
+		})
+	}
 }
 
 func (m *TMainMenu) macOS() {
@@ -209,18 +223,45 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
 	m.build.SetShortCut(api.TextToShortCut("Ctrl+F8"))
 	m.build.SetOnClick(func(lcl.IObject) {
-		logs.Debug("构建")
+		event.ConsoleWriteInfo("Build Start")
+		SetEnableFuncComponent(false)
+		go func() {
+			build.Run()
+			SetEnableFuncComponent(true)
+			event.ConsoleWriteInfo("Build End")
+		}()
 	})
 	m.run.Add(m.build)
 
-	m.cleanBuild = lcl.NewMenuItem(owner)
-	m.cleanBuild.SetCaption("清理构建")
-	m.cleanBuild.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
-	m.cleanBuild.SetShortCut(api.TextToShortCut("Ctrl+Shift+F8"))
-	m.cleanBuild.SetOnClick(func(lcl.IObject) {
-		logs.Debug("清理构建")
+	m.buildClean = lcl.NewMenuItem(owner)
+	m.buildClean.SetCaption("清理构建")
+	m.buildClean.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
+	m.buildClean.SetShortCut(api.TextToShortCut("Ctrl+Shift+F8"))
+	m.buildClean.SetOnClick(func(lcl.IObject) {
+		event.ConsoleWriteInfo("Build Clean Start")
+		SetEnableFuncComponent(false)
+		go func() {
+			build.RunClean()
+			SetEnableFuncComponent(true)
+			event.ConsoleWriteInfo("Build Clean End")
+		}()
 	})
-	m.run.Add(m.cleanBuild)
+	m.run.Add(m.buildClean)
+
+	m.buildAll = lcl.NewMenuItem(owner)
+	m.buildAll.SetCaption("构建所有")
+	m.buildAll.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
+	m.buildAll.SetShortCut(api.TextToShortCut("Ctrl+Shift+F9"))
+	m.buildAll.SetOnClick(func(lcl.IObject) {
+		event.ConsoleWriteInfo("Build ALL Start")
+		SetEnableFuncComponent(false)
+		go func() {
+			build.RunAll()
+			SetEnableFuncComponent(true)
+			event.ConsoleWriteInfo("Build ALL End")
+		}()
+	})
+	m.run.Add(m.buildAll)
 
 	sep := lcl.NewMenuItem(owner)
 	sep.SetCaption("-")

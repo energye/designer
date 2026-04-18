@@ -19,6 +19,7 @@ import (
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/types"
@@ -40,13 +41,22 @@ type TToolbarToolBtn struct {
 //
 //	enable: 布尔值，true表示启用按钮，false表示禁用按钮
 func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
-	lcl.RunOnMainThreadAsync(func(id uint32) {
+	enabled := func() {
 		m.newWindowBtn.SetEnabled(enable)
 		//m.openBtn.SetEnabled(enable)
 		//m.saveBtn.SetEnabled(enable)
 		//m.saveAllFormBtn.SetEnabled(enable)
 		m.runPreviewBtn.SetEnabled(enable)
-	})
+	}
+	if tool.IsMainThread() {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			enabled()
+		})
+	} else {
+		lcl.RunOnMainThreadSync(func() {
+			enabled()
+		})
+	}
 }
 
 // 工具按钮
@@ -211,18 +221,23 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 // 切换预览按钮状态, 在运行和结束运行之间切换
 func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 	logs.Debug("切换预览按钮状态 status:", status)
-	m.previewState = status
-	m.runPreviewBtn.SetEnabled(true)
-	if m.previewState == consts.PsStarted {
-		m.runPreviewBtn.SetHint("停止(F9)")
-		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
-	} else if m.previewState == consts.PsStarting {
-		m.runPreviewBtn.SetEnabled(false)
-		m.runPreviewBtn.SetHint("停止(F9)")
-		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
-	} else {
-		m.runPreviewBtn.SetHint("运行(F9)")
-		m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
+	changeStatus := func() {
+		m.previewState = status
+		m.runPreviewBtn.SetEnabled(true)
+		if m.previewState == consts.PsStarted {
+			m.runPreviewBtn.SetHint("停止(F9)")
+			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
+		} else if m.previewState == consts.PsStarting {
+			m.runPreviewBtn.SetEnabled(false)
+			m.runPreviewBtn.SetHint("停止(F9)")
+			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
+		} else {
+			m.runPreviewBtn.SetHint("运行(F9)")
+			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
+		}
+		MainWindow.mainMenu.switchRunMenuItem(status)
 	}
-	MainWindow.mainMenu.switchRunMenuItem(status)
+	lcl.RunOnMainThreadSync(func() {
+		changeStatus()
+	})
 }

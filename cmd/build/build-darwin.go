@@ -11,8 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build linux
-
 package build
 
 import (
@@ -27,7 +25,7 @@ import (
 	"strings"
 )
 
-func build() bool {
+func buildDarwin() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -40,35 +38,27 @@ func build() bool {
 		return false
 	}
 	isAmd64 := goARCH() == "amd64"
-	is386 := goARCH() == "386"
 	isArm64 := goARCH() == "arm64"
-	isArm := goARCH() == "arm"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
-	}
-	if is386 {
-		if !option.Arch386 {
-			event.ConsoleWriteWarn("Build - 386 architecture not enabled for Project Settings > Build Configurations")
-			return false
-		}
+		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
+		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
+		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
 	}
 	if isArm64 {
 		if !option.ArchArm64 {
 			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
+		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
+		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
+		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
 	}
-	if isArm {
-		if !option.ArchArm {
-			event.ConsoleWriteWarn("Build - arm architecture not enabled for Project Settings > Build Configurations")
-			return false
-		}
-	}
-	if !option.UIGtk3 && !option.UIGtk2 {
-		event.ConsoleWriteWarn("Build - UI Gtk2 or Gtk3 is not enabled for the project.Project Settings > Build Configurations")
+	if !option.UICocoa {
+		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
 		return false
 	}
 	event.ConsoleWriteInfo("Build - start build", proj.Name)
@@ -108,7 +98,7 @@ func build() bool {
 	}
 	// 其它参数
 	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
-	// linux 去除 -H windowsgui
+	// macOS 去除 -H windowsgui
 	tempNewLdflags := []string{}
 	for _, v := range ldflags {
 		if v == "-H" || v == "windowsgui" {
@@ -150,15 +140,63 @@ func build() bool {
 			cmd.Env = append(os.Environ(), env...)
 		}
 		cmd.Command("go", tempArgs...)
-		if option.BuildModeRelease {
+		if option.BuildModeRelease && tool.IsDarwin {
 			event.ConsoleWriteInfo("strip", output)
 			cmd.Command("strip", output)
 		}
 	}
-
-	outputFilename := filepath.Join(output, option.BuildFileName)
-	runGoBuild(nil, outputFilename)
+	/*
+	 * 根据配置决定是否构建 macOS 通用二进制文件 (Universal Binary)。
+	 * 如果启用了 MacCommonLib 选项，则分别编译 amd64 和 arm64 架构的临时二进制文件，
+	 * 随后使用 lipo 工具将它们合并为一个支持多架构的最终产物，并清理中间文件。
+	 * 否则，执行标准的单架构构建流程。
+	 */
+	if option.MacCommonLib && tool.IsDarwin {
+		// build amd64
+		amd64OutputFilename := filepath.Join(output, "temp_amd64_"+option.BuildFileName)
+		runGoBuild([]string{"GOOS=darwin", "GOARCH=amd64", "CGO_ENABLED=1"}, amd64OutputFilename)
+		// build arm64
+		arm64OutputFilename := filepath.Join(output, "temp_arm64_"+option.BuildFileName)
+		runGoBuild([]string{"GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=1"}, arm64OutputFilename)
+		defer func() {
+			_ = os.Remove(amd64OutputFilename)
+			_ = os.Remove(arm64OutputFilename)
+		}()
+		// merge universal
+		outputFilename := filepath.Join(output, buildBinFileName(option))
+		mergeUniversal(amd64OutputFilename, arm64OutputFilename, outputFilename)
+		verifyUniversal(outputFilename)
+	} else {
+		outputFilename := filepath.Join(output, buildBinFileName(option))
+		runGoBuild(nil, outputFilename)
+		verifyUniversal(outputFilename)
+	}
 
 	event.ConsoleWriteInfo("Build Successfully")
 	return true
+}
+
+func mergeUniversal(amd64File, arm64File, output string) {
+	if !tool.IsDarwin {
+		return
+	}
+	event.ConsoleWriteInfo("Build - merge universal")
+	cmd := command.NewCMD()
+	cmd.Dir = bean.GPath
+	cmd.HideWindow = true
+	cmd.Command("lipo", "-create", amd64File, arm64File, "-output", output)
+}
+
+func verifyUniversal(filePath string) {
+	if !tool.IsDarwin {
+		return
+	}
+	event.ConsoleWriteInfo("Build - verify universal")
+	cmd := command.NewCMD()
+	cmd.Dir = bean.GPath
+	cmd.HideWindow = true
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	cmd.Command("lipo", "-info", filePath)
 }

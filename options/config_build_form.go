@@ -509,7 +509,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.buildOtherPlatformChk = lcl.NewCheckBox(m)
 	m.buildOtherPlatformChk.SetCaption("构建其它平台")
 	m.buildOtherPlatformChk.SetShowHint(true)
-	m.buildOtherPlatformChk.SetHint("关闭 CGO 后, 打包时构建 Windows、Linux、macOS 可执行文件")
+	m.buildOtherPlatformChk.SetHint("关闭 CGO 后, 构建 Windows、Linux、macOS 可执行文件")
 	m.buildOtherPlatformChk.SetLeft(310)
 	m.buildOtherPlatformChk.SetTop(m.buildCGOEnabledChk.Top())
 	m.buildOtherPlatformChk.SetFont(m.font)

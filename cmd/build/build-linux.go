@@ -11,8 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-//go:build windows
-
 package build
 
 import (
@@ -27,7 +25,7 @@ import (
 	"strings"
 )
 
-func build() bool {
+func buildLinux() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -35,12 +33,14 @@ func build() bool {
 	}
 	event.ConsoleWriteInfo("Build - project check config options")
 	option := proj.BuildOption
-	if !option.PlatformWindows {
+	if !option.PlatformMacOS {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
 		return false
 	}
 	isAmd64 := goARCH() == "amd64"
 	is386 := goARCH() == "386"
+	isArm64 := goARCH() == "arm64"
+	isArm := goARCH() == "arm"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
@@ -49,12 +49,24 @@ func build() bool {
 	}
 	if is386 {
 		if !option.Arch386 {
+			event.ConsoleWriteWarn("Build - 386 architecture not enabled for Project Settings > Build Configurations")
+			return false
+		}
+	}
+	if isArm64 {
+		if !option.ArchArm64 {
 			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
 	}
-	if !option.UIWin32 {
-		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
+	if isArm {
+		if !option.ArchArm {
+			event.ConsoleWriteWarn("Build - arm architecture not enabled for Project Settings > Build Configurations")
+			return false
+		}
+	}
+	if !option.UIGtk3 && !option.UIGtk2 {
+		event.ConsoleWriteWarn("Build - UI Gtk2 or Gtk3 is not enabled for the project.Project Settings > Build Configurations")
 		return false
 	}
 	event.ConsoleWriteInfo("Build - start build", proj.Name)
@@ -94,6 +106,15 @@ func build() bool {
 	}
 	// 其它参数
 	otherArgs := tool.ExtractOtherBuildArgs(option.GoArgs)
+	// linux 去除 -H windowsgui
+	tempNewLdflags := []string{}
+	for _, v := range ldflags {
+		if v == "-H" || v == "windowsgui" {
+			continue
+		}
+		tempNewLdflags = append(tempNewLdflags, v)
+	}
+	ldflags = tempNewLdflags
 	args := []string{"build", "-v"}
 	if len(tags) > 0 {
 		args = append(args, "-tags", strings.Join(tags, ","))
@@ -106,7 +127,7 @@ func build() bool {
 		}
 	} else {
 		// release
-		ldflags = tool.MergeLdflags("-H windowsgui -s -w", strings.Join(ldflags, " "))
+		ldflags = tool.MergeLdflags("-s -w", strings.Join(ldflags, " "))
 		args = append(args, "-ldflags", strings.Join(ldflags, " "))
 		args = append(args, "-trimpath")
 	}
@@ -127,16 +148,13 @@ func build() bool {
 			cmd.Env = append(os.Environ(), env...)
 		}
 		cmd.Command("go", tempArgs...)
-		if option.BuildModeRelease {
+		if option.BuildModeRelease && tool.IsLinux {
 			event.ConsoleWriteInfo("strip", output)
 			cmd.Command("strip", output)
 		}
 	}
-	buildFileName := option.BuildFileName
-	if filepath.Ext(buildFileName) != ".exe" {
-		buildFileName += ".exe"
-	}
-	outputFilename := filepath.Join(output, buildFileName)
+
+	outputFilename := filepath.Join(output, buildBinFileName(option))
 	runGoBuild(nil, outputFilename)
 
 	event.ConsoleWriteInfo("Build Successfully")
