@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"text/template"
@@ -29,7 +30,7 @@ func Run() bool {
 		event.ConsoleWriteError("Package - project GProject is nil")
 		return false
 	}
-
+	frameworks.ExtractLibrary()
 	// 构建环境 arch
 	defaultGOARCH := os.Getenv("GOARCH")
 	defer os.Setenv("GOARCH", defaultGOARCH)
