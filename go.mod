@@ -3,7 +3,7 @@ module github.com/energye/designer
 go 1.20
 
 require (
-	github.com/energye/energy/v3 v3.0.4
+	github.com/energye/energy/v3 v3.0.5
 	github.com/energye/lcl v1.0.3
 	github.com/energye/widget v1.0.3
 )
