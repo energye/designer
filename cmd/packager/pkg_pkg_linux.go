@@ -19,7 +19,6 @@ import (
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"os"
 	"os/exec"
 )
 
@@ -29,31 +28,12 @@ func platformPackage() {
 		event.ConsoleWriteError("Build - project GProject is nil")
 		return
 	}
-	option := proj.BuildOption
-	packageStart := func() {
-		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
-		if !build.Run() {
-			return
-		}
-		event.ConsoleWriteInfo("CMD-package-run")
-		packager()
+	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
+	if !build.Run() {
+		return
 	}
-	if option.ArchAmd64 {
-		_ = os.Setenv("GOARCH", "amd64")
-		packageStart()
-	}
-	if option.Arch386 {
-		_ = os.Setenv("GOARCH", "386")
-		packageStart()
-	}
-	if option.ArchArm64 {
-		_ = os.Setenv("GOARCH", "arm64")
-		packageStart()
-	}
-	if option.ArchArm {
-		_ = os.Setenv("GOARCH", "arm")
-		packageStart()
-	}
+	event.ConsoleWriteInfo("CMD-package-run")
+	packager()
 }
 
 func packager() bool {

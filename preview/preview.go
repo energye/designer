@@ -39,7 +39,7 @@ func runPreview(state chan<- any) {
 		return
 	}
 	// macOS bundle > xxx.app
-	if !packager.AppBundle() {
+	if !packager.AppBundle(nil) {
 		state <- consts.PsStop
 		return
 	}

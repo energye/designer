@@ -20,8 +20,8 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -29,33 +29,22 @@ import (
 
 const signtool = "signtool.exe"
 
-func platformPackage() {
+func (m *Package) platformPackage() {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
 		return
 	}
-	option := proj.BuildOption
-	packageStart := func() {
-		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
-		if !build.Run() {
-			return
-		}
-		event.ConsoleWriteInfo("CMD-package-run")
-		packager()
+	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
+	if !build.Run() {
+		return
 	}
-	if option.ArchAmd64 {
-		_ = os.Setenv("GOARCH", "amd64")
-		packageStart()
-	}
-	if option.Arch386 {
-		_ = os.Setenv("GOARCH", "386")
-		packageStart()
-	}
+	event.ConsoleWriteInfo("CMD-package-run")
+	m.packager()
 }
 
 // 打包程序流程
-func packager() bool {
+func (m *Package) packager() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Package - GProject is nil")
@@ -68,16 +57,16 @@ func packager() bool {
 	}
 
 	if option.WinExe {
-		packageNSIS()
+		m.packageNSIS()
 	}
 	if option.WinMsi {
-		packageAppx()
+		m.packageAppx()
 	}
 	return false
 }
 
 // 一个空的实现函数
-func createAppBundle() bool {
+func (m *Package) createAppBundle() bool {
 	// empty impl
 	return true
 }

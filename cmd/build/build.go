@@ -18,16 +18,16 @@ import (
 	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 // Run 执行构建命令的入口函数
 func Run() bool {
 	event.ConsoleWriteInfo("CMD-build-run")
-	goos := goOS()
+	goos := lib.GOOS()
 	if goos == "windows" {
 		return buildWindows()
 	} else if goos == "darwin" {
@@ -53,25 +53,9 @@ func xBuildPackVar() (result []string) {
 	packMap["name"] = bean.GProject.Name
 	packMap["id"] = bean.GProject.AppOption.Id
 	packMap["version"] = bean.GProject.AppOption.Version
-	packMap["arch"] = goARCH()
+	packMap["arch"] = lib.GOARCH()
 	data, _ := json.Marshal(packMap)
 	result = append(result, "-X github.com/energye/energy/v3/application/pack.JSON="+string(data))
-	return
-}
-
-func goOS() (goos string) {
-	goos = os.Getenv("GOOS")
-	if goos == "" {
-		goos = runtime.GOOS
-	}
-	return
-}
-
-func goARCH() (goarch string) {
-	goarch = os.Getenv("GOARCH")
-	if goarch == "" {
-		goarch = runtime.GOARCH
-	}
 	return
 }
 
@@ -83,8 +67,8 @@ func goARCH() (goarch string) {
 //   - buildOption: 包含构建配置信息的选项结构体，用于获取基础文件名。
 func buildBinFileName(buildOption bean.TBuildOption) string {
 	buildFileName := buildOption.BuildFileName
-	goos := goOS()
-	goarch := goARCH()
+	goos := lib.GOOS()
+	goarch := lib.GOARCH()
 	// 在跨平台构建模式下（通常对应 CGO 禁用场景），
 	// 为文件名添加操作系统和架构标识，以区分不同平台的产物。
 	if IsBuildAllPlatform() {

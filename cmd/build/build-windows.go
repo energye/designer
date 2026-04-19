@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"os/exec"
@@ -37,8 +38,8 @@ func buildWindows() bool {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
 		return false
 	}
-	isAmd64 := goARCH() == "amd64"
-	is386 := goARCH() == "386"
+	isAmd64 := lib.GOARCH() == "amd64"
+	is386 := lib.GOARCH() == "386"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")

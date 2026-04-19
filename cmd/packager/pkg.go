@@ -23,27 +23,39 @@ import (
 	"text/template"
 )
 
+type Package struct {
+	AppendPlatform bool
+	AppendArch     bool
+	CustomSuffix   string
+}
+
+func Default() *Package {
+	return &Package{}
+}
+
 // Run 执行打包命令的入口函数
-func Run() bool {
+func Run(pack *Package) bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Package - project GProject is nil")
 		return false
 	}
 	frameworks.ExtractLibrary()
-	// 构建环境 arch
-	defaultGOARCH := os.Getenv("GOARCH")
-	defer os.Setenv("GOARCH", defaultGOARCH)
-
+	if pack == nil {
+		pack = Default()
+	}
 	// 平台打包
-	platformPackage()
+	pack.platformPackage()
 
 	return true
 }
 
 // AppBundle 创建 macOS 应用程序包
-func AppBundle() bool {
-	return createAppBundle()
+func AppBundle(pack *Package) bool {
+	if pack == nil {
+		pack = Default()
+	}
+	return pack.createAppBundle()
 }
 
 func RenderTemplate(data any, templateText string) ([]byte, error) {

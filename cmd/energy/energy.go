@@ -60,11 +60,11 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "package",
-		Long: "energy package, Build the application installer package",
+		Long: `energy package, Build the application installer package`,
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
-			if !packager.Run() {
+			if !packager.Run(nil) {
 				return
 			}
 		},

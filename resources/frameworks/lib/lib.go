@@ -17,12 +17,15 @@ import (
 	"archive/zip"
 	"bytes"
 	"embed"
+	"fmt"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/tool/command"
+	"os"
 	"path/filepath"
+	"runtime"
 )
 
 const (
@@ -120,7 +123,7 @@ func ExtractLibrary(outputPath string) (libPath string) {
 }
 
 func DefaultLibName(filename string) bool {
-	name := libname.GetDLLName()
+	name := GetDLLName()
 	return tool.Equal(filename, name)
 }
 
@@ -151,4 +154,49 @@ func macOSUniversalBinary(outputPath string) {
 	cmd := command.NewCMD()
 	cmd.HideWindow = true
 	cmd.Command("lipo", "-create", amd64LibFilePath, arm64LibFilePath, "-output", universalLibFilePath)
+}
+
+const DarwinUniversalBinaryName = "libenergy-universal.dylib"
+
+// GetDLLName 用于获取当前系统架构的 lib 库
+func GetDLLName() string {
+	goos := GOOS()
+	goarch := GOARCH()
+	ws, ext := "", ""
+	switch goos {
+	case "darwin":
+		ext = "dylib"
+	case "linux":
+		ext = "so"
+		if envws := os.Getenv("--ws"); envws != "" {
+			ws = envws // use gtk3
+		} else {
+			ws = "gtk2"
+		}
+		if len(ws) > 0 && ws[0] != '-' {
+			ws = "-" + ws // add first str "-"
+		}
+	case "windows":
+		ext = "dll"
+	}
+	// windows, macOS: libenergy-[arch].xx
+	// linux:  libenergy-[arch]-[ws].xx
+	name := fmt.Sprintf("libenergy-%s%s.%s", goarch, ws, ext)
+	return name
+}
+
+func GOOS() (goos string) {
+	goos = os.Getenv("GOOS")
+	if goos == "" {
+		goos = runtime.GOOS
+	}
+	return
+}
+
+func GOARCH() (goarch string) {
+	goarch = os.Getenv("GOARCH")
+	if goarch == "" {
+		goarch = runtime.GOARCH
+	}
+	return
 }

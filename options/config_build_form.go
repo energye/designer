@@ -858,6 +858,7 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 	}
 	go func() {
 		configBuildPackage()
+		// 恢复按钮状态
 		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetDisable(false)
 		m.packageing = false

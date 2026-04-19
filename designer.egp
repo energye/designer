@@ -28,7 +28,7 @@
     "go_args": "",
     "code_obfuscation": false,
     "disable_debug": false,
-    "package_name": "Energy Designer Setup",
+    "package_name": "EnergyDesigner",
     "win_msi": false,
     "win_exe": true,
     "win_default_install": "",

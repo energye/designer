@@ -24,6 +24,7 @@ import (
 	"github.com/energye/designer/pkg/resize"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"image"
 	"image/color"
@@ -36,23 +37,21 @@ import (
 
 const makeappx = "MakeAppx.exe"
 
-func packageAppx() bool {
+func (m *Package) packageAppx() bool {
 	if !checkToolCMD(makeappx) {
 		event.ConsoleWriteError("Package - check", makeappx, " Not Installed")
 		return false
 	}
 	var (
-		libEnergy   string
+		libEnergy   = lib.GetDLLName()
 		libWebview2 string
 	)
 	GOARCH := os.Getenv("GOARCH")
 	processorArchitecture := "x64"
 	switch GOARCH {
 	case "amd64":
-		libEnergy = "libenergy-amd64.dll"
 		libWebview2 = "WebView2Loader-amd64.dll"
 	case "386":
-		libEnergy = "libenergy-386.dll"
 		libWebview2 = "WebView2Loader-386.dll"
 		processorArchitecture = "x86"
 	case "arm64":
@@ -68,12 +67,19 @@ func packageAppx() bool {
 	if filepath.Ext(buildFileName) != ".exe" {
 		buildFileName += ".exe"
 	}
+
 	msixPackageName := buildOption.PackageName
-	if exeIdx := strings.LastIndex(msixPackageName, ".msix"); exeIdx != -1 {
-		msixPackageName = msixPackageName[:exeIdx] + "_" + GOARCH + ".msix"
-	} else {
-		msixPackageName = msixPackageName + "_" + GOARCH + ".msix"
+	if m.AppendPlatform {
+		msixPackageName += "_" + lib.GOOS()
 	}
+	if m.AppendArch {
+		msixPackageName += "_" + lib.GOARCH()
+	}
+	if m.CustomSuffix != "" {
+		msixPackageName += "_" + m.CustomSuffix
+	}
+	msixPackageName += ".msix"
+
 	output := buildOption.Output
 	if !filepath.IsAbs(buildOption.Output) {
 		output = filepath.Join(bean.GPath, output)

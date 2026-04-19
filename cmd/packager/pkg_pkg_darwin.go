@@ -26,8 +26,8 @@ import (
 	"github.com/energye/designer/pkg/icns"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/api"
-	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/pkgs/win"
 	"github.com/energye/lcl/tool/command"
@@ -71,32 +71,21 @@ func (m *TMacAssociateProtocols) IsEmpty() bool {
 	return m.Scheme == "" || m.Description == ""
 }
 
-func platformPackage() {
+func (m *Package) platformPackage() {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
 		return
 	}
-	option := proj.BuildOption
-	packageStart := func() {
-		event.ConsoleWriteInfo("CMD-package-run", os.Getenv("GOARCH"))
-		if !build.Run() {
-			return
-		}
-		event.ConsoleWriteInfo("CMD-package-run")
-		packager()
+	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
+	if !build.Run() {
+		return
 	}
-	if option.ArchAmd64 {
-		_ = os.Setenv("GOARCH", "amd64")
-		packageStart()
-	}
-	if option.ArchArm64 {
-		_ = os.Setenv("GOARCH", "arm64")
-		packageStart()
-	}
+	event.ConsoleWriteInfo("CMD-package-run")
+	m.packager()
 }
 
-func packager() bool {
+func (m *Package) packager() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Package - GProject is nil")
@@ -104,7 +93,7 @@ func packager() bool {
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
-	if !createAppBundle() {
+	if !m.createAppBundle() {
 		return false
 	}
 	if option.MacSign.Enable {
@@ -115,14 +104,14 @@ func packager() bool {
 		event.ConsoleWriteInfo("Package - Not Enabled cert")
 	}
 	if option.MacPKG {
-		if !pkg() {
+		if !m.pkg() {
 			return false
 		}
 	} else {
 		event.ConsoleWriteInfo("Package - Not Enabled PKG")
 	}
 	if option.MacDMG {
-		if !dmg() {
+		if !m.dmg() {
 			return false
 		}
 	} else {
@@ -131,7 +120,7 @@ func packager() bool {
 	return true
 }
 
-func createAppBundle() bool {
+func (m *Package) createAppBundle() bool {
 	event.ConsoleWriteInfo("App Bundle", bean.GPath)
 	event.ConsoleWriteInfo("App Bundle", bean.GProject.Name)
 	proj := bean.GProject
@@ -158,7 +147,7 @@ func createAppBundle() bool {
 	return true
 }
 
-func pkg() bool {
+func (m *Package) pkg() bool {
 	event.ConsoleWriteInfo("Package - PKG")
 	proj := bean.GProject
 	option := proj.BuildOption
@@ -168,7 +157,22 @@ func pkg() bool {
 	}
 	app := appRootDir()
 	appName := option.PackageName + ".app"
-	pkgName := option.PackageName + ".pkg"
+	pkgName := option.PackageName
+	if m.AppendPlatform {
+		pkgName += "_" + lib.GOOS()
+	}
+	if proj.BuildOption.MacCommonLib {
+		pkgName += "_universal"
+	} else {
+		if m.AppendArch {
+			pkgName += "_" + lib.GOARCH()
+		}
+	}
+	if m.CustomSuffix != "" {
+		pkgName += "_" + m.CustomSuffix
+	}
+	pkgName += ".pkg"
+
 	cmd := command.NewCMD()
 	cmd.IsPrint = false
 	cmd.HideWindow = true
@@ -176,6 +180,7 @@ func pkg() bool {
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}
+	cmd.Command("rm", "-rf", pkgName)
 	// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
 	args := []string{"--root", app,
 		"--identifier", proj.AppOption.MacOS.PList.CFBundleIdentifier,
@@ -186,7 +191,7 @@ func pkg() bool {
 	return true
 }
 
-func dmg() bool {
+func (m *Package) dmg() bool {
 	event.ConsoleWriteInfo("Package - DMG")
 
 	whichCmd := exec.Command("which", "create-dmg")
@@ -211,7 +216,22 @@ func dmg() bool {
 		output = filepath.Join(bean.GPath, output)
 	}
 	appName := option.PackageName + ".app"
-	dmgName := option.PackageName + ".dmg"
+	dmgName := option.PackageName
+	if m.AppendPlatform {
+		dmgName += "_" + lib.GOOS()
+	}
+	if proj.BuildOption.MacCommonLib {
+		dmgName += "_universal"
+	} else {
+		if m.AppendArch {
+			dmgName += "_" + lib.GOARCH()
+		}
+	}
+	if m.CustomSuffix != "" {
+		dmgName += "_" + m.CustomSuffix
+	}
+	dmgName += ".dmg"
+
 	cmd := command.NewCMD()
 	cmd.IsPrint = false
 	cmd.HideWindow = true
@@ -255,9 +275,9 @@ func cert() bool {
 	certCommandList := option.MacSign.Cert
 	if len(certCommandList) > 0 {
 		appName := option.PackageName + ".app"
-		runtimeFile := libname.GetDLLName()
+		runtimeFile := lib.GetDLLName()
 		if proj.BuildOption.MacCommonLib {
-			runtimeFile = libname.DarwinUniversalBinaryName
+			runtimeFile = lib.DarwinUniversalBinaryName
 		}
 		cmd := command.NewCMD()
 		cmd.IsPrint = false
@@ -299,12 +319,11 @@ func appRootDir() string {
 func createApp() bool {
 	appRoot := appRootDir()
 	event.ConsoleWriteInfo("App Bundle - Create App Dir", appRoot)
-	//err := os.RemoveAll(appRoot)
-	//if err != nil {
-	//	event.ConsoleWriteError("Package - remove app root:", err.Error())
-	//	return false
-	//}
-	// Contents
+	err := os.RemoveAll(appRoot)
+	if err != nil {
+		event.ConsoleWriteError("Package - Remove App:", err.Error())
+		return false
+	}
 	contents := filepath.Join(appRoot, AppContents)
 	if !tool.IsExist(contents) {
 		if err := os.MkdirAll(contents, 0755); err != nil {
@@ -421,9 +440,9 @@ func copyFiles() bool {
 	appRoot := appRootDir()
 	frameworksRuntime := config.Config.FrameworkRuntimePath()
 	// libenergy-[arch].dylib
-	srcRuntimeFilePath := filepath.Join(frameworksRuntime, libname.GetDLLName())
+	srcRuntimeFilePath := filepath.Join(frameworksRuntime, lib.GetDLLName())
 	if proj.BuildOption.MacCommonLib {
-		srcRuntimeFilePath = filepath.Join(frameworksRuntime, libname.DarwinUniversalBinaryName)
+		srcRuntimeFilePath = filepath.Join(frameworksRuntime, lib.DarwinUniversalBinaryName)
 	}
 	if !tool.IsExist(srcRuntimeFilePath) {
 		event.ConsoleWriteError("App Bundle - energy runtime lib not exist.", srcRuntimeFilePath)
@@ -452,9 +471,10 @@ func copyFiles() bool {
 	contentsResources := filepath.Join(contents, AppContentsResources)
 
 	outputRuntimeFilePath := ""
-	outputCurrRuntimeFilePath := filepath.Join(contentsFrameworks, libname.GetDLLName())
-	outputUnivRuntimeFilePath := filepath.Join(contentsFrameworks, libname.DarwinUniversalBinaryName)
+	outputCurrRuntimeFilePath := filepath.Join(contentsFrameworks, lib.GetDLLName())
+	outputUnivRuntimeFilePath := filepath.Join(contentsFrameworks, lib.DarwinUniversalBinaryName)
 	if proj.BuildOption.MacCommonLib {
+		// 通用二进制
 		outputRuntimeFilePath = outputUnivRuntimeFilePath
 		_ = os.Remove(outputCurrRuntimeFilePath)
 	} else {

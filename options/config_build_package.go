@@ -17,12 +17,31 @@ import (
 	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/resources/frameworks/lib"
+	"os"
 )
 
-// 构建打包
+// configBuildPackage 执行构建打包流程
+// 只给当前系统和架构构建打包
 func configBuildPackage() {
 	logs.Debug("构建配置-打包")
 	event.ConsoleWriteClear()
-	packager.Run()
-	logs.Debug("构建配置-打包-完成")
+	if envs, ok := packagePlatformENVs[lib.GOOS()]; ok {
+		pack := packager.Default()
+		pack.AppendPlatform = true
+		pack.AppendArch = true
+		for _, arch := range envs {
+			_ = os.Setenv("GOARCH", arch)
+			packager.Run(pack)
+		}
+		logs.Debug("构建配置-打包-完成")
+	} else {
+		logs.Debug("构建配置-打包失败, 不支持的系统")
+	}
+}
+
+var packagePlatformENVs = map[string][]string{
+	"windows": {"amd64", "386"},
+	"darwin":  {"amd64", "arm64"},
+	"linux":   {"amd64", "386", "arm64", "arm"},
 }

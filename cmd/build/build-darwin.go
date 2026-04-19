@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"os/exec"
@@ -37,8 +38,8 @@ func buildDarwin() bool {
 		event.ConsoleWriteWarn("Build - Project has not enabled Project Settings > Build Configurations")
 		return false
 	}
-	isAmd64 := goARCH() == "amd64"
-	isArm64 := goARCH() == "arm64"
+	isAmd64 := lib.GOARCH() == "amd64"
+	isArm64 := lib.GOARCH() == "arm64"
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
@@ -154,10 +155,10 @@ func buildDarwin() bool {
 	if option.MacCommonLib && tool.IsDarwin {
 		// build amd64
 		amd64OutputFilename := filepath.Join(output, "temp_amd64_"+option.BuildFileName)
-		runGoBuild([]string{"GOOS=darwin", "GOARCH=amd64", "CGO_ENABLED=1"}, amd64OutputFilename)
+		runGoBuild([]string{"GOARCH=amd64"}, amd64OutputFilename)
 		// build arm64
 		arm64OutputFilename := filepath.Join(output, "temp_arm64_"+option.BuildFileName)
-		runGoBuild([]string{"GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=1"}, arm64OutputFilename)
+		runGoBuild([]string{"GOARCH=arm64"}, arm64OutputFilename)
 		defer func() {
 			_ = os.Remove(amd64OutputFilename)
 			_ = os.Remove(arm64OutputFilename)

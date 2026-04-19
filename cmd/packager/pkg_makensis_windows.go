@@ -59,22 +59,20 @@ func (m *TWinAssociateProtocols) IsEmpty() bool {
 	return m.Scheme == "" || m.Description == ""
 }
 
-func packageNSIS() bool {
+func (m *Package) packageNSIS() bool {
 	if !checkToolCMD(makensis) {
 		event.ConsoleWriteError("Package - check ", makensis, " Not Installed")
 		return false
 	}
 	var (
-		libEnergy   string
+		libEnergy   = lib.GetDLLName()
 		libWebview2 string
 	)
-	GOARCH := os.Getenv("GOARCH")
+	GOARCH := lib.GOARCH()
 	switch GOARCH {
 	case "amd64":
-		libEnergy = "libenergy-amd64.dll"
 		libWebview2 = "WebView2Loader-amd64.dll"
 	case "386":
-		libEnergy = "libenergy-386.dll"
 		libWebview2 = "WebView2Loader-386.dll"
 	case "arm64":
 		event.ConsoleWriteWarn("Package - Currently, windows arm64 arch is not support")
@@ -88,12 +86,18 @@ func packageNSIS() bool {
 	if filepath.Ext(buildFileName) != ".exe" {
 		buildFileName += ".exe"
 	}
+
 	exePackageName := buildOption.PackageName
-	if exeIdx := strings.LastIndex(exePackageName, ".exe"); exeIdx != -1 {
-		exePackageName = exePackageName[:exeIdx] + "_" + GOARCH + ".exe"
-	} else {
-		exePackageName = exePackageName + "_" + GOARCH + ".exe"
+	if m.AppendPlatform {
+		exePackageName += "_" + lib.GOOS()
 	}
+	if m.AppendArch {
+		exePackageName += "_" + lib.GOARCH()
+	}
+	if m.CustomSuffix != "" {
+		exePackageName += "_" + m.CustomSuffix
+	}
+	exePackageName += ".exe"
 
 	output := buildOption.Output
 	if !filepath.IsAbs(buildOption.Output) {
