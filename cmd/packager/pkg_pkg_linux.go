@@ -19,10 +19,11 @@ import (
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"os/exec"
 )
 
-func platformPackage() {
+func (m *Package) platformPackage() {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -33,10 +34,10 @@ func platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run")
-	packager()
+	m.packager()
 }
 
-func packager() bool {
+func (m *Package) packager() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Package - GProject is nil")
@@ -44,10 +45,6 @@ func packager() bool {
 	}
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
-	if !option.WinSign.Enable {
-		event.ConsoleWriteInfo("Package - Not Enabled cert")
-	}
-
 	if option.LinuxDEB {
 	}
 	if option.LinuxRPM {
@@ -55,7 +52,7 @@ func packager() bool {
 	return true
 }
 
-func createAppBundle() bool {
+func (m *Package) createAppBundle() bool {
 	return true
 }
 
