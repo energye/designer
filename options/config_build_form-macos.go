@@ -67,11 +67,7 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macCommonLibCheckBox.SetLeft(20)
 	m.macCommonLibCheckBox.SetTop(nextTop(30))
 	m.macCommonLibCheckBox.SetFont(m.font)
-	if version.OSVersion.Major <= 10 {
-		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
-		bean.GProject.BuildOption.MacCommonLib = false
-		m.macCommonLibCheckBox.SetEnabled(false)
-	}
+	m.macCommonLibCheckBox.SetEnabled(false)
 	m.macCommonLibCheckBox.SetChecked(bean.GProject.BuildOption.MacCommonLib)
 	m.macCommonLibCheckBox.SetParent(m.platformTabPageMacOS)
 
