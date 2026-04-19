@@ -123,6 +123,11 @@ func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	m.box.SetAlign(types.AlClient)
 	m.box.SetColor(colors.ClWhite)
 	m.box.SetParent(m)
+
+	m.statusBar = lcl.NewStatusBar(m)
+	m.statusBar.SetParent(m)
+	m.statusBar.SetAutoHint(true)
+
 	m.SetOnShow(m.onShow)
 	m.initComponents()
 	SetWindowCenterByMainWindow(m)
@@ -291,7 +296,6 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 
 	{
-
 		type Button struct {
 			iconDefault []byte
 			iconActive  []byte
@@ -372,7 +376,7 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 
 	{
-		cancelBtnRect := types.TRect{Left: 400, Top: 530}
+		cancelBtnRect := types.TRect{Left: 400, Top: 525}
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
@@ -399,10 +403,6 @@ func (m *TConfigProjectForm) initComponents() {
 		m.saveBtn.SetParent(m.box)
 		m.saveBtn.SetOnClick(m.saveClick)
 	}
-
-	m.statusBar = lcl.NewStatusBar(m)
-	m.statusBar.SetParent(m)
-	m.statusBar.SetAutoHint(true)
 }
 
 func (m *TConfigProjectForm) closeClick(sender lcl.IObject) {
