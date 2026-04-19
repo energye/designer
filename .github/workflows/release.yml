@@ -107,7 +107,7 @@ jobs:
           echo "Build and package completed"
 
           # Verify that essential files exist
-          if [ ! -f "build/Energy Designer Setup.pkg" ]; then
+          if [ ! -f "build/EnergyDesigner.pkg" ]; then
             echo "::error::PKG file not found! Packaging failed."
             exit 1
           fi
@@ -120,8 +120,8 @@ jobs:
           fi
 
           # Rename installer packages
-          if [ -f "build/Energy Designer Setup.pkg" ]; then
-            mv "build/Energy Designer Setup.pkg" "build/designer-macos-${{ matrix.arch }}.pkg"
+          if [ -f "build/EnergyDesigner.pkg" ]; then
+            mv "build/EnergyDesigner.pkg" "build/designer-macos-${{ matrix.arch }}.pkg"
             echo "Renamed pkg to: designer-macos-${{ matrix.arch }}.pkg"
           fi
 
@@ -132,7 +132,6 @@ jobs:
         with:
           name: designer-macos-${{ matrix.arch }}
           path: |
-            build/designer-macos-${{ matrix.arch }}
             build/designer-macos-${{ matrix.arch }}.pkg
           retention-days: 1
 
