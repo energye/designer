@@ -53,15 +53,7 @@ func GetFuncTypeAliases(mod consts.Mod) *dast.TFuncTypeAlias {
 // InitDependencyModule 初始化模块类型信息
 func InitDependencyModule(windowRect types.TRect, callback func(ok bool)) {
 	go func() {
-		// initModuleTypeInfoFormEmbed() 不再使用
-		//go initModuleTypeInfoFormEmbed()
-		//lcl.RunOnMainThreadAsync(func(id uint32) {
-		//	newForm := NewDependModForm()
-		//	newForm.ShowModal()
-		//})
-
 		dir := &modCacheDir{}
-
 		// 根据 designer/resources/config.json 配置依赖模块下载模块
 		isOk := downloadMod(dir)
 		if !isOk {

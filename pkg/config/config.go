@@ -180,7 +180,7 @@ func (m goEnv) Get(name string) string {
 
 func (m goEnv) Set(name, value string) {
 	m[name] = value
-	_ = os.Setenv("name", value)
+	_ = os.Setenv(name, value)
 }
 
 // UpdateWindow 更新窗体配置

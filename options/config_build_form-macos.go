@@ -140,9 +140,10 @@ func (m *TBuildForm) initMacOSOptions() {
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateProtocols)
 	}
 	{
-		m.macPackConfigTabPageUniversalLink = m.macPackConfigTab.NewPage()
-		m.macPackConfigTabPageUniversalLink.SetCaption("通用链接")
-		setMacPackConfigTabPageStyle(m.macPackConfigTabPageUniversalLink)
+		// 后续开发
+		//m.macPackConfigTabPageUniversalLink = m.macPackConfigTab.NewPage()
+		//m.macPackConfigTabPageUniversalLink.SetCaption("通用链接")
+		//setMacPackConfigTabPageStyle(m.macPackConfigTabPageUniversalLink)
 	}
 }
 
