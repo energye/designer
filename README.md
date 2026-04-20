@@ -70,3 +70,5 @@ Get pre-built binaries from [GitHub Releases](https://github.com/energye/designe
 
 Apache-2.0
 
+## 截图
+[image](docs/image)
