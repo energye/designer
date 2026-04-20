@@ -262,6 +262,8 @@ func (m *Package) dmg() bool {
 // codesign -f -s "$CERT" "$APP_NAME/Contents/Frameworks/"your.dylib
 // echo "签名主程序..."
 // codesign -f -s "$CERT" --options runtime "$APP_NAME"
+// echo "开发自签名"
+// codesign --force --deep --sign - "$APP_NAME"
 // echo "验证签名..."
 // codesign -vvv --deep --strict "$APP_NAME"
 func cert() bool {
