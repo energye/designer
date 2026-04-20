@@ -19,13 +19,11 @@ import (
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/lcl/tool/command"
 	toolExec "github.com/energye/lcl/tool/exec"
 	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 )
 
 // 设计器配置
@@ -314,34 +312,4 @@ func init() {
 		Config.FrameworkDir = filepath.Join(energyDir)
 		go UpdateConfig()
 	}
-
-	// 加载 Go 环境信息
-	var (
-		goEnvCMDOk = true
-		goEnvLines []string
-	)
-	goEnvCMD := command.NewCMD()
-	goEnvCMD.IsPrint = false
-	goEnvCMD.HideWindow = true
-	goEnvCMD.Console = func(data string, level command.Level) {
-		if level == command.LError {
-			goEnvCMDOk = false
-		} else {
-			goEnvLines = append(goEnvLines, data)
-		}
-	}
-	goEnvCMD.Command("go", "env", "-json")
-	if goEnvCMDOk {
-		goEnvData := strings.Join(goEnvLines, "")
-		_ = json.Unmarshal([]byte(goEnvData), &GGoEnv)
-	}
-	//goEnvCmd := exec.Command("go", "env", "-json")
-	//goEnvData, err := goEnvCmd.Output()
-	//if err != nil {
-	//	return
-	//}
-	//err = json.Unmarshal(goEnvData, &GGoEnv)
-	//if err != nil {
-	//	return
-	//}
 }

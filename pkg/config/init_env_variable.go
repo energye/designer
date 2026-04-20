@@ -8,12 +8,13 @@
 //
 //----------------------------------------
 
-//go:build darwin || linux
-
-package internal
+package config
 
 import (
 	"bufio"
+	"encoding/json"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -39,12 +40,42 @@ var goEnvVars = map[string]bool{
 	"PATH":        true,
 }
 
-func init() {
+// InitGoEnv 初始化 Go 语言环境变量。
+//
+// 该函数主要在非 Windows 平台（macOS/Linux）执行，用于确保 GUI 应用程序能够正确读取
+// 系统 shell 中配置的 Go 环境变量。它会先应用预定义的运行时环境变量，随后通过
+// 执行 `go env -json` 命令获取完整的 Go 环境配置并缓存到全局变量 GGoEnv 中。
+func InitGoEnv() {
+	if tool.IsWindows {
+		return
+	}
 	env := BuildRuntimeEnv()
 	for name, value := range env {
 		if goEnvVars[name] {
 			println(name, "=", value)
 			_ = os.Setenv(name, value)
+		}
+	}
+	var (
+		goEnvCMDOk = true
+		goEnvLines []string
+	)
+	goEnvCMD := command.NewCMD()
+	goEnvCMD.IsPrint = false
+	goEnvCMD.HideWindow = true
+	goEnvCMD.Console = func(data string, level command.Level) {
+		if level == command.LError {
+			goEnvCMDOk = false
+		} else {
+			goEnvLines = append(goEnvLines, data)
+		}
+	}
+	goEnvCMD.Command("go", "env", "-json")
+	if goEnvCMDOk {
+		goEnvData := strings.Join(goEnvLines, "")
+		e := json.Unmarshal([]byte(goEnvData), &GGoEnv)
+		if e != nil {
+			println("Init go env err:", e.Error())
 		}
 	}
 }
@@ -106,10 +137,8 @@ func parseEnvFromShellFile(filePath string, env map[string]string) {
 		return
 	}
 	defer file.Close()
-
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
-
 	exportRegex := regexp.MustCompile(`^\s*export\s+([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|'([^']*)'|([^\s#]*))`)
 	assignRegex := regexp.MustCompile(`^\s*([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|'([^']*)'|([^\s#]*))`)
 
@@ -119,17 +148,12 @@ func parseEnvFromShellFile(filePath string, env map[string]string) {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-
-		// 去掉行尾注释（简单处理）
 		line = stripComment(line)
-
 		var matches []string
-
 		if matches = exportRegex.FindStringSubmatch(line); len(matches) > 0 {
 			setParsedValue(matches, env)
 			continue
 		}
-
 		if matches = assignRegex.FindStringSubmatch(line); len(matches) > 0 {
 			setParsedValue(matches, env)
 			continue

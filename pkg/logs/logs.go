@@ -30,6 +30,7 @@ var Window lcl.IForm
 
 var (
 	myLogger *logger.Logger
+	LogPath  string
 )
 
 func init() {
@@ -47,13 +48,14 @@ func init() {
 			return filepath.Join(homeDir, ".energy", "designer.log")
 		}
 	}
-	file, err := os.OpenFile(getLogFilePath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	LogPath = getLogFilePath()
+	file, err := os.OpenFile(LogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		myLogger = logger.New(logger.Config{Level: logger.InfoLevel, Output: os.Stdout})
+		myLogger = logger.New(logger.Config{Level: logger.DebugLevel, Output: os.Stdout})
 	} else {
 		multiWriter := io.MultiWriter(os.Stdout, file)
 		myLogger = logger.New(logger.Config{
-			Level:  logger.InfoLevel,
+			Level:  logger.DebugLevel,
 			Output: multiWriter,
 		})
 	}

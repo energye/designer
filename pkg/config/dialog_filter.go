@@ -16,7 +16,6 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources"
 )
 
@@ -36,12 +35,12 @@ type File struct {
 func init() {
 	data := resources.DialogFilter()
 	if data == nil {
-		logs.Error("加载弹窗过滤配置为nil")
+		println("[ERROR] 加载弹窗过滤配置为nil")
 		return
 	}
 	err := json.Unmarshal(data, DialogFilter)
 	if err != nil {
-		logs.Error("加载弹窗过滤配置错误:", err.Error())
+		println("[ERROR] 加载弹窗过滤配置错误:", err.Error())
 		return
 	}
 }

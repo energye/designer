@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/event"
 	_ "github.com/energye/designer/internal"
 	"github.com/energye/designer/options"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/preview"
 	_ "github.com/energye/designer/resources"
@@ -54,6 +55,8 @@ func main() {
 }
 
 func init() {
+	// 初始化Go环境变量, macOS linux
+	config.InitGoEnv()
 	// 初始化事件系统
 	event.Init()
 	// 初始化预览功能

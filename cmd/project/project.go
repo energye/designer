@@ -17,9 +17,9 @@ import (
 	"encoding/json"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,15 +35,15 @@ func LoadProject(filePath string) {
 	if bean.GPath != "" && bean.GProject != nil {
 		return
 	}
-	logs.Info("Load project Config:", filePath)
+	log.Println("[INFO] Load project Config:", filePath)
 	if filePath == "" {
-		logs.Error("Project config .egp path is nil")
+		log.Println("[ERROR] Project config .egp path is nil")
 		return
 	}
 	if tool.IsExist(filePath) {
 		st, err := os.Stat(filePath)
 		if err != nil {
-			logs.Error("Project config", err.Error())
+			log.Println("[ERROR] Project config", err.Error())
 			return
 		}
 		if st.IsDir() {
@@ -58,7 +58,7 @@ func LoadProject(filePath string) {
 				return nil
 			})
 			if err != nil {
-				logs.Error("Project config", err.Error())
+				log.Println("[ERROR] Project config", err.Error())
 				return
 			}
 		}
@@ -68,21 +68,21 @@ func LoadProject(filePath string) {
 		if isEgp {
 			data, err := os.ReadFile(filePath)
 			if err != nil {
-				logs.Error("Read project config file error:", err)
+				log.Println("[ERROR] Read project config file error:", err)
 				return
 			}
 			project := &bean.TProject{}
 			err = json.Unmarshal(data, project)
 			if err != nil {
-				logs.Error("Unmarshal project config file error:", err)
+				log.Println("[ERROR] Unmarshal project config file error:", err)
 				return
 			}
 			bean.GPath = path
 			bean.GProject = project
 		} else {
-			logs.Error("Not .egp project config file:", filePath)
+			log.Println("[ERROR] Not .egp project config file:", filePath)
 		}
 	} else {
-		logs.Error("project config file .egp not exist", filePath)
+		log.Println("[ERROR] project config file .egp not exist", filePath)
 	}
 }
