@@ -40,6 +40,7 @@ func downloadMod(dir *modCacheDir) bool {
 
 	// 处理依赖模块路径
 	modCachePath := config.GGoEnv.Get("GOMODCACHE")
+	event.ConsoleWriteInfo("Download modCachePath:", modCachePath)
 	if modCachePath != "" && tool.IsExist(modCachePath) {
 		dir.lclDir = filepath.Join(modCachePath, fmt.Sprintf("%s@%s", config.LCLModPath, lclVer))
 		dir.cefDir = filepath.Join(modCachePath, fmt.Sprintf("%s@%s", config.CEFModPath, cefVer))
@@ -74,7 +75,7 @@ func downloadMod(dir *modCacheDir) bool {
 		return
 	}
 	event.ConsoleWriteInfo("Download module cache start")
-	paserModCacheDir := func(modPath string) (string, error) {
+	parserModCacheDir := func(modPath string) (string, error) {
 		modJSON := runDownloadModCache(modPath)
 		if !ok {
 			return "", errors.New("-")
@@ -85,33 +86,33 @@ func downloadMod(dir *modCacheDir) bool {
 		jsonStr := strings.Join(modJSON, "")
 		err := json.Unmarshal([]byte(jsonStr), &tmpDir)
 		if err != nil {
-			event.ConsoleWriteError("Paser Mod Cache:", jsonStr, err.Error())
+			event.ConsoleWriteError("Parser Mod Cache:", jsonStr, err.Error())
 		}
 		return tmpDir.Dir, err
 	}
 	if !tool.IsExist(dir.lclDir) {
-		if tmpModDir, err := paserModCacheDir(config.LCLModPath); err == nil {
+		if tmpModDir, err := parserModCacheDir(config.LCLModPath); err == nil {
 			dir.lclDir = tmpModDir
 		} else {
 			return false
 		}
 	}
 	if !tool.IsExist(dir.cefDir) {
-		if tmpModDir, err := paserModCacheDir(config.CEFModPath); err == nil {
+		if tmpModDir, err := parserModCacheDir(config.CEFModPath); err == nil {
 			dir.cefDir = tmpModDir
 		} else {
 			return false
 		}
 	}
 	if !tool.IsExist(dir.wvDir) {
-		if tmpModDir, err := paserModCacheDir(config.WVModPath); err == nil {
+		if tmpModDir, err := parserModCacheDir(config.WVModPath); err == nil {
 			dir.wvDir = tmpModDir
 		} else {
 			return false
 		}
 	}
 	if !tool.IsExist(dir.engDir) {
-		if tmpModDir, err := paserModCacheDir(config.ENERGYModPath); err == nil {
+		if tmpModDir, err := parserModCacheDir(config.ENERGYModPath); err == nil {
 			dir.engDir = tmpModDir
 		} else {
 			return false

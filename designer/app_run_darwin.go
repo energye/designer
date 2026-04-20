@@ -16,55 +16,21 @@
 package designer
 
 import (
-	"github.com/energye/energy/v3/application/pack"
-	"github.com/energye/energy/v3/logger"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/energy/v3/platform/darwin/cocoa"
-	"github.com/energye/lcl/api"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 )
-
-var (
-	macOSLog *logger.Logger
-)
-
-func init() {
-	getLogFilePath := func(bundleID string) string {
-		homeDir, _ := os.UserHomeDir()
-		logDir := filepath.Join(homeDir, "Library", "Logs", bundleID)
-		_ = os.MkdirAll(logDir, 0700)
-		return filepath.Join(logDir, "designer.log")
-	}
-	bundleId := pack.Info.Id
-	if bundleId == "" {
-		bundleId = "com.energye.designer.dev" // dev
-	}
-
-	file, err := os.OpenFile(getLogFilePath(bundleId), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	macOSLog = logger.New(logger.Config{
-		Level:  logger.InfoLevel,
-		Output: file,
-	})
-	api.SetOnReleaseCallback(func() {
-		_ = file.Close()
-		macOSLog.Close()
-	})
-}
 
 func beforeRun() {
 	cocoa.NSApp.InitAppDelegate()
 	cocoa.NSApp.SetOnOpenURLs(func(urls []string) {
-		macOSLog.Info("SetOnOpenURLs:", strings.Join(urls, " "))
+		logs.Info("SetOnOpenURLs:", strings.Join(urls, " "))
 		if urls != nil && len(urls) > 0 {
 			openUrl := urls[0]
 			pUrl, err := url.Parse(openUrl)
 			if err != nil {
-				macOSLog.Error("SetOnOpenURLs", err.Error())
+				logs.Error("SetOnOpenURLs", err.Error())
 				return
 			}
 			if pUrl.Scheme == "file" {
@@ -90,7 +56,7 @@ func beforeRun() {
 		}
 	})
 	cocoa.NSApp.SetOnUniversalLink(func(link string) {
-		macOSLog.Info("SetOnUniversalLink:", link)
+		logs.Info("SetOnUniversalLink:", link)
 		pUrl, err := url.Parse(link)
 		if err != nil {
 			return
