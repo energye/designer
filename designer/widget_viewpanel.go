@@ -1,7 +1,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
@@ -32,7 +31,7 @@ func NewViewPanel(owner lcl.IWinControl) *TViewPanel {
 		br := m.topBox.BoundsRect()
 		m.closeBtn.SetLeft(br.Width() - 20)
 		m.closeBtn.SetTop(8)
-		fmt.Println("topBox.SetOnResize BoundsRect:", br)
+		//fmt.Println("topBox.SetOnResize BoundsRect:", br)
 	})
 
 	//m.bottomBox = lcl.NewPanel(owner)
