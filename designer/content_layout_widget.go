@@ -29,7 +29,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.searchEdit.SetParent(owner.widgetPanel)
 
 	m.topBox = lcl.NewPanel(owner.widgetPanel)
-	m.topBox.SetBorderStyleToBorderStyle(types.BsSingle)
+	m.topBox.SetBorderStyleToBorderStyle(types.BsNone)
 	m.topBox.SetBevelOuter(types.BvNone)
 	m.topBox.SetAlign(types.AlTop)
 	m.topBox.SetHeight(30)
@@ -49,11 +49,8 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetAutoExpand(true)
 	m.tree.SetReadOnly(true)
 	m.tree.SetDoubleBuffered(true)
-	m.tree.SetTreeLineColor(colors.RGBToColor(128, 128, 128))
 	m.tree.SetTreeLinePenStyle(types.PsClear)
 	m.tree.SetAlign(types.AlClient)
-	//tree.SetAlign(types.AlCustom)
-	//tree.SetBoundsRect(m.widgetPanel.ClientRect())
 	m.tree.SetBorderStyleToBorderStyle(types.BsNone)
 	m.tree.SetImages(imageComponents.ImageList100())
 	m.tree.SetIndent(18)
@@ -70,10 +67,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		pressNode lcl.ITreeNode
 		isDown    bool
 	)
-
-	m.tree.SetRowSelect(true)
-	m.tree.SetDoubleBuffered(true)
-	m.tree.SetDefaultItemHeight(28)
 
 	m.tree.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, x int32, y int32) {
 		if isDown {
@@ -229,19 +222,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		}
 	})
 
-	//br := m.widgetPanel.BoundsRect()
-	//br.SetWidth(br.Width() - 1)
-	//m.widgetPanel.SetBoundsRect(br)
-	//br.SetWidth(br.Width() + 1)
-	//m.widgetPanel.SetBoundsRect(br)
-	//m.tree.SetWidth(br.Width())
-	//m.widgetPanel.Invalidate()
-	// ======================================================
-	// 点击一级节点展开 / 收起
-	// ======================================================
-	//m.tree.SetOnClick(func(sender lcl.IObject) {
-	//})
-
 	// ======================================================
 	// 创建数据
 	// ======================================================
@@ -257,7 +237,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	// 常用
 	// ======================
 	cat := items.Add(nil, "常用")
-	cat.SetExpanded(true)
 	var node lcl.ITreeNode
 	for i := 0; i < 10; i++ {
 		node = items.AddChild(cat, "按钮 Button"+strconv.Itoa(i))
@@ -272,12 +251,12 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		node.SetImageIndex(2)
 		node.SetSelectedIndex(2)
 	}
+	cat.SetExpanded(true)
 
 	// ======================
 	// 容器
 	// ======================
 	cat2 := items.Add(nil, "容器")
-	cat2.SetExpanded(false)
 	for i := 0; i < 10; i++ {
 		node = items.AddChild(cat2, "面板 Panel"+strconv.Itoa(i))
 		node.SetImageIndex(3)
@@ -291,12 +270,12 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		node.SetImageIndex(5)
 		node.SetSelectedIndex(5)
 	}
+	cat2.SetExpanded(false)
 
 	// ======================
 	// Web
 	// ======================
 	cat3 := items.Add(nil, "Web")
-	cat3.SetExpanded(true)
 	for i := 0; i < 10; i++ {
 		node = items.AddChild(cat3, "WebView "+strconv.Itoa(i))
 		node.SetImageIndex(6)
@@ -306,6 +285,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		node.SetImageIndex(7)
 		node.SetSelectedIndex(7)
 	}
+	cat3.SetExpanded(false)
 
 	return m
 }

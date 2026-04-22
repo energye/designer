@@ -18,12 +18,12 @@ type ContentLayout struct {
 	widgetPanel    lcl.IPanel    // 组件面板
 
 	projectSplitter lcl.ISplitter // 项目面板分隔器
-	projectPanel    *TViewPanel   // 项目面板
+	projectPanel    lcl.IPanel    // 项目面板
 
 	designerPanel lcl.IPanel // 设计器面板
 
 	inspectorSplitter lcl.ISplitter // 属性检查器面板分隔器
-	inspectorPanel    *TViewPanel   // 属性检查器面板
+	inspectorPanel    lcl.IPanel    // 属性检查器面板
 
 	consoleLogSplitter lcl.ISplitter // 日志面板分隔器
 	consoleLogPanel    lcl.IPanel    // 控制台输出
@@ -83,13 +83,12 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.projectSplitter.SetMinSize(defaultSplitterMinSize)
 	m.projectSplitter.SetParent(m.rightBox)
 	// 项目面板
-	m.projectPanel = NewViewPanel(owner)
+	m.projectPanel = lcl.NewPanel(owner)
 	//m.projectPanel.SetColor(wg.LightenColor(colors.ClAqua, 0.6))
 	m.projectPanel.SetAlign(types.AlLeft)
 	m.projectPanel.SetWidth(150)    //动态控制
 	m.projectPanel.SetVisible(true) //动态控制
 	m.projectPanel.SetCaption("项目管理器")
-	m.projectPanel.SetTitle("项目管理器")
 	m.projectPanel.Constraints().SetMinWidth(30)
 	m.projectPanel.SetParent(m.rightBox)
 	//m.projectPanel.SetOnResize(func(sender lcl.IObject) {
@@ -112,12 +111,12 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.inspectorSplitter.SetWidth(defaultSplitterWidth)
 	m.inspectorSplitter.SetMinSize(defaultSplitterMinSize)
 	m.inspectorSplitter.SetParent(m.rightBox)
-	// 查看器
-	m.inspectorPanel = NewViewPanel(owner)
+	// 属性检查器
+	m.inspectorPanel = lcl.NewPanel(owner)
 	//m.inspectorPanel.SetColor(wg.LightenColor(colors.ClAqua, 1.2))
 	m.inspectorPanel.SetAlign(types.AlRight)
-	m.inspectorPanel.SetCaption("属性查看器")
-	m.inspectorPanel.SetTitle("属性查看器")
+	m.inspectorPanel.SetBorderStyleToBorderStyle(types.BsSingle)
+	m.inspectorPanel.SetCaption("属性检查器")
 	m.inspectorPanel.SetWidth(225)    //动态控制
 	m.inspectorPanel.SetVisible(true) //动态控制
 	m.inspectorPanel.Constraints().SetMinWidth(30)
@@ -129,7 +128,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	// 日志面板分隔器
 	m.consoleLogSplitter = lcl.NewSplitter(owner)
 	m.consoleLogSplitter.SetAlign(types.AlBottom)
-	m.consoleLogSplitter.SetWidth(defaultSplitterWidth)
+	m.consoleLogSplitter.SetHeight(defaultSplitterWidth)
 	m.consoleLogSplitter.SetMinSize(defaultSplitterMinSize)
 	//m.consoleLogSplitter.SetBorderStyleToBorderStyle(types.BsSingle)
 	m.consoleLogSplitter.SetParent(m.rightBox)
@@ -155,5 +154,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.contentStatus.SetParent(m.box)
 
 	initContentLayoutWidget(m)
+
+	initContentInspector(m)
+
 	return m
 }
