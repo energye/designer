@@ -43,24 +43,13 @@ func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
 	}
 	m.propFilterBox.SetParent(m.propBox)
 
-	componentPropertyTitle := lcl.NewLabel(m.propFilterBox)
-	componentPropertyTitle.SetCaption("属性")
-	componentPropertyTitle.Font().SetStyle(types.NewSet(types.FsBold))
-	componentPropertyTitle.SetTop(8)
-	componentPropertyTitle.SetLeft(5)
-	componentPropertyTitle.SetParent(m.propFilterBox)
-
 	m.filter = lcl.NewTreeFilterEdit(m.propFilterBox)
 	m.filter.SetTop(3)
-	m.filter.SetLeft(30)
-	if tool.IsLinux() {
-		m.filter.SetLeft(40)
-	} else {
-		m.filter.SetLeft(30)
-	}
-	m.filter.SetWidth(m.propFilterBox.Width() - m.filter.Left())
+	m.filter.SetLeft(3)
+	m.filter.SetWidth(m.propFilterBox.Width() - (m.filter.Left() + 3))
 	m.filter.SetAlign(types.AlCustom)
 	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	m.filter.SetTextHint("搜索属性")
 	m.filter.SetParent(m.propFilterBox)
 
 	m.propComponentProp = lcl.NewPanel(m.propBox)

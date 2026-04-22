@@ -53,23 +53,13 @@ func (m *InspectorComponentTree) init(leftBoxWidth int32) {
 	}
 	m.treeFilterBox.SetParent(m.treeBox)
 
-	componentTreeTitle := lcl.NewLabel(m.treeFilterBox)
-	componentTreeTitle.SetCaption("组件")
-	componentTreeTitle.Font().SetStyle(types.NewSet(types.FsBold))
-	componentTreeTitle.SetTop(8)
-	componentTreeTitle.SetLeft(5)
-	componentTreeTitle.SetParent(m.treeFilterBox)
-
 	m.treeFilter = lcl.NewTreeFilterEdit(m.treeFilterBox)
 	m.treeFilter.SetTop(3)
-	if tool.IsLinux() {
-		m.treeFilter.SetLeft(40)
-	} else {
-		m.treeFilter.SetLeft(30)
-	}
-	m.treeFilter.SetWidth(m.treeFilterBox.Width() - m.treeFilter.Left())
+	m.treeFilter.SetLeft(3)
+	m.treeFilter.SetWidth(m.treeFilterBox.Width() - (m.treeFilter.Left() + 3))
 	m.treeFilter.SetAlign(types.AlCustom)
 	m.treeFilter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+	m.treeFilter.SetTextHint("搜索组件")
 	m.treeFilter.SetParent(m.treeFilterBox)
 
 	m.treeComponentTree = lcl.NewPanel(m.treeBox)
