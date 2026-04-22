@@ -5,14 +5,14 @@ import (
 	"github.com/energye/lcl/types"
 )
 
-type ContentInspector struct {
+type ContentLayoutInspector struct {
 	searchEdit lcl.ITreeFilterEdit // 组件搜索框
 	topBox     lcl.IPanel
 	title      lcl.ILabel
 }
 
-func initContentInspector(owner *ContentLayout) *ContentInspector {
-	m := &ContentInspector{}
+func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
+	m := &ContentLayoutInspector{}
 	m.searchEdit = lcl.NewTreeFilterEdit(owner.inspectorPanel)
 	m.searchEdit.SetTextHint("搜索属性")
 	m.searchEdit.SetAlign(types.AlTop)

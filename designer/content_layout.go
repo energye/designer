@@ -150,12 +150,14 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 
 	m.contentStatus = lcl.NewStatusBar(owner)
 	m.contentStatus.SetBorderWidth(0)
+	m.contentStatus.SetAutoSize(false)
 	m.contentStatus.SetShowHint(true)
+	m.contentStatus.SetHeight(30)
 	m.contentStatus.SetParent(m.box)
 
 	initContentLayoutWidget(m)
-
-	initContentInspector(m)
+	initContentLayoutProject(m)
+	initContentLayoutInspector(m)
 
 	return m
 }
