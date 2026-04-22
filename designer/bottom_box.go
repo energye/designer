@@ -25,7 +25,15 @@ var (
 	leftBoxWidth int32 = 290
 )
 
-type BottomBox struct {
+// BottomBox 底部布局
+//
+//	左: 组件库
+//	左中: 项目查看
+//	中: 中间画布(自适应)
+//	右: 属性
+//	下: 日志控制
+
+type BottomLayout struct {
 	box      lcl.IPanel
 	leftBox  lcl.IPanel    // 左侧-面板组件对象查看器
 	splitter lcl.ISplitter // 分割线
@@ -33,56 +41,57 @@ type BottomBox struct {
 	console  *TConsole     // 底部输出
 }
 
-func (m *TAppWindow) createBottomBox() *BottomBox {
-	box := &BottomBox{}
-	box.box = lcl.NewPanel(m)
-	box.box.SetBevelOuter(types.BvNone)
-	box.box.SetDoubleBuffered(true)
-	box.box.SetTop(toolbarHeight)
-	box.box.SetWidth(m.Width())
-	box.box.SetHeight(m.Height() - box.box.Top())
-	box.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
-	SetComponentDefaultColor(box.box)
-	box.box.SetParent(m)
+func (m *TAppWindow) initBottomBox() *BottomLayout {
+	bottomLayout := &BottomLayout{}
+	bottomLayout.box = lcl.NewPanel(m)
+	bottomLayout.box.SetBevelOuter(types.BvNone)
+	bottomLayout.box.SetDoubleBuffered(true)
+	bottomLayout.box.SetTop(toolbarHeight)
+	bottomLayout.box.SetWidth(m.Width())
+	bottomLayout.box.SetHeight(m.Height() - bottomLayout.box.Top())
+	bottomLayout.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight, types.AkBottom))
+	SetComponentDefaultColor(bottomLayout.box)
+	bottomLayout.box.SetParent(m)
 	//box.box.SetColor(bottomColor)
-	m.box = box
+	m.bottomLayout = bottomLayout
 
 	// 工具栏-分隔线
-	box.splitter = lcl.NewSplitter(box.box)
-	box.splitter.SetAlign(types.AlLeft)
-	box.splitter.SetWidth(splitterWidth)
-	box.splitter.SetMinSize(50)
+	bottomLayout.splitter = lcl.NewSplitter(bottomLayout.box)
+	bottomLayout.splitter.SetAlign(types.AlLeft)
+	bottomLayout.splitter.SetWidth(splitterWidth)
+	bottomLayout.splitter.SetMinSize(50)
 	if tool.IsWindows {
-		box.splitter.SetResizeStyle(types.RsNone)
+		bottomLayout.splitter.SetResizeStyle(types.RsNone)
 	}
-	box.splitter.SetParent(box.box)
+	bottomLayout.splitter.SetParent(bottomLayout.box)
 
 	// 左侧-面板组件对象查看器
-	box.leftBox = lcl.NewPanel(box.box)
-	box.leftBox.SetBevelOuter(types.BvNone)
-	box.leftBox.SetDoubleBuffered(true)
-	box.leftBox.SetWidth(leftBoxWidth)
-	box.leftBox.SetHeight(box.box.Height())
-	box.leftBox.Constraints().SetMinWidth(255)
-	box.leftBox.SetAlign(types.AlLeft)
-	SetComponentDefaultColor(box.leftBox)
-	box.leftBox.SetParent(box.box)
+	bottomLayout.leftBox = lcl.NewPanel(bottomLayout.box)
+	bottomLayout.leftBox.SetBevelOuter(types.BvNone)
+	bottomLayout.leftBox.SetDoubleBuffered(true)
+	bottomLayout.leftBox.SetWidth(leftBoxWidth)
+	bottomLayout.leftBox.SetHeight(bottomLayout.box.Height())
+	bottomLayout.leftBox.Constraints().SetMinWidth(255)
+	bottomLayout.leftBox.SetAlign(types.AlLeft)
+	SetComponentDefaultColor(bottomLayout.leftBox)
+	bottomLayout.leftBox.SetParent(bottomLayout.box)
 
 	// 右侧-窗体设计器
-	box.rightBox = lcl.NewPanel(box.box)
-	box.rightBox.SetBevelOuter(types.BvNone)
-	box.rightBox.SetDoubleBuffered(true)
-	box.rightBox.SetAlign(types.AlClient)
-	SetComponentDefaultColor(box.rightBox)
-	box.rightBox.SetParent(box.box)
+	bottomLayout.rightBox = lcl.NewPanel(bottomLayout.box)
+	bottomLayout.rightBox.SetBevelOuter(types.BvNone)
+	bottomLayout.rightBox.SetDoubleBuffered(true)
+	bottomLayout.rightBox.SetAlign(types.AlClient)
+	SetComponentDefaultColor(bottomLayout.rightBox)
+	bottomLayout.rightBox.SetParent(bottomLayout.box)
+
 	// 创建对象查看器
-	inspector = box.createInspectorLayout()
+	inspector = bottomLayout.createInspectorLayout()
 
 	// 创建窗体设计器
-	designer = box.createFromDesignerLayout()
+	designer = bottomLayout.createFromDesignerLayout()
 
 	// 创建消息控制台
-	box.createConsole()
+	bottomLayout.createConsole()
 
-	return box
+	return bottomLayout
 }

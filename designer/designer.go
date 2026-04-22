@@ -441,8 +441,8 @@ func (m *TEngFormDesigner) GetMousePos() (result types.TPoint) {
 // 启用或禁用功能组件
 func SetEnableFuncComponent(enable bool) {
 	MainWindow.mainMenu.SetEnableMenuItems(enable)
-	if toolbar != nil {
-		toolbar.toolbarBtn.SetEnableToolButtons(enable)
+	if MainWindow.toolLayout != nil {
+		MainWindow.toolLayout.toolbarBtn.SetEnableToolButtons(enable)
 	}
 }
 

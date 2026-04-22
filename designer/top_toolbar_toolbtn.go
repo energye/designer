@@ -60,7 +60,7 @@ func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
 }
 
 // 工具按钮
-func (m *TopToolbar) createToolBarBtns() {
+func (m *ToolLayout) createToolBarBtns() {
 	if m.toolbarBtn != nil {
 		return
 	}

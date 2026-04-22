@@ -43,7 +43,7 @@ type TComponentTabItem struct {
 }
 
 // 组件选项卡
-func (m *TopToolbar) createComponentTabs() {
+func (m *ToolLayout) createComponentTabs() {
 	logs.Debug("创建组件选项卡面板")
 	//page := lcl.NewPageControl(m.box)
 	tab := wg.NewTab(m.box)
@@ -160,19 +160,19 @@ func (m *TComponentTab) UnDownComponents() {
 	for _, com := range m.components {
 		com.btn.SetDown(false)
 	}
-	toolbar.SetSelectComponentItem(nil)
+	MainWindow.toolLayout.SetSelectComponentItem(nil)
 }
 
 // 取消选择工具按下
 func (m *TComponentTab) UnDownSelectTool() {
 	m.selectToolBtn.SetDown(false)
-	toolbar.SetSelectComponentItem(nil)
+	MainWindow.toolLayout.SetSelectComponentItem(nil)
 }
 
 // 设置选择工具按下
 func (m *TComponentTab) DownSelectTool() {
 	m.selectToolBtn.SetDown(true)
-	toolbar.SetSelectComponentItem(nil)
+	MainWindow.toolLayout.SetSelectComponentItem(nil)
 }
 
 // 选择工具按钮事件
@@ -180,7 +180,7 @@ func (m *TComponentTab) SelectToolBtnOnClick(sender lcl.IObject) {
 	logs.Debug("SelectToolBtnOnClick")
 	m.UnDownComponents()
 	m.DownSelectTool()
-	toolbar.SetSelectComponentItem(nil)
+	MainWindow.toolLayout.SetSelectComponentItem(nil)
 }
 
 // 组件按钮事件
@@ -191,5 +191,5 @@ func (m *TComponentTabItem) ComponentBtnOnClick(sender lcl.IObject) {
 	// 设置当前工具按钮按下
 	m.btn.SetDown(true)
 	// 设置当前工具按钮选中
-	toolbar.SetSelectComponentItem(m)
+	MainWindow.toolLayout.SetSelectComponentItem(m)
 }

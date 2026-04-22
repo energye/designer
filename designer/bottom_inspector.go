@@ -26,7 +26,8 @@ var (
 	componentTreeHeight int32 = 222
 )
 
-func (m *BottomBox) createInspectorLayout() *Inspector {
+// 创建查看器布局
+func (m *BottomLayout) createInspectorLayout() *Inspector {
 	ins := new(Inspector)
 	// 面板 对象查看器分隔
 	{

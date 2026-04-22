@@ -24,7 +24,6 @@ import (
 
 var (
 	toolbarHeight int32 = 72
-	toolbar       *TopToolbar
 )
 
 // 初始化工具栏相关配置
@@ -36,8 +35,7 @@ func initConfigToolbar() {
 	}
 }
 
-type TopToolbar struct {
-	//page            lcl.IPageControl
+type ToolLayout struct {
 	tab             *wg.TTab
 	box             lcl.IPanel
 	leftTools       lcl.IPanel
@@ -47,13 +45,11 @@ type TopToolbar struct {
 	selectComponent *TComponentTabItem        // 选中的组件
 }
 
-func (m *TAppWindow) createTopToolbar() {
-	bar := &TopToolbar{componentTabs: make(map[string]*TComponentTab)}
-	toolbar = bar
+func (m *TAppWindow) initTopToolbar() {
+	bar := &ToolLayout{componentTabs: make(map[string]*TComponentTab)}
+	m.toolLayout = bar
 	// 工具栏面板
 	bar.box = lcl.NewPanel(m)
-	//bar.box.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
-	//bar.box.SetBevelOuter(types.BvLowered)
 	bar.box.SetBevelOuter(types.BvNone)
 	bar.box.SetDoubleBuffered(true)
 	bar.box.SetWidth(m.Width())
@@ -92,7 +88,7 @@ func (m *TAppWindow) createTopToolbar() {
 }
 
 // 重置Tab组件选项卡按下状态
-func (m *TopToolbar) ResetTabComponentDown() {
+func (m *ToolLayout) ResetTabComponentDown() {
 	for _, comp := range m.componentTabs {
 		comp.UnDownComponents()
 		comp.DownSelectTool()
@@ -101,6 +97,6 @@ func (m *TopToolbar) ResetTabComponentDown() {
 
 // 设置当前工具按钮选中
 // 之后在设计器里使用
-func (m *TopToolbar) SetSelectComponentItem(item *TComponentTabItem) {
+func (m *ToolLayout) SetSelectComponentItem(item *TComponentTabItem) {
 	m.selectComponent = item
 }

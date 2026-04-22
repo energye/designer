@@ -17,15 +17,27 @@ import "github.com/energye/lcl/lcl"
 
 // 创建设计器布局
 
-func (m *TAppWindow) createDesignerLayout() {
+func (m *TAppWindow) initDesignerLayoutV1() {
 	// 初始化主窗口用到的组件
 	m.initWindowComponent()
-	// 顶部菜单
-	m.createMainMenu()
+	// 主菜单
+	m.initMainMenu()
 	// 工具栏
-	m.createTopToolbar()
+	m.initTopToolbar()
 	// 底部布局
-	m.createBottomBox()
+	m.initBottomBox()
+}
+
+// 初始化设计器布局 v2
+func (m *TAppWindow) initDesignerLayoutV2() {
+	// 初始化主窗口用到的组件
+	m.initWindowComponent()
+	// 主菜单
+	m.initMainMenu()
+	// 顶侧布局 - 工具栏
+	initToolBtnLayout(m)
+	// 底部布局 - 左: 组件库, 左中: 项目查看, 中: 中间画布(自适应), 右: 属性, 下: 日志控制
+	m.contentLayout = initBottomBox(m)
 }
 
 // 初始化主窗口用到的组件

@@ -40,6 +40,7 @@ import (
 // go build -ldflags="-H windowsgui" -trimpath -o build/designer.exe
 // go build --tags liball -ldflags="-H windowsgui" -trimpath -o build/designer.exe
 func main() {
+	api.SetDebug(true)
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
 	logs.Level = logs.LevelDebug

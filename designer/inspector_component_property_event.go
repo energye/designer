@@ -60,38 +60,41 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
 		//logs.Debug("object inspector-property OnPaintText column:", column)
-		if column == 0 {
-			font := targetCanvas.FontToFont()
-			font.SetStyle(font.Style().Include(types.FsBold))
-			level := sender.GetNodeLevel(node)
-			//logs.Info("  OnPaintText level:", level)
-			switch level {
-			case 0:
-				font.SetColor(colors.RGBToColor(0, 32, 96))
-			case 1:
-				font.SetColor(colors.RGBToColor(0, 80, 239))
-			case 2:
-				font.SetColor(colors.RGBToColor(61, 133, 224))
-			default:
-				font.SetColor(colors.RGBToColor(100, 195, 255))
-			}
-		} else if column == 1 {
+		font := targetCanvas.FontToFont()
+		font.SetSize(8)
+		//if column == 0 {
+		//	font := targetCanvas.FontToFont()
+		//	font.SetStyle(font.Style().Include(types.FsBold))
+		//	level := sender.GetNodeLevel(node)
+		//	//logs.Info("  OnPaintText level:", level)
+		//	switch level {
+		//	case 0:
+		//		font.SetColor(colors.RGBToColor(0, 32, 96))
+		//	case 1:
+		//		font.SetColor(colors.RGBToColor(0, 80, 239))
+		//	case 2:
+		//		font.SetColor(colors.RGBToColor(61, 133, 224))
+		//	default:
+		//		font.SetColor(colors.RGBToColor(100, 195, 255))
+		//	}
+		//} else
+		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				//logs.Debug("object inspector-property OnPaintText column:", column, "IsModify:", data.IsModify())
 				font := targetCanvas.FontToFont()
 				// 编辑列 需要动态控制时
 				switch data.EditNodeData.Type {
 				case consts.PdtColorSelect:
-					font.SetStyle(font.Style().Include(types.FsBold))
+					//font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(colors.TColor(data.EditNodeData.IntValue))
 				case consts.PdtClass:
 					// class 样式
-					font.SetStyle(font.Style().Include(types.FsBold))
+					//font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(0x2D5BC4)
 				default:
 					if data.IsModify() {
 						// 值被修改样式
-						font.SetStyle(font.Style().Include(types.FsBold))
+						//font.SetStyle(font.Style().Include(types.FsBold))
 						font.SetColor(0x007DFF)
 					}
 				}

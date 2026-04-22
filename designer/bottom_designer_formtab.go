@@ -138,11 +138,11 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	if owner.object != nil {
 		isAcceptsControl = owner.object.ControlStyle().In(types.CsAcceptsControls)
 	}
-	if toolbar.selectComponent != nil && isAcceptsControl {
-		logs.Debug("选中设计组件:", toolbar.selectComponent.index, toolbar.selectComponent.name)
+	if MainWindow.toolLayout.selectComponent != nil && isAcceptsControl {
+		logs.Debug("选中设计组件:", MainWindow.toolLayout.selectComponent.index, MainWindow.toolLayout.selectComponent.name)
 		m.switchComponentEditing(m.FormRoot)
 
-		if newDesComp := GetDesignerComponent(m, x, y, toolbar.selectComponent.name); newDesComp != nil {
+		if newDesComp := GetDesignerComponent(m, x, y, MainWindow.toolLayout.selectComponent.name); newDesComp != nil {
 			// 创建设计组件
 			newDesComp.SetParent(owner)
 			newDesComp.FormTab.switchComponentEditing(newDesComp)
@@ -158,11 +158,11 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			// 放置对象创建全量UI
 			triggerUIGeneration(newDesComp, nil, event.CodeGenUI)
 		} else {
-			logs.Warn("选中设计组件", toolbar.selectComponent.name, "未实现或未注册")
+			logs.Warn("选中设计组件", MainWindow.toolLayout.selectComponent.name, "未实现或未注册")
 		}
 
 		// 重置工具栏选项卡上的组件工具按钮按下
-		toolbar.ResetTabComponentDown()
+		MainWindow.toolLayout.ResetTabComponentDown()
 		return true
 	}
 	return false

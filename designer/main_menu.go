@@ -31,21 +31,31 @@ type TMainMenu struct {
 	main    lcl.IMainMenu
 	file    lcl.IMenuItem
 	edit    lcl.IMenuItem
+	view    lcl.IMenuItem
 	run     lcl.IMenuItem
 	setting lcl.IMenuItem
 	helper  lcl.IMenuItem
 
+	// file
 	createProject lcl.IMenuItem
 	createWindow  lcl.IMenuItem
 	open          lcl.IMenuItem
 	history       lcl.IMenuItem
 	//save          lcl.IMenuItem
 
+	// view
+	viewWidgets   lcl.IMenuItem
+	viewProject   lcl.IMenuItem
+	viewInspector lcl.IMenuItem
+	viewConsole   lcl.IMenuItem
+
+	// run
 	build      lcl.IMenuItem
 	buildClean lcl.IMenuItem
 	buildAll   lcl.IMenuItem
 	runApp     lcl.IMenuItem
 
+	// setting
 	buildOption       lcl.IMenuItem
 	environmentOption lcl.IMenuItem
 	frameworkOption   lcl.IMenuItem
@@ -53,7 +63,7 @@ type TMainMenu struct {
 }
 
 // 设计器主菜单
-func (m *TAppWindow) createMainMenu() {
+func (m *TAppWindow) initMainMenu() {
 	if m.mainMenu != nil {
 		return
 	}
@@ -71,6 +81,10 @@ func (m *TAppWindow) createMainMenu() {
 	mainMenu.edit.SetCaption("编辑(&E)")
 	menuItems.Add(mainMenu.edit)
 
+	mainMenu.view = lcl.NewMenuItem(m)
+	mainMenu.view.SetCaption("视图(&V)")
+	menuItems.Add(mainMenu.view)
+
 	mainMenu.run = lcl.NewMenuItem(m)
 	mainMenu.run.SetCaption("运行(&R)")
 	menuItems.Add(mainMenu.run)
@@ -85,6 +99,7 @@ func (m *TAppWindow) createMainMenu() {
 
 	mainMenu.fileMenu(m)
 	mainMenu.editMenu(m)
+	mainMenu.viewMenu(m)
 	mainMenu.runMenu(m)
 	mainMenu.settingMenu(m)
 	mainMenu.helperMenu(m)
@@ -152,7 +167,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	m.createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
-		toolbar.toolbarBtn.onNewForm(sender)
+		MainWindow.toolLayout.toolbarBtn.onNewForm(sender)
 	})
 	create.Add(m.createWindow)
 
@@ -161,7 +176,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.open.SetShortCut(api.TextToShortCut("Ctrl+O"))
 	m.open.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
 	m.open.SetOnClick(func(sender lcl.IObject) {
-		toolbar.toolbarBtn.onOpenForm(sender)
+		MainWindow.toolLayout.toolbarBtn.onOpenForm(sender)
 	})
 	m.file.Add(m.open)
 
@@ -215,6 +230,61 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
+}
+
+func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
+	m.viewWidgets = lcl.NewMenuItem(owner)
+	m.viewWidgets.SetCaption("组件库")
+	m.viewWidgets.SetChecked(true) // 动态控制
+	m.viewWidgets.SetOnClick(func(sender lcl.IObject) {
+		if MainWindow.contentLayout != nil {
+			checked := !m.viewWidgets.Checked()
+			m.viewWidgets.SetChecked(checked)
+			MainWindow.contentLayout.widgetPanel.SetVisible(checked)
+			MainWindow.contentLayout.widgetSplitter.SetVisible(checked)
+		}
+	})
+	m.view.Add(m.viewWidgets)
+
+	m.viewProject = lcl.NewMenuItem(owner)
+	m.viewProject.SetCaption("项目管理")
+	m.viewProject.SetChecked(true) // 动态控制
+	m.viewProject.SetOnClick(func(sender lcl.IObject) {
+		if MainWindow.contentLayout != nil {
+			checked := !m.viewProject.Checked()
+			m.viewProject.SetChecked(checked)
+			MainWindow.contentLayout.projectPanel.SetVisible(checked)
+			MainWindow.contentLayout.projectSplitter.SetVisible(checked)
+		}
+	})
+	m.view.Add(m.viewProject)
+
+	m.viewInspector = lcl.NewMenuItem(owner)
+	m.viewInspector.SetCaption("属性检查器")
+	m.viewInspector.SetChecked(true) // 动态控制
+	m.viewInspector.SetOnClick(func(sender lcl.IObject) {
+		if MainWindow.contentLayout != nil {
+			checked := !m.viewInspector.Checked()
+			m.viewInspector.SetChecked(checked)
+			MainWindow.contentLayout.inspectorPanel.SetVisible(checked)
+			MainWindow.contentLayout.inspectorSplitter.SetVisible(checked)
+		}
+	})
+	m.view.Add(m.viewInspector)
+
+	m.viewConsole = lcl.NewMenuItem(owner)
+	m.viewConsole.SetCaption("日志控制")
+	m.viewConsole.SetChecked(true) // 动态控制
+	m.viewConsole.SetOnClick(func(sender lcl.IObject) {
+		if MainWindow.contentLayout != nil {
+			checked := !m.viewConsole.Checked()
+			m.viewConsole.SetChecked(checked)
+			MainWindow.contentLayout.consoleLogPanel.SetVisible(checked)
+			MainWindow.contentLayout.consoleLogSplitter.SetVisible(checked)
+		}
+	})
+	m.view.Add(m.viewConsole)
+
 }
 
 func (m *TMainMenu) runMenu(owner lcl.IComponent) {
@@ -273,7 +343,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.runApp.SetShortCut(api.TextToShortCut("F9"))
 	m.runApp.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
-		toolbar.toolbarBtn.onRunPreviewForm(m.runApp)
+		MainWindow.toolLayout.toolbarBtn.onRunPreviewForm(m.runApp)
 	})
 	m.run.Add(m.runApp)
 }

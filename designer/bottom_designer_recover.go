@@ -123,6 +123,9 @@ func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component
 // project: 项目对象
 // loadUIForm: 要加载的 UI 窗体对象, 如果 nil 表示加载所有窗体, 否则只加载当前这个窗体
 func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm *projBean.TUIForm) {
+	if designer == nil {
+		return
+	}
 	if loadUIForm != nil {
 		// 只加载这个窗体
 	} else {

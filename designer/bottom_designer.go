@@ -45,7 +45,7 @@ type Designer struct {
 }
 
 // 创建设计器的布局
-func (m *BottomBox) createFromDesignerLayout() *Designer {
+func (m *BottomLayout) createFromDesignerLayout() *Designer {
 	des := new(Designer)
 	des.designerForms = make(map[int]*FormTab)
 	//des.page = lcl.NewPageControl(m.box)
@@ -119,6 +119,9 @@ func (m *Designer) hideAllComponentTrees() {
 // 新建项目时/重新打开项目时调用
 // 打开设计窗体不调用
 func ResetDesigner() {
+	if designer == nil {
+		return
+	}
 	// 关闭所有已打开的设计窗体
 	tempForms := designer.designerForms
 	// 关闭之前打开的所有设计窗体
@@ -158,6 +161,9 @@ func SetDesignerCount(count int) {
 // formId: 表单ID，用于定位需要设置接收方法的表单
 // methods: 接收方法信息列表，包含方法的详细信息
 func SetRecvMethods(formId int, methods []*dast.TFuncInfo) {
+	if designer == nil {
+		return
+	}
 	if form, ok := designer.designerForms[formId]; ok {
 		form.SetRecvMethods(methods)
 	}
@@ -251,6 +257,9 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 //
 //	formId - 窗体ID
 func (m *Designer) GetFormTab(formId int) *FormTab {
+	if m == nil || m.designerForms == nil {
+		return nil
+	}
 	return m.designerForms[formId]
 }
 

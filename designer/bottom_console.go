@@ -31,7 +31,7 @@ type TConsole struct {
 
 // createConsole 创建控制台界面组件
 // 该函数初始化控制台相关的UI元素，包括分割器、控制台面板和文本显示区域
-func (m *BottomBox) createConsole() {
+func (m *BottomLayout) createConsole() {
 	console := new(TConsole)
 	m.console = console
 
@@ -63,16 +63,16 @@ func (m *BottomBox) createConsole() {
 
 // 写入控制台
 func WriteConsole(text string) {
-	MainWindow.box.WriteConsole(text)
+	MainWindow.bottomLayout.WriteConsole(text)
 }
 
 // 清空控制台
 func ClearConsole() {
-	MainWindow.box.ClearConsole()
+	MainWindow.bottomLayout.ClearConsole()
 }
 
 // 写入控制台
-func (m *BottomBox) WriteConsole(text string) {
+func (m *BottomLayout) WriteConsole(text string) {
 	if m != nil && m.console != nil {
 		m.console.console.Lines().Add(text)
 		m.console.console.SetSelStart(m.console.console.SelStart() + int32(len(text)))
@@ -80,7 +80,7 @@ func (m *BottomBox) WriteConsole(text string) {
 }
 
 // 清空控制台
-func (m *BottomBox) ClearConsole() {
+func (m *BottomLayout) ClearConsole() {
 	if m != nil && m.console != nil {
 		m.console.console.Lines().Clear()
 	}

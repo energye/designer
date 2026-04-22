@@ -49,8 +49,9 @@ var (
 type TAppWindow struct {
 	lcl.TEngForm
 	mainMenu              *TMainMenu                 // 主菜单
-	componentProperties   lcl.IApplicationProperties //
-	box                   *BottomBox                 // 底部布局盒子
+	toolLayout            *ToolLayout                // 工具具栏
+	contentLayout         *ContentLayout             // 底部布局盒子
+	bottomLayout          *BottomLayout              // 底部布局盒子
 	openDialog            lcl.IOpenDialog            // 打开对话框
 	saveDialog            lcl.ISaveDialog            // 保存对话框
 	selectDirectoryDialog lcl.ISelectDirectoryDialog // 选择文件夹对话框
@@ -101,6 +102,12 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
 	cfg := config.DesignerConfig
+	if cfg.Window.Width <= 400 {
+		cfg.Window.Width = 1024 // test
+	}
+	if cfg.Window.Height <= 200 {
+		cfg.Window.Height = 768 // test
+	}
 	// 属性
 	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
@@ -126,7 +133,8 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
-	m.createDesignerLayout()
+	//m.initDesignerLayoutV1()
+	m.initDesignerLayoutV2()
 	// status bar
 	//newStatusBar(m)
 }
