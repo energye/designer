@@ -107,19 +107,21 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		m.tree.Invalidate()
 	})
 	m.tree.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x int32, y int32) {
+		defer m.tree.Invalidate()
 		isDown = false
 		pressNode = nil
 		if hoverNode != nil {
 			if hoverNode.Level() == 0 {
 				hoverNode.SetExpanded(!hoverNode.Expanded())
 			} else {
+				m.updateAllNoSelected(hoverNode)
 				m.selectComponent = m.findComponentTreeItem(hoverNode)
+				m.selectComponent.selected = true // 如果是 nil 错误, 说明逻辑有问题
 				fmt.Println("click:", hoverNode.Level(), hoverNode.Text())
 				return
 			}
 		}
 		m.selectComponent = nil
-		m.tree.Invalidate()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 强制刷新
 			br := owner.widgetPanel.BoundsRect()
@@ -147,7 +149,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 
 		isHover := hoverNode != nil && hoverNode.Equals(node)
 		isPress := pressNode != nil && pressNode.Equals(node)
-		isSelected := node.Selected()
+		//isSelected := node.Selected()
 
 		if node.Level() == 0 {
 			bg := types.TColor(0xF4F6F9)
@@ -201,9 +203,9 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			brush.SetStyle(types.BsSolid)
 			brush.SetColor(bg)
 			canvas.FillRectWithRect(types.Rect(0, r.Top, m.tree.ClientWidth(), r.Bottom))
-
-			if treeItem := m.findComponentTreeItem(node); treeItem != nil && !isSelected {
-				isSelected = treeItem.IsSelectTool()
+			isSelected := false
+			if item := m.findComponentTreeItem(node); item != nil && item.selected {
+				isSelected = true
 			}
 
 			// Selected 图标背景
@@ -257,6 +259,27 @@ func (m *ContentLayoutWidget) findComponentTreeItem(node lcl.ITreeNode) *TWidget
 		return item
 	}
 	return nil
+}
+
+// 更新所有节点状态未选中
+// 只工具选项默认选中
+func (m *ContentLayoutWidget) updateAllNoSelected(node lcl.ITreeNode) {
+	// 先重置所有
+	for _, item := range m.components {
+		item.selected = false
+		if item.IsSelectTool() {
+			item.selected = true
+		}
+	}
+	// 重置当前节点所属组的所有节点为未选中
+	if item := m.findComponentTreeItem(node); item != nil {
+		if item.parent != nil {
+			tagGroup := m.findComponentTreeItem(item.parent.node)
+			for _, child := range tagGroup.child {
+				child.selected = false
+			}
+		}
+	}
 }
 
 // 初始化组件选项面板树数据
