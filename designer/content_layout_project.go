@@ -8,6 +8,7 @@ import (
 type ContentLayoutProject struct {
 	topBox lcl.IPanel
 	title  lcl.ILabel
+	box    lcl.IPanel
 }
 
 func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
@@ -27,6 +28,12 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	font.SetSize(10)
 	font.SetStyle(types.NewSet(types.FsBold))
 	title.SetParent(m.topBox)
+
+	m.box = lcl.NewPanel(owner.projectPanel)
+	m.box.SetBevelOuter(types.BvNone)
+	m.box.SetDoubleBuffered(true)
+	m.box.SetAlign(types.AlClient)
+	m.box.SetParent(owner.projectPanel)
 
 	return m
 }

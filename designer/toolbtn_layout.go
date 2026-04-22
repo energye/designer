@@ -17,7 +17,7 @@ func initToolBtnLayout(owner lcl.IWinControl) *TToolBtnLayout {
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetDoubleBuffered(true)
 	m.box.SetAlign(types.AlTop)
-	m.box.SetHeight(40)
+	m.box.SetHeight(30)
 	m.box.SetParent(owner)
 	return m
 }

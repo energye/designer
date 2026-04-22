@@ -122,12 +122,12 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	if m.page != nil {
 		return
 	}
-	m.page = lcl.NewPageControl(inspector.componentProperty.propComponentProp)
+	m.page = lcl.NewPageControl(MainWindow.contentLayout.layoutInspector.box)
 	m.page.SetTabStop(true)
 	m.page.SetAlign(types.AlClient)
 	SetComponentDefaultColor(m.page)
 	m.page.SetVisible(false)
-	m.page.SetParent(inspector.componentProperty.propComponentProp)
+	m.page.SetParent(MainWindow.contentLayout.layoutInspector.box)
 
 	m.pageProperty = lcl.NewTabSheet(m.page)
 	m.pageProperty.SetParent(m.page)

@@ -3,6 +3,8 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
+	"github.com/energye/widget/wg"
 )
 
 var (
@@ -16,14 +18,17 @@ type ContentLayout struct {
 
 	widgetSplitter lcl.ISplitter // 组件面板分隔器
 	widgetPanel    lcl.IPanel    // 组件面板
+	layoutWidget   *ContentLayoutWidget
 
 	projectSplitter lcl.ISplitter // 项目面板分隔器
 	projectPanel    lcl.IPanel    // 项目面板
+	layoutProject   *ContentLayoutProject
 
 	designerPanel lcl.IPanel // 设计器面板
 
 	inspectorSplitter lcl.ISplitter // 属性检查器面板分隔器
 	inspectorPanel    lcl.IPanel    // 属性检查器面板
+	layoutInspector   *ContentLayoutInspector
 
 	consoleLogSplitter lcl.ISplitter // 日志面板分隔器
 	consoleLogPanel    lcl.IPanel    // 控制台输出
@@ -61,6 +66,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.widgetPanel.SetWidth(170)    //动态控制
 	m.widgetPanel.SetVisible(true) //动态控制
 	m.widgetPanel.Constraints().SetMinWidth(30)
+	m.widgetPanel.Constraints().SetMaxWidth(400)
 	m.widgetPanel.SetParent(m.box)
 	//m.widgetPanel.SetOnResize(func(sender lcl.IObject) {
 	//	fmt.Println("widgetPanel.SetOnResize BoundsRect:", m.widgetPanel.BoundsRect())
@@ -90,6 +96,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.projectPanel.SetVisible(true) //动态控制
 	m.projectPanel.SetCaption("项目管理器")
 	m.projectPanel.Constraints().SetMinWidth(30)
+	m.projectPanel.Constraints().SetMaxWidth(400)
 	m.projectPanel.SetParent(m.rightBox)
 	//m.projectPanel.SetOnResize(func(sender lcl.IObject) {
 	//	fmt.Println("projectPanel.SetOnResize BoundsRect:", m.projectPanel.BoundsRect())
@@ -109,6 +116,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.inspectorSplitter = lcl.NewSplitter(owner)
 	m.inspectorSplitter.SetAlign(types.AlRight)
 	m.inspectorSplitter.SetWidth(defaultSplitterWidth)
+	m.inspectorSplitter.SetResizeAnchor(types.AkRight)
 	m.inspectorSplitter.SetMinSize(defaultSplitterMinSize)
 	m.inspectorSplitter.SetParent(m.rightBox)
 	// 属性检查器
@@ -120,6 +128,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.inspectorPanel.SetWidth(225)    //动态控制
 	m.inspectorPanel.SetVisible(true) //动态控制
 	m.inspectorPanel.Constraints().SetMinWidth(30)
+	m.inspectorPanel.Constraints().SetMaxWidth(400)
 	m.inspectorPanel.SetParent(m.rightBox)
 	//m.inspectorPanel.SetOnResize(func(sender lcl.IObject) {
 	//	fmt.Println("inspectorPanel.SetOnResize BoundsRect:", m.inspectorPanel.BoundsRect())
@@ -155,9 +164,50 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.contentStatus.SetHeight(30)
 	m.contentStatus.SetParent(m.box)
 
-	initContentLayoutWidget(m)
-	initContentLayoutProject(m)
-	initContentLayoutInspector(m)
+	m.layoutWidget = initContentLayoutWidget(m)
+	m.layoutProject = initContentLayoutProject(m)
+	m.layoutInspector = initContentLayoutInspector(m)
 
 	return m
+}
+
+// 初始化设计器布局
+func (m *ContentLayout) initFromDesignerLayout() *Designer {
+	des := new(Designer)
+	des.designerForms = make(map[int]*FormTab)
+	des.tab = wg.NewTab(m.designerPanel)
+	des.tab.SetBounds(0, 0, m.rightBox.Width(), m.rightBox.Height())
+	des.tab.SetAlign(types.AlClient)
+	des.tab.ScrollLeft().SetTop(3)
+	des.tab.ScrollLeft().SetHeight(20)
+	des.tab.ScrollLeft().SetColor(wg.DarkenColor(bgLightColor, 0.1))
+	des.tab.ScrollRight().SetTop(3)
+	des.tab.ScrollRight().SetHeight(20)
+	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
+	des.tab.EnableScrollButton(false)
+	des.tab.SetParent(m.designerPanel)
+
+	des.defaultTip = wg.NewButton(des.tab)
+	des.defaultTip.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))
+	defaultTipBr := des.defaultTip.BoundsRect()
+	dtw, dth := int32(140), int32(140)
+	defaultTipBr.Left = m.rightBox.Width()/2 - dtw/2
+	defaultTipBr.Top = m.rightBox.Height()/2 - dth/2
+	defaultTipBr.SetWidth(dtw)
+	defaultTipBr.SetHeight(dth)
+	des.defaultTip.SetBoundsRect(defaultTipBr)
+	des.defaultTip.SetAlpha(80)
+	des.defaultTip.SetRadius(15)
+	des.defaultTip.TextAlign = wg.TextAlignLeft
+	des.defaultTip.TextLineSpacing = 8
+	des.defaultTip.TextOffSetX = 10
+	des.defaultTip.Font().SetSize(10)
+	des.defaultTip.Font().SetColor(wg.DarkenColor(colors.ClGray, 0.2))
+	des.defaultTip.SetDisable(true)
+	des.defaultTip.SetAnchors(types.NewSet())
+	des.defaultTip.SetText("新建项目 (Ctrl+P)\n打开项目 (Ctrl+O)\n新建窗体 (Ctrl+N)\n应用配置 (Ctrl+F11)\n　　运行 (F9)")
+	des.defaultTip.SetParent(des.tab)
+
+	des.createTabMenu()
+	return des
 }

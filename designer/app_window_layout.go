@@ -38,6 +38,8 @@ func (m *TAppWindow) initDesignerLayoutV2() {
 	initToolBtnLayout(m)
 	// 底部布局 - 左: 组件库, 左中: 项目查看, 中: 中间画布(自适应), 右: 属性, 下: 日志控制
 	m.contentLayout = initBottomBox(m)
+	// 设计器
+	designer = m.contentLayout.initFromDesignerLayout()
 }
 
 // 初始化主窗口用到的组件

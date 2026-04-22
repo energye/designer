@@ -175,7 +175,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
 	// 组件树
-	form.tree = lcl.NewTreeView(inspector.componentTree.treeComponentTree)
+	form.tree = lcl.NewTreeView(MainWindow.contentLayout.layoutProject.box)
 	form.tree.SetAutoExpand(true)
 	form.tree.SetReadOnly(true)
 	form.tree.SetDoubleBuffered(true)
@@ -190,10 +190,11 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
 	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
+	form.tree.Font().SetSize(8)
 	// 组件树右键菜单
 	form.CreateComponentMenu()
 	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
-	form.tree.SetParent(inspector.componentTree.treeComponentTree)
+	form.tree.SetParent(MainWindow.contentLayout.layoutProject.box)
 
 	// 默认名
 	if len(defaultId) > 0 {
@@ -211,14 +212,14 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.sheet.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
 	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
 	form.sheet.Button().SetCloseHintText("关闭设计窗体")
-	form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
-	form.sheet.Button().SetAutoSize(true)
 	form.sheet.Button().SetCaption(form.name)
 	form.sheet.Button().Font().SetColor(colors.ClBlack)
-	form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
-	form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
-	form.sheet.SetActiveColor(wg.DarkenColor(bgLightColor, 0.1))     // 设置激活颜色
-	form.sheet.SetColor(wg.DarkenColor(bgLightColor, 0.1))           // 设置背景色
+	//form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
+	//form.sheet.Button().SetBorderColor(wg.BbdTop, colors.ClBlue)
+	//form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
+	//form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
+	//form.sheet.SetActiveColor(bgLightColor)                          // 设置激活颜色
+	//form.sheet.SetColor(bgLightColor)                                // 设置背景色
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
 	form.sheet.SetOnClose(form.tabSheetOnClose)

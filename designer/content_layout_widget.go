@@ -2,21 +2,37 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"strconv"
 )
 
 type ContentLayoutWidget struct {
-	searchEdit lcl.ITreeFilterEdit // 组件搜索框
-	topBox     lcl.IPanel
-	title      lcl.ILabel
-	tree       lcl.ITreeView
+	searchEdit      lcl.ITreeFilterEdit // 组件搜索框
+	topBox          lcl.IPanel
+	title           lcl.ILabel
+	tree            lcl.ITreeView
+	components      map[uintptr]*TWidgetTreeItem // 组件选项卡： 标准，附加，通用等等
+	selectComponent *TWidgetTreeItem             // 选中的组件
+}
+
+type TWidgetTreeItem struct {
+	parent   *TWidgetTreeItem
+	name     string
+	node     lcl.ITreeNode
+	child    map[uintptr]*TWidgetTreeItem
+	selected bool
+}
+
+func (m *TWidgetTreeItem) IsSelectTool() bool {
+	return m.name == "SelectTool"
 }
 
 func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
-	m := &ContentLayoutWidget{}
+	logs.Debug("创建组件选项卡面板")
+	m := &ContentLayoutWidget{components: make(map[uintptr]*TWidgetTreeItem)}
 	m.searchEdit = lcl.NewTreeFilterEdit(owner.widgetPanel)
 	m.searchEdit.SetTextHint("搜索组件")
 	m.searchEdit.SetAlign(types.AlTop)
@@ -59,9 +75,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetHideSelection(false)
 	m.tree.SetScrollBars(types.SsVertical)
 
-	// ======================================================
-	// 状态变量（放在外层）
-	// ======================================================
 	var (
 		hoverNode lcl.ITreeNode
 		pressNode lcl.ITreeNode
@@ -75,8 +88,8 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		n := m.tree.GetNodeAt(x, y)
 		if n != nil && hoverNode != n {
 			hoverNode = n
-			owner.contentStatus.SetSimpleText(fmt.Sprintf(n.Text()))
 			m.tree.Invalidate()
+			owner.contentStatus.SetSimpleText(fmt.Sprintf(n.Text()))
 		} else {
 			hoverNode = nil
 		}
@@ -100,9 +113,12 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			if hoverNode.Level() == 0 {
 				hoverNode.SetExpanded(!hoverNode.Expanded())
 			} else {
+				m.selectComponent = m.findComponentTreeItem(hoverNode)
 				fmt.Println("click:", hoverNode.Level(), hoverNode.Text())
+				return
 			}
 		}
+		m.selectComponent = nil
 		m.tree.Invalidate()
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 强制刷新
@@ -134,12 +150,12 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		isSelected := node.Selected()
 
 		if node.Level() == 0 {
-			bg := types.TColor(0x00F4F6F9)
+			bg := types.TColor(0xF4F6F9)
 			if isHover {
-				bg = 0x00E3E9F1
+				bg = 0xE3E9F1
 			}
 			if isPress {
-				bg = 0x00D0D8E1
+				bg = 0xD0D8E1
 			}
 			// 背景
 			brush.SetStyle(types.BsSolid)
@@ -148,7 +164,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 
 			// 上下边框线
 			pen.SetStyle(types.PsSolid)
-			pen.SetColor(0x00D9D9D9)
+			pen.SetColor(0xD9D9D9)
 
 			// 下边线
 			canvas.MoveToWithIntX2(0, r.Bottom-1)
@@ -177,14 +193,18 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			// 背景
 			bg := colors.ClWhite
 			if isHover {
-				bg = 0x00F6F6F6
+				bg = 0xF6F6F6
 			}
 			if isPress {
-				bg = 0x00ECECEC
+				bg = 0xECECEC
 			}
 			brush.SetStyle(types.BsSolid)
 			brush.SetColor(bg)
 			canvas.FillRectWithRect(types.Rect(0, r.Top, m.tree.ClientWidth(), r.Bottom))
+
+			if treeItem := m.findComponentTreeItem(node); treeItem != nil && !isSelected {
+				isSelected = treeItem.IsSelectTool()
+			}
 
 			// Selected 图标背景
 			if isSelected {
@@ -193,7 +213,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				top := iconY - offset
 				right := iconX + iconSize + offset
 				bottom := iconY + iconSize + offset
-				brush.SetColor(0x00E6A23C)
+				brush.SetColor(0xE6A23C)
 				pen.SetStyle(types.PsClear)
 				canvas.RoundRectWithIntX6(left, top, right, bottom, 6, 6)
 			}
@@ -213,7 +233,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			// 文本
 			brush.SetStyle(types.BsClear)
 			font.SetColor(colors.ClBlack)
-			font.SetSize(8)
+			//font.SetSize(8)
 			if isPress {
 				font.SetColor(0x00333333)
 			}
@@ -227,65 +247,72 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	// ======================================================
 	m.tree.SetParent(owner.widgetPanel)
 
-	m.tree.BeginUpdate()
-	defer m.tree.EndUpdate()
-
-	items := m.tree.Items()
-	items.Clear()
-
-	// ======================
-	// 常用
-	// ======================
-	cat := items.Add(nil, "常用")
-	var node lcl.ITreeNode
-	for i := 0; i < 10; i++ {
-		node = items.AddChild(cat, "按钮 Button"+strconv.Itoa(i))
-		node.SetImageIndex(0)
-		node.SetSelectedIndex(0)
-
-		node = items.AddChild(cat, "输入框 Edit"+strconv.Itoa(i))
-		node.SetImageIndex(1)
-		node.SetSelectedIndex(1)
-
-		node = items.AddChild(cat, "标签 Label"+strconv.Itoa(i))
-		node.SetImageIndex(2)
-		node.SetSelectedIndex(2)
-	}
-	cat.SetExpanded(true)
-
-	// ======================
-	// 容器
-	// ======================
-	cat2 := items.Add(nil, "容器")
-	for i := 0; i < 10; i++ {
-		node = items.AddChild(cat2, "面板 Panel"+strconv.Itoa(i))
-		node.SetImageIndex(3)
-		node.SetSelectedIndex(3)
-
-		node = items.AddChild(cat2, "分页 Tabs"+strconv.Itoa(i))
-		node.SetImageIndex(4)
-		node.SetSelectedIndex(4)
-
-		node = items.AddChild(cat2, "分割条 Splitter"+strconv.Itoa(i))
-		node.SetImageIndex(5)
-		node.SetSelectedIndex(5)
-	}
-	cat2.SetExpanded(false)
-
-	// ======================
-	// Web
-	// ======================
-	cat3 := items.Add(nil, "Web")
-	for i := 0; i < 10; i++ {
-		node = items.AddChild(cat3, "WebView "+strconv.Itoa(i))
-		node.SetImageIndex(6)
-		node.SetSelectedIndex(6)
-
-		node = items.AddChild(cat3, "CEF "+strconv.Itoa(i))
-		node.SetImageIndex(7)
-		node.SetSelectedIndex(7)
-	}
-	cat3.SetExpanded(false)
+	m.initComponentTreeData()
 
 	return m
+}
+
+func (m *ContentLayoutWidget) findComponentTreeItem(node lcl.ITreeNode) *TWidgetTreeItem {
+	if item, ok := m.components[node.Instance()]; ok {
+		return item
+	}
+	return nil
+}
+
+// 初始化组件选项面板树数据
+func (m *ContentLayoutWidget) initComponentTreeData() {
+	m.tree.BeginUpdate()
+	defer m.tree.EndUpdate()
+	items := m.tree.Items()
+	items.Clear()
+	// 创建组件选项卡
+	newComponentData := func(tab config.Tab) *TWidgetTreeItem {
+		logs.Debug("创建组件选项卡:", tab.Cn)
+		// 一级
+		root := items.AddChild(nil, tab.Cn)
+		rootTab := &TWidgetTreeItem{child: make(map[uintptr]*TWidgetTreeItem), node: root, name: tab.En}
+		m.components[root.Instance()] = rootTab
+		//root.SetImageIndex(6)
+		//root.SetSelectedIndex(6)
+
+		var (
+			child      lcl.ITreeNode
+			imageIndex int32
+			item       *TWidgetTreeItem
+		)
+
+		// 二级
+		// 选择工具 鼠标
+		child = items.AddChild(root, "选择指针")
+		imageIndex = imageComponents.ImageIndex("cursortool.png")
+		child.SetImageIndex(imageIndex)
+		child.SetSelectedIndex(imageIndex)
+		item = &TWidgetTreeItem{name: "SelectTool", node: child, selected: true, parent: rootTab}
+		rootTab.child[child.Instance()] = item
+		m.components[child.Instance()] = item
+
+		// 创建组件按钮
+		for _, name := range tab.Component {
+			child = items.AddChild(root, name)
+			imageIndex = imageComponents.ImageIndex(name + ".png")
+			child.SetImageIndex(imageIndex)
+			child.SetSelectedIndex(imageIndex)
+			item = &TWidgetTreeItem{name: name, node: child, parent: rootTab}
+			rootTab.child[child.Instance()] = item
+			m.components[child.Instance()] = item
+		}
+		root.SetExpanded(false)
+		return rootTab
+	}
+	// 创建组件选项卡
+	newComponentData(config.DesignerConfig.ComponentTabs.Standard)
+	newComponentData(config.DesignerConfig.ComponentTabs.Additional)
+	newComponentData(config.DesignerConfig.ComponentTabs.Common)
+	newComponentData(config.DesignerConfig.ComponentTabs.Dialogs)
+	newComponentData(config.DesignerConfig.ComponentTabs.Misc)
+	newComponentData(config.DesignerConfig.ComponentTabs.System)
+	newComponentData(config.DesignerConfig.ComponentTabs.LazControl)
+	newComponentData(config.DesignerConfig.ComponentTabs.SynEdit)
+	webview := newComponentData(config.DesignerConfig.ComponentTabs.WebView)
+	webview.node.SetExpanded(true)
 }

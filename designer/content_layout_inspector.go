@@ -9,6 +9,7 @@ type ContentLayoutInspector struct {
 	searchEdit lcl.ITreeFilterEdit // 组件搜索框
 	topBox     lcl.IPanel
 	title      lcl.ILabel
+	box        lcl.IPanel
 }
 
 func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
@@ -40,6 +41,12 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	font.SetSize(10)
 	font.SetStyle(types.NewSet(types.FsBold))
 	title.SetParent(m.topBox)
+
+	m.box = lcl.NewPanel(owner.inspectorPanel)
+	m.box.SetBevelOuter(types.BvNone)
+	m.box.SetDoubleBuffered(true)
+	m.box.SetAlign(types.AlClient)
+	m.box.SetParent(owner.inspectorPanel)
 
 	return m
 }
