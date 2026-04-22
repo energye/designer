@@ -1,11 +1,9 @@
 
 ## ✨ENERGY Designer
 
-ENERGY Designer is a professional visual design tool built specifically for the **ENERGY Cross-Platform GUI Framework**.
+ENERGY Designer is a visual UI design tool built for the ENERGY cross-platform GUI framework, focused on native desktop UI design and generating maintainable Go source code.
 
-Design interfaces with a WYSIWYG approach, generate maintainable Go source code, and deploy to Windows, macOS, and Linux from a single codebase.
-
-This is not a forced abstraction layer. ENERGY lets you choose the right engine for each project while keeping a familiar development experience.
+It also supports embedding modern web content through WebView / CEF components, making it easy to build hybrid desktop applications that combine native UI with web technologies.
 
 ---
 
@@ -56,6 +54,10 @@ Get pre-built binaries from [GitHub Releases](https://github.com/energye/designe
 3. Drag components onto the canvas.
 4. Configure properties and events.
 5. Click **Run** to preview.
+
+---
+
+## [Roadmap](ROADMAP.md)
 
 ---
 

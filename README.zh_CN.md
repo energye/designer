@@ -1,10 +1,9 @@
 ## ✨ENERGY Designer
 
-ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架 打造的专业可视化设计工具。
+ENERGY Designer 是专为 ENERGY 跨平台 GUI 框架打造的可视化设计工具，  
+以原生桌面 UI 设计为核心，生成可维护的 Go 源码。
 
-通过所见即所得的方式设计界面，生成可维护的 Go 源码，并一套代码发布到 Windows / macOS / Linux。
-
-这不是强行统一的抽象层。ENERGY 允许你针对项目选择合适引擎。
+同时支持通过 WebView / CEF 组件嵌入现代 Web 内容，轻松构建原生 + Web 的混合桌面应用。
 
 ---
 
@@ -56,6 +55,10 @@ go run main.go
 3. 拖拽组件到画布
 4. 配置属性和事件
 5. 点击运行预览
+
+---
+
+## [开发计划](ROADMAP.md)
 
 ---
 
