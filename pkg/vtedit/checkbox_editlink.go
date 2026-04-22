@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/keys"
@@ -154,6 +155,9 @@ func (m *TCheckBoxEditLink) SetBounds(R types.TRect) {
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left + 5
 	R.Top = columnRect.Top + 3
+	if tool.IsDarwin {
+		R.Top += 2
+	}
 	//R.SetHeight(columnRect.Height())
 	//R.SetWidth(columnRect.Width())
 	m.checkbox.SetBoundsRect(R)

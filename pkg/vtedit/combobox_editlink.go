@@ -15,6 +15,7 @@ package vtedit
 
 import (
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -133,6 +134,9 @@ func (m *TComboBoxEditLink) SetBounds(R types.TRect) {
 	columnRect := m.VTree.GetDisplayRect(m.Node, m.Column, false, false, true)
 	R.Left = columnRect.Left
 	R.Top = columnRect.Top
+	if tool.IsDarwin {
+		R.Top += 2
+	}
 	R.SetWidth(columnRect.Width())
 	m.combobox.SetBoundsRect(R)
 	logs.Debug("TComboBoxEditLink SetBounds", R)
