@@ -107,7 +107,7 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 
 // 切换组件设计
 func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
-	// TODO fix: 需要优化, 这里有问题，会锁死UI(原因: 当前选中的组件是 Form 时, 可能与属性有关)
+	// TODO fix: 需要优化, 这里需要判断当前控件已切换 不再操作切换
 	// 隐藏之前设计的组件
 	// 隐藏之前设计组件的属性和事件列表
 	var iterable func(comp *TDesigningComponent)

@@ -177,6 +177,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 		}
 		// 等待所有设计窗体创建完
 		wg.Wait()
+		logs.Debug("RecoverDesignerFormTab end")
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			designer.tab.RecalculatePosition()
 			if activeForm != nil {

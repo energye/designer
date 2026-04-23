@@ -35,7 +35,6 @@ var (
 
 // 主设计器
 type Designer struct {
-	//page          lcl.IPageControl // 设计器 tabs
 	tab           *wg.TTab         // 设计器 tabs
 	tabMenu       lcl.IPopupMenu   // tab 菜单
 	designerForms map[int]*FormTab // 设计器窗体列表
@@ -229,7 +228,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
 	form.scroll.SetAlign(types.AlClient)
-	form.scroll.SetAutoScroll(true)
+	form.scroll.SetAutoScroll(true) // TODO bug macOS: 同时出现横和竖直滚动条出现UI锁死
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetDoubleBuffered(true)
 	form.scroll.SetParent(form.sheet)

@@ -9,9 +9,6 @@ uses
   Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls;
 
 type
-
-  { TForm1 }
-
   TForm1 = class(TForm)
     procedure FormCreate(Sender: TObject);
   private
@@ -49,6 +46,9 @@ type
 
     procedure ZoomCanvas(Delta: Integer);
     procedure SetScrollTarget(AX, AY: Integer);
+
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   end;
 
 var
@@ -62,11 +62,11 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   Width := 1200;
   Height := 800;
-  Caption := 'Professional Designer Scroll System';
+  Caption := 'Custom ScrollBox';
 
   DoubleBuffered := True;
 
-  // Host
+  // Host Panel (Container)
   HostPanel := TPanel.Create(Self);
   HostPanel.Parent := Self;
   HostPanel.Align := alClient;
@@ -74,19 +74,19 @@ begin
   HostPanel.DoubleBuffered := True;
   HostPanel.OnResize := @HostResize;
 
-  // Viewport
+  // View Panel (Viewport)
   ViewPanel := TPanel.Create(Self);
   ViewPanel.Parent := HostPanel;
   ViewPanel.BevelOuter := bvNone;
   ViewPanel.Caption := '';
   ViewPanel.DoubleBuffered := True;
 
-  // Content
+  // Content Panel (Main Content Area)
   ContentPanel := TPanel.Create(Self);
   ContentPanel.Parent := ViewPanel;
   ContentPanel.Caption := '';
   ContentPanel.DoubleBuffered := True;
-  ContentPanel.SetBounds(0, 0, 3000, 3000);
+  ContentPanel.SetBounds(0, 0, 6000, 4000);
 
   ContentPanel.OnMouseDown := @ContentMouseDown;
   ContentPanel.OnMouseMove := @ContentMouseMove;
@@ -103,17 +103,23 @@ begin
   VBar.Kind := sbVertical;
   VBar.OnChange := @ScrollChange;
 
-  // Animation Timer
+  // Animation Timer (Smooth Scroll)
   FAnimTimer := TTimer.Create(Self);
   FAnimTimer.Interval := 15;
   FAnimTimer.Enabled := False;
   FAnimTimer.OnTimer := @AnimateScroll;
 
-  // Build controls
+  // Build Initial Controls
   BuildManyControls(3000);
 
   UpdateScrollBars;
   UpdateView;
+
+  // Enable Mouse Wheel Support
+  Self.OnMouseWheel := @FormMouseWheel;
+  HostPanel.OnMouseWheel := @FormMouseWheel;
+  ViewPanel.OnMouseWheel := @FormMouseWheel;
+  ContentPanel.OnMouseWheel := @FormMouseWheel;
 end;
 
 procedure TForm1.BuildManyControls(ACount: Integer);
@@ -174,14 +180,14 @@ end;
 
 procedure TForm1.UpdateScrollBars;
 begin
-  // Horizontal
+  // Horizontal Scrollbar
   HBar.Min := 0;
   HBar.PageSize := ViewPanel.ClientWidth;
   HBar.Max := ContentPanel.Width;
   HBar.SmallChange := 20;
   HBar.LargeChange := 100;
 
-  // Vertical
+  // Vertical Scrollbar
   VBar.Min := 0;
   VBar.PageSize := ViewPanel.ClientHeight;
   VBar.Max := ContentPanel.Height;
@@ -299,6 +305,36 @@ begin
   if ContentPanel.Height < 400 then ContentPanel.Height := 400;
 
   HostResize(nil);
+end;
+
+procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+var
+  Step: Integer;
+begin
+  Step := 80;
+
+  // Ctrl + Wheel = Zoom
+  if ssCtrl in Shift then
+  begin
+    ZoomCanvas(WheelDelta);
+    Handled := True;
+    Exit;
+  end;
+
+  // Shift + Wheel = Horizontal Scroll
+  if ssShift in Shift then
+  begin
+    // Horizontal scroll
+    SetScrollTarget(FTargetX - Sign(WheelDelta) * Step, FTargetY);
+  end
+  else
+  begin
+    // Vertical scroll
+    SetScrollTarget(FTargetX, FTargetY - Sign(WheelDelta) * Step);
+  end;
+
+  Handled := True;
 end;
 
 end.

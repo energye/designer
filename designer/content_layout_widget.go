@@ -91,7 +91,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetHideSelection(false)
 	m.tree.Font().SetSize(8)
 	m.tree.SetScrollBars(types.SsVertical)
-
 	var (
 		hoverNode lcl.ITreeNode
 		pressNode lcl.ITreeNode
@@ -174,7 +173,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		//isSelected := node.Selected()
 
 		if node.Level() == 0 {
-			bg := types.TColor(0xF4F6F9)
+			bg := types.TColor(0xF8F8F8)
 			if isHover {
 				bg = 0xF1E9E3
 			}
@@ -194,17 +193,15 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			canvas.MoveToWithIntX2(0, r.Bottom-1)
 			canvas.LineToWithIntX2(m.tree.ClientWidth(), r.Bottom-1)
 
-			// 字体
-			font.SetColor(colors.ClBlack)
-
-			arrow := "▶"
-			if node.Expanded() {
-				arrow = "▼"
-			}
-			arrow = ""
-
+			//arrow := "▶"
+			//if node.Expanded() {
+			//	arrow = "▼"
+			//}
+			//arrow = ""
+			// 图标
+			// 文本
 			titleY := r.Top + (rowH-14)/2
-			canvas.TextOutWithIntX2Str(6, titleY, arrow+node.Text())
+			canvas.TextOutWithIntX2Str(6, titleY, node.Text())
 			return
 		} else {
 			iconSize := int32(24)
