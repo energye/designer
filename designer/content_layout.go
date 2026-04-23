@@ -32,6 +32,7 @@ type ContentLayout struct {
 
 	consoleLogSplitter lcl.ISplitter // 日志面板分隔器
 	consoleLogPanel    lcl.IPanel    // 控制台输出
+	layoutConsoleLog   *ContentLayoutConsoleLog
 
 	contentStatus lcl.IStatusBar
 }
@@ -167,6 +168,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.layoutWidget = initContentLayoutWidget(m)
 	m.layoutProject = initContentLayoutProject(m)
 	m.layoutInspector = initContentLayoutInspector(m)
+	m.layoutConsoleLog = initContentLayoutConsoleLog(m)
 
 	return m
 }

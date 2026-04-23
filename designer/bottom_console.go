@@ -63,12 +63,12 @@ func (m *BottomLayout) createConsole() {
 
 // 写入控制台
 func WriteConsole(text string) {
-	MainWindow.bottomLayout.WriteConsole(text)
+	MainWindow.contentLayout.layoutConsoleLog.WriteDesignerLog(text)
 }
 
 // 清空控制台
 func ClearConsole() {
-	MainWindow.bottomLayout.ClearConsole()
+	MainWindow.contentLayout.layoutConsoleLog.ClearConsole()
 }
 
 // 写入控制台

@@ -235,9 +235,11 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				top := iconY - offset
 				right := iconX + iconSize + offset
 				bottom := iconY + iconSize + offset
-				brush.SetColor(0xE6A23C)
+				brush.SetColor(0xF9D99E)
 				pen.SetStyle(types.PsClear)
-				canvas.RoundRectWithIntX6(left, top, right, bottom, 6, 6)
+				canvas.RoundRectWithIntX6(left-2, top, right+2, bottom, 6, 6)
+				//canvas.RoundRectWithIntX6(iconX-offset, r.Top, m.tree.ClientWidth(), r.Bottom, 6, 6)
+				//canvas.FillRectWithRect(types.Rect(0, r.Top, m.tree.ClientWidth(), r.Bottom))
 			}
 
 			// 图标
