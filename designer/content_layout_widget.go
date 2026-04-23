@@ -48,6 +48,19 @@ func ResetSelectedComponent() {
 
 func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	logs.Debug("创建组件选项卡面板")
+	forceUpdate := func() {
+		if tool.IsDarwin {
+			// 强制刷新, 滚动条出现再隐藏后渲染有问题, 先这样解决
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				br := owner.widgetPanel.BoundsRect()
+				br.SetWidth(br.Width() - 1)
+				owner.widgetPanel.SetWidth(br.Width())
+				br.SetWidth(br.Width() + 1)
+				owner.widgetPanel.SetWidth(br.Width())
+			})
+		}
+	}
+
 	m := &ContentLayoutWidget{components: make(map[uintptr]*TWidgetTreeItem)}
 	m.searchEdit = lcl.NewTreeFilterEdit(owner.widgetPanel)
 	m.searchEdit.SetTextHint("搜索组件")
@@ -59,6 +72,9 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	borderSpacing.SetTop(3)
 	borderSpacing.SetBottom(3)
 	m.searchEdit.SetParent(owner.widgetPanel)
+	m.searchEdit.SetOnChange(func(sender lcl.IObject) {
+		forceUpdate()
+	})
 
 	m.topBox = lcl.NewPanel(owner.widgetPanel)
 	m.topBox.SetBorderStyleToBorderStyle(types.BsNone)
@@ -91,6 +107,9 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetHideSelection(false)
 	m.tree.Font().SetSize(8)
 	m.tree.SetScrollBars(types.SsVertical)
+
+	m.searchEdit.SetFilteredTreeview(m.tree)
+
 	var (
 		hoverNode lcl.ITreeNode
 		pressNode lcl.ITreeNode
@@ -141,16 +160,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			}
 		}
 		m.selectedComponent = nil
-		if tool.IsDarwin {
-			// 强制刷新, 滚动条出现再隐藏后渲染有问题, 先这样解决
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				br := owner.widgetPanel.BoundsRect()
-				br.SetWidth(br.Width() - 1)
-				owner.widgetPanel.SetWidth(br.Width())
-				br.SetWidth(br.Width() + 1)
-				owner.widgetPanel.SetWidth(br.Width())
-			})
-		}
+		forceUpdate()
 	})
 	m.tree.SetOnAdvancedCustomDrawItem(func(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState,
 		stage types.TCustomDrawStage, paintImages *bool, defaultDraw *bool) {

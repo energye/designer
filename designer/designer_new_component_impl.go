@@ -142,10 +142,12 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	SetComponentDefaultColor(m.pageEvent)
 	m.pageEvent.SetAlign(types.AlClient)
 
+	// 属性树
 	m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
 	vstConfig(m.propertyTree)
 	m.propertyTree.SetParent(m.pageProperty)
 
+	// 事件树
 	m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
 	vstConfig(m.eventTree)
 	m.eventTree.SetParent(m.pageEvent)

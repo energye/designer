@@ -1,8 +1,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
@@ -36,7 +34,7 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 	m.designer.SetWantTabs(false)
 	m.designer.Gutter().SetVisible(false)
 	m.designer.Gutter().SetWidth(0)
-	m.designer.SetRightEdge(0)
+	m.designer.SetRightEdge(-1)
 	//m.designer.SetScrollBars(types.SsAutoBoth)
 	font := m.designer.Font()
 	font.SetName("Courier New")
@@ -84,14 +82,12 @@ func (m *ContentLayoutConsoleLog) CreatePopupMenu() {
 	m.popupMenu = popupMenu
 
 	copyItem := lcl.NewMenuItem(m.designer)
-	copyItem.SetCaption("复制 (&C)")
-	copyItem.SetShortCut(api.TextToShortCut(m.platformShortcut("C")))
+	copyItem.SetCaption("复制")
 	copyItem.SetOnClick(m.onCopyItemClick)
 	popupMenu.Items().Add(copyItem)
 
 	selectAllItem := lcl.NewMenuItem(m.designer)
-	selectAllItem.SetCaption("全选 (&A)")
-	selectAllItem.SetShortCut(api.TextToShortCut(m.platformShortcut("A")))
+	selectAllItem.SetCaption("全选")
 	selectAllItem.SetOnClick(m.onSelectAllItemClick)
 	popupMenu.Items().Add(selectAllItem)
 
@@ -104,18 +100,11 @@ func (m *ContentLayoutConsoleLog) CreatePopupMenu() {
 	popupMenu.Items().Add(separator2)
 
 	clearItem := lcl.NewMenuItem(m.designer)
-	clearItem.SetCaption("清空 (&L)")
+	clearItem.SetCaption("清空")
 	clearItem.SetOnClick(m.onClearItemClick)
 	popupMenu.Items().Add(clearItem)
 
 	m.designer.SetPopupMenu(popupMenu)
-}
-
-func (m *ContentLayoutConsoleLog) platformShortcut(key string) string {
-	if tool.IsDarwin {
-		return "Cmd+" + key
-	}
-	return "Ctrl+" + key
 }
 
 func (m *ContentLayoutConsoleLog) onCopyItemClick(sender lcl.IObject) {
