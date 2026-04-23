@@ -74,6 +74,6 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
 	//newSep()
 
-	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行(F9)", 3, "运行")
+	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行(F9)", 3, "运行(F9)")
 	m.toolbarBtn.runPreviewBtn.SetOnClick(m.toolbarBtn.onRunPreviewForm)
 }
