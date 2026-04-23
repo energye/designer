@@ -65,14 +65,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	formDesigner.Form = designerForm
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
-	//designerForm.SetOnWndProc(func(message *types.TLMessage) {
-	//	switch message.Msg {
-	//	case messages.CM_HITTEST:
-	//		message.Result = 1
-	//		return
-	//	}
-	//	designerForm.InheritedWndProc(message)
-	//})
+
 	designerForm.Show()
 
 	// 创建窗体设计面板, 放置实际设计的组件

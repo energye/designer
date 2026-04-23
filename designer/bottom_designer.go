@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -228,7 +229,21 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
 	form.scroll.SetAlign(types.AlClient)
-	form.scroll.SetAutoScroll(true) // TODO bug macOS: 同时出现横和竖直滚动条出现UI锁死
+	form.scroll.SetAutoScroll(true)
+	if tool.IsDarwin {
+		// fix: laz MacOS bug 默认隐藏滚动条, 手动控制显示
+		// 该bug体现为当同时出现横坚滚动条时, UI 锁死崩溃, 在laz 4.6 复现
+		hBar := form.scroll.HorzScrollBar()
+		vBar := form.scroll.VertScrollBar()
+		hBar.SetVisible(false)
+		vBar.SetVisible(false)
+		form.scroll.SetOnResize(func(sender lcl.IObject) {
+			// 这里使用 < 小于做判断
+			// 当滚动box宽或高小于设计窗体大小时显示或隐藏滚动条
+			vBar.SetVisible(form.scroll.Height() < form.formDesigner.Form.Height())
+			hBar.SetVisible(form.scroll.Width() < form.formDesigner.Form.Width())
+		})
+	}
 	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
 	form.scroll.SetDoubleBuffered(true)
 	form.scroll.SetParent(form.sheet)
