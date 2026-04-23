@@ -32,6 +32,13 @@ func ConsoleWriteWarn(s ...string) {
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
 
+func ConsoleWriteDebug(s ...string) {
+	logs.Warn(toAny(s...)...)
+	s = append([]string{"[DEBUG]"}, s...)
+	data := strings.Join(s, " ")
+	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+}
+
 func ConsoleWriteError(s ...string) {
 	logs.Error(toAny(s...)...)
 	s = append([]string{"[ERROR]"}, s...)

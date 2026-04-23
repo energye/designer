@@ -343,7 +343,6 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 	// 加载事件列表
 	m.loadEventList()
 	logs.Debug("加载组件属性完成", m.ClassName())
-
 }
 
 func (m *TDesigningComponent) Mod() string {

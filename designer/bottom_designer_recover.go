@@ -24,6 +24,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -72,7 +73,7 @@ func (m *FormTab) Recover() {
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
-	logs.Println("恢复窗体-耗时:", time.Now().Sub(beginTime).Seconds(), "秒")
+	event.ConsoleWriteInfo("恢复窗体-耗时:", strconv.FormatFloat(time.Now().Sub(beginTime).Seconds(), 'g', -1, 64), "秒")
 }
 
 // 恢复设计的子组件

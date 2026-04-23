@@ -4,6 +4,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
+	"strings"
 	"time"
 )
 
@@ -12,7 +13,6 @@ type ContentLayoutConsoleLog struct {
 
 	popupMenu lcl.IPopupMenu
 
-	//designer     lcl.IMemo // 设计器日志
 	designer     lcl.ISynEdit // 设计器日志
 	designerPage *wg.TPage    // 设计器日志
 
@@ -22,12 +22,7 @@ type ContentLayoutConsoleLog struct {
 
 func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog {
 	m := &ContentLayoutConsoleLog{}
-	//m.designer = lcl.NewMemo(owner.consoleLogPanel)
-	//m.designer.SetBorderStyle(types.BsNone)
-	//m.designer.SetAlign(types.AlClient)
-	//m.designer.SetWantTabs(false)
-	//m.designer.SetWordWrap(false)
-	//m.designer.SetScrollBars(types.SsAutoBoth)
+
 	m.designer = lcl.NewSynEdit(owner.consoleLogPanel)
 	m.designer.SetBorderStyleToBorderStyle(types.BsNone)
 	m.designer.SetAlign(types.AlClient)
@@ -35,6 +30,27 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 	m.designer.Gutter().SetVisible(false)
 	m.designer.Gutter().SetWidth(0)
 	m.designer.SetRightEdge(-1)
+	//m.designer.SetHighlighter(m.synAnySyn)
+	m.designer.SetOnSpecialLineMarkup(func(sender lcl.IObject, line int32, special *bool,
+		markup lcl.ISynSelectedColor) {
+		lines := m.designer.Lines()
+		lineText := lines.Strings(line)
+		markup.SetBackground(0xFFFFFF)
+		*special = true
+		//markup.SetForeground(0x1E1F22)
+		if strings.Contains(lineText, "[ERROR]") {
+			markup.SetForeground(0x0000CC)
+		} else if strings.Contains(lineText, "[WARN]") {
+			markup.SetForeground(0x0066CC)
+		} else if strings.Contains(lineText, "[INFO]") {
+			markup.SetForeground(0x008800)
+		} else if strings.Contains(lineText, "[DEBUG]") {
+			markup.SetForeground(0x666666)
+		} else {
+			//markup.SetForeground(0x1E1F22)
+		}
+	})
+
 	//m.designer.SetScrollBars(types.SsAutoBoth)
 	font := m.designer.Font()
 	font.SetName("Courier New")
@@ -55,9 +71,9 @@ func (m *ContentLayoutConsoleLog) WriteDesignerLog(s ...string) {
 	for _, text := range s {
 		text = "[" + time.Now().Format("15:04:05.000") + "] " + text
 		lines.Add(text)
-		m.designer.SetLeftChar(1)
 		m.TrimMemoLines(500)
 		m.designer.SetSelStart(m.designer.SelStart() + int32(len(text)))
+		m.designer.SetLeftChar(1)
 	}
 }
 

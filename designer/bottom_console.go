@@ -96,7 +96,7 @@ func initConsoleEvent() {
 				if payload.Type == event.ConsoleInfo {
 					WriteConsole(payload.Data.(string))
 				} else {
-					ClearConsole()
+					//ClearConsole()
 				}
 			}
 			if tool.IsMainThread() {
