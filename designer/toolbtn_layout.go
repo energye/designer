@@ -30,12 +30,17 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 
 	toolBtnBar := lcl.NewToolBar(m.box)
 	toolBtnBar.SetAlign(types.AlClient)
-	toolBtnBar.SetButtonWidth(32)
-	toolBtnBar.SetButtonHeight(32)
-	toolBtnBar.SetHeight(32)
+	toolBtnBar.SetButtonWidth(24)
+	toolBtnBar.SetButtonHeight(24)
+	toolBtnBar.BorderSpacing().SetLeft(3)
+	toolBtnBar.BorderSpacing().SetTop(3)
+	toolBtnBar.BorderSpacing().SetBottom(3)
+	toolBtnBar.SetHeight(24)
 	toolBtnBar.SetAnchors(types.NewSet(types.AkLeft, types.AkRight))
 	toolBtnBar.SetEdgeBorders(types.NewSet())
 	toolBtnBar.SetImages(imageMenu.ImageList150())
+	toolBtnBar.SetShowCaptions(true)
+	toolBtnBar.SetList(true)
 	toolBtnBar.SetParent(m.box)
 	m.toolbarBtn.toolBtnBar = toolBtnBar
 
@@ -45,19 +50,20 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 		sep.SetStyle(types.TbsSeparator)
 	}
 
-	newBtn := func(imageIndex int32, hint string, margin int32) lcl.IToolButton {
+	newBtn := func(imageIndex int32, hint string, margin int32, text string) lcl.IToolButton {
 		btn := lcl.NewToolButton(toolBtnBar)
 		btn.SetParent(toolBtnBar)
 		btn.SetHint(hint)
 		btn.SetImageIndex(imageIndex)
 		btn.SetShowHint(true)
+		btn.SetCaption(text)
 		return btn
 	}
 
-	m.toolbarBtn.newWindowBtn = newBtn(imageMenu.ImageIndex("menu_new_form_150.png"), "新建窗体(Ctrl+N)", 0)
+	m.toolbarBtn.newWindowBtn = newBtn(imageMenu.ImageIndex("menu_new_form.png"), "新建窗体(Ctrl+N)", 0, "新建")
 	m.toolbarBtn.newWindowBtn.SetOnClick(m.toolbarBtn.onNewForm)
 
-	m.toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open_150.png"), "打开(Ctrl+O)", 1)
+	m.toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
 	m.toolbarBtn.openBtn.SetOnClick(m.toolbarBtn.onOpenForm)
 	newSep()
 
@@ -68,6 +74,6 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
 	//newSep()
 
-	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run_150.png"), "运行(F9)", 3)
+	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行(F9)", 3, "运行")
 	m.toolbarBtn.runPreviewBtn.SetOnClick(m.toolbarBtn.onRunPreviewForm)
 }
