@@ -39,9 +39,10 @@ func Run() bool {
 }
 
 func RunClean() {
-	event.ConsoleWriteInfo("CMD-build-clean")
+	event.ConsoleWriteInfo("RunClean")
 	RunGoCleanCacheCMD()
 	Run()
+	event.ConsoleWriteInfo("RunClean end")
 }
 
 // 编译打包信息到执行文件

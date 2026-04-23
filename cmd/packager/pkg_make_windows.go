@@ -40,7 +40,9 @@ func (m *Package) platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run")
-	m.packager()
+	if m.packager() {
+		event.ConsoleWriteInfo("Package Successfully")
+	}
 }
 
 // 打包程序流程

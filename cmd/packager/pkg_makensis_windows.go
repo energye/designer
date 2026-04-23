@@ -107,7 +107,7 @@ func (m *Package) packageNSIS() bool {
 		// webview2 bind MicrosoftEdgeWebview2Setup.exe
 		webview2Setup := lib.Libs().Get(lib.PathWV2Setup)
 		if webview2Setup == nil {
-			event.ConsoleWriteInfo("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
+			event.ConsoleWriteError("Package - Failed to obtain MicrosoftEdgeWebview2Setup.exe")
 			return false
 		}
 		err := webview2Setup.Release(output)

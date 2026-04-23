@@ -71,18 +71,18 @@ func (m *ContentLayoutConsoleLog) WriteDesignerLog(s ...string) {
 	for _, text := range s {
 		text = "[" + time.Now().Format("15:04:05.000") + "] " + text
 		lines.Add(text)
-		m.TrimMemoLines(500)
-		m.designer.SetSelStart(m.designer.SelStart() + int32(len(text)))
-		m.designer.SetLeftChar(1)
+		m.TrimLines(lines, 500)
 	}
+	m.designer.SetLeftChar(1)
+	m.designer.SetTopLine(m.designer.Lines().Count())
 }
 
-func (m *ContentLayoutConsoleLog) TrimMemoLines(maxLines int32) {
+func (m *ContentLayoutConsoleLog) TrimLines(lines lcl.IStrings, maxLines int32) {
 	if m == nil || m.designer == nil {
 		return
 	}
-	if m.designer.Lines().Count() > maxLines {
-		m.designer.Lines().Delete(0)
+	if lines.Count() > maxLines {
+		lines.Delete(0)
 	}
 }
 

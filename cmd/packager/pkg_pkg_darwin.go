@@ -82,7 +82,9 @@ func (m *Package) platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run")
-	m.packager()
+	if m.packager() {
+		event.ConsoleWriteInfo("Package Successfully")
+	}
 }
 
 func (m *Package) packager() bool {
@@ -101,21 +103,21 @@ func (m *Package) packager() bool {
 			return false
 		}
 	} else {
-		event.ConsoleWriteInfo("Package - Not Enabled cert")
+		event.ConsoleWriteWarn("Package - Not Enabled cert")
 	}
 	if option.MacPKG {
 		if !m.pkg() {
 			return false
 		}
 	} else {
-		event.ConsoleWriteInfo("Package - Not Enabled PKG")
+		event.ConsoleWriteWarn("Package - Not Enabled PKG")
 	}
 	if option.MacDMG {
 		if !m.dmg() {
 			return false
 		}
 	} else {
-		event.ConsoleWriteInfo("Package - Not Enabled DMG")
+		event.ConsoleWriteWarn("Package - Not Enabled DMG")
 	}
 	return true
 }
