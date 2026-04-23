@@ -46,10 +46,6 @@ func ConsoleWriteError(s ...string) {
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
 
-func ConsoleWriteClear() {
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleClear}})
-}
-
 func toAny(str ...string) (log []any) {
 	for _, v := range str {
 		log = append(log, v)

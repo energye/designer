@@ -15,7 +15,6 @@ package options
 
 import (
 	"github.com/energye/designer/cmd/packager"
-	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"os"
@@ -25,7 +24,6 @@ import (
 // 只给当前系统和架构构建打包
 func configBuildPackage() {
 	logs.Debug("构建配置-打包")
-	event.ConsoleWriteClear()
 	if envs, ok := packagePlatformENVs[lib.GOOS()]; ok {
 		pack := packager.Default()
 		pack.AppendPlatform = true

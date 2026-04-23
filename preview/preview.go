@@ -20,7 +20,9 @@ import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
+	"path/filepath"
 )
 
 var runCmd *command.CMD
@@ -31,7 +33,6 @@ func runPreview(state chan<- any) {
 	if runCmd != nil {
 		return
 	}
-	event.ConsoleWriteClear() //清空控制台消息
 	state <- consts.PsStarting
 	// build app
 	if !build.Run() {
@@ -45,7 +46,18 @@ func runPreview(state chan<- any) {
 	}
 	// macOS > xxx.app, windows > xxx.exe, linux > xxx
 	output := run.AppExecutable()
-	event.ConsoleWriteInfo("运行预览: " + output)
+	event.ConsoleWriteInfo("运行预览:", output)
+
+	if tool.IsDarwin {
+		// /Users/xxx/xxx/build/myapp.app/Contents/MacOS/myapp
+		// 预览 dev 签名
+		event.ConsoleWriteInfo("run preview app-codesign")
+		xAppDir := filepath.Join(output, "../../../") // /Users/xxx/xxx/build/myapp.app
+		//  codesign --force --deep --sign - xxx.app
+		RunCMD("", "codesign", "--force", "--deep", "--sign", "-", xAppDir)
+		event.ConsoleWriteInfo("run preview app-codesign end")
+	}
+
 	// 开始运行
 	state <- consts.PsStarted // 运行命令
 	runCmd = command.NewCMD()
@@ -67,4 +79,17 @@ func stopPreview() {
 		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)
 	}
 	runCmd = nil
+}
+
+func RunCMD(dir, name string, args ...string) {
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
+	if dir != "" {
+		cmd.Dir = dir
+	}
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	cmd.Command(name, args...)
 }

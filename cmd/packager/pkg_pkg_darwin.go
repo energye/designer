@@ -105,6 +105,7 @@ func (m *Package) packager() bool {
 	} else {
 		event.ConsoleWriteWarn("Package - Not Enabled cert")
 	}
+
 	if option.MacPKG {
 		if !m.pkg() {
 			return false
