@@ -201,15 +201,16 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			if node.Expanded() {
 				arrow = "▼"
 			}
+			arrow = ""
 
 			titleY := r.Top + (rowH-14)/2
-			canvas.TextOutWithIntX2Str(6, titleY, arrow+" "+node.Text())
+			canvas.TextOutWithIntX2Str(6, titleY, arrow+node.Text())
 			return
 		} else {
 			iconSize := int32(24)
-			iconX := int32(20)
+			iconX := int32(12)
 			iconY := r.Top + (rowH-iconSize)/2
-			gap := int32(10)
+			gap := int32(8)
 
 			textX := iconX + iconSize + gap
 			textY := r.Top + (rowH-14)/2
