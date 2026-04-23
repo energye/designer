@@ -273,17 +273,17 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	undoDelete.SetCaption("删除")
 
 	m.editCut = lcl.NewMenuItem(owner)
-	m.editCut.SetCaption("剪切")
+	m.editCut.SetCaption(cutAction.Caption())
 	m.editCut.SetAction(cutAction)
 	m.edit.Add(m.editCut)
 
 	m.editCopy = lcl.NewMenuItem(owner)
-	m.editCopy.SetCaption("复制")
+	m.editCopy.SetCaption(copyAction.Caption())
 	m.editCopy.SetAction(copyAction)
 	m.edit.Add(m.editCopy)
 
 	m.editPaste = lcl.NewMenuItem(owner)
-	m.editPaste.SetCaption("粘贴")
+	m.editPaste.SetCaption(pasteAction.Caption())
 	m.editPaste.SetAction(pasteAction)
 	m.edit.Add(m.editPaste)
 
@@ -292,17 +292,17 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(separator1)
 
 	m.editSelectAll = lcl.NewMenuItem(owner)
-	m.editSelectAll.SetCaption("全选")
+	m.editSelectAll.SetCaption(selectAllAction.Caption())
 	m.editSelectAll.SetAction(selectAllAction)
 	m.edit.Add(m.editSelectAll)
 
 	m.editUndo = lcl.NewMenuItem(owner)
-	m.editUndo.SetCaption("撤销")
+	m.editUndo.SetCaption(selectAllAction.Caption())
 	m.editUndo.SetAction(undoAction)
 	m.edit.Add(m.editUndo)
 
 	m.editDel = lcl.NewMenuItem(owner)
-	m.editDel.SetCaption("删除")
+	m.editDel.SetCaption(undoDelete.Caption())
 	m.editDel.SetAction(undoDelete)
 	m.edit.Add(m.editDel)
 }
