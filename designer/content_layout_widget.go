@@ -225,10 +225,10 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			// 背景
 			bg := colors.ClWhite
 			if isHover {
-				bg = 0xF6F6F6
+				bg = 0xFFF6E6
 			}
 			if isPress {
-				bg = 0xECECEC
+				bg = 0xFCEDD0
 			}
 			brush.SetStyle(types.BsSolid)
 			brush.SetColor(bg)
