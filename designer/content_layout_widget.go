@@ -4,18 +4,19 @@ import (
 	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
 
 type ContentLayoutWidget struct {
-	searchEdit      lcl.ITreeFilterEdit // 组件搜索框
-	topBox          lcl.IPanel
-	title           lcl.ILabel
-	tree            lcl.ITreeView
-	components      map[uintptr]*TWidgetTreeItem // 组件选项卡： 标准，附加，通用等等
-	selectComponent *TWidgetTreeItem             // 选中的组件
+	searchEdit        lcl.ITreeFilterEdit // 组件搜索框
+	topBox            lcl.IPanel
+	title             lcl.ILabel
+	tree              lcl.ITreeView
+	components        map[uintptr]*TWidgetTreeItem // 组件选项卡： 标准，附加，通用等等
+	selectedComponent *TWidgetTreeItem             // 选中的组件
 }
 
 type TWidgetTreeItem struct {
@@ -28,6 +29,21 @@ type TWidgetTreeItem struct {
 
 func (m *TWidgetTreeItem) IsSelectTool() bool {
 	return m.name == "SelectTool"
+}
+
+func SelectedComponent() *TWidgetTreeItem {
+	if MainWindow.contentLayout != nil && MainWindow.contentLayout.layoutWidget != nil {
+		return MainWindow.contentLayout.layoutWidget.selectedComponent
+	}
+	return nil
+}
+
+func ResetSelectedComponent() {
+	if MainWindow.contentLayout != nil && MainWindow.contentLayout.layoutWidget != nil {
+		MainWindow.contentLayout.layoutWidget.resetAllNoSelected()
+		MainWindow.contentLayout.layoutWidget.selectedComponent = nil
+		MainWindow.contentLayout.layoutWidget.tree.Invalidate()
+	}
 }
 
 func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
@@ -73,6 +89,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetDefaultItemHeight(26)
 	m.tree.SetRowSelect(true)
 	m.tree.SetHideSelection(false)
+	m.tree.Font().SetSize(8)
 	m.tree.SetScrollBars(types.SsVertical)
 
 	var (
@@ -115,21 +132,26 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				hoverNode.SetExpanded(!hoverNode.Expanded())
 			} else {
 				m.updateAllNoSelected(hoverNode)
-				m.selectComponent = m.findComponentTreeItem(hoverNode)
-				m.selectComponent.selected = true // 如果是 nil 错误, 说明逻辑有问题
+				m.selectedComponent = m.findComponentTreeItem(hoverNode)
+				m.selectedComponent.selected = true // 如果是 nil 错误, 说明逻辑有问题
+				if m.selectedComponent.IsSelectTool() {
+					m.selectedComponent = nil
+				}
 				fmt.Println("click:", hoverNode.Level(), hoverNode.Text())
 				return
 			}
 		}
-		m.selectComponent = nil
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 强制刷新
-			br := owner.widgetPanel.BoundsRect()
-			br.SetWidth(br.Width() - 1)
-			owner.widgetPanel.SetWidth(br.Width())
-			br.SetWidth(br.Width() + 1)
-			owner.widgetPanel.SetWidth(br.Width())
-		})
+		m.selectedComponent = nil
+		if tool.IsDarwin {
+			// 强制刷新, 滚动条出现再隐藏后渲染有问题, 先这样解决
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				br := owner.widgetPanel.BoundsRect()
+				br.SetWidth(br.Width() - 1)
+				owner.widgetPanel.SetWidth(br.Width())
+				br.SetWidth(br.Width() + 1)
+				owner.widgetPanel.SetWidth(br.Width())
+			})
+		}
 	})
 	m.tree.SetOnAdvancedCustomDrawItem(func(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState,
 		stage types.TCustomDrawStage, paintImages *bool, defaultDraw *bool) {
@@ -154,10 +176,10 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		if node.Level() == 0 {
 			bg := types.TColor(0xF4F6F9)
 			if isHover {
-				bg = 0xE3E9F1
+				bg = 0xF1E9E3
 			}
 			if isPress {
-				bg = 0xD0D8E1
+				bg = 0xE1D8D0
 			}
 			// 背景
 			brush.SetStyle(types.BsSolid)
@@ -261,9 +283,7 @@ func (m *ContentLayoutWidget) findComponentTreeItem(node lcl.ITreeNode) *TWidget
 	return nil
 }
 
-// 更新所有节点状态未选中
-// 只工具选项默认选中
-func (m *ContentLayoutWidget) updateAllNoSelected(node lcl.ITreeNode) {
+func (m *ContentLayoutWidget) resetAllNoSelected() {
 	// 先重置所有
 	for _, item := range m.components {
 		item.selected = false
@@ -271,6 +291,13 @@ func (m *ContentLayoutWidget) updateAllNoSelected(node lcl.ITreeNode) {
 			item.selected = true
 		}
 	}
+}
+
+// 更新所有节点状态未选中
+// 只工具选项默认选中
+func (m *ContentLayoutWidget) updateAllNoSelected(node lcl.ITreeNode) {
+	// 先重置所有
+	m.resetAllNoSelected()
 	// 重置当前节点所属组的所有节点为未选中
 	if item := m.findComponentTreeItem(node); item != nil {
 		if item.parent != nil {

@@ -35,7 +35,7 @@ func (m *TAppWindow) initDesignerLayoutV2() {
 	// 主菜单
 	m.initMainMenu()
 	// 顶侧布局 - 工具栏
-	initToolBtnLayout(m)
+	m.toolBtnLayout = initToolBtnLayout(m)
 	// 底部布局 - 左: 组件库, 左中: 项目查看, 中: 中间画布(自适应), 右: 属性, 下: 日志控制
 	m.contentLayout = initBottomBox(m)
 	// 设计器

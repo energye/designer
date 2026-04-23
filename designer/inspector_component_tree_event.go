@@ -60,7 +60,7 @@ func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode)
 	if component != nil {
 		m.switchComponentEditing(component)
 	}
-	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text(), "id:", component.id)
+	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text())
 }
 
 // 取消选中所有节点

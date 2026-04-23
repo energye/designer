@@ -107,6 +107,7 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 
 // 切换组件设计
 func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
+	// TODO fix: 需要优化, 这里有问题，会锁死UI(原因: 当前选中的组件是 Form 时, 可能与属性有关)
 	// 隐藏之前设计的组件
 	// 隐藏之前设计组件的属性和事件列表
 	var iterable func(comp *TDesigningComponent)
@@ -138,11 +139,12 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	if owner.object != nil {
 		isAcceptsControl = owner.object.ControlStyle().In(types.CsAcceptsControls)
 	}
-	if MainWindow.toolLayout.selectComponent != nil && isAcceptsControl {
-		logs.Debug("选中设计组件:", MainWindow.toolLayout.selectComponent.index, MainWindow.toolLayout.selectComponent.name)
+	selectComponent := SelectedComponent()
+	if selectComponent != nil && isAcceptsControl {
+		logs.Debug("选中设计组件:", selectComponent.name)
 		m.switchComponentEditing(m.FormRoot)
 
-		if newDesComp := GetDesignerComponent(m, x, y, MainWindow.toolLayout.selectComponent.name); newDesComp != nil {
+		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
 			// 创建设计组件
 			newDesComp.SetParent(owner)
 			newDesComp.FormTab.switchComponentEditing(newDesComp)
@@ -158,11 +160,11 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 			// 放置对象创建全量UI
 			triggerUIGeneration(newDesComp, nil, event.CodeGenUI)
 		} else {
-			logs.Warn("选中设计组件", MainWindow.toolLayout.selectComponent.name, "未实现或未注册")
+			logs.Warn("选中设计组件", selectComponent.name, "未实现或未注册")
 		}
-
 		// 重置工具栏选项卡上的组件工具按钮按下
-		MainWindow.toolLayout.ResetTabComponentDown()
+		//MainWindow.toolLayout.ResetTabComponentDown()
+		ResetSelectedComponent()
 		return true
 	}
 	return false
