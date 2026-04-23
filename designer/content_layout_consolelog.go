@@ -1,6 +1,8 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
@@ -9,6 +11,8 @@ import (
 
 type ContentLayoutConsoleLog struct {
 	tab *wg.TTab
+
+	popupMenu lcl.IPopupMenu
 
 	//designer     lcl.IMemo // 设计器日志
 	designer     lcl.ISynEdit // 设计器日志
@@ -40,6 +44,8 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 	font.SetHeight(-13)
 	font.SetQuality(types.FqAntialiased)
 	m.designer.SetParent(owner.consoleLogPanel)
+
+	m.CreatePopupMenu()
 	return m
 }
 
@@ -74,49 +80,56 @@ func (m *ContentLayoutConsoleLog) ClearConsole() {
 }
 
 func (m *ContentLayoutConsoleLog) CreatePopupMenu() {
-	//procedure TLogViewer.CreatePopupMenu;
-	//var
-	//		Item: TMenuItem;
-	//begin
-	//FPopupMenu := TPopupMenu.Create(Self);
-	//
-	//// 复制
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '复制 (&C)';
-	//Item.ShortCut := TextToShortCut('Ctrl+C');
-	//Item.OnClick := @CopyItemClick;
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 全选
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '全选 (&A)';
-	//Item.ShortCut := TextToShortCut('Ctrl+A');
-	//Item.OnClick := @SelectAllItemClick;
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 分隔线
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '-';
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 保存到文件
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '保存到文件 (&S)...';
-	//Item.OnClick := @SaveToFileClick;
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 分隔线
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '-';
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 清空
-	//Item := TMenuItem.Create(FPopupMenu);
-	//Item.Caption := '清空 (&L)';
-	//Item.OnClick := @ClearItemClick;
-	//FPopupMenu.Items.Add(Item);
-	//
-	//// 关联菜单
-	//SynEdit1.PopupMenu := FPopupMenu;
-	//end;
+	popupMenu := lcl.NewPopupMenu(m.designer)
+	m.popupMenu = popupMenu
+
+	copyItem := lcl.NewMenuItem(m.designer)
+	copyItem.SetCaption("复制 (&C)")
+	copyItem.SetShortCut(api.TextToShortCut(m.platformShortcut("C")))
+	copyItem.SetOnClick(m.onCopyItemClick)
+	popupMenu.Items().Add(copyItem)
+
+	selectAllItem := lcl.NewMenuItem(m.designer)
+	selectAllItem.SetCaption("全选 (&A)")
+	selectAllItem.SetShortCut(api.TextToShortCut(m.platformShortcut("A")))
+	selectAllItem.SetOnClick(m.onSelectAllItemClick)
+	popupMenu.Items().Add(selectAllItem)
+
+	separator1 := lcl.NewMenuItem(m.designer)
+	separator1.SetCaption("-")
+	popupMenu.Items().Add(separator1)
+
+	separator2 := lcl.NewMenuItem(m.designer)
+	separator2.SetCaption("-")
+	popupMenu.Items().Add(separator2)
+
+	clearItem := lcl.NewMenuItem(m.designer)
+	clearItem.SetCaption("清空 (&L)")
+	clearItem.SetOnClick(m.onClearItemClick)
+	popupMenu.Items().Add(clearItem)
+
+	m.designer.SetPopupMenu(popupMenu)
+}
+
+func (m *ContentLayoutConsoleLog) platformShortcut(key string) string {
+	if tool.IsDarwin {
+		return "Cmd+" + key
+	}
+	return "Ctrl+" + key
+}
+
+func (m *ContentLayoutConsoleLog) onCopyItemClick(sender lcl.IObject) {
+	if m.designer != nil && m.designer.SelText() != "" {
+		lcl.Clipboard.SetAsText(m.designer.SelText())
+	}
+}
+
+func (m *ContentLayoutConsoleLog) onSelectAllItemClick(sender lcl.IObject) {
+	if m.designer != nil {
+		m.designer.SelectAll()
+	}
+}
+
+func (m *ContentLayoutConsoleLog) onClearItemClick(sender lcl.IObject) {
+	m.ClearConsole()
 }

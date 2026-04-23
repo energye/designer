@@ -30,7 +30,6 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.topBox.SetBevelOuter(types.BvNone)
 	m.topBox.SetAlign(types.AlTop)
 	m.topBox.SetHeight(30)
-	borderSpacing = m.topBox.BorderSpacing()
 	m.topBox.SetParent(owner.inspectorPanel)
 
 	title := lcl.NewLabel(m.topBox)

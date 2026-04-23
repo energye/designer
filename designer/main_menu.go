@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"fmt"
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
@@ -23,6 +24,7 @@ import (
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
+	"github.com/energye/lcl/types"
 )
 
 // 设计器顶部菜单
@@ -42,6 +44,12 @@ type TMainMenu struct {
 	open          lcl.IMenuItem
 	history       lcl.IMenuItem
 	//save          lcl.IMenuItem
+
+	// edit
+	editCut       lcl.IMenuItem
+	editCopy      lcl.IMenuItem
+	editPaste     lcl.IMenuItem
+	editSelectAll lcl.IMenuItem
 
 	// view
 	viewWidgets   lcl.IMenuItem
@@ -230,6 +238,224 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
+	m.editCut = lcl.NewMenuItem(owner)
+	m.editCut.SetCaption("剪切")
+	m.editCut.SetShortCut(api.TextToShortCut(platformShortcut("X")))
+	m.editCut.SetOnClick(func(sender lcl.IObject) {
+		activeControl := lcl.Screen.ActiveControl()
+		if activeControl == nil || !activeControl.IsValid() {
+			return
+		}
+		className := activeControl.ClassName()
+		logs.Debug("剪切-当前焦点控件:", className)
+		switch className {
+		case "TSynEdit":
+			synEdit := lcl.AsSynEdit(activeControl)
+			synEdit.CutToClipboard()
+		case "TMemo":
+			memo := lcl.AsMemo(activeControl)
+			memo.CutToClipboard()
+		case "TEdit", "TLabeledEdit", "TMaskEdit", "TEbEdit":
+			edit := lcl.AsEdit(activeControl)
+			edit.CutToClipboard()
+		case "TComboBox":
+			comboBox := lcl.AsComboBox(activeControl)
+			if comboBox.Style() == types.CsDropDown || comboBox.Style() == types.CsSimple {
+				selText := comboBox.SelText()
+				if selText != "" {
+					lcl.Clipboard.SetAsText(selText)
+					selStart := int(comboBox.SelStart())
+					selLength := int(comboBox.SelLength())
+					currentText := comboBox.Text()
+					runes := []rune(currentText)
+					var newRunes []rune
+					for i := 0; i < len(runes); i++ {
+						if i < selStart || i >= selStart+selLength {
+							newRunes = append(newRunes, runes[i])
+						}
+					}
+					comboBox.SetText(string(newRunes))
+					comboBox.SetSelStart(int32(selStart))
+					comboBox.SetSelLength(0)
+					logs.Debug("从 ComboBox 剪切选中文本", string(newRunes))
+				}
+			} else {
+				logs.Debug("只读 ComboBox 不支持剪切")
+			}
+		default:
+			logs.Debug("当前控件不支持剪切操作:", className)
+		}
+	})
+	m.edit.Add(m.editCut)
+
+	m.editCopy = lcl.NewMenuItem(owner)
+	m.editCopy.SetCaption("复制")
+	m.editCopy.SetShortCut(api.TextToShortCut(platformShortcut("C")))
+	m.editCopy.SetOnClick(func(sender lcl.IObject) {
+		activeControl := lcl.Screen.ActiveControl()
+		if activeControl == nil || !activeControl.IsValid() {
+			return
+		}
+		className := activeControl.ClassName()
+		logs.Debug("复制-当前焦点控件:", className)
+		switch className {
+		case "TSynEdit":
+			synEdit := lcl.AsSynEdit(activeControl)
+			synEdit.CopyToClipboard()
+		case "TMemo":
+			memo := lcl.AsMemo(activeControl)
+			memo.CopyToClipboard()
+		case "TEdit", "TLabeledEdit", "TMaskEdit", "TEbEdit":
+			edit := lcl.AsEdit(activeControl)
+			edit.CopyToClipboard()
+		case "TComboBox":
+			comboBox := lcl.AsComboBox(activeControl)
+			selText := comboBox.SelText()
+			if selText != "" {
+				lcl.Clipboard.SetAsText(selText)
+				logs.Debug("从 ComboBox 复制选中文本")
+			}
+		default:
+			logs.Debug("当前控件不支持复制操作:", className)
+		}
+
+	})
+	m.edit.Add(m.editCopy)
+
+	m.editPaste = lcl.NewMenuItem(owner)
+	m.editPaste.SetCaption("粘贴")
+	m.editPaste.SetShortCut(api.TextToShortCut(platformShortcut("V")))
+	m.editPaste.SetOnClick(func(sender lcl.IObject) {
+		activeControl := lcl.Screen.ActiveControl()
+		if activeControl == nil || !activeControl.IsValid() {
+			return
+		}
+		className := activeControl.ClassName()
+		logs.Debug("粘贴-当前焦点控件:", className)
+		switch className {
+		case "TSynEdit":
+			synEdit := lcl.AsSynEdit(activeControl)
+			synEdit.PasteFromClipboard(true)
+		case "TMemo":
+			memo := lcl.AsMemo(activeControl)
+			memo.PasteFromClipboard()
+		case "TEdit", "TLabeledEdit", "TMaskEdit", "TEbEdit":
+			edit := lcl.AsEdit(activeControl)
+			edit.PasteFromClipboard()
+		case "TComboBox":
+			comboBox := lcl.AsComboBox(activeControl)
+			if comboBox.Style() == types.CsDropDown || comboBox.Style() == types.CsSimple {
+				pasteText := lcl.Clipboard.AsText()
+				currentText := comboBox.Text()
+
+				selStart := int(comboBox.SelStart())
+				selLength := int(comboBox.SelLength())
+
+				runes := []rune(currentText)
+				pasteRunes := []rune(pasteText)
+
+				fmt.Println("selStart:", selStart, "selLength:", selLength,
+					"runes", string(runes), "pasteRunes", string(pasteRunes))
+
+				var newRunes []rune
+				for i := 0; i < len(runes); i++ {
+					if i < selStart || i >= selStart+selLength {
+						newRunes = append(newRunes, runes[i])
+					}
+				}
+				fmt.Println("newRunes:", string(newRunes))
+
+				//byteToRuneIndex := func(byteIdx int) int {
+				//	if byteIdx <= 0 {
+				//		return 0
+				//	}
+				//	if byteIdx >= len(currentText) {
+				//		return len(runes)
+				//	}
+				//	runeIdx := 0
+				//	currentByteIdx := 0
+				//	for _, r := range runes {
+				//		if currentByteIdx >= byteIdx {
+				//			break
+				//		}
+				//		currentByteIdx += len(string(r))
+				//		runeIdx++
+				//	}
+				//	return runeIdx
+				//}
+				//
+				//runeStart := byteToRuneIndex(byteStart)
+				//runeEnd := byteToRuneIndex(byteStart + byteLength)
+				//
+				//newRunes := append(append(runes[:runeStart], pasteRunes...), runes[runeEnd:]...)
+				//newText := string(newRunes)
+				//
+				//comboBox.SetText(newText)
+				//
+				//newCursorRunePos := runeStart + len(pasteRunes)
+				//if newCursorRunePos > len(newRunes) {
+				//	newCursorRunePos = len(newRunes)
+				//}
+				//newBytePos := 0
+				//for i := 0; i < newCursorRunePos && i < len(newRunes); i++ {
+				//	newBytePos += len(string(newRunes[i]))
+				//}
+				//comboBox.SetSelStart(int32(newBytePos))
+				//comboBox.SetSelLength(0)
+				logs.Debug("粘贴到 ComboBox")
+			} else {
+				logs.Debug("只读 ComboBox 不支持粘贴")
+			}
+		default:
+			logs.Debug("当前控件不支持粘贴操作:", className)
+		}
+	})
+	m.edit.Add(m.editPaste)
+
+	separator1 := lcl.NewMenuItem(owner)
+	separator1.SetCaption("-")
+	m.edit.Add(separator1)
+
+	m.editSelectAll = lcl.NewMenuItem(owner)
+	m.editSelectAll.SetCaption("全选")
+	m.editSelectAll.SetShortCut(api.TextToShortCut(platformShortcut("A")))
+	m.editSelectAll.SetOnClick(func(sender lcl.IObject) {
+		activeControl := lcl.Screen.ActiveControl()
+		if activeControl == nil || !activeControl.IsValid() {
+			return
+		}
+		className := activeControl.ClassName()
+		logs.Debug("全选-当前焦点控件:", className)
+		switch className {
+		case "TSynEdit":
+			synEdit := lcl.AsSynEdit(activeControl)
+			synEdit.SelectAll()
+		case "TMemo":
+			memo := lcl.AsMemo(activeControl)
+			memo.SelectAll()
+		case "TEdit", "TLabeledEdit", "TMaskEdit", "TEbEdit":
+			edit := lcl.AsEdit(activeControl)
+			edit.SelectAll()
+		case "TComboBox":
+			comboBox := lcl.AsComboBox(activeControl)
+			if comboBox.Style() == types.CsDropDown || comboBox.Style() == types.CsSimple {
+				comboBox.SelectAll()
+				logs.Debug("ComboBox 全选")
+			} else {
+				logs.Debug("只读 ComboBox 不支持全选")
+			}
+		default:
+			logs.Debug("当前控件不支持全选操作:", className)
+		}
+	})
+	m.edit.Add(m.editSelectAll)
+}
+
+func platformShortcut(key string) string {
+	if desTool.IsDarwin {
+		return "Meta+" + key
+	}
+	return "Ctrl+" + key
 }
 
 func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
