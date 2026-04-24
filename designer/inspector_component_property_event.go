@@ -241,16 +241,18 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 	})
 	tree.SetOnPaintText(func(sender lcl.IBaseVirtualTree, targetCanvas lcl.ICanvas, node types.PVirtualNode,
 		column int32, textType types.TVSTTextType) {
-		if column == 0 {
-			font := targetCanvas.FontToFont()
-			font.SetStyle(font.Style().Include(types.FsBold))
-			font.SetColor(colors.RGBToColor(0, 32, 96))
-		} else if column == 1 {
+		font := targetCanvas.FontToFont()
+		font.SetSize(8)
+		//if column == 0 {
+		//	font := targetCanvas.FontToFont()
+		//	font.SetStyle(font.Style().Include(types.FsBold))
+		//	font.SetColor(colors.RGBToColor(0, 32, 96))
+		//} else
+		if column == 1 {
 			if data := vtedit.GetPropertyNodeData(node); data != nil {
 				if data.IsModify() {
-					font := targetCanvas.FontToFont()
 					// 值被修改样式
-					font.SetStyle(font.Style().Include(types.FsBold))
+					//font.SetStyle(font.Style().Include(types.FsBold))
 					font.SetColor(0x007DFF)
 				}
 			}

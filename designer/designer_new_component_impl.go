@@ -139,8 +139,9 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.pageEvent = lcl.NewTabSheet(m.page)
 	m.pageEvent.SetParent(m.page)
 	m.pageEvent.SetCaption("  事件  ")
-	SetComponentDefaultColor(m.pageEvent)
 	m.pageEvent.SetAlign(types.AlClient)
+	SetComponentDefaultColor(m.pageEvent)
+	m.pageEvent.SetBorderWidth(0)
 
 	// 属性树
 	m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
