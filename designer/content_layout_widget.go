@@ -161,8 +161,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				return
 			}
 		}
-		m.selectedComponent = nil
-		SetStatusCenterText("-")
 		forceUpdate()
 	})
 	m.tree.SetOnAdvancedCustomDrawItem(func(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState,

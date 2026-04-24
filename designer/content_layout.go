@@ -96,6 +96,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.projectPanel = lcl.NewPanel(owner)
 	//m.projectPanel.SetColor(wg.LightenColor(colors.ClAqua, 0.6))
 	m.projectPanel.SetAlign(types.AlLeft)
+	m.projectPanel.SetBevelOuter(types.BvNone)
+	m.projectPanel.SetBorderStyleToBorderStyle(types.BsSingle)
 	m.projectPanel.SetWidth(windowLayout.ContentLayout.ProjectPanelWidth) //动态控制
 	m.projectPanel.SetVisible(windowLayout.MenuView.ProjectChecked)       //动态控制
 	m.projectPanel.SetCaption("项目管理器")
@@ -129,6 +131,7 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.inspectorPanel = lcl.NewPanel(owner)
 	//m.inspectorPanel.SetColor(wg.LightenColor(colors.ClAqua, 1.2))
 	m.inspectorPanel.SetAlign(types.AlRight)
+	m.inspectorPanel.SetBevelOuter(types.BvNone)
 	m.inspectorPanel.SetBorderStyleToBorderStyle(types.BsSingle)
 	m.inspectorPanel.SetCaption("属性检查器")
 	m.inspectorPanel.SetWidth(windowLayout.ContentLayout.InspectorPanelWidth) //动态控制
