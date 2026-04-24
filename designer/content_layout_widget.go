@@ -124,7 +124,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		if n != nil && hoverNode != n {
 			hoverNode = n
 			m.tree.Invalidate()
-			owner.contentStatus.SetSimpleText(fmt.Sprintf(n.Text()))
 		} else {
 			hoverNode = nil
 		}
@@ -154,12 +153,16 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				m.selectedComponent.selected = true // 如果是 nil 错误, 说明逻辑有问题
 				if m.selectedComponent.IsSelectTool() {
 					m.selectedComponent = nil
+					SetStatusCenterText("")
+				} else {
+					SetStatusCenterText("Selected: " + m.selectedComponent.name)
 				}
 				fmt.Println("click:", hoverNode.Level(), hoverNode.Text())
 				return
 			}
 		}
 		m.selectedComponent = nil
+		SetStatusCenterText("")
 		forceUpdate()
 	})
 	m.tree.SetOnAdvancedCustomDrawItem(func(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState,

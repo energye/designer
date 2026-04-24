@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -34,13 +35,16 @@ type ContentLayout struct {
 	consoleLogPanel    lcl.IPanel    // 控制台输出
 	layoutConsoleLog   *ContentLayoutConsoleLog
 
-	contentStatus lcl.IStatusBar
+	contentStatus       lcl.IStatusBar
+	contentStatusLeft   lcl.IStatusPanel
+	contentStatusCenter lcl.IStatusPanel
+	contentStatusRight  lcl.IStatusPanel
 }
 
 // 底部布局 - 左: 组件库, 左中: 项目查看, 中: 中间画布(自适应), 右: 属性, 下: 日志控制
 func initBottomBox(owner lcl.IWinControl) *ContentLayout {
+	windowLayout := config.Config.WindowLayout
 	m := &ContentLayout{}
-
 	// 主内容布局盒子
 	m.box = lcl.NewPanel(owner)
 	//m.box.SetColor(colors.Cl3DDkShadow)
@@ -64,8 +68,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.widgetPanel.SetDoubleBuffered(true)
 	m.widgetPanel.SetAlign(types.AlLeft)
 	m.widgetPanel.SetCaption("组件库")
-	m.widgetPanel.SetWidth(170)    //动态控制
-	m.widgetPanel.SetVisible(true) //动态控制
+	m.widgetPanel.SetWidth(windowLayout.ContentLayout.WidgetPanelWidth) //动态控制
+	m.widgetPanel.SetVisible(windowLayout.MenuView.WidgetsChecked)      //动态控制
 	m.widgetPanel.Constraints().SetMinWidth(30)
 	m.widgetPanel.Constraints().SetMaxWidth(400)
 	m.widgetPanel.SetParent(m.box)
@@ -93,8 +97,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.projectPanel = lcl.NewPanel(owner)
 	//m.projectPanel.SetColor(wg.LightenColor(colors.ClAqua, 0.6))
 	m.projectPanel.SetAlign(types.AlLeft)
-	m.projectPanel.SetWidth(150)    //动态控制
-	m.projectPanel.SetVisible(true) //动态控制
+	m.projectPanel.SetWidth(windowLayout.ContentLayout.ProjectPanelWidth) //动态控制
+	m.projectPanel.SetVisible(windowLayout.MenuView.ProjectChecked)       //动态控制
 	m.projectPanel.SetCaption("项目管理器")
 	m.projectPanel.Constraints().SetMinWidth(30)
 	m.projectPanel.Constraints().SetMaxWidth(400)
@@ -111,6 +115,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.designerPanel.SetCaption("设计器画布")
 	//m.designerPanel.SetColor(wg.LightenColor(colors.ClAqua, 0.9))
 	m.designerPanel.SetAlign(types.AlClient)
+	m.designerPanel.Constraints().SetMinWidth(200)
+	m.designerPanel.Constraints().SetMinHeight(200)
 	m.designerPanel.SetParent(m.rightBox)
 
 	// 查看器面板分隔器
@@ -126,8 +132,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.inspectorPanel.SetAlign(types.AlRight)
 	m.inspectorPanel.SetBorderStyleToBorderStyle(types.BsSingle)
 	m.inspectorPanel.SetCaption("属性检查器")
-	m.inspectorPanel.SetWidth(225)    //动态控制
-	m.inspectorPanel.SetVisible(true) //动态控制
+	m.inspectorPanel.SetWidth(windowLayout.ContentLayout.InspectorPanelWidth) //动态控制
+	m.inspectorPanel.SetVisible(windowLayout.MenuView.InspectorChecked)       //动态控制
 	m.inspectorPanel.Constraints().SetMinWidth(30)
 	m.inspectorPanel.Constraints().SetMaxWidth(400)
 	m.inspectorPanel.SetParent(m.rightBox)
@@ -150,8 +156,8 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.consoleLogPanel.SetDoubleBuffered(true)
 	m.consoleLogPanel.SetAlign(types.AlBottom)
 	m.consoleLogPanel.SetCaption("控制台输出")
-	m.consoleLogPanel.SetHeight(150)   //动态控制
-	m.consoleLogPanel.SetVisible(true) //动态控制
+	m.consoleLogPanel.SetHeight(windowLayout.ContentLayout.ConsoleLogPanelHeight) //动态控制
+	m.consoleLogPanel.SetVisible(windowLayout.MenuView.ConsoleChecked)            //动态控制
 	m.consoleLogPanel.Constraints().SetMinHeight(30)
 	m.consoleLogPanel.SetParent(m.rightBox)
 	//m.consoleLogPanel.SetOnResize(func(sender lcl.IObject) {
@@ -162,8 +168,21 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.contentStatus.SetBorderWidth(0)
 	m.contentStatus.SetAutoSize(false)
 	m.contentStatus.SetShowHint(true)
+	m.contentStatus.SetAutoHint(true)
+	m.contentStatus.SetSimplePanel(false)
+	m.contentStatus.SetVisible(windowLayout.MenuView.StatusbarChecked)
 	m.contentStatus.SetHeight(30)
 	m.contentStatus.SetParent(m.box)
+	panels := m.contentStatus.Panels()
+
+	m.contentStatusLeft = panels.AddToStatusPanel()
+	m.contentStatusLeft.SetAlignment(types.TaLeftJustify)
+	m.contentStatusLeft.SetWidth(50)
+	m.contentStatusCenter = panels.AddToStatusPanel()
+	m.contentStatusCenter.SetAlignment(types.TaCenter)
+	m.contentStatusCenter.SetWidth(250)
+	m.contentStatusRight = panels.AddToStatusPanel()
+	m.contentStatusRight.SetAlignment(types.TaCenter)
 
 	m.layoutWidget = initContentLayoutWidget(m)
 	m.layoutProject = initContentLayoutProject(m)
@@ -171,6 +190,36 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.layoutConsoleLog = initContentLayoutConsoleLog(m)
 
 	return m
+}
+
+func (m *ContentLayout) SetStatusLeftText(s string) {
+	m.contentStatusLeft.SetText(s)
+}
+
+func (m *ContentLayout) SetStatusCenterText(s string) {
+	m.contentStatusCenter.SetText(s)
+}
+
+func (m *ContentLayout) SetStatusRightText(s string) {
+	m.contentStatusRight.SetText(s)
+}
+
+func SetStatusLeftText(s string) {
+	if MainWindow.contentLayout != nil {
+		MainWindow.contentLayout.SetStatusLeftText(s)
+	}
+}
+
+func SetStatusCenterText(s string) {
+	if MainWindow.contentLayout != nil {
+		MainWindow.contentLayout.SetStatusCenterText(s)
+	}
+}
+
+func SetStatusRightText(s string) {
+	if MainWindow.contentLayout != nil {
+		MainWindow.contentLayout.SetStatusRightText(s)
+	}
 }
 
 // 初始化设计器布局

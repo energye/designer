@@ -103,29 +103,26 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
 	cfg := config.DesignerConfig
-	if cfg.Window.Width <= 400 {
-		//cfg.Window.Width = 410 // test
+	if cfg.WindowLayout.WindowBoundsRect.Width() <= 400 {
+		cfg.WindowLayout.WindowBoundsRect.SetWidth(400)
 	}
-	if cfg.Window.Height <= 200 {
-		//cfg.Window.Height = 210 // test
+	if cfg.WindowLayout.WindowBoundsRect.Height() <= 200 {
+		cfg.WindowLayout.WindowBoundsRect.SetHeight(200)
 	}
 	// 属性
 	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
-	m.SetLeft(cfg.Window.X)
-	m.SetTop(cfg.Window.Y)
-	m.SetWidth(cfg.Window.Width)
-	m.SetHeight(cfg.Window.Height)
+	m.SetBoundsRect(cfg.WindowLayout.WindowBoundsRect)
 	m.SetColor(bgLightColor)
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
-	if cfg.Window.X == 0 && cfg.Window.Y == 0 {
+	if cfg.WindowLayout.WindowBoundsRect.Left == 0 && cfg.WindowLayout.WindowBoundsRect.Top == 0 {
 		// 窗口显示在鼠标所在的窗口
 		m.showInMonitor()
 	}
-	if cfg.Window.WindowState != 0 {
-		m.SetWindowState(cfg.Window.WindowState)
+	if cfg.WindowLayout.WindowState != types.WsNormal {
+		m.SetWindowState(cfg.WindowLayout.WindowState)
 	}
 
 	m.initAllImageList()
@@ -171,8 +168,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 				autoAssociateProjectLoad()
 			}
 		})
-		// 检查框架 frameworks 框架是否设置安装目录，并正确安装
-		//m.checkInstallFrameworks() // 不再使用
+		SetStatusLeftText("  就绪")
 	})
 
 }
@@ -189,9 +185,44 @@ func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 func (m *TAppWindow) handleClose() {
 	logs.Info("closeHandle")
 	m.closing = true
+
+	// 收集窗口布局信息
+	// 收集窗口信息
 	br := m.BoundsRect()
-	// 更新设计器窗口
-	config.UpdateWindow(br.Left, br.Top, br.Width(), br.Height(), m.WindowState())
+	// 收集菜单-视图
+	viewWidgetsChecked := m.mainMenu.viewWidgets.Checked()
+	viewProjectChecked := m.mainMenu.viewProject.Checked()
+	viewInspectorChecked := m.mainMenu.viewInspector.Checked()
+	viewConsoleChecked := m.mainMenu.viewConsole.Checked()
+	viewStatusbarChecked := m.mainMenu.viewStatusbar.Checked()
+	// 收集布局 width height
+	widgetPanelWidth := m.contentLayout.widgetPanel.Width()
+	projectPanelWidth := m.contentLayout.projectPanel.Width()
+	inspectorPanelWidth := m.contentLayout.inspectorPanel.Width()
+	consoleLogPanelHeight := m.contentLayout.consoleLogPanel.Height()
+
+	// 持久化设计器窗口布局关键数据
+	windowLayout := &config.Config.WindowLayout
+	if windowLayout.MenuView == nil {
+		windowLayout.MenuView = &config.StorageMenuView{}
+	}
+	if windowLayout.ContentLayout == nil {
+		windowLayout.ContentLayout = &config.StorageContentLayout{}
+	}
+	if m.WindowState() == types.WsNormal {
+		windowLayout.WindowBoundsRect = br
+	}
+	windowLayout.WindowState = m.WindowState()
+	windowLayout.ContentLayout.WidgetPanelWidth = widgetPanelWidth
+	windowLayout.ContentLayout.ProjectPanelWidth = projectPanelWidth
+	windowLayout.ContentLayout.InspectorPanelWidth = inspectorPanelWidth
+	windowLayout.ContentLayout.ConsoleLogPanelHeight = consoleLogPanelHeight
+	windowLayout.MenuView.WidgetsChecked = viewWidgetsChecked
+	windowLayout.MenuView.ProjectChecked = viewProjectChecked
+	windowLayout.MenuView.InspectorChecked = viewInspectorChecked
+	windowLayout.MenuView.ConsoleChecked = viewConsoleChecked
+	windowLayout.MenuView.StatusbarChecked = viewStatusbarChecked
+
 	// 更新最后打开的项目
 	config.UpdateLastProject(gAppEGPPath)
 	// 更新配置文件

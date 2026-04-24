@@ -20,7 +20,6 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	toolExec "github.com/energye/lcl/tool/exec"
-	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
 	"sort"
@@ -55,20 +54,11 @@ type goEnv map[string]string
 
 // 设计器窗体配置
 type designerConfig struct {
-	Title         string        `json:"title"`         // 设计器标题
-	Version       string        `json:"version"`       // 设计器版本
-	Dependencies  dependencies  `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
-	Window        Window        `json:"window"`        // 设计器窗体信息
-	ComponentTabs ComponentTabs `json:"componentTabs"` // 设计器加载组件
-}
-
-// 设计器窗口配置
-type Window struct {
-	X           int32              `json:"x"`
-	Y           int32              `json:"y"`
-	Width       int32              `json:"width"`
-	Height      int32              `json:"height"`
-	WindowState types.TWindowState `json:"window_state"`
+	Title         string              `json:"title"`         // 设计器标题
+	Version       string              `json:"version"`       // 设计器版本
+	Dependencies  dependencies        `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
+	WindowLayout  StorageWindowLayout `json:"window"`        // 设计器窗体信息
+	ComponentTabs ComponentTabs       `json:"componentTabs"` // 设计器加载组件
 }
 
 // 设计器组件标签页
@@ -93,14 +83,14 @@ type Tab struct {
 
 // TConfig energy 配置文件
 type TConfig struct {
-	Window         Window           `json:"window"`          // 窗口配置
-	FrameworkDir   string           `json:"framework"`       // 框架目录
-	Mod            TMod             `json:"mod"`             // 模块配置
-	Registry       string           `json:"registry"`        // 远程服务配置地址
-	Proxy          string           `json:"proxy"`           // 代理地址
-	LastProject    string           `json:"last_project"`    // 最后打开项目
-	HistoryProject []string         `json:"history_project"` // 历史项目列表
-	Env            map[string]*TEnv `json:"env"`             // 环境配置
+	WindowLayout   StorageWindowLayout `json:"window"`          // 窗口配置
+	FrameworkDir   string              `json:"framework"`       // 框架目录
+	Mod            TMod                `json:"mod"`             // 模块配置
+	Registry       string              `json:"registry"`        // 远程服务配置地址
+	Proxy          string              `json:"proxy"`           // 代理地址
+	LastProject    string              `json:"last_project"`    // 最后打开项目
+	HistoryProject []string            `json:"history_project"` // 历史项目列表
+	Env            map[string]*TEnv    `json:"env"`             // 环境配置
 }
 
 // TEnv 环境配置
@@ -179,18 +169,6 @@ func (m goEnv) Get(name string) string {
 func (m goEnv) Set(name, value string) {
 	m[name] = value
 	_ = os.Setenv(name, value)
-}
-
-// UpdateWindow 更新窗体配置
-// 在窗体改变大小时调用, 窗体关闭时
-func UpdateWindow(x, y, w, h int32, windowState types.TWindowState) {
-	if windowState == types.WsNormal {
-		Config.Window.X = x
-		Config.Window.Y = y
-		Config.Window.Width = w
-		Config.Window.Height = h
-	}
-	Config.Window.WindowState = windowState
 }
 
 // UpdateFrameworkDir 更新设计器的框架存放目录配置
@@ -289,11 +267,13 @@ func init() {
 	_ = os.Mkdir(energyDir, os.ModePerm)
 
 	// config.json
-	Config = &TConfig{Window: DesignerConfig.Window}
+	Config = &TConfig{WindowLayout: DesignerConfig.WindowLayout}
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
-		Config.Window = DesignerConfig.Window
+		Config.WindowLayout = DesignerConfig.WindowLayout
 		Config.FrameworkDir = filepath.Join(energyDir)
+		Config.WindowLayout.InitDefaultMenuView()
+		Config.WindowLayout.InitDefaultContentLayout()
 		data, e := json.MarshalIndent(Config, "", "\t")
 		err.CheckErr(e)
 		e = os.WriteFile(configPath, data, 0644)
@@ -305,7 +285,9 @@ func init() {
 	err.CheckErr(e)
 	e = json.Unmarshal(data, Config)
 	err.CheckErr(e)
-	DesignerConfig.Window = Config.Window
+	Config.WindowLayout.InitDefaultMenuView()
+	Config.WindowLayout.InitDefaultContentLayout()
+	DesignerConfig.WindowLayout = Config.WindowLayout
 
 	// 框架目录为空或无效重新设置
 	if Config.FrameworkDir == "" || !tool.IsExist(Config.FrameworkDir) {

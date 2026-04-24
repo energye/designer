@@ -141,6 +141,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	}
 	selectComponent := SelectedComponent()
 	if selectComponent != nil && isAcceptsControl {
+		SetStatusCenterText("")
 		logs.Debug("选中设计组件:", selectComponent.name)
 		m.switchComponentEditing(m.FormRoot)
 

@@ -56,6 +56,7 @@ type TMainMenu struct {
 	viewProject   lcl.IMenuItem
 	viewInspector lcl.IMenuItem
 	viewConsole   lcl.IMenuItem
+	viewStatusbar lcl.IMenuItem
 
 	// run
 	build      lcl.IMenuItem
@@ -315,9 +316,10 @@ func platformShortcut(key string) string {
 }
 
 func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
+	windowLayout := config.Config.WindowLayout
 	m.viewWidgets = lcl.NewMenuItem(owner)
 	m.viewWidgets.SetCaption("组件库")
-	m.viewWidgets.SetChecked(true) // 动态控制
+	m.viewWidgets.SetChecked(windowLayout.MenuView.WidgetsChecked) // 动态控制
 	m.viewWidgets.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewWidgets.Checked()
@@ -329,8 +331,8 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewWidgets)
 
 	m.viewProject = lcl.NewMenuItem(owner)
-	m.viewProject.SetCaption("项目管理")
-	m.viewProject.SetChecked(true) // 动态控制
+	m.viewProject.SetCaption("项目管理器")
+	m.viewProject.SetChecked(windowLayout.MenuView.ProjectChecked) // 动态控制
 	m.viewProject.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewProject.Checked()
@@ -343,7 +345,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 
 	m.viewInspector = lcl.NewMenuItem(owner)
 	m.viewInspector.SetCaption("属性检查器")
-	m.viewInspector.SetChecked(true) // 动态控制
+	m.viewInspector.SetChecked(windowLayout.MenuView.InspectorChecked) // 动态控制
 	m.viewInspector.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewInspector.Checked()
@@ -355,8 +357,8 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewInspector)
 
 	m.viewConsole = lcl.NewMenuItem(owner)
-	m.viewConsole.SetCaption("日志控制")
-	m.viewConsole.SetChecked(true) // 动态控制
+	m.viewConsole.SetCaption("日志")
+	m.viewConsole.SetChecked(windowLayout.MenuView.ConsoleChecked) // 动态控制
 	m.viewConsole.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewConsole.Checked()
@@ -366,6 +368,18 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 		}
 	})
 	m.view.Add(m.viewConsole)
+
+	m.viewStatusbar = lcl.NewMenuItem(owner)
+	m.viewStatusbar.SetCaption("状态栏")
+	m.viewStatusbar.SetChecked(windowLayout.MenuView.StatusbarChecked) // 动态控制
+	m.viewStatusbar.SetOnClick(func(sender lcl.IObject) {
+		if MainWindow.contentLayout != nil {
+			checked := !m.viewStatusbar.Checked()
+			m.viewStatusbar.SetChecked(checked)
+			MainWindow.contentLayout.contentStatus.SetVisible(checked)
+		}
+	})
+	m.view.Add(m.viewStatusbar)
 
 }
 
