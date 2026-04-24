@@ -129,10 +129,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	// 窗口显示事件
 	m.SetOnShow(m.OnShow)
 	// 创建设计器布局
-	//m.initDesignerLayoutV1()
 	m.initDesignerLayoutV2()
-	// status bar
-	//newStatusBar(m)
 }
 
 func (m *TAppWindow) initAllImageList() {
