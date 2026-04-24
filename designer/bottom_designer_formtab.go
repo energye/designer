@@ -141,7 +141,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	}
 	selectComponent := SelectedComponent()
 	if selectComponent != nil && isAcceptsControl {
-		SetStatusCenterText("")
+		SetStatusCenterText("-")
 		logs.Debug("选中设计组件:", selectComponent.name)
 		m.switchComponentEditing(m.FormRoot)
 
@@ -169,15 +169,6 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 		return true
 	}
 	return false
-}
-
-// 窗体设计界面 鼠标移动
-func (m *FormTab) designerOnMouseMove(sender lcl.IObject, shift types.TShiftState, x, y int32) {
-	br := m.FormRoot.BoundsRect()
-	hint := fmt.Sprintf(`%v: TForm
-	Left: %v Top: %v
-	Width: %v Height: %v`, m.FormRoot.Name(), br.Left, br.Top, br.Width(), br.Height())
-	m.FormRoot.SetHint(hint)
 }
 
 // 窗体设计界面 鼠标按下, 放置设计组件, 加载组件属性

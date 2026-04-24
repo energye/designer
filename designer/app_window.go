@@ -168,9 +168,7 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 				autoAssociateProjectLoad()
 			}
 		})
-		SetStatusLeftText("  就绪")
 	})
-
 }
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {

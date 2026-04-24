@@ -153,7 +153,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				m.selectedComponent.selected = true // 如果是 nil 错误, 说明逻辑有问题
 				if m.selectedComponent.IsSelectTool() {
 					m.selectedComponent = nil
-					SetStatusCenterText("")
+					SetStatusCenterText("-")
 				} else {
 					SetStatusCenterText("Selected: " + m.selectedComponent.name)
 				}
@@ -162,7 +162,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			}
 		}
 		m.selectedComponent = nil
-		SetStatusCenterText("")
+		SetStatusCenterText("-")
 		forceUpdate()
 	})
 	m.tree.SetOnAdvancedCustomDrawItem(func(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState,

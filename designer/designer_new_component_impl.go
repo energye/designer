@@ -343,8 +343,15 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 	m.loadPropertyList()
 	// 加载事件列表
 	m.loadEventList()
-	
+
+	br := m.Control().BoundsRect()
+	text := fmt.Sprintf("1: 1\tSelected: %s\tX: %v  Y: %v\t%v x %v", m.ClassName(), br.Left, br.Top, br.Width(), br.Height())
+	m.SetStatusText(text)
 	logs.Debug("加载组件属性完成", m.ClassName())
+}
+
+func (m *TDesigningComponent) SetStatusText(s string) {
+	SetStatusRightText(s)
 }
 
 func (m *TDesigningComponent) Mod() string {

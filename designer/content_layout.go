@@ -36,7 +36,6 @@ type ContentLayout struct {
 	layoutConsoleLog   *ContentLayoutConsoleLog
 
 	contentStatus       lcl.IStatusBar
-	contentStatusLeft   lcl.IStatusPanel
 	contentStatusCenter lcl.IStatusPanel
 	contentStatusRight  lcl.IStatusPanel
 }
@@ -175,9 +174,6 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	m.contentStatus.SetParent(m.box)
 	panels := m.contentStatus.Panels()
 
-	m.contentStatusLeft = panels.AddToStatusPanel()
-	m.contentStatusLeft.SetAlignment(types.TaLeftJustify)
-	m.contentStatusLeft.SetWidth(50)
 	m.contentStatusCenter = panels.AddToStatusPanel()
 	m.contentStatusCenter.SetAlignment(types.TaCenter)
 	m.contentStatusCenter.SetWidth(250)
@@ -192,22 +188,12 @@ func initBottomBox(owner lcl.IWinControl) *ContentLayout {
 	return m
 }
 
-func (m *ContentLayout) SetStatusLeftText(s string) {
-	m.contentStatusLeft.SetText(s)
-}
-
 func (m *ContentLayout) SetStatusCenterText(s string) {
 	m.contentStatusCenter.SetText(s)
 }
 
 func (m *ContentLayout) SetStatusRightText(s string) {
 	m.contentStatusRight.SetText(s)
-}
-
-func SetStatusLeftText(s string) {
-	if MainWindow.contentLayout != nil {
-		MainWindow.contentLayout.SetStatusLeftText(s)
-	}
 }
 
 func SetStatusCenterText(s string) {
