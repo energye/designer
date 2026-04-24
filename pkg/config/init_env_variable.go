@@ -13,7 +13,6 @@ package config
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
@@ -46,9 +45,6 @@ var goEnvVars = map[string]bool{
 // 系统 shell 中配置的 Go 环境变量。它会先应用预定义的运行时环境变量，随后通过
 // 执行 `go env -json` 命令获取完整的 Go 环境配置并缓存到全局变量 GGoEnv 中。
 func InitGoEnv() {
-	if tool.IsWindows {
-		return
-	}
 	env := BuildRuntimeEnv()
 	for name, value := range env {
 		if goEnvVars[name] {

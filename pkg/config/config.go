@@ -163,7 +163,11 @@ func (m dependencies) Get(modPath string) string {
 }
 
 func (m goEnv) Get(name string) string {
-	return m[name]
+	value := m[name]
+	if value == "" {
+		value = os.Getenv(name)
+	}
+	return value
 }
 
 func (m goEnv) Set(name, value string) {
