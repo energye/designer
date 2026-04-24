@@ -22,10 +22,6 @@ func (m *TAppWindow) initDesignerLayoutV1() {
 	m.initWindowComponent()
 	// 主菜单
 	m.initMainMenu()
-	// 工具栏
-	m.initTopToolbar()
-	// 底部布局
-	m.initBottomBox()
 }
 
 // 初始化设计器布局 v2

@@ -49,10 +49,8 @@ var (
 type TAppWindow struct {
 	lcl.TEngForm
 	mainMenu              *TMainMenu                 // 主菜单
-	toolLayout            *ToolLayout                // 工具具栏 删除
 	toolBtnLayout         *TToolBtnLayout            // 工具具栏
 	contentLayout         *ContentLayout             // 底部布局盒子
-	bottomLayout          *BottomLayout              // 底部布局盒子 删除
 	openDialog            lcl.IOpenDialog            // 打开对话框
 	saveDialog            lcl.ISaveDialog            // 保存对话框
 	selectDirectoryDialog lcl.ISelectDirectoryDialog // 选择文件夹对话框

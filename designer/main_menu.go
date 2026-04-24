@@ -182,7 +182,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	m.createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
-		MainWindow.toolLayout.toolbarBtn.onNewForm(sender)
+		MainWindow.toolBtnLayout.toolbarBtn.onNewForm(sender)
 	})
 	create.Add(m.createWindow)
 
@@ -191,7 +191,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.open.SetShortCut(api.TextToShortCut("Ctrl+O"))
 	m.open.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
 	m.open.SetOnClick(func(sender lcl.IObject) {
-		MainWindow.toolLayout.toolbarBtn.onOpenForm(sender)
+		MainWindow.toolBtnLayout.toolbarBtn.onOpenForm(sender)
 	})
 	m.file.Add(m.open)
 
@@ -439,7 +439,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.runApp.SetShortCut(api.TextToShortCut("F9"))
 	m.runApp.SetOnClick(func(lcl.IObject) {
 		logs.Debug("运行")
-		MainWindow.toolLayout.toolbarBtn.onRunPreviewForm(m.runApp)
+		MainWindow.toolBtnLayout.toolbarBtn.onRunPreviewForm(m.runApp)
 	})
 	m.run.Add(m.runApp)
 }

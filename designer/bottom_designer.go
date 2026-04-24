@@ -44,52 +44,6 @@ type Designer struct {
 	defaultTip *wg.TButton
 }
 
-// 创建设计器的布局
-func (m *BottomLayout) createFromDesignerLayout() *Designer {
-	des := new(Designer)
-	des.designerForms = make(map[int]*FormTab)
-	//des.page = lcl.NewPageControl(m.box)
-	des.tab = wg.NewTab(m.box)
-	des.tab.SetBounds(0, 0, m.rightBox.Width(), m.rightBox.Height())
-	des.tab.SetAlign(types.AlClient)
-	des.tab.SetBevelColor(wg.LightenColor(bgDarkColor, 0.3))
-	des.tab.SetBevelOuter(types.BvLowered)
-	//des.tab.SetColor(colors.ClBlue)
-	des.tab.ScrollLeft().SetTop(3)
-	des.tab.ScrollLeft().SetHeight(20)
-	des.tab.ScrollLeft().SetColor(wg.DarkenColor(bgLightColor, 0.1))
-	des.tab.ScrollRight().SetTop(3)
-	des.tab.ScrollRight().SetHeight(20)
-	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
-	des.tab.EnableScrollButton(false)
-	des.tab.SetParent(m.rightBox)
-
-	des.defaultTip = wg.NewButton(des.tab)
-	des.defaultTip.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))
-	defaultTipBr := des.defaultTip.BoundsRect()
-	dtw, dth := int32(140), int32(140)
-	defaultTipBr.Left = m.rightBox.Width()/2 - dtw/2
-	defaultTipBr.Top = m.rightBox.Height()/2 - dth/2
-	defaultTipBr.SetWidth(dtw)
-	defaultTipBr.SetHeight(dth)
-	des.defaultTip.SetBoundsRect(defaultTipBr)
-	des.defaultTip.SetAlpha(80)
-	des.defaultTip.SetRadius(15)
-	des.defaultTip.TextAlign = wg.TextAlignLeft
-	des.defaultTip.TextLineSpacing = 8
-	des.defaultTip.TextOffSetX = 10
-	des.defaultTip.Font().SetSize(10)
-	des.defaultTip.Font().SetColor(wg.DarkenColor(colors.ClGray, 0.2))
-	des.defaultTip.SetDisable(true)
-	des.defaultTip.SetAnchors(types.NewSet())
-	des.defaultTip.SetText("新建项目 (Ctrl+P)\n打开项目 (Ctrl+O)\n新建窗体 (Ctrl+N)\n应用配置 (Ctrl+F11)\n　　运行 (F9)")
-	des.defaultTip.SetParent(des.tab)
-
-	// 创建tab上的右键菜单
-	des.createTabMenu()
-	return des
-}
-
 // 创建tab上的右键菜单
 func (m *Designer) createTabMenu() {
 	if m.tabMenu != nil {
