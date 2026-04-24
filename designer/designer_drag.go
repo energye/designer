@@ -132,8 +132,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
-			text := fmt.Sprintf("1: 1\tSelected: %s\tX: %v  Y: %v\t%v x %v", m.relation.ClassName(), br.Left, br.Top, br.Width(), br.Height())
-			m.relation.SetStatusText(text)
+			m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
 		}
 	})
 	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
@@ -345,8 +344,7 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
 		message.Follow(msgContent)
-		text := fmt.Sprintf("1: 1\tSelected: %s\tX: %v  Y: %v\t%v x %v", sender.ClassName(), m.dcl+x, m.dct+y, br.Width(), br.Height())
-		sender.SetStatusText(text)
+		sender.SetStatusText(m.dcl+x, m.dct+y, br.Width(), br.Height())
 		go sender.UpdateNodeDataPoint(br.Left, br.Top)
 	}
 }
