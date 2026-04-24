@@ -68,7 +68,8 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	tree.SetDefaultNodeHeight(28)
 	tree.SetIndent(8)
 	//tree.Font().SetSize(8)
-	tree.ScrollBarOptions().SetScrollBars(types.SsVertical)
+	tree.ScrollBarOptions().SetScrollBars(types.SsBoth)
+	//tree.ScrollBarOptions().SetScrollBars(types.SsVertical)
 
 	// options
 	propTreeOptions := tree.TreeOptions()
@@ -92,16 +93,18 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	propNameCol.SetText("Name")
 	propNameCol.SetAlignment(types.TaLeftJustify)
 	propNameCol.SetWidth(125)
-	propNameCol.SetMinWidth(50)
+	propNameCol.SetMinWidth(30)
 	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("Value")
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-	if tool.IsLinux() || tool.IsDarwin() {
-		width := int32(135) // tree.Width() - 65
-		propValueCol.SetWidth(width)
-		propValueCol.SetMinWidth(50)
-	}
+	propValueCol.SetWidth(100)
+	propValueCol.SetMinWidth(30)
+	//if tool.IsLinux() || tool.IsDarwin() {
+	//	width := int32(135) // tree.Width() - 65
+	//	propValueCol.SetWidth(width)
+	//	propValueCol.SetMinWidth(50)
+	//}
 }

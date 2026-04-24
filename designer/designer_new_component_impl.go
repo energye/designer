@@ -130,18 +130,18 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.page.SetParent(MainWindow.contentLayout.layoutInspector.box)
 
 	m.pageProperty = lcl.NewTabSheet(m.page)
-	m.pageProperty.SetParent(m.page)
 	m.pageProperty.SetCaption("  属性  ")
 	m.pageProperty.SetAlign(types.AlClient)
 	SetComponentDefaultColor(m.pageProperty)
 	m.pageProperty.SetBorderWidth(0)
+	m.pageProperty.SetParent(m.page)
 
 	m.pageEvent = lcl.NewTabSheet(m.page)
-	m.pageEvent.SetParent(m.page)
 	m.pageEvent.SetCaption("  事件  ")
 	m.pageEvent.SetAlign(types.AlClient)
 	SetComponentDefaultColor(m.pageEvent)
 	m.pageEvent.SetBorderWidth(0)
+	m.pageEvent.SetParent(m.page)
 
 	// 属性树
 	m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
