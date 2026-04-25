@@ -181,7 +181,6 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	// 窗体ID
 	m.designerForms[form.Id] = form
 
-	//form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet = m.tab.NewPage()
 	form.sheet.Button().SetCaption(form.name)
 	form.sheet.SetOnHide(form.tabSheetOnHide)
@@ -190,6 +189,8 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	SetComponentDefaultColor(form.sheet) // 设置背景色
 	m.setDesignerFormTabPageStyle(form.sheet)
 	form.sheet.SetParent(m.tab)
+
+	// 代码和窗体 tab
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
 	form.scroll.SetAlign(types.AlClient)

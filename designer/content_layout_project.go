@@ -62,5 +62,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	//m.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
 	//m.tree.SetParent(m.box)
 
+	//m.assetsRoot.DeleteChildren()
+
 	return m
 }
