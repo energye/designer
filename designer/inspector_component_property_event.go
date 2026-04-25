@@ -39,35 +39,20 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	})
 	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
 		tree.GetMaxColumnWidth(column, false)
+		switch column {
+		case 0:
+			gDefaultPropertyNameColumnTreeWidth = nameColumn.Width()
+		}
 	})
 	tree.SetOnAfterGetMaxColumnWidth(func(sender lcl.IVTHeader, column int32, maxWidth *int32) {
-		treeWidth := tree.Width() - 20
-		nameWidth := nameColumn.Width()
-		if column == 0 {
-			valueWidth := valueColumn.Width()
-			newNameWidth := treeWidth - valueWidth
-			if newNameWidth > 50 {
-				*maxWidth = newNameWidth
-			} else {
-				*maxWidth = 50
-			}
-		} else if column == 1 {
-			newValueWidth := treeWidth - nameWidth
-			if newValueWidth > 50 {
-				*maxWidth = newValueWidth
-			} else {
-				*maxWidth = 50
-			}
+		switch column {
+		case 0:
+			c := tree.ClientWidth() - nameColumn.Width()
+			valueColumn.SetWidth(c)
+		case 1:
+			//c := tree.ClientWidth() - valueColumn.Width()
+			//nameColumn.SetWidth(c)
 		}
-
-		//width := tree.Width() - 20
-		//*maxWidth = width - 50
-		//newWidth := width - nameColumn.Width()
-		//valueColumn.SetWidth(newWidth)
-		//nameColumn.SetMaxWidth(*maxWidth)
-		//newWidth = width - valueColumn.Width()
-		//nameColumn.SetWidth(newWidth)
-		//valueColumn.SetMaxWidth(*maxWidth)
 	})
 
 	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
@@ -241,34 +226,20 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 	})
 	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
 		tree.GetMaxColumnWidth(column, false)
+		switch column {
+		case 0:
+			gDefaultEventNameColumnTreeWidth = nameColumn.Width()
+		}
 	})
 	tree.SetOnAfterGetMaxColumnWidth(func(sender lcl.IVTHeader, column int32, maxWidth *int32) {
-		treeWidth := tree.Width() - 20
-		nameWidth := nameColumn.Width()
-		if column == 0 {
-			valueWidth := valueColumn.Width()
-			newNameWidth := treeWidth - valueWidth
-			if newNameWidth > 50 {
-				*maxWidth = newNameWidth
-			} else {
-				*maxWidth = 50
-			}
-		} else if column == 1 {
-			newValueWidth := treeWidth - nameWidth
-			if newValueWidth > 50 {
-				*maxWidth = newValueWidth
-			} else {
-				*maxWidth = 50
-			}
+		switch column {
+		case 0:
+			c := tree.ClientWidth() - nameColumn.Width()
+			valueColumn.SetWidth(c)
+		case 1:
+			//c := tree.ClientWidth() - valueColumn.Width()
+			//nameColumn.SetWidth(c)
 		}
-		//width := tree.Width() - 20
-		//*maxWidth = width - 50
-		//newWidth := width - nameColumn.Width()
-		//valueColumn.SetWidth(newWidth)
-		//nameColumn.SetMaxWidth(*maxWidth)
-		//newWidth = width - valueColumn.Width()
-		//nameColumn.SetWidth(newWidth)
-		//valueColumn.SetMaxWidth(*maxWidth)
 	})
 	tree.SetOnExpanding(func(sender lcl.IBaseVirtualTree, node types.PVirtualNode, allowed *bool) {
 		tree.EndEditNode()

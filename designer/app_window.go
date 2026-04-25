@@ -226,6 +226,8 @@ func (m *TAppWindow) handleClose() {
 	windowLayout.MenuView.InspectorChecked = viewInspectorChecked
 	windowLayout.MenuView.ConsoleChecked = viewConsoleChecked
 	windowLayout.MenuView.StatusbarChecked = viewStatusbarChecked
+	windowLayout.ContentLayout.InspectorLayout.PropertyTreeWidth = gDefaultPropertyNameColumnTreeWidth
+	windowLayout.ContentLayout.InspectorLayout.EventTreeWidth = gDefaultEventNameColumnTreeWidth
 
 	// 更新最后打开的项目
 	config.UpdateLastProject(gAppEGPPath)

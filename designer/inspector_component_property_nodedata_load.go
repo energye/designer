@@ -23,6 +23,7 @@ import (
 
 // 加载组件属性列表
 func (m *TDesigningComponent) loadPropertyList() {
+	m.UpdatePropertyTreeWidth()
 	if m.isLoadProperty {
 		// 加载完 不在继续加载
 		return
@@ -43,6 +44,7 @@ func (m *TDesigningComponent) loadPropertyList() {
 
 // 加载组件事件列表
 func (m *TDesigningComponent) loadEventList() {
+	m.UpdateEventTreeWidth()
 	if m.isLoadEvent {
 		// 加载完 不在继续加载
 		return
@@ -59,4 +61,40 @@ func (m *TDesigningComponent) loadEventList() {
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.eventTree, 0, nodeData)
 	}
+}
+
+var (
+	gDefaultPropertyNameColumnTreeWidth = int32(-1)
+	gDefaultEventNameColumnTreeWidth    = int32(-1)
+	gSwitchDefaultTreeTabPage           = int32(0)
+)
+
+func (m *TDesigningComponent) SwitchDefaultTreeTabPage() {
+	m.page.SetActivePageIndex(gSwitchDefaultTreeTabPage)
+}
+
+func (m *TDesigningComponent) UpdatePropertyTreeWidth() {
+	if gDefaultPropertyNameColumnTreeWidth == -1 {
+		gDefaultPropertyNameColumnTreeWidth = config.Config.WindowLayout.ContentLayout.InspectorLayout.PropertyTreeWidth
+	}
+	columns := m.propertyTree.Header().Columns()
+	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
+	valueColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(1)
+	//cn := m.propertyTree.ClientWidth() - valueColumn.Width()
+	nameColumn.SetWidth(gDefaultPropertyNameColumnTreeWidth)
+	cv := m.propertyTree.ClientWidth() - nameColumn.Width()
+	valueColumn.SetWidth(cv)
+}
+
+func (m *TDesigningComponent) UpdateEventTreeWidth() {
+	if gDefaultEventNameColumnTreeWidth == -1 {
+		gDefaultEventNameColumnTreeWidth = config.Config.WindowLayout.ContentLayout.InspectorLayout.EventTreeWidth
+	}
+	columns := m.eventTree.Header().Columns()
+	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
+	valueColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(1)
+	//cn := m.eventTree.ClientWidth() - valueColumn.Width()
+	nameColumn.SetWidth(gDefaultEventNameColumnTreeWidth)
+	cv := m.eventTree.ClientWidth() - nameColumn.Width()
+	valueColumn.SetWidth(cv)
 }

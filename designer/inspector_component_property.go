@@ -16,7 +16,6 @@ package designer
 import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 // 设计 - 组件属性
@@ -31,8 +30,8 @@ func newVirtualStringTree(owner lcl.IWinControl) lcl.ILazVirtualStringTree {
 	tree.SetDefaultNodeHeight(28)
 	tree.SetIndent(8)
 	//tree.Font().SetSize(8)
-	tree.ScrollBarOptions().SetScrollBars(types.SsBoth)
-	//tree.ScrollBarOptions().SetScrollBars(types.SsVertical)
+	//tree.ScrollBarOptions().SetScrollBars(types.SsBoth)
+	tree.ScrollBarOptions().SetScrollBars(types.SsVertical)
 
 	// options
 	propTreeOptions := tree.TreeOptions()
@@ -43,8 +42,8 @@ func newVirtualStringTree(owner lcl.IWinControl) lcl.ILazVirtualStringTree {
 
 	// 颜色
 	propColors := tree.Colors()
-	propColors.SetFocusedSelectionColor(colors.RGBToColor(43, 169, 241))
-	propColors.SetUnfocusedSelectionColor(colors.RGBToColor(43, 169, 241))
+	propColors.SetFocusedSelectionColor(0xF9D99E)
+	propColors.SetUnfocusedSelectionColor(0xF9D99E)
 
 	// header
 	header := tree.Header()
@@ -55,20 +54,11 @@ func newVirtualStringTree(owner lcl.IWinControl) lcl.ILazVirtualStringTree {
 	propNameCol := columns.AddToVirtualTreeColumn()
 	propNameCol.SetText("Name")
 	propNameCol.SetAlignment(types.TaLeftJustify)
-	propNameCol.SetWidth(125)
-	propNameCol.SetMinWidth(30)
-	//propNameCol.SetOptions(propNameCol.Options().Include(types.CoDisableAnimatedResize))
 
 	propValueCol := columns.AddToVirtualTreeColumn()
 	propValueCol.SetText("Value")
 	propValueCol.SetAlignment(types.TaLeftJustify)
 	propValueCol.SetOptions(propValueCol.Options().Include(types.CoAutoSpring))
-	propValueCol.SetWidth(100)
-	propValueCol.SetMinWidth(30)
-	//if tool.IsLinux() || tool.IsDarwin() {
-	//	width := int32(135) // tree.Width() - 65
-	//	propValueCol.SetWidth(width)
-	//	propValueCol.SetMinWidth(50)
-	//}
+
 	return tree
 }

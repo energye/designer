@@ -31,6 +31,12 @@ func (m *StorageWindowLayout) InitDefaultContentLayout() {
 			ConsoleLogPanelHeight: 150,
 		}
 	}
+	if m.ContentLayout.InspectorLayout == nil {
+		m.ContentLayout.InspectorLayout = &StorageInspectorLayout{
+			PropertyTreeWidth: 125,
+			EventTreeWidth:    125,
+		}
+	}
 }
 
 // StorageMenuView 菜单视图
@@ -44,8 +50,14 @@ type StorageMenuView struct {
 
 // StorageContentLayout 内容布局
 type StorageContentLayout struct {
-	WidgetPanelWidth      int32 `json:"widget_panel_width"`
-	ProjectPanelWidth     int32 `json:"project_panel_width"`
-	InspectorPanelWidth   int32 `json:"inspector_panel_width"`
-	ConsoleLogPanelHeight int32 `json:"console_log_panel_height"`
+	WidgetPanelWidth      int32                   `json:"widget_panel_width"`
+	ProjectPanelWidth     int32                   `json:"project_panel_width"`
+	InspectorPanelWidth   int32                   `json:"inspector_panel_width"`
+	ConsoleLogPanelHeight int32                   `json:"console_log_panel_height"`
+	InspectorLayout       *StorageInspectorLayout `json:"inspector_layout"`
+}
+
+type StorageInspectorLayout struct {
+	PropertyTreeWidth int32 `json:"property_tree_width"`
+	EventTreeWidth    int32 `json:"event_tree_width"`
 }

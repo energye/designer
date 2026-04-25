@@ -128,6 +128,9 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	SetComponentDefaultColor(m.page)
 	m.page.SetVisible(false)
 	m.page.SetParent(MainWindow.contentLayout.layoutInspector.box)
+	m.page.SetOnChange(func(sender lcl.IObject) {
+		gSwitchDefaultTreeTabPage = m.page.ActivePageIndex()
+	})
 
 	m.pageProperty = lcl.NewTabSheet(m.page)
 	m.pageProperty.SetCaption("  属性  ")
@@ -341,6 +344,8 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 	m.loadPropertyList()
 	// 加载事件列表
 	m.loadEventList()
+
+	m.SwitchDefaultTreeTabPage()
 
 	br := m.Control().BoundsRect()
 	m.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
