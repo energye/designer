@@ -86,6 +86,8 @@ func LoadProject(path, egpFilePath string) {
 	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, bean.GPath))
 	// 更新打开项目历史记录
 	designer.UpdateHistoryProject(egpFilePath)
+	// 禁用/启用功能组件
+	designer.SetEnableFuncComponent(bean.GPath != "")
 }
 
 // LoadUI 加载UI布局文件

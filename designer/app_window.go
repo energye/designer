@@ -173,7 +173,6 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 			if ok { // 一个开关, 动态配置
 				autoAssociateProjectLoad()
 			}
-			SetEnableFuncComponent(true)
 		})
 	})
 }
