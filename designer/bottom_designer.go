@@ -123,6 +123,26 @@ func SetRecvMethods(formId int, methods []*dast.TFuncInfo) {
 	}
 }
 
+func (m *Designer) setDesignerFormTabPageStyle(page *wg.TPage) {
+	tabColor := colors.ClWhite
+	btnColor := colors.RGBToColor(234, 239, 249)
+	page.Button().SetIconFavoriteFormBytes(resources.Images("components/tform.png"))
+	page.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
+	page.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
+	page.Button().SetCloseHintText("关闭设计窗体")
+	page.Button().Font().SetColor(colors.ClBlack)
+	page.Button().Font().SetStyle(types.NewSet(types.FsBold))
+	page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop)
+	page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(btnColor, 0.8))
+	page.Button().SetRadius(5)
+	page.Button().SetColor(tabColor)
+	page.Button().SetDownColor(wg.LightenColor(btnColor, 0.3), wg.LightenColor(btnColor, 0.5))
+	page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.3))
+	page.SetDefaultColor(tabColor)
+	page.SetActiveColor(btnColor)
+	page.Button().SetCursor(types.CrHandPoint)
+}
+
 // 添加一个窗体设计器 form tab
 func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	SetDesignerCount(m.designerCount + 1)
@@ -162,23 +182,12 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 
 	//form.sheet = lcl.NewTabSheet(m.page)
 	form.sheet = m.tab.NewPage()
-	form.sheet.Button().SetIconFavoriteFormBytes(resources.Images("components/tform.png"))
-	form.sheet.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
-	form.sheet.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
-	form.sheet.Button().SetCloseHintText("关闭设计窗体")
 	form.sheet.Button().SetCaption(form.name)
-	form.sheet.Button().Font().SetColor(colors.ClBlack)
-	//form.sheet.Button().SetBorderDirections(types.NewSet(wg.BbdTop))
-	//form.sheet.Button().SetBorderColor(wg.BbdTop, colors.ClBlue)
-	//form.sheet.Button().SetColorGradient(bgLightColor, bgLightColor) // 设置标签按钮过度颜色
-	//form.sheet.SetDefaultColor(bgLightColor)                         // 设置默认颜色
-	//form.sheet.SetActiveColor(bgLightColor)                          // 设置激活颜色
-	//form.sheet.SetColor(bgLightColor)                                // 设置背景色
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
 	form.sheet.SetOnClose(form.tabSheetOnClose)
 	SetComponentDefaultColor(form.sheet) // 设置背景色
-	//form.sheet.SetAlign(types.AlClient)
+	m.setDesignerFormTabPageStyle(form.sheet)
 	form.sheet.SetParent(m.tab)
 
 	form.scroll = lcl.NewScrollBox(form.sheet)

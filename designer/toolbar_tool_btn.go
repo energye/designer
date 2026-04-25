@@ -16,12 +16,10 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
-	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/tool/command"
 )
 
 // 工具按钮功能
@@ -63,7 +61,7 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 新建窗体")
 	go lcl.RunOnMainThreadAsync(func(id uint32) {
 		// 创建窗体后执行一次 go mod tidy 禁用功能按钮, TODO 先这样
-		SetEnableFuncComponent(false)
+		//SetEnableFuncComponent(false)
 
 		// 隐藏所有组件树
 		designer.hideAllComponentTrees()
@@ -85,18 +83,18 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		designer.tab.RecalculatePosition()
 
 		// 创建窗体后执行一次 go mod tidy, TODO 先这样
-		go func() {
-			cmd := command.NewCMD()
-			cmd.IsPrint = false
-			cmd.HideWindow = true
-			cmd.Dir = projBean.GPath
-			cmd.Console = func(data string, level command.Level) {
-				event.ConsoleWriteInfo(data)
-			}
-			cmd.Command("go", "mod", "tidy")
-			// 新建窗体后执行一次 go mod tidy 恢复功能按钮
-			SetEnableFuncComponent(true)
-		}()
+		//go func() {
+		//	cmd := command.NewCMD()
+		//	cmd.IsPrint = false
+		//	cmd.HideWindow = true
+		//	cmd.Dir = projBean.GPath
+		//	cmd.Console = func(data string, level command.Level) {
+		//		event.ConsoleWriteInfo(data)
+		//	}
+		//	cmd.Command("go", "mod", "tidy")
+		//	// 新建窗体后执行一次 go mod tidy 恢复功能按钮
+		//	SetEnableFuncComponent(true)
+		//}()
 	})
 }
 
