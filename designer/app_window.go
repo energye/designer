@@ -126,8 +126,9 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.initAllImageList()
 	// 设置窗口图标
 	m.setWindowIcon()
-	// 窗口显示事件
-	m.SetOnShow(m.OnShow)
+	// 窗口大小改变事件
+	m.SetOnResize(m.WindowOnResize)
+	m.SetOnWindowStateChange(m.WindowOnWindowStateChange)
 	// 创建设计器布局
 	m.initDesignerLayoutV2()
 }
@@ -138,6 +139,16 @@ func (m *TAppWindow) initAllImageList() {
 	imageItem = tool.NewImageList(m, "item", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 	imageMenu = tool.NewImageList(m, "menu", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 	imageTabComp = tool.NewImageList(m, "tab-comp", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}})
+}
+
+func (m *TAppWindow) WindowOnResize(sender lcl.IObject) {
+	//println("WindowOnResize")
+	DebounceContentLayoutBoxReAlign()
+}
+
+func (m *TAppWindow) WindowOnWindowStateChange(sender lcl.IObject) {
+	//println("WindowOnWindowStateChange")
+	ImmediatelyContentLayoutBoxReAlign()
 }
 
 func (m *TAppWindow) OnShow(sender lcl.IObject) {

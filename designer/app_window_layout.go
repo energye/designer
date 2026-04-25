@@ -13,9 +13,23 @@
 
 package designer
 
-import "github.com/energye/lcl/lcl"
+import (
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
+)
 
 // 创建设计器布局
+
+var (
+	toolBarHeight                = int32(30)
+	switchAutoContentLayoutAlign = true // 一个开关, 用于自动布局
+)
+
+func init() {
+	if tool.IsWindows {
+		switchAutoContentLayoutAlign = false
+	}
+}
 
 // 初始化设计器布局 v2
 func (m *TAppWindow) initDesignerLayoutV2() {

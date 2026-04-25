@@ -10,15 +10,21 @@ type TToolBtnLayout struct {
 	toolbarBtn *TToolbarToolBtn // 工具栏按钮
 }
 
-func initToolBtnLayout(owner lcl.IWinControl) *TToolBtnLayout {
+func initToolBtnLayout(window lcl.IWinControl) *TToolBtnLayout {
+	windowBr := window.ClientRect()
 	m := &TToolBtnLayout{}
-	m.box = lcl.NewPanel(owner)
-	//m.box.SetColor(colors.ClLegacySkyBlue)
+	m.box = lcl.NewPanel(window)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetDoubleBuffered(true)
-	m.box.SetAlign(types.AlTop)
-	m.box.SetHeight(30)
-	m.box.SetParent(owner)
+	if switchAutoContentLayoutAlign {
+		m.box.SetAlign(types.AlTop)
+	} else {
+		m.box.SetAlign(types.AlCustom)
+		m.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
+		m.box.SetBounds(0, 0, windowBr.Width(), toolBarHeight)
+		m.box.SetHeight(toolBarHeight)
+	}
+	m.box.SetParent(window)
 
 	m.initToolBarBtns()
 	return m
