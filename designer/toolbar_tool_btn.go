@@ -28,10 +28,14 @@ type TToolbarToolBtn struct {
 	toolBtnBar   lcl.IToolBar
 	newWindowBtn lcl.IToolButton
 	openBtn      lcl.IToolButton
-	//saveBtn       lcl.IToolButton
-	//saveAllBtn    lcl.IToolButton
+	saveBtn      lcl.IToolButton
+
+	undoBtn lcl.IToolButton
+	redoBtn lcl.IToolButton
+
 	runPreviewBtn lcl.IToolButton
-	previewState  consts.PreviewState // 预览状态
+
+	previewState consts.PreviewState // 预览状态
 }
 
 // SetEnableToolButtons 设置工具栏按钮的启用状态
@@ -41,7 +45,7 @@ func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
 	enabled := func() {
 		m.newWindowBtn.SetEnabled(enable)
 		//m.openBtn.SetEnabled(enable)
-		//m.saveBtn.SetEnabled(enable)
+		m.saveBtn.SetEnabled(enable)
 		//m.saveAllFormBtn.SetEnabled(enable)
 		m.runPreviewBtn.SetEnabled(enable)
 	}

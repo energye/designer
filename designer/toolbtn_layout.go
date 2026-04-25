@@ -71,15 +71,20 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 
 	m.toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
 	m.toolbarBtn.openBtn.SetOnClick(m.toolbarBtn.onOpenForm)
+
+	m.toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save.png"), "保存(Ctrl+s)", 1, "保存")
+
 	newSep()
 
-	//toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save_150.png"), "保存(Ctrl+S)", 1)
-	//toolbarBtn.saveBtn.SetOnClick(toolbarBtn.onSaveForm)
+	m.toolbarBtn.undoBtn = newBtn(imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+z)", 1, "撤销")
+	m.toolbarBtn.undoBtn.SetEnabled(false)
+	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "重做(Ctrl+Shift+z)", 1, "重做")
+	m.toolbarBtn.redoBtn.SetEnabled(false)
 
-	//toolbarBtn.saveAllFormBtn = newBtn(imageMenu.ImageIndex("menu_save_all_150.png"), "保存所有窗体", 1)
-	//toolbarBtn.saveAllFormBtn.SetOnClick(toolbarBtn.onSaveAllForm)
-	//newSep()
+	newSep()
 
-	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行(F9)", 3, "运行(F9)")
+	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行预览(F9)", 3, "运行预览(F9)")
 	m.toolbarBtn.runPreviewBtn.SetOnClick(m.toolbarBtn.onRunPreviewForm)
+
+	// 对齐功能按钮
 }

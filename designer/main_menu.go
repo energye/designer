@@ -49,6 +49,7 @@ type TMainMenu struct {
 	editPaste     lcl.IMenuItem
 	editSelectAll lcl.IMenuItem
 	editUndo      lcl.IMenuItem
+	editRedo      lcl.IMenuItem
 	editDel       lcl.IMenuItem
 
 	// view
@@ -267,11 +268,29 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 
 	undoAction := lcl.NewEditUndo(m.actionList)
 	undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
-	undoAction.SetCaption("撤销")
+	undoAction.SetCaption("撤销(&U)")
 
-	undoDelete := lcl.NewEditUndo(m.actionList)
+	redoAction := lcl.NewAction(m.actionList)
+	redoAction.SetShortCut(api.TextToShortCut(platformControl() + "Shift+Z"))
+	redoAction.SetCaption("重做(&R)")
+
+	undoDelete := lcl.NewEditDelete(m.actionList)
 	undoDelete.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
 	undoDelete.SetCaption("删除")
+
+	m.editUndo = lcl.NewMenuItem(owner)
+	m.editUndo.SetCaption(undoAction.Caption())
+	m.editUndo.SetAction(undoAction)
+	m.edit.Add(m.editUndo)
+
+	m.editRedo = lcl.NewMenuItem(owner)
+	//m.editRedo.SetCaption(redoAction.Caption())
+	m.editRedo.SetAction(redoAction)
+	m.edit.Add(m.editRedo)
+
+	separator1 := lcl.NewMenuItem(owner)
+	separator1.SetCaption("-")
+	m.edit.Add(separator1)
 
 	m.editCut = lcl.NewMenuItem(owner)
 	m.editCut.SetCaption(cutAction.Caption())
@@ -288,7 +307,7 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.editPaste.SetAction(pasteAction)
 	m.edit.Add(m.editPaste)
 
-	separator1 := lcl.NewMenuItem(owner)
+	separator1 = lcl.NewMenuItem(owner)
 	separator1.SetCaption("-")
 	m.edit.Add(separator1)
 
@@ -296,11 +315,6 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.editSelectAll.SetCaption(selectAllAction.Caption())
 	m.editSelectAll.SetAction(selectAllAction)
 	m.edit.Add(m.editSelectAll)
-
-	m.editUndo = lcl.NewMenuItem(owner)
-	m.editUndo.SetCaption(selectAllAction.Caption())
-	m.editUndo.SetAction(undoAction)
-	m.edit.Add(m.editUndo)
 
 	m.editDel = lcl.NewMenuItem(owner)
 	m.editDel.SetCaption(undoDelete.Caption())
@@ -435,7 +449,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.run.Add(sep)
 
 	m.runApp = lcl.NewMenuItem(owner)
-	m.runApp.SetCaption("运行应用")
+	m.runApp.SetCaption("运行预览")
 	m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	m.runApp.SetShortCut(api.TextToShortCut("F9"))
 	m.runApp.SetOnClick(func(lcl.IObject) {
