@@ -105,7 +105,8 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.tree.SetDefaultItemHeight(26)
 	m.tree.SetRowSelect(true)
 	m.tree.SetHideSelection(false)
-	m.tree.Font().SetSize(8)
+	m.tree.Font().SetHeight(-11)
+	//m.tree.Font().SetQuality(types.FqCleartypeNatural)
 	m.tree.SetScrollBars(types.SsVertical)
 
 	m.searchEdit.SetFilteredTreeview(m.tree)
@@ -175,7 +176,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 		font := canvas.FontToFont()
 		pen := canvas.PenToPen()
 		//fmt.Println("OnAdvancedCustomDrawItem Width:", m.tree.Width(), canvas.Width())
-
 		r := node.DisplayRect(false)
 		rowH := r.Bottom - r.Top
 
@@ -268,7 +268,9 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			// 文本
 			brush.SetStyle(types.BsClear)
 			font.SetColor(colors.ClBlack)
+			font.SetName("Microsoft YaHei UI")
 			//font.SetSize(8)
+			font.SetQuality(types.FqCleartypeNatural) // 抗锯齿
 			if isPress {
 				font.SetColor(0x00333333)
 			}

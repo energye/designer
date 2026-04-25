@@ -144,7 +144,7 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
 	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
 	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
-	form.tree.Font().SetSize(8)
+	form.tree.Font().SetHeight(-11)
 	// 组件树右键菜单
 	form.CreateComponentMenu()
 	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)

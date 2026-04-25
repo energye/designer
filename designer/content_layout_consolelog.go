@@ -1,6 +1,7 @@
 package designer
 
 import (
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/widget/wg"
@@ -51,12 +52,16 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 		}
 	})
 
-	//m.designer.SetScrollBars(types.SsAutoBoth)
 	font := m.designer.Font()
-	font.SetName("Courier New")
-	//font.SetSize(8)
 	font.SetHeight(-13)
-	font.SetQuality(types.FqAntialiased)
+	if tool.IsDarwin {
+		font.SetQuality(types.FqAntialiased)
+	} else if tool.IsWindows {
+		font.SetQuality(types.FqCleartypeNatural)
+		//font.SetName("Microsoft YaHei UI")
+	} else {
+		font.SetQuality(types.FqAntialiased)
+	}
 	m.designer.SetParent(owner.consoleLogPanel)
 
 	m.CreatePopupMenu()
