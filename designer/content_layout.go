@@ -313,3 +313,11 @@ func ImmediatelyContentLayoutBoxReAlign() {
 		aligning = false
 	}
 }
+
+func ContentLayoutInspectorWidth() int32 {
+	m := MainWindow.contentLayout
+	if m != nil {
+		return MainWindow.contentLayout.layoutInspector.box.Width()
+	}
+	return 0
+}

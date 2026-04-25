@@ -29,6 +29,7 @@ func init() {
 	if tool.IsWindows {
 		//switchAutoContentLayoutAlign = false
 	}
+	switchAutoContentLayoutAlign = false
 }
 
 // 初始化设计器布局 v2

@@ -22,7 +22,7 @@ import (
 // 设计 - 组件属性
 
 // 属性列表虚拟树配置方法
-func newVirtualStringTree(owner lcl.IComponent) lcl.ILazVirtualStringTree {
+func newVirtualStringTree(owner lcl.IWinControl) lcl.ILazVirtualStringTree {
 	tree := lcl.NewLazVirtualStringTree(owner)
 	tree.SetBorderStyleToBorderStyle(types.BsNone)
 	tree.SetAlign(types.AlClient)
@@ -70,6 +70,5 @@ func newVirtualStringTree(owner lcl.IComponent) lcl.ILazVirtualStringTree {
 	//	propValueCol.SetWidth(width)
 	//	propValueCol.SetMinWidth(50)
 	//}
-
 	return tree
 }
