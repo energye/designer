@@ -346,8 +346,11 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewInspector.Checked()
 			m.viewInspector.SetChecked(checked)
-			MainWindow.contentLayout.inspectorPanel.SetVisible(checked)
-			MainWindow.contentLayout.inspectorSplitter.SetVisible(checked)
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				// 运行在 async ui 线程 Splitter 否则显示位置不对
+				MainWindow.contentLayout.inspectorPanel.SetVisible(checked)
+				MainWindow.contentLayout.inspectorSplitter.SetVisible(checked)
+			})
 		}
 	})
 	m.view.Add(m.viewInspector)
