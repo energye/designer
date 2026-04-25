@@ -27,7 +27,7 @@ var (
 
 func init() {
 	if tool.IsWindows {
-		switchAutoContentLayoutAlign = false
+		//switchAutoContentLayoutAlign = false
 	}
 }
 
