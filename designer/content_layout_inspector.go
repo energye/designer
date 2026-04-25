@@ -45,6 +45,7 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetDoubleBuffered(true)
 	m.box.SetAlign(types.AlClient)
+	m.box.SetWidth(owner.inspectorPanel.Width())
 	m.box.SetParent(owner.inspectorPanel)
 
 	return m

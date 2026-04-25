@@ -127,6 +127,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.page.SetAlign(types.AlClient)
 	SetComponentDefaultColor(m.page)
 	m.page.SetVisible(false)
+	m.page.SetWidth(MainWindow.contentLayout.layoutInspector.box.Width())
 	m.page.SetParent(MainWindow.contentLayout.layoutInspector.box)
 	m.page.SetOnChange(func(sender lcl.IObject) {
 		gSwitchDefaultTreeTabPage = m.page.ActivePageIndex()
@@ -135,6 +136,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.pageProperty = lcl.NewTabSheet(m.page)
 	m.pageProperty.SetCaption("  属性  ")
 	m.pageProperty.SetAlign(types.AlClient)
+	m.pageProperty.SetWidth(m.page.Width())
 	SetComponentDefaultColor(m.pageProperty)
 	m.pageProperty.SetBorderWidth(0)
 	m.pageProperty.SetParent(m.page)
@@ -142,6 +144,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.pageEvent = lcl.NewTabSheet(m.page)
 	m.pageEvent.SetCaption("  事件  ")
 	m.pageEvent.SetAlign(types.AlClient)
+	m.pageEvent.SetWidth(m.page.Width())
 	SetComponentDefaultColor(m.pageEvent)
 	m.pageEvent.SetBorderWidth(0)
 	m.pageEvent.SetParent(m.page)

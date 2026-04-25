@@ -72,6 +72,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.widgetSplitter.SetAlign(types.AlLeft)
 	m.widgetSplitter.SetWidth(defaultSplitterWidth)
 	m.widgetSplitter.SetMinSize(defaultSplitterMinSize)
+	m.widgetSplitter.SetVisible(windowLayout.MenuView.WidgetsChecked) //动态控制
 	setSpliterStyle(m.widgetSplitter)
 	m.widgetSplitter.SetParent(m.box)
 	// 组件面板
@@ -101,6 +102,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.projectSplitter.SetAlign(types.AlLeft)
 	m.projectSplitter.SetWidth(defaultSplitterWidth)
 	m.projectSplitter.SetMinSize(defaultSplitterMinSize)
+	m.projectSplitter.SetVisible(windowLayout.MenuView.ProjectChecked) //动态控制
 	setSpliterStyle(m.projectSplitter)
 	m.projectSplitter.SetParent(m.rightBox)
 	// 项目面板
@@ -131,6 +133,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.inspectorSplitter.SetWidth(defaultSplitterWidth)
 	m.inspectorSplitter.SetResizeAnchor(types.AkRight)
 	m.inspectorSplitter.SetMinSize(defaultSplitterMinSize)
+	m.inspectorSplitter.SetVisible(windowLayout.MenuView.InspectorChecked) //动态控制
 	setSpliterStyle(m.inspectorSplitter)
 	m.inspectorSplitter.SetParent(m.rightBox)
 	// 对象检查器
@@ -149,6 +152,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.consoleLogSplitter.SetAlign(types.AlBottom)
 	m.consoleLogSplitter.SetHeight(defaultSplitterWidth)
 	m.consoleLogSplitter.SetMinSize(defaultSplitterMinSize)
+	m.consoleLogSplitter.SetVisible(windowLayout.MenuView.ConsoleChecked) //动态控制
 	//m.consoleLogSplitter.SetBorderStyleToBorderStyle(types.BsSingle)
 	setSpliterStyle(m.consoleLogSplitter)
 	m.consoleLogSplitter.SetParent(m.rightBox)

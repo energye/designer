@@ -25,6 +25,7 @@ func newVirtualStringTree(owner lcl.IWinControl) lcl.ILazVirtualStringTree {
 	tree := lcl.NewLazVirtualStringTree(owner)
 	tree.SetBorderStyleToBorderStyle(types.BsNone)
 	tree.SetAlign(types.AlClient)
+	tree.SetWidth(owner.Width())
 	tree.SetLineStyle(types.LsSolid)
 	SetComponentDefaultColor(tree)
 	tree.SetDefaultNodeHeight(28)
