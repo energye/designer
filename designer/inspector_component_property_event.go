@@ -49,6 +49,7 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 		case 0:
 			c := tree.ClientWidth() - nameColumn.Width()
 			valueColumn.SetWidth(c)
+			*maxWidth = c
 		case 1:
 			//c := tree.ClientWidth() - valueColumn.Width()
 			//nameColumn.SetWidth(c)

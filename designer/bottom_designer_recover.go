@@ -73,7 +73,7 @@ func (m *FormTab) Recover() {
 	// 释放掉
 	tempRecover.components = nil
 	tempRecover.property = nil
-	event.ConsoleWriteInfo("Restore designer form  time-consuming:", strconv.FormatFloat(time.Now().Sub(beginTime).Seconds(), 'g', -1, 64), "s")
+	event.ConsoleWriteInfo("Restore designer form time-consuming:", strconv.FormatFloat(time.Now().Sub(beginTime).Seconds(), 'g', -1, 64), "second")
 }
 
 // 恢复设计的子组件
