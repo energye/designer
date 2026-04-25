@@ -252,10 +252,7 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	cutAction := lcl.NewEditCut(m.actionList)
 	cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
 	cutAction.SetCaption("剪切")
-	cutAction.SetOnExecute(func(sender lcl.IObject) {
-		activeControl := lcl.Screen.ActiveControl()
-		cutAction.ExecuteTarget(activeControl) // 示例: 执行默认行为
-	})
+	
 	copyAction := lcl.NewEditCopy(m.actionList)
 	copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
 	copyAction.SetCaption("复制")
@@ -270,11 +267,11 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 
 	m.undoRedo.undoAction = lcl.NewEditUndo(m.actionList)
 	m.undoRedo.undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
-	m.undoRedo.undoAction.SetCaption("撤销(&U)")
+	m.undoRedo.undoAction.SetCaption("撤销")
 
 	m.undoRedo.redoAction = lcl.NewAction(m.actionList)
 	m.undoRedo.redoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+Z"))
-	m.undoRedo.redoAction.SetCaption("重做(&R)")
+	m.undoRedo.redoAction.SetCaption("恢复")
 
 	m.undoRedo.init()
 
@@ -293,13 +290,6 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.editRedo.SetCaption(m.undoRedo.redoAction.Caption())
 	m.editRedo.SetAction(m.undoRedo.redoAction)
 	m.edit.Add(m.editRedo)
-
-	//m.editRedo = lcl.NewMenuItem(owner)
-	//m.editRedo.SetCaption("重做(&R)")
-	////m.editRedo.SetAction(redoAction)
-	//m.editRedo.SetShortCut(api.TextToShortCut(platformControl() + "Shift+Z"))
-	////m.editRedo.SetGlyphShowMode()
-	//m.edit.Add(m.editRedo)
 
 	separator1 := lcl.NewMenuItem(owner)
 	separator1.SetCaption("-")

@@ -77,9 +77,11 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 	newSep()
 
 	m.toolbarBtn.undoBtn = newBtn(imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+z)", 1, "撤销")
-	m.toolbarBtn.undoBtn.SetEnabled(false)
-	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "重做(Ctrl+Shift+z)", 1, "重做")
-	m.toolbarBtn.redoBtn.SetEnabled(false)
+	m.toolbarBtn.undoBtn.SetOnClick(m.toolbarBtn.onUndo)
+	m.toolbarBtn.undoBtn.SetEnabled(false) // 还未实现 先禁用
+	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "恢复(Ctrl+Shift+z)", 1, "恢复")
+	m.toolbarBtn.redoBtn.SetOnClick(m.toolbarBtn.onRedo)
+	m.toolbarBtn.redoBtn.SetEnabled(false) // 还未实现 先禁用
 
 	newSep()
 

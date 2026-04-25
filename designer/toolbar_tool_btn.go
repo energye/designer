@@ -180,3 +180,11 @@ func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 		changeStatus()
 	})
 }
+
+func (m *TToolbarToolBtn) onUndo(sender lcl.IObject) {
+
+}
+
+func (m *TToolbarToolBtn) onRedo(sender lcl.IObject) {
+
+}
