@@ -24,12 +24,14 @@ import (
 
 type ImageList struct {
 	imageIndex   map[string]int32
+	imageList50  lcl.IImageList
 	imageList100 lcl.IImageList
 	imageList150 lcl.IImageList
 	imageList200 lcl.IImageList
 }
 
 type ImageRect struct {
+	Image50  types.TSize
 	Image100 types.TSize
 	Image150 types.TSize
 	Image200 types.TSize
@@ -63,6 +65,9 @@ func NewImageList(owner lcl.IComponent, dirName string, rect ImageRect) *ImageLi
 		}
 		return resultImageList
 	}
+	if CheckSizeZero(rect.Image50) {
+		m.imageList50 = loadImage(images100, rect.Image50.Cx, rect.Image50.Cy)
+	}
 	if CheckSizeZero(rect.Image100) {
 		m.imageList100 = loadImage(images100, rect.Image100.Cx, rect.Image100.Cy)
 	}
@@ -88,6 +93,10 @@ func (m *ImageList) ImageIndex(name string) int32 {
 		return index
 	}
 	return 0
+}
+
+func (m *ImageList) ImageList50() lcl.IImageList {
+	return m.imageList50
 }
 
 func (m *ImageList) ImageList100() lcl.IImageList {
