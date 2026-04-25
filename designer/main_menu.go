@@ -41,7 +41,7 @@ type TMainMenu struct {
 	createWindow  lcl.IMenuItem
 	open          lcl.IMenuItem
 	history       lcl.IMenuItem
-	//save          lcl.IMenuItem
+	save          lcl.IMenuItem
 
 	// edit
 	editCut       lcl.IMenuItem
@@ -197,23 +197,15 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	})
 	m.file.Add(m.open)
 
-	//m.save = lcl.NewMenuItem(owner)
-	//m.save.SetCaption("保存(&S)")
-	//m.save.SetShortCut(api.TextToShortCut(platformControl() + "+S"))
-	//m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
-	//m.save.SetOnClick(func(sender lcl.IObject) {
-	//	logs.Debug("保存窗体")
-	//})
-	//m.file.Add(m.save)
-
-	//saveAllWindow := lcl.NewMenuItem(owner)
-	//saveAllWindow.SetCaption("保存所有窗体(&L)")
-	//saveAllWindow.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+L"))
-	//saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
-	//saveAllWindow.SetOnClick(func(sender lcl.IObject) {
-	//	logs.Debug("保存所有窗体")
-	//})
-	//m.file.Add(saveAllWindow)
+	m.save = lcl.NewMenuItem(owner)
+	m.save.SetCaption("保存(&S)")
+	m.save.SetShortCut(api.TextToShortCut(platformControl() + "+S"))
+	m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
+	m.save.SetEnabled(false)
+	m.save.SetOnClick(func(sender lcl.IObject) {
+		MainWindow.toolBtnLayout.toolbarBtn.onSave(sender)
+	})
+	m.file.Add(m.save)
 
 	m.history = lcl.NewMenuItem(owner)
 	m.history.SetCaption("历史项目")
@@ -252,7 +244,7 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	cutAction := lcl.NewEditCut(m.actionList)
 	cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
 	cutAction.SetCaption("剪切")
-	
+
 	copyAction := lcl.NewEditCopy(m.actionList)
 	copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
 	copyAction.SetCaption("复制")

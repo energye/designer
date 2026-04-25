@@ -72,14 +72,16 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 	m.toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
 	m.toolbarBtn.openBtn.SetOnClick(m.toolbarBtn.onOpenForm)
 
-	m.toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save.png"), "保存(Ctrl+s)", 1, "保存")
+	m.toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save.png"), "保存(Ctrl+S)", 1, "保存")
+	m.toolbarBtn.saveBtn.SetOnClick(m.toolbarBtn.onSave)
+	m.toolbarBtn.saveBtn.SetEnabled(false) // 还未实现 先禁用
 
 	newSep()
 
-	m.toolbarBtn.undoBtn = newBtn(imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+z)", 1, "撤销")
+	m.toolbarBtn.undoBtn = newBtn(imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+Z)", 1, "撤销")
 	m.toolbarBtn.undoBtn.SetOnClick(m.toolbarBtn.onUndo)
 	m.toolbarBtn.undoBtn.SetEnabled(false) // 还未实现 先禁用
-	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "恢复(Ctrl+Shift+z)", 1, "恢复")
+	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "恢复(Ctrl+Shift+Z)", 1, "恢复")
 	m.toolbarBtn.redoBtn.SetOnClick(m.toolbarBtn.onRedo)
 	m.toolbarBtn.redoBtn.SetEnabled(false) // 还未实现 先禁用
 

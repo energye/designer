@@ -45,8 +45,7 @@ func (m *TToolbarToolBtn) SetEnableToolButtons(enable bool) {
 	enabled := func() {
 		m.newWindowBtn.SetEnabled(enable)
 		//m.openBtn.SetEnabled(enable)
-		m.saveBtn.SetEnabled(enable)
-		//m.saveAllFormBtn.SetEnabled(enable)
+		//m.saveBtn.SetEnabled(enable)
 		m.runPreviewBtn.SetEnabled(enable)
 	}
 	if tool.IsMainThread() {
@@ -117,10 +116,6 @@ func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	}
 }
 
-func (m *TToolbarToolBtn) onSaveForm(sender lcl.IObject) {
-	logs.Debug("工具栏按钮, 保存窗体")
-}
-
 func (m *TToolbarToolBtn) onSaveAllForm(sender lcl.IObject) {
 	logs.Debug("工具栏按钮, 保存所有窗体")
 }
@@ -179,6 +174,10 @@ func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
 	lcl.RunOnMainThreadSync(func() {
 		changeStatus()
 	})
+}
+
+func (m *TToolbarToolBtn) onSave(sender lcl.IObject) {
+	logs.Debug("工具栏按钮, 保存窗体")
 }
 
 func (m *TToolbarToolBtn) onUndo(sender lcl.IObject) {
