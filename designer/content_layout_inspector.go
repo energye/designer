@@ -33,7 +33,7 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.topBox.SetParent(owner.inspectorPanel)
 
 	title := lcl.NewLabel(m.topBox)
-	title.SetCaption("属性检查器")
+	title.SetCaption("对象检查器")
 	title.SetLeft(5)
 	title.SetTop(5)
 	font := title.Font()

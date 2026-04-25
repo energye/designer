@@ -29,8 +29,8 @@ type ContentLayout struct {
 
 	designerPanel lcl.IPanel // 设计器面板
 
-	inspectorSplitter lcl.ISplitter // 属性检查器面板分隔器
-	inspectorPanel    lcl.IPanel    // 属性检查器面板
+	inspectorSplitter lcl.ISplitter // 对象检查器面板分隔器
+	inspectorPanel    lcl.IPanel    // 对象检查器面板
 	layoutInspector   *ContentLayoutInspector
 
 	consoleLogSplitter lcl.ISplitter // 日志面板分隔器
