@@ -355,3 +355,12 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		logs.Error("添加组件节点失败, 子节点非组件节点")
 	}
 }
+
+var gTreeId int // 维护组件树全局数据id
+
+// 获取下一个树数据ID
+func nextTreeDataId() (id int) {
+	id = gTreeId
+	gTreeId++
+	return
+}

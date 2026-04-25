@@ -15,52 +15,15 @@ package designer
 
 import (
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
 
 // 设计 - 组件属性
 
-type InspectorComponentProperty struct {
-	propBox           lcl.IPanel           // 组件属性盒子
-	propFilterBox     lcl.IPanel           // 组件属性过滤盒子
-	propComponentProp lcl.IPanel           // 组件属性
-	filter            lcl.ITreeFilterEdit  // 组件属性过滤框
-	currentComponent  *TDesigningComponent // 当前正在设计的组件
-}
-
-func (m *InspectorComponentProperty) init(leftBoxWidth int32) {
-	m.propFilterBox = lcl.NewPanel(m.propBox)
-	m.propFilterBox.SetBevelOuter(types.BvNone)
-	m.propFilterBox.SetDoubleBuffered(true)
-	m.propFilterBox.SetAlign(types.AlTop)
-	if tool.IsLinux() {
-		// Linux 编辑框高度差异
-		m.propFilterBox.SetHeight(45)
-	} else {
-		m.propFilterBox.SetHeight(35)
-	}
-	m.propFilterBox.SetParent(m.propBox)
-
-	m.filter = lcl.NewTreeFilterEdit(m.propFilterBox)
-	m.filter.SetTop(3)
-	m.filter.SetLeft(3)
-	m.filter.SetWidth(m.propFilterBox.Width() - (m.filter.Left() + 3))
-	m.filter.SetAlign(types.AlCustom)
-	m.filter.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
-	m.filter.SetTextHint("搜索属性")
-	m.filter.SetParent(m.propFilterBox)
-
-	m.propComponentProp = lcl.NewPanel(m.propBox)
-	m.propComponentProp.SetBevelOuter(types.BvNone)
-	m.propComponentProp.SetDoubleBuffered(true)
-	m.propComponentProp.SetAlign(types.AlClient)
-	m.propComponentProp.SetParent(m.propBox)
-}
-
 // 属性列表虚拟树配置方法
-func vstConfig(tree lcl.ILazVirtualStringTree) {
+func newVirtualStringTree(owner lcl.IComponent) lcl.ILazVirtualStringTree {
+	tree := lcl.NewLazVirtualStringTree(owner)
 	tree.SetBorderStyleToBorderStyle(types.BsNone)
 	tree.SetAlign(types.AlClient)
 	tree.SetLineStyle(types.LsSolid)
@@ -107,4 +70,6 @@ func vstConfig(tree lcl.ILazVirtualStringTree) {
 	//	propValueCol.SetWidth(width)
 	//	propValueCol.SetMinWidth(50)
 	//}
+
+	return tree
 }

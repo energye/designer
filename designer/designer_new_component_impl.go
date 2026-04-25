@@ -144,13 +144,11 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.pageEvent.SetParent(m.page)
 
 	// 属性树
-	m.propertyTree = lcl.NewLazVirtualStringTree(m.pageProperty)
-	vstConfig(m.propertyTree)
+	m.propertyTree = newVirtualStringTree(m.pageProperty)
 	m.propertyTree.SetParent(m.pageProperty)
 
 	// 事件树
-	m.eventTree = lcl.NewLazVirtualStringTree(m.pageEvent)
-	vstConfig(m.eventTree)
+	m.eventTree = newVirtualStringTree(m.pageEvent)
 	m.eventTree.SetParent(m.pageEvent)
 	// 初始化组件属性树事件
 	m.initComponentPropertyTreeEvent()
