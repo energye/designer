@@ -45,10 +45,8 @@ func SetGlobalProject(path string, project *bean.TProject) {
 	bean.GProject = project
 	if path == "" || project == nil {
 		designer.SetAppEGPPath("")
-		designer.SetEnableFuncComponent(false)
 	} else {
 		designer.SetAppEGPPath(filepath.Join(path, project.EGPName))
-		designer.SetEnableFuncComponent(true)
 		if env := config.Config.Env[project.Name]; env != nil {
 			_ = SetGoRootPath(env.GoRoot[env.GoRootSelectIndex])
 		}

@@ -125,7 +125,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.designerPanel.Constraints().SetMinHeight(200)
 	m.designerPanel.SetParent(m.rightBox)
 
-	// 查看器面板分隔器
+	// 对象检查器分隔器
 	m.inspectorSplitter = lcl.NewSplitter(window)
 	m.inspectorSplitter.SetAlign(types.AlRight)
 	m.inspectorSplitter.SetWidth(defaultSplitterWidth)
@@ -133,12 +133,12 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.inspectorSplitter.SetMinSize(defaultSplitterMinSize)
 	setSpliterStyle(m.inspectorSplitter)
 	m.inspectorSplitter.SetParent(m.rightBox)
-	// 属性检查器
+	// 对象检查器
 	m.inspectorPanel = lcl.NewPanel(window)
 	m.inspectorPanel.SetAlign(types.AlRight)
 	m.inspectorPanel.SetBevelOuter(types.BvNone)
 	m.inspectorPanel.SetBorderStyleToBorderStyle(types.BsSingle)
-	m.inspectorPanel.SetCaption("属性检查器")
+	m.inspectorPanel.SetCaption("对象检查器")
 	m.inspectorPanel.SetWidth(windowLayout.ContentLayout.InspectorPanelWidth) //动态控制
 	m.inspectorPanel.SetVisible(windowLayout.MenuView.InspectorChecked)       //动态控制
 	m.inspectorPanel.Constraints().SetMinWidth(30)

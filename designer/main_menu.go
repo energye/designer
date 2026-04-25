@@ -165,7 +165,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	m.createProject = lcl.NewMenuItem(owner)
 	m.createProject.SetCaption("新建项目")
-	m.createProject.SetShortCut(api.TextToShortCut("Ctrl+P"))
+	m.createProject.SetShortCut(api.TextToShortCut(platformControl() + "+P"))
 	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
 	m.createProject.SetOnClick(func(lcl.IObject) {
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectCreate}})
@@ -178,7 +178,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	m.createWindow = lcl.NewMenuItem(owner)
 	m.createWindow.SetCaption("新建窗体")
-	m.createWindow.SetShortCut(api.TextToShortCut("Ctrl+N"))
+	m.createWindow.SetShortCut(api.TextToShortCut(platformControl() + "+N"))
 	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	m.createWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("新建窗体")
@@ -188,7 +188,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	m.open = lcl.NewMenuItem(owner)
 	m.open.SetCaption("打开(&O)")
-	m.open.SetShortCut(api.TextToShortCut("Ctrl+O"))
+	m.open.SetShortCut(api.TextToShortCut(platformControl() + "+O"))
 	m.open.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
 	m.open.SetOnClick(func(sender lcl.IObject) {
 		MainWindow.toolBtnLayout.toolbarBtn.onOpenForm(sender)
@@ -197,7 +197,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	//m.save = lcl.NewMenuItem(owner)
 	//m.save.SetCaption("保存(&S)")
-	//m.save.SetShortCut(api.TextToShortCut("Ctrl+S"))
+	//m.save.SetShortCut(api.TextToShortCut(platformControl() + "+S"))
 	//m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
 	//m.save.SetOnClick(func(sender lcl.IObject) {
 	//	logs.Debug("保存窗体")
@@ -206,7 +206,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	//saveAllWindow := lcl.NewMenuItem(owner)
 	//saveAllWindow.SetCaption("保存所有窗体(&L)")
-	//saveAllWindow.SetShortCut(api.TextToShortCut("Shift+Ctrl+L"))
+	//saveAllWindow.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+L"))
 	//saveAllWindow.SetImageIndex(imageMenu.ImageIndex("menu_save_all.png"))
 	//saveAllWindow.SetOnClick(func(sender lcl.IObject) {
 	//	logs.Debug("保存所有窗体")
@@ -221,7 +221,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 
 	exitWindow := lcl.NewMenuItem(owner)
 	exitWindow.SetCaption("退出(&Q)")
-	exitWindow.SetShortCut(api.TextToShortCut("Ctrl+Q"))
+	exitWindow.SetShortCut(api.TextToShortCut(platformControl() + "+Q"))
 	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
 	exitWindow.SetOnClick(func(sender lcl.IObject) {
 		logs.Debug("退出")
@@ -246,7 +246,7 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	cutAction := lcl.NewEditCut(m.actionList)
-	cutAction.SetShortCut(api.TextToShortCut(platformShortcut("X")))
+	cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
 	cutAction.SetCaption("剪切")
 	cutAction.SetOnExecute(func(sender lcl.IObject) {
 		activeControl := lcl.Screen.ActiveControl()
@@ -254,23 +254,23 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	})
 
 	copyAction := lcl.NewEditCopy(m.actionList)
-	copyAction.SetShortCut(api.TextToShortCut(platformShortcut("C")))
+	copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
 	copyAction.SetCaption("复制")
 
 	pasteAction := lcl.NewEditPaste(m.actionList)
-	pasteAction.SetShortCut(api.TextToShortCut(platformShortcut("V")))
+	pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
 	pasteAction.SetCaption("粘贴")
 
 	selectAllAction := lcl.NewEditSelectAll(m.actionList)
-	selectAllAction.SetShortCut(api.TextToShortCut(platformShortcut("A")))
+	selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
 	selectAllAction.SetCaption("全选")
 
 	undoAction := lcl.NewEditUndo(m.actionList)
-	undoAction.SetShortCut(api.TextToShortCut(platformShortcut("Z")))
+	undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
 	undoAction.SetCaption("撤销")
 
 	undoDelete := lcl.NewEditUndo(m.actionList)
-	undoDelete.SetShortCut(api.TextToShortCut(platformShortcut("Del")))
+	undoDelete.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
 	undoDelete.SetCaption("删除")
 
 	m.editCut = lcl.NewMenuItem(owner)
@@ -308,18 +308,12 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(m.editDel)
 }
 
-func platformShortcut(key string) string {
-	if desTool.IsDarwin {
-		return "Meta+" + key
-	}
-	return "Ctrl+" + key
-}
-
 func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	windowLayout := config.Config.WindowLayout
 	m.viewWidgets = lcl.NewMenuItem(owner)
 	m.viewWidgets.SetCaption("组件库")
 	m.viewWidgets.SetChecked(windowLayout.MenuView.WidgetsChecked) // 动态控制
+	m.viewWidgets.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+C"))
 	m.viewWidgets.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewWidgets.Checked()
@@ -333,6 +327,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewProject = lcl.NewMenuItem(owner)
 	m.viewProject.SetCaption("项目管理器")
 	m.viewProject.SetChecked(windowLayout.MenuView.ProjectChecked) // 动态控制
+	m.viewProject.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+P"))
 	m.viewProject.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewProject.Checked()
@@ -344,8 +339,9 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewProject)
 
 	m.viewInspector = lcl.NewMenuItem(owner)
-	m.viewInspector.SetCaption("属性检查器")
+	m.viewInspector.SetCaption("对象检查器")
 	m.viewInspector.SetChecked(windowLayout.MenuView.InspectorChecked) // 动态控制
+	m.viewInspector.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+O"))
 	m.viewInspector.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewInspector.Checked()
@@ -359,6 +355,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewConsole = lcl.NewMenuItem(owner)
 	m.viewConsole.SetCaption("日志")
 	m.viewConsole.SetChecked(windowLayout.MenuView.ConsoleChecked) // 动态控制
+	m.viewConsole.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+L"))
 	m.viewConsole.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewConsole.Checked()
@@ -372,6 +369,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewStatusbar = lcl.NewMenuItem(owner)
 	m.viewStatusbar.SetCaption("状态栏")
 	m.viewStatusbar.SetChecked(windowLayout.MenuView.StatusbarChecked) // 动态控制
+	m.viewStatusbar.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+S"))
 	m.viewStatusbar.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
 			checked := !m.viewStatusbar.Checked()
@@ -387,7 +385,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.build = lcl.NewMenuItem(owner)
 	m.build.SetCaption("构建")
 	m.build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
-	m.build.SetShortCut(api.TextToShortCut("Ctrl+F8"))
+	m.build.SetShortCut(api.TextToShortCut(platformControl() + "+F8"))
 	m.build.SetOnClick(func(lcl.IObject) {
 		event.ConsoleWriteInfo("Build Start")
 		SetEnableFuncComponent(false)
@@ -402,7 +400,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.buildClean = lcl.NewMenuItem(owner)
 	m.buildClean.SetCaption("清理构建")
 	m.buildClean.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
-	m.buildClean.SetShortCut(api.TextToShortCut("Ctrl+Shift+F8"))
+	m.buildClean.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+F8"))
 	m.buildClean.SetOnClick(func(lcl.IObject) {
 		event.ConsoleWriteInfo("Build Clean Start")
 		SetEnableFuncComponent(false)
@@ -417,7 +415,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.buildAll = lcl.NewMenuItem(owner)
 	m.buildAll.SetCaption("构建所有")
 	m.buildAll.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
-	m.buildAll.SetShortCut(api.TextToShortCut("Ctrl+Shift+F9"))
+	m.buildAll.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+F9"))
 	m.buildAll.SetOnClick(func(lcl.IObject) {
 		event.ConsoleWriteInfo("Build ALL Start")
 		SetEnableFuncComponent(false)
@@ -463,7 +461,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.buildOption = lcl.NewMenuItem(owner)
 	m.buildOption.SetCaption("构建选项")
 	m.buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
-	m.buildOption.SetShortCut(api.TextToShortCut("Ctrl+F9"))
+	m.buildOption.SetShortCut(api.TextToShortCut(platformControl() + "+F9"))
 	m.buildOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("构建选项")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.BuildConfig}})
@@ -473,7 +471,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.environmentOption = lcl.NewMenuItem(owner)
 	m.environmentOption.SetCaption("环境配置")
 	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
-	m.environmentOption.SetShortCut(api.TextToShortCut("Ctrl+F10"))
+	m.environmentOption.SetShortCut(api.TextToShortCut(platformControl() + "+F10"))
 	m.environmentOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("环境配置")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.EnvConfig}})
@@ -493,7 +491,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.projectOption = lcl.NewMenuItem(owner)
 	m.projectOption.SetCaption("应用配置")
 	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_app_config.png"))
-	m.projectOption.SetShortCut(api.TextToShortCut("Ctrl+F11"))
+	m.projectOption.SetShortCut(api.TextToShortCut(platformControl() + "+F11"))
 	m.projectOption.SetOnClick(func(lcl.IObject) {
 		logs.Debug("应用配置")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectConfig}})
@@ -511,4 +509,11 @@ func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 		lcl.Application.MessageBox(versionInfo, versionInfo, 0)
 	})
 	m.helper.Add(about)
+}
+
+func platformControl() string {
+	if desTool.IsDarwin {
+		return "Meta"
+	}
+	return "Ctrl"
 }
