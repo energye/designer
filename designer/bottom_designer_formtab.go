@@ -254,7 +254,6 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	if designComp == nil {
 		designComp = m.FormRoot
 	}
-	fmt.Println("tabSheetOnShow:", designComp.node.Text())
 	// 显示掉对象查看器 tab page, 属性列表和事件列表
 	designComp.page.SetVisible(true)
 	// 恢复模式, 恢复所有设计的子组件
