@@ -33,29 +33,30 @@ import (
 
 // 设计组件
 type TDesigningComponent struct {
-	FormTab        *FormTab                  // 所属设计窗体
-	id             int                       // id 标识
-	originObject   any                       // 原始组件对象
-	className      string                    // 组件类名
-	object         lcl.IWinControl           // 组件 对象 可视
-	objectNon      lcl.IComponent            // 组件 对象 非可视
-	objectNonWrap  *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
-	parent         *TDesigningComponent      // 所属父节点
-	Child          []*TDesigningComponent    // 拥有的子节点列表
-	drag           *drag                     // 拖拽控制
-	PropertyList   []*vtedit.TEditNodeData   // 数据 组件属性
-	EventList      []*vtedit.TEditNodeData   // 数据 组件事件
-	isDesigner     bool                      // 组件是否正在设计
-	ComponentType  consts.ComponentType      // 组件类型
-	node           lcl.ITreeNode             // 查看器 组件树节点对象
-	page           lcl.IPageControl          // 查看器 属性页和事件页
-	pageProperty   lcl.ITabSheet             // 查看器 属性页
-	pageEvent      lcl.ITabSheet             // 查看器 事件页
-	propertyTree   lcl.ILazVirtualStringTree // 查看器 组件属性树
-	eventTree      lcl.ILazVirtualStringTree // 查看器 组件事件树
-	isLoadProperty bool                      // 是否加载完成属性到属性列表
-	isLoadEvent    bool                      // 是否加载完成属性到事件列表
-	mod            string                    // 组件所属依赖模块, lcl, cef, wv
+	FormTab         *FormTab                  // 所属设计窗体
+	id              int                       // id 标识
+	originObject    any                       // 原始组件对象
+	className       string                    // 组件类名
+	object          lcl.IWinControl           // 组件 对象 可视
+	objectNon       lcl.IComponent            // 组件 对象 非可视
+	objectNonWrap   *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
+	parent          *TDesigningComponent      // 所属父节点
+	Child           []*TDesigningComponent    // 拥有的子节点列表
+	drag            *drag                     // 拖拽控制
+	PropertyList    []*vtedit.TEditNodeData   // 数据 组件属性
+	EventList       []*vtedit.TEditNodeData   // 数据 组件事件
+	IsDesign        bool                      // 组件是否正在设计
+	ComponentType   consts.ComponentType      // 组件类型
+	node            lcl.ITreeNode             // 查看器 组件树节点对象
+	page            lcl.IPageControl          // 查看器 属性页和事件页
+	pageProperty    lcl.ITabSheet             // 查看器 属性页
+	pageEvent       lcl.ITabSheet             // 查看器 事件页
+	propertyTree    lcl.ILazVirtualStringTree // 查看器 组件属性树
+	eventTree       lcl.ILazVirtualStringTree // 查看器 组件事件树
+	isLoadProperty  bool                      // 是否加载完成属性到属性列表
+	isLoadEvent     bool                      // 是否加载完成属性到事件列表
+	mod             string                    // 组件所属依赖模块, lcl, cef, wv
+	RecoverProperty []uiBean.TProperty        // 组件属性恢复数据, 已恢复过该字段被设置nil
 }
 
 // 组件属性树状态
@@ -256,7 +257,7 @@ func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMous
 func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if button == types.MbRight && m.ComponentType != consts.CtForm {
 		cursorPos := lcl.Mouse.CursorPos()
-		m.FormTab.componentMenu.treePopupMenu.PopUpWithIntX2(cursorPos.X, cursorPos.Y)
+		ProjectTreeComponentMenuPopUp(cursorPos.X, cursorPos.Y)
 	} else {
 		m.drag.OnMouseUp(m, button, shift, X, Y)
 	}
@@ -703,4 +704,14 @@ func (m *TDesigningComponent) FindNodeDataByNamePaths(property uiBean.TProperty)
 		iterator(result)
 	}
 	return
+}
+
+func (m *TDesigningComponent) HideDesignHelpers() {
+	m.drag.Hide()
+	m.page.Hide()
+}
+
+func (m *TDesigningComponent) ShowDesignHelpers() {
+	m.drag.Show()
+	m.page.Show()
 }

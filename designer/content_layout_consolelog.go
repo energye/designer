@@ -27,6 +27,7 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 	m.designer = lcl.NewSynEdit(owner.consoleLogPanel)
 	m.designer.SetBorderStyleToBorderStyle(types.BsNone)
 	m.designer.SetAlign(types.AlClient)
+	m.designer.SetReadOnly(true)
 	m.designer.SetWantTabs(false)
 	m.designer.Gutter().SetVisible(false)
 	m.designer.Gutter().SetWidth(0)

@@ -10,12 +10,16 @@ type ContentLayoutProject struct {
 	topBox lcl.IPanel
 	title  lcl.ILabel
 	box    lcl.IPanel
-	// 项目栏 tree, 2个根节点 componentRoot assetsRoot
+	// 项目栏 tree, 1个项目节点 projectRoot 2个项目管理根节点 componentRoot assetsRoot
 	tree lcl.ITreeView
-	// 1: 组件根节点(所有窗体和组件)
+	// 项目根节点
+	projectRoot lcl.ITreeNode
+	// 组件根节点(所有窗体和组件)
 	componentRoot lcl.ITreeNode
-	//  2: 资源目录和文件根节点（所有代码和文件）
+	// 资源目录和文件根节点（所有代码和文件）
 	assetsRoot lcl.ITreeNode
+	// 组件菜单
+	componentMenu *TComponentMenu
 }
 
 func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
@@ -42,27 +46,115 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.box.SetAlign(types.AlClient)
 	m.box.SetParent(owner.projectPanel)
 
+	m.componentMenu = initComponentMenu(m.box)
+
 	m.tree = lcl.NewTreeView(owner.projectPanel)
 	m.tree.SetAutoExpand(true)
 	m.tree.SetReadOnly(true)
 	m.tree.SetDoubleBuffered(true)
 	m.tree.SetTreeLineColor(colors.RGBToColor(128, 128, 128))
-	m.tree.SetTreeLinePenStyle(types.PsSolid)
 	m.tree.SetAlign(types.AlClient)
-	m.tree.SetVisible(false)
+	m.tree.SetRowSelect(true)
 	m.tree.SetBorderStyleToBorderStyle(types.BsNone)
-	m.tree.Font().SetHeight(-10)
-	//form.tree.SetImages(imageComponents.ImageList50())
-	m.tree.SetImages(imageComponents.ImageList100())
+	m.tree.SetTreeLinePenStyle(types.PsClear)
+	m.tree.Font().SetHeight(-11)
+	m.tree.SetImages(imageComponents.ImageList50())
+	//m.tree.SetImages(imageComponents.ImageList100())
 	//m.tree.SetMultiSelect(true) // 多选控制
-	//m.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
-	//m.tree.SetOnMouseDown(form.TreeOnMouseDown)
-	//m.tree.SetOnContextPopup(form.TreeOnContextPopup)
+	m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
+	m.tree.SetOnMouseDown(m.TreeOnMouseDown)
+	m.tree.SetOnContextPopup(m.TreeOnContextPopup)
 	//m.CreateComponentMenu()
-	//m.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
-	//m.tree.SetParent(m.box)
+	m.tree.SetPopupMenu(m.componentMenu.treePopupMenu)
+	m.tree.SetParent(m.box)
+
+	items := m.tree.Items()
+
+	m.projectRoot = items.AddChild(nil, "当前项目名")
+	m.projectRoot.SetImageIndex(imageComponents.ImageIndex("folder.png"))
+	m.projectRoot.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
+	m.projectRoot.SetExpanded(true)
+
+	m.componentRoot = items.AddChild(m.projectRoot, "窗体")
+	m.componentRoot.SetImageIndex(imageComponents.ImageIndex("tform.png"))
+	m.componentRoot.SetSelectedIndex(imageComponents.ImageIndex("tform.png"))
+	m.componentRoot.SetExpanded(true)
+
+	m.assetsRoot = items.AddChild(m.projectRoot, "资源")
+	m.assetsRoot.SetImageIndex(imageComponents.ImageIndex("folder.png"))
+	m.assetsRoot.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
+	m.assetsRoot.SetExpanded(false)
 
 	//m.assetsRoot.DeleteChildren()
 
 	return m
+}
+
+func (m *ContentLayoutProject) AddComponentNode(parent, component *TDesigningComponent) lcl.ITreeNode {
+	if m.tree == nil {
+		return nil
+	}
+	parentNode := m.componentRoot
+	if parent != nil {
+		parentNode = parent.node
+	}
+	m.tree.BeginUpdate()
+	defer m.tree.EndUpdate()
+	items := m.tree.Items()
+	node := items.AddChild(parentNode, component.TreeName())
+	node.SetImageIndex(component.IconIndex())
+	node.SetSelectedIndex(component.IconIndex())
+	node.SetData(component.instance())
+	node.SetExpanded(true)
+	return node
+}
+
+func ProjectTreeBeginUpdate() {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.tree.BeginUpdate()
+}
+
+func ProjectTreeEndUpdate() {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.tree.EndUpdate()
+}
+
+func ProjectTreeAddComponentNode(parent, component *TDesigningComponent) lcl.ITreeNode {
+	if MainWindow.contentLayout == nil {
+		return nil
+	}
+	return MainWindow.contentLayout.layoutProject.AddComponentNode(parent, component)
+}
+
+// 返回当前选中组件树节点
+func ProjectTreeSelectNode() lcl.ITreeNode {
+	if MainWindow.contentLayout == nil {
+		return nil
+	}
+	return MainWindow.contentLayout.layoutProject.tree.Selected()
+}
+
+func ProjectTreeGetNodeAt(X, Y int32) lcl.ITreeNode {
+	if MainWindow.contentLayout == nil {
+		return nil
+	}
+	return MainWindow.contentLayout.layoutProject.tree.GetNodeAt(X, Y)
+}
+
+func ProjectTreeSetSelected(node lcl.ITreeNode) {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.tree.SetSelected(node)
+}
+
+func ProjectTreeComponentMenuPopUp(X, Y int32) {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.componentMenu.treePopupMenu.PopUpWithIntX2(X, Y)
 }

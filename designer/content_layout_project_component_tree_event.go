@@ -15,7 +15,6 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"unsafe"
@@ -24,12 +23,11 @@ import (
 // 设计 - 组件树 - 事件
 
 // 组件树右键菜单
-func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
-	logs.Debug("TreeOnContextPopup mousePos:", mousePos)
-	node := m.tree.Selected()
+func (m *ContentLayoutProject) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
+	node := ProjectTreeSelectNode()
 	if node != nil && node.IsValid() {
 		data := node.Data()
-		component := m.DataToDesigningComponent(data)
+		component := TreeNodeDataToDesigningComponent(data)
 		if component != nil && component.ComponentType == consts.CtForm {
 			*handled = true
 		}
@@ -37,30 +35,28 @@ func (m *FormTab) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, 
 }
 
 // 组件树鼠标按下事件
-func (m *FormTab) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-	logs.Debug("TreeOnMouseDown x:", X, "y:", Y)
+func (m *ContentLayoutProject) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if button == types.MbRight {
-		selectNode := m.tree.GetNodeAt(X, Y)
+		selectNode := ProjectTreeGetNodeAt(X, Y)
 		if selectNode != nil && selectNode.IsValid() {
-			m.tree.SetSelected(selectNode)
+			ProjectTreeSetSelected(selectNode)
 		}
 	}
 }
 
-// 数据指针转设计组件
-func (m *FormTab) DataToDesigningComponent(data uintptr) *TDesigningComponent {
-	dc := (*TDesigningComponent)(unsafe.Pointer(data))
-	return dc
+// 组件树选择事件
+func (m *ContentLayoutProject) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
+	data := node.Data()
+	component := TreeNodeDataToDesigningComponent(data)
+	if component != nil && component.FormTab != nil {
+		component.FormTab.SwitchComponentEditing(component)
+	}
 }
 
-// 组件树选择事件
-func (m *FormTab) TreeOnGetSelectedIndex(sender lcl.IObject, node lcl.ITreeNode) {
-	data := node.Data()
-	component := m.DataToDesigningComponent(data)
-	if component != nil {
-		m.switchComponentEditing(component)
-	}
-	logs.Info("Inspector-component-tree OnGetSelectedIndex name:", node.Text())
+// 数据指针转设计组件
+func TreeNodeDataToDesigningComponent(data uintptr) *TDesigningComponent {
+	dc := (*TDesigningComponent)(unsafe.Pointer(data))
+	return dc
 }
 
 // 取消选中所有节点

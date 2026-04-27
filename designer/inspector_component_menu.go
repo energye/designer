@@ -24,21 +24,18 @@ import (
 
 // 组件菜单
 type TComponentMenu struct {
-	form          *FormTab
-	treePopupMenu lcl.IPopupMenu // 组件树右键菜单
-	//zLevel           lcl.IMenuItem  // z 序
-	zLevelFront      lcl.IMenuItem // 移动到最顶层
-	zLevelBack       lcl.IMenuItem // 移动到最底层
-	zLevelForwardOne lcl.IMenuItem // 向前移动一层
-	zLevelBackOne    lcl.IMenuItem // 向后移动一层
-	cut              lcl.IMenuItem // 剪切
-	copy             lcl.IMenuItem // 复制
-	paste            lcl.IMenuItem // 粘贴
-	delete           lcl.IMenuItem // 删除
+	treePopupMenu    lcl.IPopupMenu // 组件树右键菜单
+	zLevelFront      lcl.IMenuItem  // 移动到最顶层
+	zLevelBack       lcl.IMenuItem  // 移动到最底层
+	zLevelForwardOne lcl.IMenuItem  // 向前移动一层
+	zLevelBackOne    lcl.IMenuItem  // 向后移动一层
+	cut              lcl.IMenuItem  // 剪切
+	copy             lcl.IMenuItem  // 复制
+	paste            lcl.IMenuItem  // 粘贴
+	delete           lcl.IMenuItem  // 删除
 }
 
 func (m *TComponentMenu) Free() {
-	m.form = nil
 	m.zLevelFront.SetOnClick(nil)
 	m.zLevelBack.SetOnClick(nil)
 	m.zLevelForwardOne.SetOnClick(nil)
@@ -49,16 +46,11 @@ func (m *TComponentMenu) Free() {
 	m.delete.SetOnClick(nil)
 }
 
-// 返回当前选中组件树节点
-func (m *TComponentMenu) ComponentTreeSelectNode() lcl.ITreeNode {
-	return m.form.tree.Selected()
-}
-
 // 返回当前选中组件
 func (m *TComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
-	node := m.ComponentTreeSelectNode()
+	node := ProjectTreeSelectNode()
 	if node != nil && node.IsValid() {
-		return m.form.DataToDesigningComponent(node.Data())
+		return TreeNodeDataToDesigningComponent(node.Data())
 	}
 	return nil
 }
@@ -159,7 +151,7 @@ func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 		parent := comp.parent
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 在删除之前先切换编辑父节组件
-			parent.FormTab.switchComponentEditing(parent)
+			parent.FormTab.SwitchComponentEditing(parent)
 			logs.Debug("组件菜单-删除 组件名:", comp.Name())
 			comp.Remove() // 删除当前组件
 		})
@@ -168,58 +160,47 @@ func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 	}
 }
 
-// 创建树右键菜单
-func (m *FormTab) CreateComponentMenu() {
-	if m.componentMenu != nil {
-		return
-	}
+// 初始化组件树右键菜单
+func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	menu := new(TComponentMenu)
-	m.componentMenu = menu
-	menu.form = m
-	menu.treePopupMenu = lcl.NewPopupMenu(m.tree)
+	menu.treePopupMenu = lcl.NewPopupMenu(owner)
 	menu.treePopupMenu.SetImages(imageItem.ImageList100())
-	menu.treePopupMenu.SetParent(m.tree)
+	menu.treePopupMenu.SetParent(owner)
 	menuItems := menu.treePopupMenu.Items()
 
-	// 层级菜单
-	//zLevel := lcl.NewMenuItem(m.tree)
-	//zLevel.SetCaption("Z 序")
-	//menu.zLevel = zLevel
-	//menuItems.Add(zLevel)
-
-	zLevelFront := lcl.NewMenuItem(m.tree)
+	zLevelFront := lcl.NewMenuItem(owner)
 	zLevelFront.SetCaption("移动到最顶层")
 	zLevelFront.SetImageIndex(imageItem.ImageIndex("order_move_front.png"))
 	menu.zLevelFront = zLevelFront
 	menuItems.Add(zLevelFront)
 	zLevelFront.SetOnClick(menu.OnLevelFront)
 
-	zLevelBack := lcl.NewMenuItem(m.tree)
+	zLevelBack := lcl.NewMenuItem(owner)
 	zLevelBack.SetCaption("移动到最底层")
 	zLevelBack.SetImageIndex(imageItem.ImageIndex("order_move_back.png"))
 	menu.zLevelBack = zLevelBack
 	menuItems.Add(zLevelBack)
 	zLevelBack.SetOnClick(menu.OnLevelBack)
 
-	zLevelForwardOne := lcl.NewMenuItem(m.tree)
+	zLevelForwardOne := lcl.NewMenuItem(owner)
 	zLevelForwardOne.SetCaption("向前移动一层")
 	zLevelForwardOne.SetImageIndex(imageItem.ImageIndex("order_forward_one.png"))
 	menu.zLevelForwardOne = zLevelForwardOne
 	menuItems.Add(zLevelForwardOne)
 	zLevelForwardOne.SetOnClick(menu.OnLevelForwardOne)
 
-	zLevelBackOne := lcl.NewMenuItem(m.tree)
+	zLevelBackOne := lcl.NewMenuItem(owner)
 	zLevelBackOne.SetCaption("向后移动一层")
 	zLevelBackOne.SetImageIndex(imageItem.ImageIndex("order_back_one.png"))
 	menu.zLevelBackOne = zLevelBackOne
 	menuItems.Add(zLevelBackOne)
 	zLevelBackOne.SetOnClick(menu.OnLevelBackOne)
 
-	line := lcl.NewMenuItem(m.tree)
+	line := lcl.NewMenuItem(owner)
 	line.SetCaption("-")
 	menuItems.Add(line)
 
-	cut := lcl.NewMenuItem(m.tree)
+	cut := lcl.NewMenuItem(owner)
 	cut.SetCaption("剪切")
 	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
 	cut.SetOnClick(menu.OnCut)
@@ -227,7 +208,7 @@ func (m *FormTab) CreateComponentMenu() {
 	menu.cut = cut
 	menuItems.Add(cut)
 
-	copy := lcl.NewMenuItem(m.tree)
+	copy := lcl.NewMenuItem(owner)
 	copy.SetCaption("复制")
 	copy.SetImageIndex(imageItem.ImageIndex("item_copy.png"))
 	copy.SetOnClick(menu.OnCopy)
@@ -235,7 +216,7 @@ func (m *FormTab) CreateComponentMenu() {
 	menu.copy = copy
 	menuItems.Add(copy)
 
-	paste := lcl.NewMenuItem(m.tree)
+	paste := lcl.NewMenuItem(owner)
 	paste.SetCaption("粘贴")
 	paste.SetImageIndex(imageItem.ImageIndex("item_paste.png"))
 	paste.SetOnClick(menu.OnPaste)
@@ -243,10 +224,12 @@ func (m *FormTab) CreateComponentMenu() {
 	menu.paste = paste
 	menuItems.Add(paste)
 
-	delete := lcl.NewMenuItem(m.tree)
+	delete := lcl.NewMenuItem(owner)
 	delete.SetCaption("删除")
 	delete.SetImageIndex(imageItem.ImageIndex("item_delete_selection.png"))
 	delete.SetOnClick(menu.OnDelete)
 	menu.delete = delete
 	menuItems.Add(delete)
+
+	return menu
 }

@@ -30,19 +30,16 @@ import (
 
 // 设计窗体的 tab
 type FormTab struct {
-	Id         int    // 唯一索引, 关联 forms key: index
-	name       string // 窗体名称, 临时: 在初始化时使用
-	IsDesigner bool   // 当前设计窗体Form是否正在设计
-	IsClose    bool   // 是否关闭
-	//sheet         lcl.ITabSheet        // tab sheet
+	Id            int                  // 唯一索引, 关联 forms key: index
+	name          string               // 窗体名称, 临时: 在初始化时使用
+	IsDesigner    bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
+	IsClose       bool                 // 是否关闭
 	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
-	tree          lcl.ITreeView        // 组件树
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
 	formDesigner  *TEngFormDesigner    // 设计器处理器
 	OldFormName   string               // 旧的窗体名称, 临时：在自引用修改时使用
 	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	componentMenu *TComponentMenu      // 组件菜单
 	recover       *TRecoverForm        // 恢复模式
 	recvMethods   []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
 }
@@ -105,29 +102,51 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-// 切换组件设计
-func (m *FormTab) switchComponentEditing(targetComp *TDesigningComponent) {
-	// TODO fix: 需要优化, 这里需要判断当前控件已切换 不再操作切换
-	// 隐藏之前设计的组件
-	// 隐藏之前设计组件的属性和事件列表
-	var iterable func(comp *TDesigningComponent)
-	iterable = func(comp *TDesigningComponent) {
-		if comp.isDesigner {
-			comp.drag.Hide()
-			comp.page.Hide()
+// 隐藏之前设计的组件 drag, 对象查看器属性和事件
+func (m *FormTab) HideAllDesignHelpers(target *TDesigningComponent) {
+	var iterable func(component *TDesigningComponent)
+	iterable = func(component *TDesigningComponent) {
+		if component.IsDesign && target != component {
+			component.IsDesign = false // 标记为非设计状态
+			component.HideDesignHelpers()
 		}
-		for _, comp := range comp.Child {
-			iterable(comp)
+		for _, child := range component.Child {
+			iterable(child)
 		}
 	}
 	iterable(m.FormRoot)
+}
 
+// 查找当前设计窗体正在设计的组件
+func (m *FormTab) FindDesignComponent(component *TDesigningComponent) *TDesigningComponent {
+	if component == nil {
+		return nil
+	}
+	if component.IsDesign {
+		return component
+	}
+	for _, child := range component.Child {
+		designComp := m.FindDesignComponent(child)
+		if designComp != nil {
+			return designComp
+		}
+	}
+	return nil
+}
+
+// 切换组件到设计状态
+func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
 	targetComp.mustComponentPropertyPage()
 	targetComp.drag.mustDS()
-	// 显示当前设计组件 drag
-	targetComp.drag.Show()
-	// 显示当前设计组件的属性和事件列表
-	targetComp.page.Show()
+	m.HideAllDesignHelpers(targetComp)
+	targetComp.IsDesign = true
+	if !m.IsDesigner {
+		// 切换到设计窗体
+		designer.tab.HideAllActivated()
+		designer.ActiveFormTab(m)
+	}
+	// helper 显示位置
+	targetComp.ShowDesignHelpers()
 	// 加载属性到属性列表
 	targetComp.LoadPropertyToInspector()
 }
@@ -143,12 +162,12 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	if selectComponent != nil && isAcceptsControl {
 		SetStatusCenterText("-")
 		logs.Debug("选中设计组件:", selectComponent.name)
-		m.switchComponentEditing(m.FormRoot)
+		m.SwitchComponentEditing(m.FormRoot)
 
 		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
 			// 创建设计组件
 			newDesComp.SetParent(owner)
-			newDesComp.FormTab.switchComponentEditing(newDesComp)
+			newDesComp.FormTab.SwitchComponentEditing(newDesComp)
 			newDesComp.DragEnd()
 			// 1. 加载属性到设计器
 			// 此步骤会初始化并填充设计组件实例
@@ -176,7 +195,7 @@ func (m *FormTab) designerOnMouseDown(sender lcl.IObject, button types.TMouseBut
 	// 创建组件
 	logs.Debug("鼠标点击设计器")
 	if !m.placeComponent(m.FormRoot, x, y) {
-		m.switchComponentEditing(m.FormRoot)
+		m.SwitchComponentEditing(m.FormRoot)
 		logs.Debug("加载窗体属性")
 		// 设置选中状态到设计器组件树
 		m.FormRoot.SetSelected()
@@ -189,33 +208,23 @@ func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButto
 	//lcl.Mouse.SetCapture(0)
 }
 
+// 当前tab隐藏事件
 func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	if m.sheet.IsEnterClose() {
 		// 关闭状态不处理任何逻辑
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
-	// 设计状态 关闭
 	m.IsDesigner = false
-	m.tree.SetVisible(false)
-	// 隐藏属性列表 page
-	var (
-		iterable    func(comp *TDesigningComponent)
-		defaultComp = m.FormRoot
-	)
-	iterable = func(comp *TDesigningComponent) {
-		if comp == nil {
-			return
-		}
-		if comp.isDesigner {
-			defaultComp = comp
-		}
-		for _, comp := range comp.Child {
-			iterable(comp)
-		}
+
+	designComp := m.FindDesignComponent(m.FormRoot)
+	if designComp == nil {
+		designComp = m.FormRoot
 	}
-	iterable(m.FormRoot)
-	defaultComp.page.SetVisible(false)
+	// 隐藏所有设计组件
+	m.HideAllDesignHelpers(designComp)
+	// 隐藏掉对象查看器 tab page, 属性列表和事件列表
+	designComp.page.SetVisible(false)
 }
 
 // 当前tab显示事件
@@ -225,35 +234,24 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
-	// 设计状态 开启
 	m.IsDesigner = true
-	// 显示组件树
-	m.tree.SetVisible(true)
 
-	var (
-		iterable    func(comp *TDesigningComponent) // 遍历当前正在设计的组件
-		defaultComp = m.FormRoot                    // 默认选中的组件
-	)
-	iterable = func(comp *TDesigningComponent) {
-		if comp == nil {
-			return
-		}
-		if comp.isDesigner {
-			defaultComp = comp
-		}
-		for _, comp := range comp.Child {
-			iterable(comp)
-		}
+	designComp := m.FindDesignComponent(m.FormRoot)
+	if designComp == nil {
+		designComp = m.FormRoot
 	}
-	iterable(m.FormRoot)
-	// 显示选中设计的组件属性列表
-	defaultComp.page.SetVisible(true)
-	if m.recover != nil {
-		// 恢复模式, 恢复所有设计的子组件
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.Recover()
-		})
-	}
+	fmt.Println("tabSheetOnShow:", designComp.node.Text())
+	// 显示掉对象查看器 tab page, 属性列表和事件列表
+	designComp.page.SetVisible(true)
+	// 恢复模式, 恢复所有设计的子组件
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		//m.Recover()
+		m.RecoverComponentPropertyValue()
+		// 确保节点被选中
+		ProjectTreeSetSelected(designComp.node)
+		// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
+		m.SwitchComponentEditing(designComp)
+	})
 }
 
 func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
@@ -262,12 +260,6 @@ func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
 	m.IsClose = true  // 标记关闭
 	m.FormRoot.Free() // 关闭从根节点释放
 	m.recover = nil
-	if m.tree != nil && m.tree.IsValid() {
-		m.tree.Free()
-	}
-	if m.componentMenu != nil {
-		m.componentMenu.Free()
-	}
 	// 在设计器列表删除当前窗体
 	delete(designer.designerForms, m.Id)
 	if len(designer.tab.Pages()) == 0 {
@@ -313,15 +305,8 @@ func (m *FormTab) drawGrid(control lcl.ICustomControl) {
 // 添加窗体表单根节点
 func (m *FormTab) AddFormNode() lcl.ITreeNode {
 	// 窗体 根节点
-	m.tree.BeginUpdate()
-	defer m.tree.EndUpdate()
-	items := m.tree.Items()
 	m.FormRoot.id = nextTreeDataId()
-	treeName := m.FormRoot.TreeName()
-	newNode := items.AddChild(nil, treeName)
-	newNode.SetImageIndex(m.FormRoot.IconIndex())    // 显示图标索引
-	newNode.SetSelectedIndex(m.FormRoot.IconIndex()) // 选中图标索引
-	newNode.SetData(m.FormRoot.instance())
+	newNode := ProjectTreeAddComponentNode(nil, m.FormRoot)
 	m.FormRoot.node = newNode
 	// 添加到设计组件列表
 	m.AddComponentToList(m.FormRoot)
@@ -339,16 +324,9 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		return
 	}
 	if child.ComponentType == consts.CtVisual || child.ComponentType == consts.CtNonVisual {
-		m.tree.BeginUpdate()
-		defer m.tree.EndUpdate()
-		items := m.tree.Items()
-		// 组件 子节点
 		child.id = nextTreeDataId()
-		node := items.AddChild(parent.node, child.TreeName())
-		child.node = node
-		node.SetImageIndex(child.IconIndex())    // 显示图标索引
-		node.SetSelectedIndex(child.IconIndex()) // 选中图标索引
-		node.SetData(child.instance())           // 设置数据为当前实例
+		newNode := ProjectTreeAddComponentNode(parent, child)
+		child.node = newNode
 		// 添加到设计组件列表
 		m.AddComponentToList(child)
 	} else {

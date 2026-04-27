@@ -24,9 +24,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"path/filepath"
-	"strconv"
 	"sync"
-	"time"
 )
 
 // 恢复 FormTab
@@ -42,61 +40,62 @@ type TRecoverForm struct {
 	property   []uiBean.TProperty
 }
 
-// 恢复窗体组件信息
-// 只恢复一次
-func (m *FormTab) Recover() {
-	if m.recover == nil {
-		return
-	}
-	beginTime := time.Now()
-	tempRecover := m.recover
-	// 置空
-	m.recover = nil
+// 恢复设计窗体组件树
+//
+//	恢复当前设计窗体的所有设计组件对象
+//	创建设计组件对象并添加到项目管理树节点, 不恢复组件属性值
+func (m *FormTab) RecoverComponentTree() {
+	ProjectTreeBeginUpdate()
+	defer ProjectTreeEndUpdate()
 
-	m.tree.BeginUpdate()
-	defer m.tree.EndUpdate()
-
-	// 1. 加载属性到设计器
-	// 此步骤会初始化并填充设计组件实例
-	m.FormRoot.LoadPropertyToInspector()
-	// 2. 恢复属性
-	recoverDesignerComponentProperty(tempRecover.property, m.FormRoot)
-	// 3. 在恢复窗体属性后，所有组件加载完统一渲染
-	m.FormRoot.SetVisible(false)
-	defer m.FormRoot.SetVisible(true)
-	// 4. 添加到组件树
-	node := m.AddFormNode()
-	// 5. 恢复子组件
-	recoverDesignerChildComponent(tempRecover.components, m.FormRoot)
-	// 6. 恢复的默认切换至当前Form编辑状态
-	node.SetSelected(true)
-	// 释放掉
-	tempRecover.components = nil
-	tempRecover.property = nil
-	event.ConsoleWriteInfo("Restore designer form time-consuming:", strconv.FormatFloat(time.Now().Sub(beginTime).Seconds(), 'g', -1, 64), "second")
-}
-
-// 恢复设计的子组件
-func recoverDesignerChildComponent(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
-	for _, child := range childList {
-		if newDesComp := GetDesignerComponent(parent.FormTab, 0, 0, child.ClassName); newDesComp != nil {
-			newDesComp.SetParent(parent)
-			// 1. 加载属性
-			newDesComp.GetProps()
-			// 2. 恢复组件属性
-			recoverDesignerComponentProperty(child.Properties, newDesComp)
-			// 3. 添加到组件树
-			parent.AddChild(newDesComp)
-			// 恢复子组件
-			recoverDesignerChildComponent(child.Child, newDesComp)
+	var createTree func(childList []uiBean.TUIComponent, parent *TDesigningComponent)
+	createTree = func(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
+		for _, child := range childList {
+			if newDesComp := GetDesignerComponent(parent.FormTab, 0, 0, child.ClassName); newDesComp != nil {
+				newDesComp.RecoverProperty = child.Properties
+				// 设置组件节点关联
+				newDesComp.SetParent(parent)
+				// 添加到项目管理树
+				parent.AddChild(newDesComp)
+				// 恢复子组件
+				createTree(child.Child, newDesComp)
+			}
 		}
 	}
+	// 项目管理-窗体根节点
+	m.AddFormNode()
+	m.FormRoot.RecoverProperty = m.recover.property
+	createTree(m.recover.components, m.FormRoot)
+}
+
+// 恢复设计窗体组件属性值
+func (m *FormTab) RecoverComponentPropertyValue() {
+	var iterateCreate func(childList []*TDesigningComponent)
+	iterateCreate = func(childList []*TDesigningComponent) {
+		for _, child := range childList {
+			if child.RecoverProperty != nil {
+				recoverDesignerComponentProperty(child)
+				child.RecoverProperty = nil
+			}
+			iterateCreate(child.Child)
+		}
+	}
+	if m.FormRoot.RecoverProperty != nil {
+		recoverDesignerComponentProperty(m.FormRoot)
+		m.FormRoot.RecoverProperty = nil
+	}
+	iterateCreate(m.FormRoot.Child)
 }
 
 // 恢复设计的组件属性
 // 1. 调用 api 设置属性
 // 2. 组件属性列表对应的属性Edit值
-func recoverDesignerComponentProperty(propertyList []uiBean.TProperty, component *TDesigningComponent) {
+func recoverDesignerComponentProperty(component *TDesigningComponent) {
+	if component == nil || component.RecoverProperty == nil {
+		return
+	}
+	component.GetProps()
+	propertyList := component.RecoverProperty
 	for _, property := range propertyList {
 		propNodeData := component.FindNodeDataByNamePaths(property)
 		if propNodeData != nil {
@@ -162,14 +161,16 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				// 创建一个设计窗体
 				formTab := designer.addDesignerFormTab(tempUIForm.Id)
+				// 恢复模式，在 tab page 显示时恢复组件属性
 				formTab.recover = &TRecoverForm{
 					components: uiComponent.Child,
 					property:   uiComponent.Properties,
 				}
 				// 设置属性
 				formTab.sheet.Button().SetCaption(tempUIForm.Name)
-
-				// 默认激活的窗体
+				// 创建项目树节点->窗体节点
+				formTab.RecoverComponentTree()
+				// 激活最后设计的窗体
 				if project.ActiveUIForm == formTab.Id {
 					activeForm = formTab
 				}
@@ -182,9 +183,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			designer.tab.RecalculatePosition()
 			if activeForm != nil {
-				// 隐藏掉所有组件树
-				designer.hideAllComponentTrees()
-				// 隐藏掉所有 form tab
+				// 隐藏掉所有 form tab page
 				designer.tab.HideAllActivated()
 				// 激活显示当前默认的 form tab
 				designer.ActiveFormTab(activeForm)

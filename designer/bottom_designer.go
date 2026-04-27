@@ -59,16 +59,6 @@ func (m *Designer) createTabMenu() {
 	//m.page.SetPopupMenu(m.tabMenu)
 }
 
-// 隐藏所有组件树
-func (m *Designer) hideAllComponentTrees() {
-	for _, formTab := range m.designerForms {
-		if formTab == nil {
-			continue
-		}
-		formTab.tree.SetVisible(false)
-	}
-}
-
 // ResetDesigner 重置设计器
 // 新建项目时/重新打开项目时调用
 // 打开设计窗体不调用
@@ -148,28 +138,6 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 	SetDesignerCount(m.designerCount + 1)
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
-	// 组件树
-	form.tree = lcl.NewTreeView(MainWindow.contentLayout.layoutProject.box)
-	form.tree.SetAutoExpand(true)
-	form.tree.SetReadOnly(true)
-	form.tree.SetDoubleBuffered(true)
-	form.tree.SetTreeLineColor(colors.RGBToColor(128, 128, 128))
-	form.tree.SetTreeLinePenStyle(types.PsSolid)
-	//m.tree.SetMultiSelect(true) // 多选控制
-	form.tree.SetAlign(types.AlClient)
-	form.tree.SetVisible(false)
-	SetComponentDefaultColor(form.tree)
-	form.tree.SetBorderStyleToBorderStyle(types.BsNone)
-	//form.tree.SetImages(imageComponents.ImageList50())
-	form.tree.SetImages(imageComponents.ImageList100())
-	form.tree.SetOnGetSelectedIndex(form.TreeOnGetSelectedIndex)
-	form.tree.SetOnMouseDown(form.TreeOnMouseDown)
-	form.tree.SetOnContextPopup(form.TreeOnContextPopup)
-	form.tree.Font().SetHeight(-10)
-	// 组件树右键菜单
-	form.CreateComponentMenu()
-	form.tree.SetPopupMenu(form.componentMenu.treePopupMenu)
-	form.tree.SetParent(MainWindow.contentLayout.layoutProject.box)
 
 	// 默认名
 	if len(defaultId) > 0 {
@@ -223,13 +191,16 @@ func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
 // 激活指定的 tab
 // 触发 tab 的 onshow 事件
 func (m *Designer) ActiveFormTab(tab *FormTab) {
+	// 将所有窗体设为非设计窗体
 	for _, form := range m.designerForms {
 		if form == nil {
 			continue
 		}
 		form.IsDesigner = false
 	}
+	// 设为设计窗体
 	tab.IsDesigner = true
+	// 激活当前 tab
 	tab.sheet.SetActive(true)
 }
 

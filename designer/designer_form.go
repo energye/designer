@@ -88,9 +88,6 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	// 窗体拖拽大小
 	dc.drag = newDrag(m.scroll, consts.DsRightBottom)
 	dc.drag.mustDS()
-	//m.FormRoot.drag.SetParent(m.scroll)
 	dc.drag.SetRelation(dc)
-	dc.drag.Show()
-	dc.drag.Follow()
 	return dc
 }

@@ -66,8 +66,6 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		// 创建窗体后执行一次 go mod tidy 禁用功能按钮, TODO 先这样
 		//SetEnableFuncComponent(false)
 
-		// 隐藏所有组件树
-		designer.hideAllComponentTrees()
 		// 创建新的 form tab
 		newForm := designer.addDesignerFormTab()
 		// 激活显示 新的 form tab
@@ -80,8 +78,9 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		newNode.SetSelected(true)
 		// 触发 ui 生成事件
 		triggerUIGeneration(newForm.FormRoot, nil, event.CodeGenUI)
-		// 显示
+
 		designer.tab.HideAllActivated()
+		// 显示 tab page
 		newForm.sheet.SetActive(true)
 		designer.tab.RecalculatePosition()
 

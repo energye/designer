@@ -35,7 +35,6 @@ const minDistance = 4
 type drag struct {
 	relation           *TDesigningComponent  // 关联设计的组件
 	ds                 consts.DragShowStatus // 显示方向
-	isShow             bool                  // 是否显示
 	dx, dy             int32                 // 拖拽控制
 	dcl, dct           int32                 // 拖拽控制
 	dcx, dcy, dcw, dch int32                 // 拖拽控制
@@ -201,11 +200,9 @@ func (m *drag) SetRelation(relation *TDesigningComponent) {
 
 // 隐藏所有
 func (m *drag) Hide() {
-	if !m.isShow || m.owner != nil {
+	if m.owner != nil {
 		return
 	}
-	m.relation.isDesigner = false
-	m.isShow = false
 	if m.ds == consts.DsAll {
 		m.left.SetVisible(false)
 		m.top.SetVisible(false)
@@ -224,11 +221,9 @@ func (m *drag) Hide() {
 
 // 显示
 func (m *drag) Show() {
-	if m.isShow || m.owner != nil {
+	if m.owner != nil {
 		return
 	}
-	m.relation.isDesigner = true
-	m.isShow = true
 	if m.ds == consts.DsAll {
 		m.left.SetVisible(true)
 		m.top.SetVisible(true)
@@ -363,7 +358,7 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 		m.dcl = br.Left
 		m.dct = br.Top
 		// 更新设计查看器的属性信息
-		sender.FormTab.switchComponentEditing(sender)
+		sender.FormTab.SwitchComponentEditing(sender)
 		// 更新设计查看器的组件树信息
 		go lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 设置选中状态
