@@ -183,6 +183,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			designer.tab.RecalculatePosition()
 			if activeForm != nil {
+				activeForm.FormRoot.node.SetExpanded(true)
 				// 隐藏掉所有 form tab page
 				designer.tab.HideAllActivated()
 				// 激活显示当前默认的 form tab

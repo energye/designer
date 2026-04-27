@@ -73,10 +73,12 @@ func ResetDesigner() {
 		if form == nil {
 			continue
 		}
-		form.Close()
+		form.Remove()
 	}
 	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
 	SetDesignerCount(0)
+	ProjectTreeClearComponentTreeNode()
+	ProjectTreeClearAssetsTreeNode()
 }
 
 func UpdateHistoryProject(egpFilePath string) {

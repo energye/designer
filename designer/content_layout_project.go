@@ -26,11 +26,11 @@ type ContentLayoutProject struct {
 	// 项目栏 tree, 1个项目节点 projectRoot 2个项目管理根节点 componentRoot assetsRoot
 	tree lcl.ITreeView
 	// 项目根节点
-	projectRoot lcl.ITreeNode
+	projectTreeNode lcl.ITreeNode
 	// 组件根节点(所有窗体和组件)
-	componentRoot lcl.ITreeNode
+	componentTreeNode lcl.ITreeNode
 	// 资源目录和文件根节点（所有代码和文件）
-	assetsRoot lcl.ITreeNode
+	assetsTreeNode lcl.ITreeNode
 	// 组件菜单
 	componentMenu *TComponentMenu
 }
@@ -62,7 +62,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.componentMenu = initComponentMenu(m.box)
 
 	m.tree = lcl.NewTreeView(owner.projectPanel)
-	m.tree.SetAutoExpand(true)
+	m.tree.SetAutoExpand(false)
 	m.tree.SetReadOnly(true)
 	m.tree.SetDoubleBuffered(true)
 	m.tree.SetTreeLineColor(colors.RGBToColor(128, 128, 128))
@@ -83,20 +83,21 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 
 	items := m.tree.Items()
 
-	m.projectRoot = items.AddChild(nil, "当前项目名")
-	m.projectRoot.SetImageIndex(imageComponents.ImageIndex("folder.png"))
-	m.projectRoot.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
-	m.projectRoot.SetExpanded(true)
+	m.projectTreeNode = items.AddChild(nil, "-")
+	m.projectTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
+	m.projectTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
+	m.projectTreeNode.SetExpanded(true)
 
-	m.componentRoot = items.AddChild(m.projectRoot, "窗体")
-	m.componentRoot.SetImageIndex(imageComponents.ImageIndex("tform.png"))
-	m.componentRoot.SetSelectedIndex(imageComponents.ImageIndex("tform.png"))
-	m.componentRoot.SetExpanded(true)
+	m.componentTreeNode = items.AddChild(m.projectTreeNode, "Forms")
+	m.componentTreeNode.SetImageIndex(imageComponents.ImageIndex("tform.png"))
+	m.componentTreeNode.SetSelectedIndex(imageComponents.ImageIndex("tform.png"))
+	m.componentTreeNode.SetExpanded(false)
 
-	m.assetsRoot = items.AddChild(m.projectRoot, "资源")
-	m.assetsRoot.SetImageIndex(imageComponents.ImageIndex("folder.png"))
-	m.assetsRoot.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
-	m.assetsRoot.SetExpanded(false)
+	//m.assetsTreeNode = items.AddChild(m.projectTreeNode, "src")
+	m.assetsTreeNode = items.AddChild(nil, "src")
+	m.assetsTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
+	m.assetsTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
+	m.assetsTreeNode.SetExpanded(false)
 
 	//m.assetsRoot.DeleteChildren()
 
@@ -107,7 +108,7 @@ func (m *ContentLayoutProject) AddComponentNode(parent, component *TDesigningCom
 	if m.tree == nil {
 		return nil
 	}
-	parentNode := m.componentRoot
+	parentNode := m.componentTreeNode
 	if parent != nil {
 		parentNode = parent.node
 	}
@@ -118,8 +119,29 @@ func (m *ContentLayoutProject) AddComponentNode(parent, component *TDesigningCom
 	node.SetImageIndex(component.IconIndex())
 	node.SetSelectedIndex(component.IconIndex())
 	node.SetData(component.instance())
-	node.SetExpanded(true)
+	node.SetExpanded(false)
 	return node
+}
+
+func ProjectTreeSetProjectName(name string) {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.projectTreeNode.SetText(name)
+}
+
+func ProjectTreeClearComponentTreeNode() {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.componentTreeNode.DeleteChildren()
+}
+
+func ProjectTreeClearAssetsTreeNode() {
+	if MainWindow.contentLayout == nil {
+		return
+	}
+	MainWindow.contentLayout.layoutProject.assetsTreeNode.DeleteChildren()
 }
 
 func ProjectTreeBeginUpdate() {

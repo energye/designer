@@ -74,14 +74,18 @@ func SetAppEGPPath(path string) {
 // 更新设计器窗口标题
 // 打开项目后, 新建项目后
 func UpdateDesignerTitle(title string) {
+	var (
+		windowTitle string
+	)
 	if title == "" {
-		title = fmt.Sprintf("%v %v", config.DesignerConfig.Title, config.DesignerConfig.Version)
+		windowTitle = fmt.Sprintf("%v %v", config.DesignerConfig.Title, config.DesignerConfig.Version)
 	} else {
-		title = fmt.Sprintf("%v %v - %v", title, config.DesignerConfig.Title, config.DesignerConfig.Version)
+		windowTitle = fmt.Sprintf("%v %v - %v", title, config.DesignerConfig.Title, config.DesignerConfig.Version)
 	}
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		logs.Println("UpdateDesignerTitle:", title)
-		MainWindow.SetCaption(title)
+		logs.Println("UpdateDesignerTitle:", windowTitle)
+		MainWindow.SetCaption(windowTitle)
+		ProjectTreeSetProjectName(title)
 	})
 }
 
