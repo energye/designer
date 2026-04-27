@@ -15,10 +15,10 @@ package options
 
 import (
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"github.com/energye/widget/wg"
 	"os"
 	"path/filepath"
 	"strings"

@@ -19,21 +19,30 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"github.com/energye/widget/wg"
 	"strings"
 )
 
 // 设计器面板
+
+type FormTabState int32
+
+const (
+	FtsNone FormTabState = iota
+	FtsClose
+	FtsHide
+	FtsShow
+)
 
 // 设计窗体的 tab
 type FormTab struct {
 	Id            int                  // 唯一索引, 关联 forms key: index
 	name          string               // 窗体名称, 临时: 在初始化时使用
 	IsDesigner    bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
-	IsClose       bool                 // 是否关闭
+	State         FormTabState         //
 	sheet         *wg.TPage            // tab sheet
 	scroll        lcl.IScrollBox       // 外 滚动条
 	componentName map[string]int       // 组件分类名, 同类组件ID序号
@@ -140,6 +149,10 @@ func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
 	targetComp.drag.mustDS()
 	m.HideAllDesignHelpers(targetComp)
 	targetComp.IsDesign = true
+	if m.State == FtsHide {
+		designer.tab.HideAllActivated()
+		m.ShowTabPage()
+	}
 	if !m.IsDesigner {
 		// 切换到设计窗体
 		designer.tab.HideAllActivated()
@@ -254,17 +267,65 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	})
 }
 
-func (m *FormTab) tabSheetOnClose(sender lcl.IObject) {
+func (m *FormTab) HideTabPage() {
+	m.sheet.Button().Hide()
+	m.sheet.SetVisible(false)
+	m.sheet.SetActive(false)
+	designer.tab.RecalculatePosition()
+	m.State = FtsHide
+}
+
+func (m *FormTab) ShowTabPage() {
+	m.sheet.Button().Show()
+	m.sheet.SetVisible(true)
+	m.sheet.SetActive(true)
+	designer.tab.RecalculatePosition()
+	m.State = FtsShow
+}
+
+func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
-	m.componentName = make(map[string]int)
-	m.IsClose = true  // 标记关闭
-	m.FormRoot.Free() // 关闭从根节点释放
-	m.recover = nil
-	// 在设计器列表删除当前窗体
-	delete(designer.designerForms, m.Id)
-	if len(designer.tab.Pages()) == 0 {
-		designer.tab.EnableScrollButton(false)
+	if m.State == FtsClose {
+		*canClose = true
+		m.componentName = make(map[string]int)
+		m.FormRoot.Free() // 关闭从根节点释放
+		m.recover = nil
+		// 在设计器列表删除当前窗体
+		delete(designer.designerForms, m.Id)
+		if len(designer.tab.Pages()) == 0 {
+			designer.tab.EnableScrollButton(false)
+		}
+	} else {
+		*canClose = false
+		var (
+			activeId        = -1
+			activeOtherForm *FormTab
+		)
+		for id, formTab := range designer.designerForms {
+			if formTab.sheet.Active() && formTab.sheet == page {
+				activeId = id
+			} else if activeOtherForm == nil {
+				activeOtherForm = formTab
+			}
+			if activeId != -1 && activeOtherForm != nil {
+				break
+			}
+		}
+		// 不是 -1 时删除的是自己
+		// 此时要选择一个设计表单激活设计
+		if activeId != -1 && activeOtherForm != nil {
+			designer.tab.HideAllActivated()
+			designer.ActiveFormTab(activeOtherForm)
+		}
+		// 隐藏设计器 tab page
+		m.HideTabPage()
 	}
+}
+
+// 删除当前表单
+func (m *FormTab) Remove() {
+	m.State = FtsClose
+	m.sheet.Close()
 }
 
 // 获取组件名 Caption

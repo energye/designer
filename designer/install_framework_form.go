@@ -19,10 +19,10 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"github.com/energye/widget/wg"
 	"os"
 	"path/filepath"
 )
