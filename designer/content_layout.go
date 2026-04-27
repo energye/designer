@@ -222,6 +222,7 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
 	des.tab.EnableScrollButton(false)
 	des.tab.SetParent(m.designerPanel)
+	//des.tab.SetOnChange(m.tabOnChange)
 
 	des.defaultTip = wg.NewButton(des.tab)
 	des.defaultTip.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))
@@ -247,6 +248,10 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des.createTabMenu()
 	return des
 }
+
+//func (m *ContentLayout) tabOnChange(sender lcl.IObject) {
+//
+//}
 
 func (m *ContentLayout) setStatusCenterText(s string) {
 	m.contentStatusCenter.SetText(s)

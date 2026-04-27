@@ -238,6 +238,7 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	m.HideAllDesignHelpers(designComp)
 	// 隐藏掉对象查看器 tab page, 属性列表和事件列表
 	designComp.page.SetVisible(false)
+	m.sheet.Button().Font().SetColor(colors.ClBlack)
 }
 
 // 当前tab显示事件
@@ -258,6 +259,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	designComp.page.SetVisible(true)
 	// 恢复模式, 恢复所有设计的子组件
 	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.sheet.Button().Font().SetColor(0xD47800)
 		//m.Recover()
 		m.RecoverComponentPropertyValue()
 		// 确保节点被选中

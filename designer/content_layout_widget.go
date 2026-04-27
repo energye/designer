@@ -281,7 +281,9 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			// 文本
 			brush.SetStyle(types.BsClear)
 			font.SetColor(colors.ClBlack)
-			font.SetName("Microsoft YaHei UI")
+			if tool.IsWindows {
+				font.SetName("Microsoft YaHei UI")
+			}
 			//font.SetSize(8)
 			font.SetQuality(types.FqCleartypeNatural) // 抗锯齿
 			if isPress {

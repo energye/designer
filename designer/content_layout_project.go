@@ -99,8 +99,6 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.assetsTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
 	m.assetsTreeNode.SetExpanded(false)
 
-	//m.assetsRoot.DeleteChildren()
-
 	return m
 }
 
