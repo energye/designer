@@ -12,7 +12,7 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
-type TUndoRedo struct {
+type TShortcutKey struct {
 	cutAction       lcl.IEditCut
 	copyAction      lcl.IEditCopy
 	pasteAction     lcl.IEditPaste
@@ -22,7 +22,7 @@ type TUndoRedo struct {
 	deleteAction    lcl.IEditDelete
 }
 
-func (m *TUndoRedo) init() {
+func (m *TShortcutKey) init() {
 	//m.copyAction.SetOnExecute(m.copyActionOnExecute)
 	//m.copyAction.SetOnUpdate(m.copyActionOnUpdate)
 
@@ -60,7 +60,7 @@ func (m *TUndoRedo) init() {
 //	}
 //}
 
-func (m *TUndoRedo) undoActionOnExecute(sender lcl.IObject) {
+func (m *TShortcutKey) undoActionOnExecute(sender lcl.IObject) {
 	activeControl := lcl.Screen.ActiveControl()
 	if activeControl != nil {
 		clsName := activeControl.ClassName()
@@ -73,7 +73,7 @@ func (m *TUndoRedo) undoActionOnExecute(sender lcl.IObject) {
 	}
 }
 
-func (m *TUndoRedo) undoActionOnUpdate(sender lcl.IObject) {
+func (m *TShortcutKey) undoActionOnUpdate(sender lcl.IObject) {
 	activeControl := lcl.Screen.ActiveControl()
 	if activeControl != nil {
 		if activeControl.IsObjectInstanceOf(lcl.TCustomEditClass()) {
@@ -86,7 +86,7 @@ func (m *TUndoRedo) undoActionOnUpdate(sender lcl.IObject) {
 	}
 }
 
-func (m *TUndoRedo) redoActionOnExecute(sender lcl.IObject) {
+func (m *TShortcutKey) redoActionOnExecute(sender lcl.IObject) {
 	activeControl := lcl.Screen.ActiveControl()
 	if activeControl != nil {
 		clsName := activeControl.ClassName()
@@ -99,7 +99,7 @@ func (m *TUndoRedo) redoActionOnExecute(sender lcl.IObject) {
 	}
 }
 
-func (m *TUndoRedo) redoActionOnUpdate(sender lcl.IObject) {
+func (m *TShortcutKey) redoActionOnUpdate(sender lcl.IObject) {
 	activeControl := lcl.Screen.ActiveControl()
 	if activeControl != nil {
 		clsName := activeControl.ClassName()

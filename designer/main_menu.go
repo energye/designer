@@ -51,7 +51,7 @@ type TMainMenu struct {
 	editUndo      lcl.IMenuItem
 	editRedo      lcl.IMenuItem
 	editDel       lcl.IMenuItem
-	undoRedo      *TUndoRedo
+	shortcutKey   *TShortcutKey
 
 	// view
 	viewWidgets   lcl.IMenuItem
@@ -239,81 +239,81 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
-	m.undoRedo = &TUndoRedo{}
+	m.shortcutKey = &TShortcutKey{}
 
-	m.undoRedo.cutAction = lcl.NewEditCut(m.actionList)
-	m.undoRedo.cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
-	m.undoRedo.cutAction.SetCaption("剪切")
+	m.shortcutKey.cutAction = lcl.NewEditCut(m.actionList)
+	m.shortcutKey.cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
+	m.shortcutKey.cutAction.SetCaption("剪切")
 
-	m.undoRedo.copyAction = lcl.NewEditCopy(m.actionList)
-	m.undoRedo.copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
-	m.undoRedo.copyAction.SetCaption("复制")
+	m.shortcutKey.copyAction = lcl.NewEditCopy(m.actionList)
+	m.shortcutKey.copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
+	m.shortcutKey.copyAction.SetCaption("复制")
 
-	m.undoRedo.pasteAction = lcl.NewEditPaste(m.actionList)
-	m.undoRedo.pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
-	m.undoRedo.pasteAction.SetCaption("粘贴")
+	m.shortcutKey.pasteAction = lcl.NewEditPaste(m.actionList)
+	m.shortcutKey.pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
+	m.shortcutKey.pasteAction.SetCaption("粘贴")
 
-	m.undoRedo.selectAllAction = lcl.NewEditSelectAll(m.actionList)
-	m.undoRedo.selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
-	m.undoRedo.selectAllAction.SetCaption("全选")
+	m.shortcutKey.selectAllAction = lcl.NewEditSelectAll(m.actionList)
+	m.shortcutKey.selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
+	m.shortcutKey.selectAllAction.SetCaption("全选")
 
-	m.undoRedo.undoAction = lcl.NewEditUndo(m.actionList)
-	m.undoRedo.undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
-	m.undoRedo.undoAction.SetCaption("撤销")
+	m.shortcutKey.undoAction = lcl.NewEditUndo(m.actionList)
+	m.shortcutKey.undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
+	m.shortcutKey.undoAction.SetCaption("撤销")
 
-	m.undoRedo.redoAction = lcl.NewAction(m.actionList)
-	m.undoRedo.redoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+Z"))
-	m.undoRedo.redoAction.SetCaption("恢复")
+	m.shortcutKey.redoAction = lcl.NewAction(m.actionList)
+	m.shortcutKey.redoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+Z"))
+	m.shortcutKey.redoAction.SetCaption("恢复")
 
-	m.undoRedo.init()
+	m.shortcutKey.init()
 
-	m.undoRedo.deleteAction = lcl.NewEditDelete(m.actionList)
-	m.undoRedo.deleteAction.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
-	m.undoRedo.deleteAction.SetCaption("删除")
+	m.shortcutKey.deleteAction = lcl.NewEditDelete(m.actionList)
+	m.shortcutKey.deleteAction.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
+	m.shortcutKey.deleteAction.SetCaption("删除")
 
 	// ====
 
 	m.editUndo = lcl.NewMenuItem(owner)
-	m.editUndo.SetCaption(m.undoRedo.undoAction.Caption())
-	m.editUndo.SetAction(m.undoRedo.undoAction)
+	m.editUndo.SetCaption(m.shortcutKey.undoAction.Caption())
+	m.editUndo.SetAction(m.shortcutKey.undoAction)
 	m.edit.Add(m.editUndo)
 
 	m.editRedo = lcl.NewMenuItem(owner)
-	m.editRedo.SetCaption(m.undoRedo.redoAction.Caption())
-	m.editRedo.SetAction(m.undoRedo.redoAction)
+	m.editRedo.SetCaption(m.shortcutKey.redoAction.Caption())
+	m.editRedo.SetAction(m.shortcutKey.redoAction)
 	m.edit.Add(m.editRedo)
 
-	separator1 := lcl.NewMenuItem(owner)
-	separator1.SetCaption("-")
-	m.edit.Add(separator1)
+	separator := lcl.NewMenuItem(owner)
+	separator.SetCaption("-")
+	m.edit.Add(separator)
 
 	m.editCut = lcl.NewMenuItem(owner)
-	m.editCut.SetCaption(m.undoRedo.cutAction.Caption())
-	m.editCut.SetAction(m.undoRedo.cutAction)
+	m.editCut.SetCaption(m.shortcutKey.cutAction.Caption())
+	m.editCut.SetAction(m.shortcutKey.cutAction)
 	m.edit.Add(m.editCut)
 
 	m.editCopy = lcl.NewMenuItem(owner)
-	m.editCopy.SetCaption(m.undoRedo.copyAction.Caption())
-	m.editCopy.SetAction(m.undoRedo.copyAction)
+	m.editCopy.SetCaption(m.shortcutKey.copyAction.Caption())
+	m.editCopy.SetAction(m.shortcutKey.copyAction)
 	m.edit.Add(m.editCopy)
 
 	m.editPaste = lcl.NewMenuItem(owner)
-	m.editPaste.SetCaption(m.undoRedo.pasteAction.Caption())
-	m.editPaste.SetAction(m.undoRedo.pasteAction)
+	m.editPaste.SetCaption(m.shortcutKey.pasteAction.Caption())
+	m.editPaste.SetAction(m.shortcutKey.pasteAction)
 	m.edit.Add(m.editPaste)
 
-	separator1 = lcl.NewMenuItem(owner)
-	separator1.SetCaption("-")
-	m.edit.Add(separator1)
+	separator = lcl.NewMenuItem(owner)
+	separator.SetCaption("-")
+	m.edit.Add(separator)
 
 	m.editSelectAll = lcl.NewMenuItem(owner)
-	m.editSelectAll.SetCaption(m.undoRedo.selectAllAction.Caption())
-	m.editSelectAll.SetAction(m.undoRedo.selectAllAction)
+	m.editSelectAll.SetCaption(m.shortcutKey.selectAllAction.Caption())
+	m.editSelectAll.SetAction(m.shortcutKey.selectAllAction)
 	m.edit.Add(m.editSelectAll)
 
 	m.editDel = lcl.NewMenuItem(owner)
-	m.editDel.SetCaption(m.undoRedo.deleteAction.Caption())
-	m.editDel.SetAction(m.undoRedo.deleteAction)
+	m.editDel.SetCaption(m.shortcutKey.deleteAction.Caption())
+	m.editDel.SetAction(m.shortcutKey.deleteAction)
 	m.edit.Add(m.editDel)
 }
 
