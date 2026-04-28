@@ -63,8 +63,9 @@ func (m *FormTab) RecoverComponentTree() {
 		}
 	}
 	// 项目管理-窗体根节点
-	m.AddFormNode()
 	m.FormRoot.RecoverProperty = m.recover.property
+	m.AddFormNode()
+	// 创建子节点
 	createTree(m.recover.components, m.FormRoot)
 }
 

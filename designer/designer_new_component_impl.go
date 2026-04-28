@@ -381,8 +381,15 @@ func (m *TDesigningComponent) SetParent(parent *TDesigningComponent) {
 	parent.Child = append(parent.Child, m)
 }
 
-// 返回组件类名
+// 返回组件名
 func (m *TDesigningComponent) Name() string {
+	if m.RecoverProperty != nil {
+		for _, prop := range m.RecoverProperty {
+			if tool.Equal(prop.Name, "name") {
+				return prop.Value.(string)
+			}
+		}
+	}
 	name := m.Component().Name()
 	return name
 }
