@@ -113,7 +113,7 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 			updateNodeData.SetEditValue(m.Name())
 			m.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
 		default:
-			logs.Error("检查更新属性-其它错误需排查 检查更新属性失败, RS:", rs)
+			logs.Error("检查更新属性-其它错误 检查更新属性失败, RS:", rs)
 		}
 	}
 }
@@ -194,6 +194,11 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 	propName := strings.ToLower(updateNodeData.Name())
 	switch propName {
 	case "name":
+		if !tool.IsValidVariableName(updateNodeData.EditStringValue()) {
+			logs.Error("修改组件名失败, 组件名非法, 只能使用英文字母 + 数字 + 下划线:", updateNodeData.EditStringValue())
+			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] \n只能使用英文字母 + 数字 + 下划线", 200, 100)
+			return err.RsFail
+		}
 		// 在当前设计面板只有唯一一个组件的名
 		if m.FormTab.IsDuplicateName(m, updateNodeData.EditStringValue()) {
 			logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())

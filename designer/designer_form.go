@@ -85,7 +85,7 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	dc.FormTab = m
 	formDesigner.AddComponentToList(dc)
 
-	// 窗体拖拽大小
+	// 窗体拖拽
 	dc.drag = newDrag(m.scroll, consts.DsRightBottom)
 	dc.drag.mustDS()
 	dc.drag.SetRelation(dc)

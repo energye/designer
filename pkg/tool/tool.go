@@ -24,6 +24,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"syscall"
@@ -35,6 +36,50 @@ const (
 	IsLinux   = runtime.GOOS == "linux"
 	IsDarwin  = runtime.GOOS == "darwin"
 )
+
+// Go 关键字列表（完整官方版）
+var goKeywords = map[string]bool{
+	"break":       true,
+	"case":        true,
+	"chan":        true,
+	"const":       true,
+	"continue":    true,
+	"default":     true,
+	"defer":       true,
+	"else":        true,
+	"fallthrough": true,
+	"for":         true,
+	"func":        true,
+	"go":          true,
+	"goto":        true,
+	"if":          true,
+	"import":      true,
+	"interface":   true,
+	"map":         true,
+	"package":     true,
+	"range":       true,
+	"return":      true,
+	"select":      true,
+	"struct":      true,
+	"switch":      true,
+	"type":        true,
+	"var":         true,
+	"any":         true,
+}
+
+// 匹配 Go 变量名规则
+var varNameRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+// IsValidVariableName 判断是否为合法的 Go 变量名/字段名
+func IsValidVariableName(s string) bool {
+	if s == "" {
+		return false
+	}
+	if goKeywords[s] {
+		return false
+	}
+	return varNameRegex.MatchString(s)
+}
 
 // 加载图像到列表
 func ImageListAddPng(imageList lcl.IImageList, filePath string) {
