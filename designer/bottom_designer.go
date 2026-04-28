@@ -40,8 +40,17 @@ type Designer struct {
 	tabMenu       lcl.IPopupMenu   // tab 菜单
 	designerForms map[int]*FormTab // 设计器窗体列表
 	designerCount int              // 设计器窗总数，值动态更新
-	// 默认提示
+	// home 默认提示
 	defaultTip *wg.TButton
+}
+
+func (m *Designer) IsDuplicateName(currComp *TDesigningComponent, formName string) bool {
+	for _, formTab := range m.designerForms {
+		if formTab.FormRoot != currComp && formTab.FormRoot.Name() == formName {
+			return true
+		}
+	}
+	return false
 }
 
 // 创建tab上的右键菜单

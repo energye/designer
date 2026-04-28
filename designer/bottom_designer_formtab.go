@@ -86,8 +86,8 @@ func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bo
 		if comp != currComp && comp.Name() == name {
 			return true
 		}
-		for _, comp := range comp.Child {
-			if iterable(comp) {
+		for _, child := range comp.Child {
+			if iterable(child) {
 				return true
 			}
 		}

@@ -86,7 +86,7 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 	}
 	// 检查当前组件属性是否允许更新
 	if rs := m.CheckCanUpdateProp(updateNodeData); rs == err.RsSuccess {
-		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
+		logs.Info("检查更新属性-成功, 该属性", updateNodeData.Name(), "调用 API 更新, 同时更新节点数据")
 		ref := &reflector{object: m.originObject, data: updateNodeData, objectNonWrap: m.objectNonWrap}
 		result, err := ref.callMethod()
 		_ = result
@@ -100,7 +100,7 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 			triggerUIGeneration(m, updateNodeData, event.CodeGenUI)
 		}
 	} else if rs == err.RsIgnoreProp { // 忽略的属性, 成功的一种
-		logs.Info("检查允许更新属性, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
+		logs.Info("检查更新属性-忽略, 该属性", updateNodeData.Name(), "忽略 API 更新, 只更新节点数据")
 		m.UpdateTreeNode(updateNodeData)
 		// 属性修改-UI布局
 		triggerUIGeneration(m, updateNodeData, event.CodeGenUI)
@@ -108,12 +108,12 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 		// 更新失败
 		switch rs {
 		case err.RsDuplicateName: // 重复的组件名
-			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs, "恢复节点内的组件名")
+			logs.Error("检查更新属性-组件名重复 检查更新属性失败, RS:", rs, "恢复节点内的组件名")
 			// 恢复节点内的组件名
 			updateNodeData.SetEditValue(m.Name())
 			m.propertyTree.InvalidateNode(updateNodeData.AffiliatedNode)
 		default:
-			logs.Error("重复的组件名 检查允许更新属性失败, RS:", rs)
+			logs.Error("检查更新属性-其它错误需排查 检查更新属性失败, RS:", rs)
 		}
 	}
 }
@@ -200,13 +200,18 @@ func (m *TDesigningComponent) CheckCanUpdateProp(updateNodeData *vtedit.TEditNod
 			message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
 			return err.RsDuplicateName
 		}
+		// 当前应用唯一窗体名
 		if m.ComponentType == consts.CtForm {
-			m.FormTab.OldFormName = m.Name()
+			if designer.IsDuplicateName(m, updateNodeData.EditStringValue()) {
+				logs.Error("修改组件名失败, 该组件名已存在", updateNodeData.EditStringValue())
+				message.Info("修改组件名失败", "组件名 ["+updateNodeData.EditStringValue()+"] 已存在", 200, 100)
+				return err.RsDuplicateName
+			}
 		}
 	case "enabled", "visible":
 		// 忽略调用API的属性
 		return err.RsIgnoreProp
-	case "autosize", "borderstyle", "borderstyletoformborderstyle", "left", "top":
+	case "autosize", "borderstyle", "borderstyletoformborderstyle", "left", "top", "align", "anchors":
 		// 忽略调用API的属性
 		// Form 组件
 		if m.ComponentType == consts.CtForm {

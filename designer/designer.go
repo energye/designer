@@ -42,16 +42,16 @@ type TEngFormDesigner struct {
 func NewEngFormDesigner(formTab *FormTab) *TEngFormDesigner {
 	m := new(TEngFormDesigner)
 	newDesigner := lcl.NewDesigner()
-	newDesigner.SetOnIsDesignMsg(m.onIsDesignMsg)
-	newDesigner.SetOnUTF8KeyPress(m.onUTF8KeyPress)
-	newDesigner.SetOnModified(m.onModified)
-	newDesigner.SetOnNotification(m.onNotification)
-	newDesigner.SetOnPaintGrid(m.onPaintGrid)
-	newDesigner.SetOnValidateRename(m.onValidateRename)
-	newDesigner.SetOnGetShiftState(m.onGetShiftState)
-	newDesigner.SetOnSelectOnlyThisComponent(m.onSelectOnlyThisComponent)
-	newDesigner.SetOnUniqueName(m.onUniqueName)
-	newDesigner.SetOnPrepareFreeDesigner(m.onPrepareFreeDesigner)
+	newDesigner.SetOnIsDesignMsg(m.designerOnIsDesignMsg)
+	newDesigner.SetOnUTF8KeyPress(m.designerOnUTF8KeyPress)
+	newDesigner.SetOnModified(m.designerOnModified)
+	newDesigner.SetOnNotification(m.designerOnNotification)
+	newDesigner.SetOnPaintGrid(m.designerOnPaintGrid)
+	newDesigner.SetOnValidateRename(m.designerOnValidateRename)
+	newDesigner.SetOnGetShiftState(m.designerOnGetShiftState)
+	newDesigner.SetOnSelectOnlyThisComponent(m.designerOnSelectOnlyThisComponent)
+	newDesigner.SetOnUniqueName(m.designerOnUniqueName)
+	newDesigner.SetOnPrepareFreeDesigner(m.designerOnPrepareFreeDesigner)
 	m.designer = newDesigner
 	m.canvas = lcl.NewCanvas()
 	return m
@@ -239,7 +239,7 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 
 // on event
 
-func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
+func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
 	//logs.Debug("IsDesignMsg", message.Msg)
 	result := false // 标记行为 false: 未处理, true: 已处理
 	isDesign := sender.ComponentState().In(types.CsDesigning)
@@ -308,42 +308,42 @@ func (m *TEngFormDesigner) onIsDesignMsg(sender lcl.IControl, message *types.TLM
 	return result
 }
 
-func (m *TEngFormDesigner) onUTF8KeyPress(uTF8Key *string) {
+func (m *TEngFormDesigner) designerOnUTF8KeyPress(uTF8Key *string) {
 	println("onUTF8KeyPress")
 	*uTF8Key = ""
 }
 
-func (m *TEngFormDesigner) onModified() {
+func (m *TEngFormDesigner) designerOnModified() {
 	println("onModified")
 }
 
-func (m *TEngFormDesigner) onNotification(component lcl.IComponent, operation types.TOperation) {
+func (m *TEngFormDesigner) designerOnNotification(component lcl.IComponent, operation types.TOperation) {
 	//println("onNotification")
 }
 
-func (m *TEngFormDesigner) onPaintGrid() {
+func (m *TEngFormDesigner) designerOnPaintGrid() {
 	//println("onPaintGrid")
 }
 
-func (m *TEngFormDesigner) onValidateRename(component lcl.IComponent, curName string, newName string) {
+func (m *TEngFormDesigner) designerOnValidateRename(component lcl.IComponent, curName string, newName string) {
 	println("onValidateRename")
 }
 
-func (m *TEngFormDesigner) onGetShiftState() types.TShiftState {
+func (m *TEngFormDesigner) designerOnGetShiftState() types.TShiftState {
 	println("onGetShiftState")
 	return types.NewSet()
 }
 
-func (m *TEngFormDesigner) onSelectOnlyThisComponent(component lcl.IComponent) {
+func (m *TEngFormDesigner) designerOnSelectOnlyThisComponent(component lcl.IComponent) {
 	println("onSelectOnlyThisComponent")
 }
 
-func (m *TEngFormDesigner) onUniqueName(baseName string) string {
+func (m *TEngFormDesigner) designerOnUniqueName(baseName string) string {
 	println("onUniqueName")
 	return ""
 }
 
-func (m *TEngFormDesigner) onPrepareFreeDesigner(freeComponent bool) {
+func (m *TEngFormDesigner) designerOnPrepareFreeDesigner(freeComponent bool) {
 	println("onPrepareFreeDesigner")
 }
 
