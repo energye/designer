@@ -248,25 +248,20 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 		dispatchMsg := (*uintptr)(unsafe.Pointer(message))
 		switch message.Msg {
 		case messages.LM_PAINT:
-			//println("paint")
 			paint := *(*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
 			pintPtr := uintptr(unsafe.Pointer(&paint))
 			sender.Dispatch(&pintPtr)
 			//m.paint(sender, &paint)
 		case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
-			//println("down", sender.ToString())
 			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseDown(sender, key)
 		case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
-			//println("up")
 			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseUp(sender, key)
 		case messages.LM_MOUSEMOVE:
-			//println("move", sender.ToString())
 			mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseMove(sender, mouse)
 		case messages.LM_SIZE:
-			//println("size")
 			size := (*types.TLMSize)(unsafe.Pointer(dispatchMsg))
 			m.size(sender, size)
 		case messages.LM_MOVE:
@@ -286,7 +281,7 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
-		//case messages.LM_HSCROLL, messages.LM_VSCROLL:
+			//case messages.LM_HSCROLL, messages.LM_VSCROLL:
 		case messages.LM_SETFOCUS:
 			m.Form.SetFocus() // TODO 防止控件获得焦点, 还没找到其它处理方试
 			//if m.MouseDownComponent != nil && sender.Instance() == m.MouseDownComponent.Instance() {
@@ -309,42 +304,42 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 }
 
 func (m *TEngFormDesigner) designerOnUTF8KeyPress(uTF8Key *string) {
-	println("onUTF8KeyPress")
+	println("designerOnUTF8KeyPress")
 	*uTF8Key = ""
 }
 
 func (m *TEngFormDesigner) designerOnModified() {
-	println("onModified")
+	println("designerOnModified")
 }
 
 func (m *TEngFormDesigner) designerOnNotification(component lcl.IComponent, operation types.TOperation) {
-	//println("onNotification")
+	println("designerOnNotification")
 }
 
 func (m *TEngFormDesigner) designerOnPaintGrid() {
-	//println("onPaintGrid")
+	println("designerOnPaintGrid")
 }
 
 func (m *TEngFormDesigner) designerOnValidateRename(component lcl.IComponent, curName string, newName string) {
-	println("onValidateRename")
+	println("designerOnValidateRename")
 }
 
 func (m *TEngFormDesigner) designerOnGetShiftState() types.TShiftState {
-	println("onGetShiftState")
+	println("designerOnGetShiftState")
 	return types.NewSet()
 }
 
 func (m *TEngFormDesigner) designerOnSelectOnlyThisComponent(component lcl.IComponent) {
-	println("onSelectOnlyThisComponent")
+	println("designerOnSelectOnlyThisComponent")
 }
 
 func (m *TEngFormDesigner) designerOnUniqueName(baseName string) string {
-	println("onUniqueName")
+	println("designerOnUniqueName")
 	return ""
 }
 
 func (m *TEngFormDesigner) designerOnPrepareFreeDesigner(freeComponent bool) {
-	println("onPrepareFreeDesigner")
+	println("designerOnPrepareFreeDesigner")
 }
 
 // GetDesignControl 获取设计时控件的可选择父控件
