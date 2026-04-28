@@ -283,6 +283,7 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
 			//case messages.LM_HSCROLL, messages.LM_VSCROLL:
 		case messages.LM_SETFOCUS:
+			println("messages.LM_SETFOCUS")
 			m.Form.SetFocus() // TODO 防止控件获得焦点, 还没找到其它处理方试
 			//if m.MouseDownComponent != nil && sender.Instance() == m.MouseDownComponent.Instance() {
 			//	println("setfocus", message.Msg, sender.ToString(), sender.Name(), m.Form.CanFocus(), m.Form.CanSetFocus())
@@ -313,7 +314,7 @@ func (m *TEngFormDesigner) designerOnModified() {
 }
 
 func (m *TEngFormDesigner) designerOnNotification(component lcl.IComponent, operation types.TOperation) {
-	println("designerOnNotification")
+	println("designerOnNotification operation:", operation)
 }
 
 func (m *TEngFormDesigner) designerOnPaintGrid() {

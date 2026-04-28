@@ -47,7 +47,7 @@ func (m *FormTab) NewFormDesigner() {
 
 	// 创建设计窗体实例
 	formInstance := api.NewInstanceByComponentClass(lcl.TEngFormClass())
-	//SetComponentDesignMode(instance)
+	//SetComponentDesignMode(formInstance)
 	api.CreateObjectByComponent(formInstance, 0)
 	newDesForm := lcl.AsEngForm(formInstance)
 	designerForm := &TDesignerForm{TEngForm: newDesForm.(*lcl.TEngForm)}

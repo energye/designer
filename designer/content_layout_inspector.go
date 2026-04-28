@@ -31,6 +31,7 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.searchEdit.SetTextHint("搜索属性")
 	m.searchEdit.SetAlign(types.AlTop)
 	m.searchEdit.SetAutoSelect(false)
+	m.searchEdit.SetTabStop(false)
 	borderSpacing := m.searchEdit.BorderSpacing()
 	borderSpacing.SetLeft(3)
 	borderSpacing.SetRight(3)
