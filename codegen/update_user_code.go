@@ -40,9 +40,13 @@ import (
 //	仅修改 xxx.go 用户文件, 其它文件需手动修改
 func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 	formTab := uiGenData.Component.FormTab
+	if formTab.FormRoot.OldName == "" {
+		logs.Warn("执行更新自引用, OldName = ``")
+		return
+	}
 	goUserFilePath := filepath.Join(bean.CodePath(), formTab.GOUserFile())
 	newFormName := "T" + formTab.FormRoot.Name()
-	oldFormName := "T" + uiGenData.Component.FormTab.OldFormName
+	oldFormName := "T" + formTab.FormRoot.OldName
 	logs.Debug("NewFormName:", newFormName, "OldFormName:", oldFormName, "FilePath:", goUserFilePath)
 	// 查找 OldFormName 的类型函数名
 	// 修改 OldFormName 类型函数为 newFormName 的函数

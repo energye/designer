@@ -45,7 +45,6 @@ type FormTab struct {
 	sheet        *wg.TPage            // tab sheet
 	scroll       lcl.IScrollBox       // 外 滚动条
 	formDesigner *TEngFormDesigner    // 设计器处理器
-	OldFormName  string               // 旧的窗体名称, 临时：在自引用修改时使用
 	FormRoot     *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	recover      *TRecoverForm        // 恢复模式
 	recvMethods  []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新

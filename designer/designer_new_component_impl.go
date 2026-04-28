@@ -37,6 +37,7 @@ type TDesigningComponent struct {
 	originObject    any                       // 原始组件对象
 	className       string                    // 组件类名
 	name            string                    // 组件名 同步更新维护
+	OldName         string                    // 旧的窗体名称, 临时：在自引用修改时使用
 	object          lcl.IWinControl           // 组件 对象 可视
 	objectNon       lcl.IComponent            // 组件 对象 非可视
 	objectNonWrap   *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
@@ -394,6 +395,7 @@ func (m *TDesigningComponent) Name() string {
 }
 
 func (m *TDesigningComponent) SetName(name string) {
+	m.OldName = m.name
 	m.name = name
 }
 
