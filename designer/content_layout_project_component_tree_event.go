@@ -30,6 +30,8 @@ func (m *ContentLayoutProject) TreeOnContextPopup(sender lcl.IObject, mousePos t
 		component := TreeNodeDataToDesigningComponent(data)
 		if component != nil && component.ComponentType == consts.CtForm {
 			*handled = true
+		} else if component == nil {
+			*handled = true
 		}
 	}
 }

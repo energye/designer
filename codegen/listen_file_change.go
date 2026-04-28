@@ -41,16 +41,16 @@ type TListenFileInfo struct {
 }
 
 func stopListenFileChange() {
+	if gTicker != nil {
+		logs.Println("ListenFileChange stop")
+		gTicker.Stop()
+		gTicker = nil
+	}
 	if gCtx != nil {
 		logs.Println("ListenFileChange 停止运行监听文件改变任务")
 		gCancel()
 		gCtx = nil
 		gCancel = nil
-	}
-	if gTicker != nil {
-		logs.Println("ListenFileChange stop")
-		gTicker.Stop()
-		gTicker = nil
 	}
 }
 
