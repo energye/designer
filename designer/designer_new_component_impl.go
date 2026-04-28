@@ -37,6 +37,7 @@ type TDesigningComponent struct {
 	id              int                       // id 标识
 	originObject    any                       // 原始组件对象
 	className       string                    // 组件类名
+	name            string                    // 组件名 同步更新维护
 	object          lcl.IWinControl           // 组件 对象 可视
 	objectNon       lcl.IComponent            // 组件 对象 非可视
 	objectNonWrap   *TNonVisualComponentWrap  // 组件 对象 非可视, 呈现控制
@@ -390,12 +391,11 @@ func (m *TDesigningComponent) Name() string {
 			}
 		}
 	}
-	name := m.Component().Name()
-	return name
+	return m.name
 }
 
 func (m *TDesigningComponent) SetName(name string) {
-	m.Component().SetName(name)
+	m.name = name
 }
 
 // 返回组件树节点名

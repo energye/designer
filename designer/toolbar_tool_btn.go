@@ -67,7 +67,11 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		//SetEnableFuncComponent(false)
 
 		// 创建新的 form tab
-		newForm := designer.addDesignerFormTab()
+		newForm := designer.addDesignFormTab(nil)
+		if newForm == nil {
+			event.ConsoleWriteError("new design form error")
+			return
+		}
 		// 激活显示 新的 form tab
 		designer.ActiveFormTab(newForm)
 		// 1. 加载属性到设计器

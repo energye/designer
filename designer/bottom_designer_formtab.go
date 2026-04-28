@@ -40,7 +40,6 @@ const (
 // 设计窗体的 tab
 type FormTab struct {
 	Id            int                  // 唯一索引, 关联 forms key: index
-	name          string               // 窗体名称, 临时: 在初始化时使用
 	IsDesigner    bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
 	State         FormTabState         //
 	sheet         *wg.TPage            // tab sheet

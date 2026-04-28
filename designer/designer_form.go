@@ -41,12 +41,9 @@ func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
 }
 
 // 创建设计窗体
-func (m *FormTab) NewFormDesigner() *TDesigningComponent {
-	dc := new(TDesigningComponent)
-	dc.ComponentType = consts.CtForm
+func (m *FormTab) NewFormDesigner() {
 	// 创建组件属性树
-	dc.mustComponentPropertyPage()
-	m.FormRoot = dc
+	m.FormRoot.mustComponentPropertyPage()
 
 	// 创建设计窗体实例
 	formInstance := api.NewInstanceByComponentClass(lcl.TEngFormClass())
@@ -56,12 +53,12 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	designerForm := &TDesignerForm{TEngForm: newDesForm.(*lcl.TEngForm)}
 	//newDesForm.SetControlStyle(newDesForm.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
 	designerForm.FormCreate(designerForm)
-	designerForm.SetName(m.name)
-	designerForm.SetCaption(m.name)
+	designerForm.SetName(m.FormRoot.Name())
+	designerForm.SetCaption(m.FormRoot.Name())
 	// 创建窗体设计器处理器
 	formDesigner := NewEngFormDesigner(m)
 	m.formDesigner = formDesigner
-	formDesigner.LookupRoot = dc // formRoot
+	formDesigner.LookupRoot = m.FormRoot // formRoot
 	formDesigner.Form = designerForm
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
@@ -80,14 +77,13 @@ func (m *FormTab) NewFormDesigner() *TDesigningComponent {
 	designerFormBox.SetParent(designerForm)
 
 	// 设计面板
-	dc.originObject = designerForm
-	dc.object = designerFormBox
-	dc.FormTab = m
-	formDesigner.AddComponentToList(dc)
+	m.FormRoot.originObject = designerForm
+	m.FormRoot.object = designerFormBox
+	m.FormRoot.FormTab = m
+	formDesigner.AddComponentToList(m.FormRoot)
 
 	// 窗体拖拽
-	dc.drag = newDrag(m.scroll, consts.DsRightBottom)
-	dc.drag.mustDS()
-	dc.drag.SetRelation(dc)
-	return dc
+	m.FormRoot.drag = newDrag(m.scroll, consts.DsRightBottom)
+	m.FormRoot.drag.mustDS()
+	m.FormRoot.drag.SetRelation(m.FormRoot)
 }

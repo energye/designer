@@ -177,6 +177,8 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 	logs.Debug("更新组件树, 尝试更新属性:", data.Name)
 	switch propName {
 	case "name":
+		// 同步更新组件名字段值
+		m.SetName(data.EditStringValue())
 		// 更新组件树名
 		m.node.SetText(m.TreeName())
 		// 窗体组件

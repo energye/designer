@@ -15,6 +15,8 @@ package designer
 
 import (
 	"fmt"
+	"github.com/energye/designer/consts"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/pkg/tool"
@@ -39,9 +41,7 @@ type Designer struct {
 	tab           *wg.TTab         // 设计器 tabs
 	tabMenu       lcl.IPopupMenu   // tab 菜单
 	designerForms map[int]*FormTab // 设计器窗体列表
-	designerCount int              // 设计器窗总数，值动态更新
-	// home 默认提示
-	defaultTip *wg.TButton
+	defaultTip    *wg.TButton      // Home 默认提示
 }
 
 func (m *Designer) IsDuplicateName(currComp *TDesigningComponent, formName string) bool {
@@ -85,7 +85,6 @@ func ResetDesigner() {
 		form.Remove()
 	}
 	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
-	SetDesignerCount(0)
 	ProjectTreeClearComponentTreeNode()
 	ProjectTreeClearAssetsTreeNode()
 }
@@ -98,18 +97,6 @@ func UpdateHistoryProject(egpFilePath string) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		MainWindow.mainMenu.fileHistoryProjectMenu()
 	})
-}
-
-// SetDesignerCount
-// 设置当前设计器的窗体总数
-// 当前设计器添加窗体时 +1
-// 当前设计器删除窗体时 -1
-// 当前设计器重置时 =0
-func SetDesignerCount(count int) {
-	if count < 0 {
-		count = 0
-	}
-	designer.designerCount = count
 }
 
 // SetRecvMethods 设置指定表单的接收方法列表
@@ -144,24 +131,60 @@ func (m *Designer) setDesignerFormTabPageStyle(page *wg.TPage) {
 	page.Button().SetCursor(types.CrHandPoint)
 }
 
+// GetNewDesignFormName 获取新的设计表单名称和ID
+// 该方法用于生成一个唯一的表单ID和表单名称，确保与现有的表单不冲突。
+// 表单名称采用"Form{数字}"的格式，其中数字从1开始递增查找第一个可用的编号。
+func (m *Designer) GetNewDesignFormName() (int, string) {
+	//	matchFormId 检查给定的ID和名称是否与现有表单冲突
+	//	参数:
+	//	    - newId: 待检查的表单ID
+	//	    - newName: 待检查的表单名称
+	//	返回值: 如果ID和名称都未被使用则返回true，否则返回false
+	matchFormId := func(newId int, newName string) bool {
+		ok := true
+		for id, form := range m.designerForms {
+			if newId == id || form.FormRoot.Name() == newName {
+				ok = false
+				break
+			}
+		}
+		return ok
+	}
+
+	// 从1开始查找第一个可用的表单ID和名称
+	// 循环检查每个递增的数字，直到找到一个未被使用的ID和对应的表单名称，找到后立即返回
+	nextId := 1
+	for {
+		newTmpName := fmt.Sprintf("Form%v", nextId)
+		if matchFormId(nextId, newTmpName) {
+			return nextId, newTmpName
+		}
+		nextId++
+	}
+}
+
 // 添加一个窗体设计器 form tab
-func (m *Designer) addDesignerFormTab(defaultId ...int) *FormTab {
-	SetDesignerCount(m.designerCount + 1)
+func (m *Designer) addDesignFormTab(uiForm *bean.TUIForm) *FormTab {
 	form := new(FormTab)
 	form.componentName = make(map[string]int)
+	form.FormRoot = new(TDesigningComponent)
+	form.FormRoot.ComponentType = consts.CtForm
 
 	// 默认名
-	if len(defaultId) > 0 {
-		form.Id = defaultId[0]
+	if uiForm != nil {
+		form.Id = uiForm.Id
+		form.FormRoot.SetName(uiForm.Name)
 	} else {
-		form.Id = m.designerCount
+		newId, newName := m.GetNewDesignFormName()
+		form.Id = newId
+		form.FormRoot.SetName(newName)
 	}
-	form.name = fmt.Sprintf("Form%v", form.Id)
+
 	// 窗体ID
 	m.designerForms[form.Id] = form
 
 	form.sheet = m.tab.NewPage()
-	form.sheet.Button().SetCaption(form.name)
+	form.sheet.Button().SetCaption(form.FormRoot.Name())
 	form.sheet.SetOnHide(form.tabSheetOnHide)
 	form.sheet.SetOnShow(form.tabSheetOnShow)
 	form.sheet.SetOnClose(form.tabSheetOnClose)

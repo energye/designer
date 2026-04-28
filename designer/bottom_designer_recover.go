@@ -130,7 +130,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 	if loadUIForm != nil {
 		// 只加载这个窗体
 	} else {
-		// 加载所有
+		// 加载所有窗体
 		wg := sync.WaitGroup{}
 		wg.Add(len(project.UIForms))
 		var activeForm *FormTab
@@ -161,7 +161,11 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			// 在UI线程操作
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				// 创建一个设计窗体
-				formTab := designer.addDesignerFormTab(tempUIForm.Id)
+				formTab := designer.addDesignFormTab(&tempUIForm)
+				if formTab == nil {
+					event.ConsoleWriteError("recover design form error")
+					return
+				}
 				// 恢复模式，在 tab page 显示时恢复组件属性
 				formTab.recover = &TRecoverForm{
 					components: uiComponent.Child,
