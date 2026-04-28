@@ -8,20 +8,57 @@
 
 package designer
 
-import "github.com/energye/lcl/lcl"
+import (
+	"github.com/energye/lcl/lcl"
+)
 
 type TUndoRedo struct {
-	undoAction lcl.IEditUndo
-	redoAction lcl.IAction
+	cutAction       lcl.IEditCut
+	copyAction      lcl.IEditCopy
+	pasteAction     lcl.IEditPaste
+	selectAllAction lcl.IEditSelectAll
+	undoAction      lcl.IEditUndo
+	redoAction      lcl.IAction
+	deleteAction    lcl.IEditDelete
 }
 
 func (m *TUndoRedo) init() {
+	//m.copyAction.SetOnExecute(m.copyActionOnExecute)
+	//m.copyAction.SetOnUpdate(m.copyActionOnUpdate)
+
 	m.undoAction.SetOnExecute(m.undoActionOnExecute)
 	m.undoAction.SetOnUpdate(m.undoActionOnUpdate)
 
 	m.redoAction.SetOnExecute(m.redoActionOnExecute)
 	m.redoAction.SetOnUpdate(m.redoActionOnUpdate)
 }
+
+//func (m *TUndoRedo) copyActionOnExecute(sender lcl.IObject) {
+//	activeControl := lcl.Screen.ActiveControl()
+//	if activeControl != nil {
+//		clsName := activeControl.ClassName()
+//		switch clsName {
+//		case "TSynEdit":
+//			lcl.AsSynEdit(activeControl).Undo()
+//		default:
+//			m.undoAction.ExecuteTarget(activeControl)
+//		}
+//	}
+//}
+//
+//func (m *TUndoRedo) copyActionOnUpdate(sender lcl.IObject) {
+//	activeControl := lcl.Screen.ActiveControl()
+//	if activeControl != nil {
+//		fmt.Println("activeControl:", activeControl.ClassName(), activeControl.Name())
+//		if activeControl.IsObjectInstanceOf(lcl.TCustomEditClass()) {
+//			m.undoAction.SetEnabled(lcl.AsCustomEdit(activeControl).CanUndo())
+//		} else if activeControl.IsObjectInstanceOf(lcl.TSynEditClass()) {
+//			m.undoAction.SetEnabled(lcl.AsSynEdit(activeControl).CanUndo())
+//		} else {
+//			m.undoAction.SetEnabled(false)
+//		}
+//	}
+//}
 
 func (m *TUndoRedo) undoActionOnExecute(sender lcl.IObject) {
 	activeControl := lcl.Screen.ActiveControl()

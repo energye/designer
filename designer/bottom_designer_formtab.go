@@ -159,6 +159,7 @@ func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
 	targetComp.ShowDesignHelpers()
 	// 加载属性到属性列表
 	targetComp.LoadPropertyToInspector()
+	m.formDesigner.Form.SetFocus()
 }
 
 // 放置设计组件到设计面板或父组件容器
@@ -262,6 +263,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		ProjectTreeSetSelected(designComp.node)
 		// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
 		m.SwitchComponentEditing(designComp)
+		m.formDesigner.Form.SetFocus()
 	})
 }
 

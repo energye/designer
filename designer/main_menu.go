@@ -241,21 +241,21 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.undoRedo = &TUndoRedo{}
 
-	cutAction := lcl.NewEditCut(m.actionList)
-	cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
-	cutAction.SetCaption("剪切")
+	m.undoRedo.cutAction = lcl.NewEditCut(m.actionList)
+	m.undoRedo.cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
+	m.undoRedo.cutAction.SetCaption("剪切")
 
-	copyAction := lcl.NewEditCopy(m.actionList)
-	copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
-	copyAction.SetCaption("复制")
+	m.undoRedo.copyAction = lcl.NewEditCopy(m.actionList)
+	m.undoRedo.copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
+	m.undoRedo.copyAction.SetCaption("复制")
 
-	pasteAction := lcl.NewEditPaste(m.actionList)
-	pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
-	pasteAction.SetCaption("粘贴")
+	m.undoRedo.pasteAction = lcl.NewEditPaste(m.actionList)
+	m.undoRedo.pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
+	m.undoRedo.pasteAction.SetCaption("粘贴")
 
-	selectAllAction := lcl.NewEditSelectAll(m.actionList)
-	selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
-	selectAllAction.SetCaption("全选")
+	m.undoRedo.selectAllAction = lcl.NewEditSelectAll(m.actionList)
+	m.undoRedo.selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
+	m.undoRedo.selectAllAction.SetCaption("全选")
 
 	m.undoRedo.undoAction = lcl.NewEditUndo(m.actionList)
 	m.undoRedo.undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
@@ -267,9 +267,9 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 
 	m.undoRedo.init()
 
-	undoDelete := lcl.NewEditDelete(m.actionList)
-	undoDelete.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
-	undoDelete.SetCaption("删除")
+	m.undoRedo.deleteAction = lcl.NewEditDelete(m.actionList)
+	m.undoRedo.deleteAction.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
+	m.undoRedo.deleteAction.SetCaption("删除")
 
 	// ====
 
@@ -288,18 +288,18 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(separator1)
 
 	m.editCut = lcl.NewMenuItem(owner)
-	m.editCut.SetCaption(cutAction.Caption())
-	m.editCut.SetAction(cutAction)
+	m.editCut.SetCaption(m.undoRedo.cutAction.Caption())
+	m.editCut.SetAction(m.undoRedo.cutAction)
 	m.edit.Add(m.editCut)
 
 	m.editCopy = lcl.NewMenuItem(owner)
-	m.editCopy.SetCaption(copyAction.Caption())
-	m.editCopy.SetAction(copyAction)
+	m.editCopy.SetCaption(m.undoRedo.copyAction.Caption())
+	m.editCopy.SetAction(m.undoRedo.copyAction)
 	m.edit.Add(m.editCopy)
 
 	m.editPaste = lcl.NewMenuItem(owner)
-	m.editPaste.SetCaption(pasteAction.Caption())
-	m.editPaste.SetAction(pasteAction)
+	m.editPaste.SetCaption(m.undoRedo.pasteAction.Caption())
+	m.editPaste.SetAction(m.undoRedo.pasteAction)
 	m.edit.Add(m.editPaste)
 
 	separator1 = lcl.NewMenuItem(owner)
@@ -307,13 +307,13 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(separator1)
 
 	m.editSelectAll = lcl.NewMenuItem(owner)
-	m.editSelectAll.SetCaption(selectAllAction.Caption())
-	m.editSelectAll.SetAction(selectAllAction)
+	m.editSelectAll.SetCaption(m.undoRedo.selectAllAction.Caption())
+	m.editSelectAll.SetAction(m.undoRedo.selectAllAction)
 	m.edit.Add(m.editSelectAll)
 
 	m.editDel = lcl.NewMenuItem(owner)
-	m.editDel.SetCaption(undoDelete.Caption())
-	m.editDel.SetAction(undoDelete)
+	m.editDel.SetCaption(m.undoRedo.deleteAction.Caption())
+	m.editDel.SetAction(m.undoRedo.deleteAction)
 	m.edit.Add(m.editDel)
 }
 

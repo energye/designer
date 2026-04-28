@@ -15,7 +15,6 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
-	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
@@ -240,9 +239,9 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 // on event
 
 func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
-	//logs.Debug("IsDesignMsg", message.Msg)
 	result := false // 标记行为 false: 未处理, true: 已处理
 	isDesign := sender.ComponentState().In(types.CsDesigning)
+	//println("IsDesignMsg", message.Msg, "isDesign:", isDesign)
 	if isDesign {
 		result = true
 		dispatchMsg := (*uintptr)(unsafe.Pointer(message))
@@ -258,6 +257,7 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 		case messages.LM_LBUTTONUP, messages.LM_RBUTTONUP:
 			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseUp(sender, key)
+			//m.Form.SetFocus()
 		case messages.LM_MOUSEMOVE:
 			mouse := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseMove(sender, mouse)
@@ -268,22 +268,22 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			move := (*types.TLMMove)(unsafe.Pointer(dispatchMsg))
 			m.move(sender, move)
 		case messages.LM_ACTIVATE:
-			//logs.Debug("Designer message ACTIVATE", message.Msg, isDesign, sender.ToString())
+			//logs.Debug("IsDesignMsg ACTIVATE", message.Msg, isDesign, sender.ToString())
 		case messages.LM_CLOSEQUERY:
-			//logs.Debug("Designer message CLOSEQUERY", message.Msg, isDesign, sender.ToString())
+			//logs.Debug("IsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 		case messages.LM_SETCURSOR:
 			m.setCursor(sender, message)
 		case messages.LM_CONTEXTMENU:
-			logs.Debug("Designer message CONTEXTMENU", message.Msg, sender.ToString())
+			//println("IsDesignMsg CONTEXTMENU", message.Msg, sender.ToString(), sender.Name())
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
 			m.popupMenu(sender, contextMenu)
 		case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-			logs.Debug("Designer message KEYDOWN", message.Msg, sender.ToString())
+			//println("IsDesignMsg KEYDOWN", message.Msg, sender.ToString(), sender.Name())
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
-			logs.Debug("Designer message KEYUP", message.Msg, sender.ToString())
+			//println("IsDesignMsg KEYUP", message.Msg, sender.ToString(), sender.Name())
 			//case messages.LM_HSCROLL, messages.LM_VSCROLL:
 		case messages.LM_SETFOCUS:
-			println("messages.LM_SETFOCUS")
+			//println("messages.LM_SETFOCUS")
 			m.Form.SetFocus() // TODO 防止控件获得焦点, 还没找到其它处理方试
 			//if m.MouseDownComponent != nil && sender.Instance() == m.MouseDownComponent.Instance() {
 			//	println("setfocus", message.Msg, sender.ToString(), sender.Name(), m.Form.CanFocus(), m.Form.CanSetFocus())
@@ -305,42 +305,42 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 }
 
 func (m *TEngFormDesigner) designerOnUTF8KeyPress(uTF8Key *string) {
-	println("designerOnUTF8KeyPress")
+	//println("designerOnUTF8KeyPress")
 	*uTF8Key = ""
 }
 
 func (m *TEngFormDesigner) designerOnModified() {
-	println("designerOnModified")
+	//println("designerOnModified")
 }
 
 func (m *TEngFormDesigner) designerOnNotification(component lcl.IComponent, operation types.TOperation) {
-	println("designerOnNotification operation:", operation)
+	//println("designerOnNotification operation:", operation)
 }
 
 func (m *TEngFormDesigner) designerOnPaintGrid() {
-	println("designerOnPaintGrid")
+	//println("designerOnPaintGrid")
 }
 
 func (m *TEngFormDesigner) designerOnValidateRename(component lcl.IComponent, curName string, newName string) {
-	println("designerOnValidateRename")
+	//println("designerOnValidateRename")
 }
 
 func (m *TEngFormDesigner) designerOnGetShiftState() types.TShiftState {
-	println("designerOnGetShiftState")
+	//println("designerOnGetShiftState")
 	return types.NewSet()
 }
 
 func (m *TEngFormDesigner) designerOnSelectOnlyThisComponent(component lcl.IComponent) {
-	println("designerOnSelectOnlyThisComponent")
+	//println("designerOnSelectOnlyThisComponent")
 }
 
 func (m *TEngFormDesigner) designerOnUniqueName(baseName string) string {
-	println("designerOnUniqueName")
+	//println("designerOnUniqueName")
 	return ""
 }
 
 func (m *TEngFormDesigner) designerOnPrepareFreeDesigner(freeComponent bool) {
-	println("designerOnPrepareFreeDesigner")
+	//println("designerOnPrepareFreeDesigner")
 }
 
 // GetDesignControl 获取设计时控件的可选择父控件

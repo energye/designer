@@ -63,11 +63,14 @@ func (m *FormTab) NewFormDesigner() {
 	designerForm.SetDesigner(formDesigner.Designer())
 	designerForm.SetParent(m.scroll)
 
+	designerForm.SetKeyPreview(true)
+	designerForm.SetOnKeyDown(m.DesignFormOnKeyDown)
+
 	designerForm.Show()
 
 	// 创建窗体设计面板, 放置实际设计的组件
 	designerFormBoxInstance := api.NewInstanceByComponentClass(lcl.TCustomPanelClass())
-	SetComponentDesignMode(designerFormBoxInstance)
+	SetComponentDesignMode(designerFormBoxInstance) // 设置为设计模式
 	api.CreateObjectByComponent(designerFormBoxInstance, formInstance)
 	designerFormBox := lcl.AsCustomPanel(designerFormBoxInstance)
 	//designerFormBox.SetControlStyle(designerFormBox.ControlStyle().Include(types.CsOwnedChildrenNotSelectable))
@@ -86,4 +89,12 @@ func (m *FormTab) NewFormDesigner() {
 	m.FormRoot.drag = newDrag(m.scroll, consts.DsRightBottom)
 	m.FormRoot.drag.mustDS()
 	m.FormRoot.drag.SetRelation(m.FormRoot)
+}
+
+func (m *FormTab) DesignFormOnKeyDown(sender lcl.IObject, key *types.Word, shift types.TShiftState) {
+	a := m.FindDesignComponent(m.FormRoot)
+	if a == nil {
+		a = m.FormRoot
+	}
+	println("[Designer KeyDown] key:", *key, "shift:", shift, shift.In(types.SsCtrl), "Form:", m.FormRoot.Name(), "Component:", a.Name())
 }
