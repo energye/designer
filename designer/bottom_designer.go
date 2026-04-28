@@ -166,7 +166,6 @@ func (m *Designer) GetNewDesignFormName() (int, string) {
 // 添加一个窗体设计器 form tab
 func (m *Designer) addDesignFormTab(uiForm *bean.TUIForm) *FormTab {
 	form := new(FormTab)
-	form.componentName = make(map[string]int)
 	form.FormRoot = new(TDesigningComponent)
 	form.FormRoot.ComponentType = consts.CtForm
 

@@ -39,17 +39,16 @@ const (
 
 // 设计窗体的 tab
 type FormTab struct {
-	Id            int                  // 唯一索引, 关联 forms key: index
-	IsDesigner    bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
-	State         FormTabState         //
-	sheet         *wg.TPage            // tab sheet
-	scroll        lcl.IScrollBox       // 外 滚动条
-	componentName map[string]int       // 组件分类名, 同类组件ID序号
-	formDesigner  *TEngFormDesigner    // 设计器处理器
-	OldFormName   string               // 旧的窗体名称, 临时：在自引用修改时使用
-	FormRoot      *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	recover       *TRecoverForm        // 恢复模式
-	recvMethods   []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
+	Id           int                  // 唯一索引, 关联 forms key: index
+	IsDesigner   bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
+	State        FormTabState         //
+	sheet        *wg.TPage            // tab sheet
+	scroll       lcl.IScrollBox       // 外 滚动条
+	formDesigner *TEngFormDesigner    // 设计器处理器
+	OldFormName  string               // 旧的窗体名称, 临时：在自引用修改时使用
+	FormRoot     *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
+	recover      *TRecoverForm        // 恢复模式
+	recvMethods  []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
 }
 
 // UIFile 返回UI文件名 xxx.ui
@@ -287,7 +286,6 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 	logs.Debug("Designer PageControl FormTab Close id:", m.Id, "name:", m.FormRoot.Name())
 	if m.State == FtsClose {
 		*canClose = true
-		m.componentName = make(map[string]int)
 		m.FormRoot.Free() // 关闭从根节点释放
 		m.recover = nil
 		// 在设计器列表删除当前窗体
@@ -330,13 +328,28 @@ func (m *FormTab) Remove() {
 
 // 获取组件名 Caption
 func (m *FormTab) GetComponentCaptionName(component string) string {
-	if c, ok := m.componentName[component]; ok {
-		m.componentName[component] = c + 1
-	} else {
-		m.componentName[component] = 1
+	var matchIterateComponent func(component *TDesigningComponent, newName string) bool
+	matchIterateComponent = func(component *TDesigningComponent, newName string) bool {
+		if component.Name() == newName {
+			return true
+		}
+		for _, child := range component.Child {
+			ok := matchIterateComponent(child, newName)
+			if ok {
+				return true
+			}
+		}
+		return false
 	}
-	component = fmt.Sprintf("%v%d", component, m.componentName[component])
-	return component
+
+	nextId := 1
+	for {
+		newTmpName := fmt.Sprintf("%v%v", component, nextId)
+		if !matchIterateComponent(m.FormRoot, newTmpName) {
+			return newTmpName
+		}
+		nextId++
+	}
 }
 
 func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
@@ -366,7 +379,6 @@ func (m *FormTab) drawGrid(control lcl.ICustomControl) {
 // 添加窗体表单根节点
 func (m *FormTab) AddFormNode() lcl.ITreeNode {
 	// 窗体 根节点
-	m.FormRoot.id = nextTreeDataId()
 	newNode := ProjectTreeAddComponentNode(nil, m.FormRoot)
 	m.FormRoot.node = newNode
 	// 添加到设计组件列表
@@ -385,7 +397,6 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 		return
 	}
 	if child.ComponentType == consts.CtVisual || child.ComponentType == consts.CtNonVisual {
-		child.id = nextTreeDataId()
 		newNode := ProjectTreeAddComponentNode(parent, child)
 		child.node = newNode
 		// 添加到设计组件列表
@@ -393,13 +404,4 @@ func (m *FormTab) AddComponentNode(parent, child *TDesigningComponent) {
 	} else {
 		logs.Error("添加组件节点失败, 子节点非组件节点")
 	}
-}
-
-var gTreeId int // 维护组件树全局数据id
-
-// 获取下一个树数据ID
-func nextTreeDataId() (id int) {
-	id = gTreeId
-	gTreeId++
-	return
 }

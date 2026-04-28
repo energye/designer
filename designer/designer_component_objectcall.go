@@ -63,6 +63,11 @@ func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vted
 		_, err := ref.callMethod()
 		if err != nil {
 			logs.Error("恢复属性-调用 API 更新组件属性失败", err.Error())
+		} else {
+			switch strings.ToLower(propertyName) {
+			case "name":
+				m.SetName(property.EditStringValue())
+			}
 		}
 	}
 }

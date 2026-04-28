@@ -34,7 +34,6 @@ import (
 // 设计组件
 type TDesigningComponent struct {
 	FormTab         *FormTab                  // 所属设计窗体
-	id              int                       // id 标识
 	originObject    any                       // 原始组件对象
 	className       string                    // 组件类名
 	name            string                    // 组件名 同步更新维护

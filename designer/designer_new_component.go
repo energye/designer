@@ -86,6 +86,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		SetComponentDesignMode(instance)
 		return instance
 	}
+
 	compName := tool.RemoveT(className)
 	// 创建对象, 所属为 表单
 	ownerForm := designerForm.FormRoot.originObject.(*TDesignerForm)
@@ -102,7 +103,8 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		comp.SetControlStyle(comp.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
 		// 创建对象, 所属为 表单
 		api.CreateObjectByComponent(instance, ownerForm.Instance())
-		comp.SetName(designerForm.GetComponentCaptionName(compName))
+		m.SetName(designerForm.GetComponentCaptionName(compName))
+		comp.SetName(m.Name())
 		setBaseProp(comp, x, y)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
@@ -116,7 +118,8 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.SetObject(callAsMethod(instance))
 		// 创建对象, 所属为 表单
 		api.CreateObjectByComponent(instance, ownerForm.Instance())
-		comp.SetName(designerForm.GetComponentCaptionName(compName))
+		m.SetName(designerForm.GetComponentCaptionName(compName))
+		comp.SetName(m.Name())
 		SetDesignMode(m.objectNonWrap.icon)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
@@ -156,7 +159,8 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		SetComponentDesignMode(object.Instance())
 		m.SetObject(results[0])
 		object.SetControlStyle(object.ControlStyle().Include(types.CsOwnedChildrenNotSelectable, types.CsNoFocus))
-		object.SetName(designerForm.GetComponentCaptionName(compName))
+		m.SetName(designerForm.GetComponentCaptionName(compName))
+		object.SetName(m.Name())
 		setBaseProp(object, x, y)
 		m.drag = newDrag(designerForm.scroll, consts.DsAll)
 		m.drag.SetRelation(m)
