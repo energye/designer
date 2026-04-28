@@ -55,6 +55,12 @@ type ContentLayout struct {
 	contentStatusRight  lcl.IStatusPanel
 }
 
+func setSpliterStyle(splitter lcl.ISplitter) {
+	if tool.IsWindows {
+		splitter.SetResizeStyle(types.RsLine)
+	}
+}
+
 // 底部布局 - 左: 组件库, 左中: 项目查看, 中: 中间画布(自适应), 右: 属性, 下: 日志控制
 func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	windowBr := window.ClientRect()
@@ -73,12 +79,6 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	}
 	m.box.SetCaption("主内容布局")
 	m.box.SetParent(window)
-
-	setSpliterStyle := func(splitter lcl.ISplitter) {
-		if tool.IsWindows {
-			splitter.SetResizeStyle(types.RsLine)
-		}
-	}
 
 	// 组件面板分隔器
 	m.widgetSplitter = lcl.NewSplitter(window)
@@ -166,10 +166,8 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 	m.consoleLogSplitter.SetHeight(defaultSplitterWidth)
 	m.consoleLogSplitter.SetMinSize(defaultSplitterMinSize)
 	m.consoleLogSplitter.SetVisible(windowLayout.MenuView.ConsoleChecked) //动态控制
-	//m.consoleLogSplitter.SetBorderStyleToBorderStyle(types.BsSingle)
 	setSpliterStyle(m.consoleLogSplitter)
 	m.consoleLogSplitter.SetParent(m.rightBox)
-
 	// 日志
 	m.consoleLogPanel = lcl.NewPanel(window)
 	m.consoleLogPanel.SetBevelOuter(types.BvNone)

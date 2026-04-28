@@ -37,6 +37,13 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	tree.SetOnMouseWheel(func(sender lcl.IObject, shift types.TShiftState, wheelDelta int32, mousePos types.TPoint, handled *bool) {
 		tree.UpdateScrollBars(true)
 	})
+	tree.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X, Y int32) {
+		node := tree.GetNodeAtWithIntX2(X, Y)
+		if data := vtedit.GetPropertyNodeData(node); data != nil {
+			// todo 文档处理
+			//fmt.Println("SetOnMouseMove", X, Y, data.AffiliatedComponent.GetClassName(), data.Name())
+		}
+	})
 	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
 		tree.GetMaxColumnWidth(column, false)
 		switch column {

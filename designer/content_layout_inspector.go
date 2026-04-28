@@ -19,10 +19,12 @@ import (
 )
 
 type ContentLayoutInspector struct {
-	searchEdit lcl.ITreeFilterEdit // 组件搜索框
-	topBox     lcl.IPanel
-	title      lcl.ILabel
-	box        lcl.IPanel
+	searchEdit  lcl.ITreeFilterEdit // 组件搜索框
+	topBox      lcl.IPanel
+	title       lcl.ILabel
+	box         lcl.IPanel
+	docSplitter lcl.ISplitter
+	doc         lcl.IMemo
 }
 
 func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
@@ -61,6 +63,22 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.box.SetAlign(types.AlClient)
 	m.box.SetWidth(owner.inspectorPanel.Width())
 	m.box.SetParent(owner.inspectorPanel)
+
+	m.docSplitter = lcl.NewSplitter(owner.inspectorPanel)
+	m.docSplitter.SetAlign(types.AlBottom)
+	m.docSplitter.SetHeight(defaultSplitterWidth)
+	m.docSplitter.SetMinSize(defaultSplitterMinSize)
+	setSpliterStyle(m.docSplitter)
+	m.docSplitter.SetParent(owner.inspectorPanel)
+
+	m.doc = lcl.NewMemo(owner.inspectorPanel)
+	m.doc.SetBorderStyle(types.BsNone)
+	//m.doc.SetReadOnly(true)
+	//m.doc.Constraints().SetMinHeight(10)
+	m.doc.SetVisible(false) // 还未使用
+	m.doc.SetAlign(types.AlBottom)
+	m.doc.SetScrollBars(types.SsAutoBoth)
+	m.doc.SetParent(owner.inspectorPanel)
 
 	return m
 }
