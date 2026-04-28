@@ -13,4 +13,40 @@
 
 package designer
 
+import (
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/lcl/lcl"
+)
+
 // 项目源码
+
+var gProjectSrcTree = &TProjectSrcTree{}
+
+type TProjectSrcTree struct {
+}
+
+func (m *TProjectSrcTree) scanProjectSrc() {
+	//bean.GPath
+}
+
+func initProjectSrcEvent() {
+	logs.Println("启动项目 SRC Tree 监听")
+	event.On(event.ListenProjectSrcFileChange, func(trigger event.TTrigger) {
+		payload, ok := trigger.Payload.(event.TPayload)
+		if ok {
+			switch payload.Type {
+			case event.ProjectSrcScan:
+				gProjectSrcTree.scanProjectSrc()
+			}
+			if tool.IsMainThread() {
+			} else {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+				})
+			}
+		}
+	}, func() {
+		logs.Println("停止项目 SRC Tree 监听")
+	})
+}

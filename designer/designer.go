@@ -454,6 +454,8 @@ func SetEnableFuncComponent(enable bool) {
 func Init() {
 	// 注册控制台消息处理器事件
 	initConsoleEvent()
+	// 注册项目源码扫描处理器事件
+	initProjectSrcEvent()
 	// 注册组件
 	initRegisterComponent()
 

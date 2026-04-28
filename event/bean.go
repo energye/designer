@@ -39,6 +39,11 @@ const (
 	ConsoleClear             // 清空消息类型
 )
 
+// 项目树源码扫描
+const (
+	ProjectSrcScan Type = iota
+)
+
 // TPayload 通用的事件数据载体
 type TPayload struct {
 	Type Type

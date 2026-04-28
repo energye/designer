@@ -21,12 +21,13 @@ import (
 
 // 定义一些默认事件名
 const (
-	GenUI            = "GenUI"            // 生成UI事件
-	GenCode          = "GenCode"          // 生成代码事件
-	Project          = "Project"          // 项目管理事件
-	Preview          = "Preview"          // 预览事件
-	Console          = "Console"          // 控制台事件
-	ListenFileChange = "ListenFileChange" // 监听文件改变
+	GenUI                      = "GenUI"                      // 生成UI事件
+	GenCode                    = "GenCode"                    // 生成代码事件
+	Project                    = "Project"                    // 项目管理事件
+	Preview                    = "Preview"                    // 预览事件
+	Console                    = "Console"                    // 控制台事件
+	ListenFileChange           = "ListenFileChange"           // 监听文件改变
+	ListenProjectSrcFileChange = "ListenProjectSrcFileChange" // 监听文件改变
 )
 
 // 事件列表
