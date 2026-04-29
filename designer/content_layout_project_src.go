@@ -15,7 +15,6 @@ package designer
 
 import (
 	"context"
-	"fmt"
 	"github.com/energye/designer/pkg/tool"
 	"os"
 	"path/filepath"
@@ -422,8 +421,9 @@ func projectSrcFolderIcon() int32 {
 func projectSrcFileIcon(entry TProjectSrcEntry) int32 {
 	name := tool.GetSVGIconPath(entry.Name)
 	_, name = filepath.Split(name)
-	name = strings.TrimSuffix(name, ".svg") + ".png"
-	fmt.Println("projectSrcFileIcon", entry.Name, name)
+	if strings.HasSuffix(name, ".svg") {
+		name = strings.TrimSuffix(name, ".svg") + ".png"
+	}
 	return imageComponents.ImageIndex(name)
 }
 

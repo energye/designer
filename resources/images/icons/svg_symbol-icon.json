@@ -359,7 +359,8 @@
 		"nx": { "iconPath": "icons/svg_files/nx.svg" },
 		"yummacss": { "iconPath": "icons/svg_files/yummacss.svg" },
 		"orval": { "iconPath": "icons/svg_files/orval.svg" },
-		"shadcn": { "iconPath": "icons/svg_files/shadcn.svg" }
+		"shadcn": { "iconPath": "icons/svg_files/shadcn.svg" },
+		"energy-egp": { "iconPath": "icons/png_files/egp.png" }
 	},
 
 	"fileExtensions": {
@@ -620,7 +621,8 @@
 		"go.mod": "go-mod",
 		"mod": "go-mod",
 		"sum": "go-mod",
-		"egp": "go-mod",
+		"egp": "energy-egp",
+		"ui": "energy-egp",
 		"c": "c",
 		"i": "c",
 		"mi": "c",

@@ -63,6 +63,9 @@ func GetImageFileList(dirName string) (result []string) {
 		return nil
 	}
 	for _, de := range des {
+		if de.IsDir() {
+			continue
+		}
 		result = append(result, dirName+"/"+de.Name())
 	}
 	return

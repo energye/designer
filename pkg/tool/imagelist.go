@@ -51,8 +51,41 @@ func AppendSVGToImageList(imageList *ImageList, dirName string, rect ImageRect) 
 				continue
 			}
 			ImageListAddPng(image, pngData)
-			_, name = filepath.Split(name) // strings.ToLower(strings.Replace(name, dirName+"/", "", 1))
+			_, name = filepath.Split(name)
 			name = strings.TrimSuffix(name, ".svg")
+			if scaleName != "" {
+				name = name + "_" + scaleName
+			}
+			name += ".png"
+			count := image.Count()
+			imageList.imageIndex[name] = count - 1
+		}
+	}
+	if CheckSizeZero(rect.Image50) {
+		loadImage(imageList.imageList50, rect.Image50, "50")
+	}
+	if CheckSizeZero(rect.Image100) {
+		loadImage(imageList.imageList100, rect.Image100, "")
+	}
+	if CheckSizeZero(rect.Image150) {
+		loadImage(imageList.imageList150, rect.Image150, "150")
+	}
+	if CheckSizeZero(rect.Image200) {
+		loadImage(imageList.imageList200, rect.Image200, "200")
+	}
+}
+
+func AppendPNGToImageList(imageList *ImageList, dirName string, rect ImageRect) {
+	pngImageList := resources.GetImageFileList(dirName)
+	loadImage := func(image lcl.IImageList, size types.TSize, scaleName string) {
+		for _, name := range pngImageList {
+			pngData := resources.Images(name)
+			if pngData == nil {
+				continue
+			}
+			ImageListAddPng(image, pngData)
+			_, name = filepath.Split(name)
+			name = strings.TrimSuffix(name, ".png")
 			if scaleName != "" {
 				name = name + "_" + scaleName
 			}
