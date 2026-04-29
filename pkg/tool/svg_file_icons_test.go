@@ -1,12 +1,11 @@
 package tool
 
 import (
-	"github.com/energye/designer/resources"
 	"testing"
 )
 
 func TestSVGToPNG(t *testing.T) {
-	svgData := resources.Images("icons/files_svg/angular.svg")
+	svgData := GetSVGIconData("angular")
 	pngData, err := SVGToPNG(svgData, 24, 24)
 	if err != nil {
 		t.Errorf("SVGToPNG failed: %v", err)
