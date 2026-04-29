@@ -39,6 +39,16 @@ import (
 // go build -ldflags="-H windowsgui -s -w -buildid=" -trimpath -o build/designer.exe
 // go build -ldflags="-H windowsgui" -trimpath -o build/designer.exe
 // go build --tags liball -ldflags="-H windowsgui" -trimpath -o build/designer.exe
+// =================================================================================================
+// go mod
+// go env -w GOPROXY=https://goproxy.cn,direct
+// go env -w GOSUMDB=sum.golang.google.cn
+// go env -w GONOSUMDB=github.com/energye/*
+//
+// go get github.com/energye/lcl@v1.0.4
+// go get github.com/energye/wv@v1.0.5
+// go mod tidy
+// =================================================================================================
 func main() {
 	api.SetDebug(true)
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
@@ -49,7 +59,6 @@ func main() {
 	//os.Setenv("--ws", "gtk3")
 	libname.LibName = frameworks.ExtractLibrary()
 	lcl.Init(nil, nil)
-	println("Widget:", api.Widget())
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
 	designer.Run()
