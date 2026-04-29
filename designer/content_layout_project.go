@@ -74,7 +74,8 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.tree.SetImages(imageComponents.ImageList50())
 	//m.tree.SetImages(imageComponents.ImageList100())
 	//m.tree.SetMultiSelect(true) // 多选控制
-	m.tree.SetOnGetSelectedIndex(m.TreeOnGetSelectedIndex)
+	m.tree.SetOnChange(m.TreeOnChange)
+	m.tree.SetOnExpanding(m.TreeOnExpanding)
 	m.tree.SetOnMouseDown(m.TreeOnMouseDown)
 	m.tree.SetOnContextPopup(m.TreeOnContextPopup)
 	//m.CreateComponentMenu()
@@ -93,8 +94,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.componentTreeNode.SetSelectedIndex(imageComponents.ImageIndex("design.png"))
 	m.componentTreeNode.SetExpanded(false)
 
-	//m.srcTreeNode = items.AddChild(m.projectTreeNode, "src")
-	m.srcTreeNode = items.AddChild(nil, "src")
+	m.srcTreeNode = items.AddChild(m.projectTreeNode, "src")
 	m.srcTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
 	m.srcTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
 	m.srcTreeNode.SetExpanded(false)
@@ -139,7 +139,16 @@ func ProjectTreeClearSrcTreeNode() {
 	if MainWindow.contentLayout == nil {
 		return
 	}
+	gProjectSrcTree.stop()
 	MainWindow.contentLayout.layoutProject.srcTreeNode.DeleteChildren()
+	gProjectSrcTree.reset()
+}
+
+func ProjectTreeSrcTreeNode() lcl.ITreeNode {
+	if MainWindow.contentLayout == nil {
+		return nil
+	}
+	return MainWindow.contentLayout.layoutProject.srcTreeNode
 }
 
 func ProjectTreeBeginUpdate() {

@@ -366,6 +366,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		go func() {
 			// 运行创建项目
 			if doRunCreate(projectName, projectDir, guiRenderFrameworkGUI) {
+				event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
 				// go.mod
 				event.ConsoleWriteInfo("go mod tidy")
 				cmd := command.NewCMD()

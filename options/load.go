@@ -82,6 +82,7 @@ func LoadProject(path, egpFilePath string) {
 	designer.ResetDesigner()
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(bean.GPath, loadProject, nil)
+	event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
 	// 加载完后设置窗口标题
 	designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", loadProject.Name, bean.GPath))
 	// 更新打开项目历史记录
