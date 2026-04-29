@@ -30,10 +30,10 @@ import (
 // 窗体设计功能
 
 var (
-	designer                    *Designer
-	margin                      int32 = 0
-	borderWidth                 int32 = 8
-	defaultWidth, defaultHeight int32 = 600, 400
+	designer                                *Designer
+	windowMargin                            int32 = 0
+	windowDefaultWidth, windowDefaultHeight int32 = 600, 400
+	canvasBorderSpacing                     int32 = 8
 )
 
 // 主设计器
@@ -194,6 +194,11 @@ func (m *Designer) addDesignFormTab(uiForm *bean.TUIForm) *FormTab {
 	// 代码和窗体 tab
 
 	form.scroll = lcl.NewScrollBox(form.sheet)
+	scrollSpacing := form.scroll.BorderSpacing()
+	scrollSpacing.SetLeft(canvasBorderSpacing)
+	scrollSpacing.SetTop(canvasBorderSpacing)
+	scrollSpacing.SetRight(canvasBorderSpacing)
+	scrollSpacing.SetBottom(canvasBorderSpacing)
 	form.scroll.SetAlign(types.AlClient)
 	form.scroll.SetAutoScroll(true)
 	if tool.IsDarwin {
