@@ -15,6 +15,7 @@ package designer
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -269,7 +270,7 @@ func (m *TProjectSrcTree) reloadChildren(parent lcl.ITreeNode, parentPath string
 	parentExpanded := parent.Expanded()
 	existing := m.childNodesByPath(parent)
 	nextPaths := make(map[string]TProjectSrcEntry, len(entries))
-	items := MainWindow.contentLayout.layoutProject.tree.Items()
+	items := ProjectTree().Items()
 
 	for _, entry := range entries {
 		entry.Path = filepath.Clean(entry.Path)
@@ -332,8 +333,8 @@ func (m *TProjectSrcTree) setupNode(node lcl.ITreeNode, entry TProjectSrcEntry) 
 		node.SetSelectedIndex(projectSrcFolderIcon())
 		node.SetHasChildren(entry.HasChildren)
 	} else {
-		node.SetImageIndex(projectSrcFileIcon())
-		node.SetSelectedIndex(projectSrcFileIcon())
+		node.SetImageIndex(projectSrcFileIcon(entry))
+		node.SetSelectedIndex(projectSrcFileIcon(entry))
 		node.SetHasChildren(false)
 	}
 }
@@ -417,8 +418,43 @@ func projectSrcFolderIcon() int32 {
 	return imageComponents.ImageIndex("folder.png")
 }
 
-func projectSrcFileIcon() int32 {
+func projectSrcFileIcon(entry TProjectSrcEntry) int32 {
+	fmt.Println("projectSrcFileIcon", entry)
 	return imageComponents.ImageIndex("tfilenameedit.png")
+}
+
+func getFileIconIndex(fileName string) int32 {
+	ext := strings.ToLower(filepath.Ext(fileName))
+	switch ext {
+	case ".go":
+		return imageComponents.ImageIndex("file_go.png")
+	case ".mod":
+		return imageComponents.ImageIndex("file_mod.png")
+	case ".sum":
+		return imageComponents.ImageIndex("file_sum.png")
+	case ".json":
+		return imageComponents.ImageIndex("file_json.png")
+	case ".yaml", ".yml":
+		return imageComponents.ImageIndex("file_yaml.png")
+	case ".toml":
+		return imageComponents.ImageIndex("file_toml.png")
+	case ".md":
+		return imageComponents.ImageIndex("file_md.png")
+	case ".txt":
+		return imageComponents.ImageIndex("file_txt.png")
+	case ".xml":
+		return imageComponents.ImageIndex("file_xml.png")
+	case ".html", ".htm":
+		return imageComponents.ImageIndex("file_html.png")
+	case ".css":
+		return imageComponents.ImageIndex("file_css.png")
+	case ".js":
+		return imageComponents.ImageIndex("file_js.png")
+	case ".ts":
+		return imageComponents.ImageIndex("file_ts.png")
+	default:
+		return imageComponents.ImageIndex("file.png")
+	}
 }
 
 func projectSrcRootPath() string {

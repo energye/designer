@@ -304,10 +304,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			brush.SetStyle(types.BsSolid)
 		}
 	})
-
-	// ======================================================
-	// 创建数据
-	// ======================================================
 	m.tree.SetParent(owner.widgetPanel)
 
 	m.initComponentTreeData()

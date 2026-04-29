@@ -151,6 +151,13 @@ func ProjectTreeSrcTreeNode() lcl.ITreeNode {
 	return MainWindow.contentLayout.layoutProject.srcTreeNode
 }
 
+func ProjectTree() lcl.ITreeView {
+	if MainWindow.contentLayout == nil {
+		return nil
+	}
+	return MainWindow.contentLayout.layoutProject.tree
+}
+
 func ProjectTreeBeginUpdate() {
 	if MainWindow.contentLayout == nil {
 		return
