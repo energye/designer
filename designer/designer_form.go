@@ -29,10 +29,8 @@ type TDesignerForm struct {
 
 func (m *TDesignerForm) FormCreate(sender lcl.IObject) {
 	logs.Info("TDesignerForm FormCreate")
-	m.SetLeft(windowMargin)
-	m.SetTop(windowMargin)
-	m.SetWidth(windowDefaultWidth)
-	m.SetHeight(windowDefaultHeight)
+	m.SetWidth(designerDefaultWidth)
+	m.SetHeight(designerDefaultHeight)
 	m.SetAlign(types.AlCustom)
 	m.SetBorderStyleToFormBorderStyle(types.BsNone)
 	//m.SetShowInTaskBar(types.StNever)
