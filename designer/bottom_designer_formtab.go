@@ -108,11 +108,26 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-// 隐藏之前设计的组件 drag, 对象查看器属性和事件
-func (m *FormTab) HideAllDesignHelpers(target *TDesigningComponent) {
+// 隐藏其它设计的组件 drag, 对象查看器属性和事件
+func (m *FormTab) HideOtherDesignHelpers(target *TDesigningComponent) {
 	var iterable func(component *TDesigningComponent)
 	iterable = func(component *TDesigningComponent) {
 		if component.IsDesign && target != component {
+			component.IsDesign = false // 标记为非设计状态
+			component.HideDesignHelpers()
+		}
+		for _, child := range component.Child {
+			iterable(child)
+		}
+	}
+	iterable(m.FormRoot)
+}
+
+// 隐藏所有下在设计的组件 drag, 对象查看器属性和事件
+func (m *FormTab) HideAllDesignHelpers() {
+	var iterable func(component *TDesigningComponent)
+	iterable = func(component *TDesigningComponent) {
+		if component.IsDesign {
 			component.IsDesign = false // 标记为非设计状态
 			component.HideDesignHelpers()
 		}
@@ -144,7 +159,7 @@ func (m *FormTab) FindDesignComponent(component *TDesigningComponent) *TDesignin
 func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
 	targetComp.mustComponentPropertyPage()
 	targetComp.drag.mustDS()
-	m.HideAllDesignHelpers(targetComp)
+	m.HideOtherDesignHelpers(targetComp)
 	targetComp.IsDesign = true
 	if m.State == FtsHide {
 		designer.tab.HideAllActivated()
@@ -227,13 +242,12 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	}
 	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
 	m.IsDesigner = false
-
 	designComp := m.FindDesignComponent(m.FormRoot)
 	if designComp == nil {
 		designComp = m.FormRoot
 	}
 	// 隐藏所有设计组件
-	m.HideAllDesignHelpers(designComp)
+	m.HideOtherDesignHelpers(designComp)
 	// 隐藏掉对象查看器 tab page, 属性列表和事件列表
 	designComp.page.SetVisible(false)
 	m.sheet.Button().Font().SetColor(colors.ClBlack)
@@ -257,12 +271,12 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	// 恢复模式, 恢复所有设计的子组件
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.sheet.Button().Font().SetColor(0xD47800)
-		//m.Recover()
 		m.RecoverComponentPropertyValue()
 		// 确保节点被选中
 		ProjectTreeSetSelected(designComp.node)
 		// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
 		m.SwitchComponentEditing(designComp)
+		// 聚焦设计窗体
 		m.formDesigner.Form.SetFocus()
 	})
 }
@@ -300,7 +314,6 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 			activeId        = -1
 			activeOtherForm *FormTab
 		)
-		
 		for id, formTab := range designer.designerForms {
 			if formTab.sheet.Active() && formTab.sheet == page {
 				activeId = id
@@ -311,15 +324,15 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 				break
 			}
 		}
+		// 隐藏设计器 tab page
+		m.HideAllDesignHelpers()
+		m.HideTabPage()
 
-		// 不是 -1 时删除的是自己
 		// 此时要选择一个设计表单激活设计
 		if activeId != -1 && activeOtherForm != nil {
 			designer.tab.HideAllActivated()
 			designer.ActiveFormTab(activeOtherForm)
 		}
-		// 隐藏设计器 tab page
-		m.HideTabPage()
 	}
 }
 
