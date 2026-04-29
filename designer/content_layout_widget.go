@@ -21,6 +21,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"strings"
 )
 
 type ContentLayoutWidget struct {
@@ -217,15 +218,25 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			canvas.MoveToWithIntX2(0, r.Bottom-1)
 			canvas.LineToWithIntX2(m.tree.ClientWidth(), r.Bottom-1)
 
-			//arrow := "▶"
 			//if node.Expanded() {
-			//	arrow = "▼"
 			//}
-			//arrow = ""
 			// 图标
+			iconXOffset := int32(0)
+			if treeItem := m.findComponentTreeItem(node); treeItem != nil {
+				// 图标位置和尺寸
+				iconSize := int32(16)
+				iconX := int32(6)
+				iconY := r.Top + (rowH-iconSize)/2
+				iconName := strings.ToLower(treeItem.name) + ".png"
+				imageIndex := imageTabComp.ImageIndex(iconName)
+				imageTabComp.ImageList100().DrawWithCanvasIntX3Bool(canvas, iconX, iconY, imageIndex, true)
+				iconXOffset = iconX + iconSize
+			}
+
 			// 文本
+			titleX := 2 + iconXOffset
 			titleY := r.Top + (rowH-14)/2
-			canvas.TextOutWithIntX2Str(6, titleY, node.Text())
+			canvas.TextOutWithIntX2Str(titleX, titleY, node.Text())
 			return
 		} else {
 			iconSize := int32(24)
