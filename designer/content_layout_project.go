@@ -29,8 +29,8 @@ type ContentLayoutProject struct {
 	projectTreeNode lcl.ITreeNode
 	// 组件根节点(所有窗体和组件)
 	componentTreeNode lcl.ITreeNode
-	// 资源目录和文件根节点（所有代码和文件）
-	assetsTreeNode lcl.ITreeNode
+	// 项目源码目录和文件根节点（所有代码和文件）
+	srcTreeNode lcl.ITreeNode
 	// 组件菜单
 	componentMenu *TComponentMenu
 }
@@ -93,11 +93,11 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.componentTreeNode.SetSelectedIndex(imageComponents.ImageIndex("design.png"))
 	m.componentTreeNode.SetExpanded(false)
 
-	//m.assetsTreeNode = items.AddChild(m.projectTreeNode, "src")
-	m.assetsTreeNode = items.AddChild(nil, "src")
-	m.assetsTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
-	m.assetsTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
-	m.assetsTreeNode.SetExpanded(false)
+	//m.srcTreeNode = items.AddChild(m.projectTreeNode, "src")
+	m.srcTreeNode = items.AddChild(nil, "src")
+	m.srcTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
+	m.srcTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
+	m.srcTreeNode.SetExpanded(false)
 
 	return m
 }
@@ -135,11 +135,11 @@ func ProjectTreeClearComponentTreeNode() {
 	MainWindow.contentLayout.layoutProject.componentTreeNode.DeleteChildren()
 }
 
-func ProjectTreeClearAssetsTreeNode() {
+func ProjectTreeClearSrcTreeNode() {
 	if MainWindow.contentLayout == nil {
 		return
 	}
-	MainWindow.contentLayout.layoutProject.assetsTreeNode.DeleteChildren()
+	MainWindow.contentLayout.layoutProject.srcTreeNode.DeleteChildren()
 }
 
 func ProjectTreeBeginUpdate() {

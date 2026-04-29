@@ -85,7 +85,7 @@ func ResetDesigner() {
 	}
 	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
 	ProjectTreeClearComponentTreeNode()
-	ProjectTreeClearAssetsTreeNode()
+	ProjectTreeClearSrcTreeNode()
 }
 
 func UpdateHistoryProject(egpFilePath string) {
