@@ -69,8 +69,8 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.docSplitter.SetHeight(defaultSplitterWidth)
 	m.docSplitter.SetMinSize(defaultSplitterMinSize)
 	setSpliterStyle(m.docSplitter)
+	m.docSplitter.SetVisible(false) // 还未使用
 	m.docSplitter.SetParent(owner.inspectorPanel)
-
 	m.doc = lcl.NewMemo(owner.inspectorPanel)
 	m.doc.SetBorderStyle(types.BsNone)
 	//m.doc.SetReadOnly(true)
