@@ -29,20 +29,21 @@ import (
 )
 
 var (
-	MainWindow       TAppWindow
-	bgDarkColor      = colors.RGBToColor(56, 57, 60)
-	bgLightColor     = colors.ClWhite // colors.TColor(0xF3F4F6)
-	windowShowEvents []func()
-	imageActions     *tool.ImageList
-	imageComponents  *tool.ImageList
-	imageItem        *tool.ImageList
-	imageMenu        *tool.ImageList
-	imageTabComp     *tool.ImageList
-	themeControls    tool.HashMap[string, lcl.IWinControl]
-	splitterWidth    = int32(5)
-	leftToolsWidth   = int32(110)
-	gOnShow          = sync.Once{}
-	gAppEGPPath      string
+	MainWindow         TAppWindow
+	bgDarkColor        = colors.RGBToColor(56, 57, 60)
+	bgLightColor       = colors.ClWhite // colors.TColor(0xF3F4F6)
+	windowShowEvents   []func()
+	imageActions       *tool.ImageList
+	imageComponents    *tool.ImageList
+	imageItem          *tool.ImageList
+	imageMenu          *tool.ImageList
+	imageTabComp       *tool.ImageList
+	imageFilesSVGToPNG *tool.ImageList
+	themeControls      tool.HashMap[string, lcl.IWinControl]
+	splitterWidth      = int32(5)
+	leftToolsWidth     = int32(110)
+	gOnShow            = sync.Once{}
+	gAppEGPPath        string
 )
 
 // 设计器应用窗口
@@ -143,6 +144,8 @@ func (m *TAppWindow) initAllImageList() {
 	imageItem = tool.NewImageList(m, "item", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 	imageMenu = tool.NewImageList(m, "menu", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}, Image150: types.TSize{Cx: 24, Cy: 24}, Image200: types.TSize{Cx: 32, Cy: 32}})
 	imageTabComp = tool.NewImageList(m, "tab-comp", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}})
+	//imageFilesSVGToPNG = tool.NewImageListSVGToPNG(m, "icons/svg_files", tool.ImageRect{Image100: types.TSize{Cx: 16, Cy: 16}})
+	tool.AppendSVGToImageList(imageComponents, "icons/svg_files", tool.ImageRect{Image50: types.TSize{Cx: 16, Cy: 16}, Image100: types.TSize{Cx: 24, Cy: 24}, Image150: types.TSize{Cx: 36, Cy: 36}, Image200: types.TSize{Cx: 48, Cy: 48}})
 }
 
 func (m *TAppWindow) WindowOnResize(sender lcl.IObject) {

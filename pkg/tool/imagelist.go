@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"path/filepath"
 	"strings"
 )
 
@@ -35,6 +36,88 @@ type ImageRect struct {
 	Image100 types.TSize
 	Image150 types.TSize
 	Image200 types.TSize
+}
+
+func AppendSVGToImageList(imageList *ImageList, dirName string, rect ImageRect) {
+	svgImageList := resources.GetImageFileList(dirName)
+	loadImage := func(image lcl.IImageList, size types.TSize, scaleName string) {
+		for _, name := range svgImageList {
+			svgData := resources.Images(name)
+			if svgData == nil {
+				continue
+			}
+			pngData, err := SVGToPNG(svgData, int(size.Cx), int(size.Cy))
+			if err != nil {
+				continue
+			}
+			ImageListAddPng(image, pngData)
+			_, name = filepath.Split(name) // strings.ToLower(strings.Replace(name, dirName+"/", "", 1))
+			name = strings.TrimSuffix(name, ".svg")
+			if scaleName != "" {
+				name = name + "_" + scaleName
+			}
+			name += ".png"
+			count := image.Count()
+			imageList.imageIndex[name] = count - 1
+		}
+	}
+	if CheckSizeZero(rect.Image50) {
+		loadImage(imageList.imageList50, rect.Image50, "50")
+	}
+	if CheckSizeZero(rect.Image100) {
+		loadImage(imageList.imageList100, rect.Image100, "")
+	}
+	if CheckSizeZero(rect.Image150) {
+		loadImage(imageList.imageList150, rect.Image150, "150")
+	}
+	if CheckSizeZero(rect.Image200) {
+		loadImage(imageList.imageList200, rect.Image200, "200")
+	}
+}
+
+func NewImageListSVGToPNG(owner lcl.IComponent, dirName string, rect ImageRect) *ImageList {
+	m := new(ImageList)
+	m.imageIndex = make(map[string]int32)
+	svgImageList := resources.GetImageFileList(dirName)
+	loadImage := func(size types.TSize, scaleName string) lcl.IImageList {
+		imageList := lcl.NewImageList(owner)
+		if size.Cx > 0 {
+			imageList.SetWidth(size.Cx)
+		}
+		if size.Cy > 0 {
+			imageList.SetHeight(size.Cy)
+		}
+		for index, name := range svgImageList {
+			svgData := resources.Images(name)
+			if svgData == nil {
+				continue
+			}
+			pngData, err := SVGToPNG(svgData, int(size.Cx), int(size.Cy))
+			if err != nil {
+				continue
+			}
+			ImageListAddPng(imageList, pngData)
+			name = strings.ToLower(strings.Replace(name, dirName+"/", "", 1))
+			if scaleName != "" {
+				name = name + "_" + scaleName
+			}
+			m.imageIndex[name] = int32(index)
+		}
+		return imageList
+	}
+	if CheckSizeZero(rect.Image50) {
+		m.imageList50 = loadImage(rect.Image50, "50")
+	}
+	if CheckSizeZero(rect.Image100) {
+		m.imageList100 = loadImage(rect.Image100, "")
+	}
+	if CheckSizeZero(rect.Image150) {
+		m.imageList150 = loadImage(rect.Image150, "150")
+	}
+	if CheckSizeZero(rect.Image200) {
+		m.imageList200 = loadImage(rect.Image200, "200")
+	}
+	return m
 }
 
 func NewImageList(owner lcl.IComponent, dirName string, rect ImageRect) *ImageList {

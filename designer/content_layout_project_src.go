@@ -16,6 +16,7 @@ package designer
 import (
 	"context"
 	"fmt"
+	"github.com/energye/designer/pkg/tool"
 	"os"
 	"path/filepath"
 	"sort"
@@ -419,42 +420,11 @@ func projectSrcFolderIcon() int32 {
 }
 
 func projectSrcFileIcon(entry TProjectSrcEntry) int32 {
-	fmt.Println("projectSrcFileIcon", entry)
-	return imageComponents.ImageIndex("tfilenameedit.png")
-}
-
-func getFileIconIndex(fileName string) int32 {
-	ext := strings.ToLower(filepath.Ext(fileName))
-	switch ext {
-	case ".go":
-		return imageComponents.ImageIndex("file_go.png")
-	case ".mod":
-		return imageComponents.ImageIndex("file_mod.png")
-	case ".sum":
-		return imageComponents.ImageIndex("file_sum.png")
-	case ".json":
-		return imageComponents.ImageIndex("file_json.png")
-	case ".yaml", ".yml":
-		return imageComponents.ImageIndex("file_yaml.png")
-	case ".toml":
-		return imageComponents.ImageIndex("file_toml.png")
-	case ".md":
-		return imageComponents.ImageIndex("file_md.png")
-	case ".txt":
-		return imageComponents.ImageIndex("file_txt.png")
-	case ".xml":
-		return imageComponents.ImageIndex("file_xml.png")
-	case ".html", ".htm":
-		return imageComponents.ImageIndex("file_html.png")
-	case ".css":
-		return imageComponents.ImageIndex("file_css.png")
-	case ".js":
-		return imageComponents.ImageIndex("file_js.png")
-	case ".ts":
-		return imageComponents.ImageIndex("file_ts.png")
-	default:
-		return imageComponents.ImageIndex("file.png")
-	}
+	name := tool.GetSVGIconPath(entry.Name)
+	_, name = filepath.Split(name)
+	name = strings.TrimSuffix(name, ".svg") + ".png"
+	fmt.Println("projectSrcFileIcon", entry.Name, name)
+	return imageComponents.ImageIndex(name)
 }
 
 func projectSrcRootPath() string {

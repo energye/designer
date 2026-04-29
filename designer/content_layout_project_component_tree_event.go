@@ -56,8 +56,15 @@ func (m *ContentLayoutProject) TreeOnChange(sender lcl.IObject, node lcl.ITreeNo
 	}
 }
 
+func (m *ContentLayoutProject) TreeOnAdvancedCustomDrawItem(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState, stage types.TCustomDrawStage, paintImages *bool, defaultDraw *bool) {
+	
+}
+
 // 数据指针转设计组件
 func TreeNodeDataToDesigningComponent(data uintptr) *TDesigningComponent {
+	if data == 0 {
+		return nil
+	}
 	dc := (*TDesigningComponent)(unsafe.Pointer(data))
 	return dc
 }

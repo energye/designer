@@ -78,6 +78,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.tree.SetOnExpanding(m.TreeOnExpanding)
 	m.tree.SetOnMouseDown(m.TreeOnMouseDown)
 	m.tree.SetOnContextPopup(m.TreeOnContextPopup)
+	//m.tree.SetOnAdvancedCustomDrawItem(m.TreeOnAdvancedCustomDrawItem)
 	//m.CreateComponentMenu()
 	m.tree.SetPopupMenu(m.componentMenu.treePopupMenu)
 	m.tree.SetParent(m.box)
