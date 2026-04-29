@@ -300,16 +300,18 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 			activeId        = -1
 			activeOtherForm *FormTab
 		)
+		
 		for id, formTab := range designer.designerForms {
 			if formTab.sheet.Active() && formTab.sheet == page {
 				activeId = id
-			} else if activeOtherForm == nil {
+			} else if activeOtherForm == nil && formTab.sheet.Button().Visible() {
 				activeOtherForm = formTab
 			}
 			if activeId != -1 && activeOtherForm != nil {
 				break
 			}
 		}
+
 		// 不是 -1 时删除的是自己
 		// 此时要选择一个设计表单激活设计
 		if activeId != -1 && activeOtherForm != nil {
