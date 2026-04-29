@@ -145,7 +145,7 @@ var FileExtensionToIcon = map[string]string{
 
 	// Go
 	"go":      "go.svg",
-	"go.mod":  "go-pink.svg", // 注意: 使用 go-pink.svg
+	"go.mod":  "go-pink.svg",
 	"go.sum":  "go-pink.svg",
 	"go.work": "go-pink.svg",
 

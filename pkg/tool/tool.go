@@ -82,30 +82,15 @@ func IsValidVariableName(s string) bool {
 }
 
 // 加载图像到列表
-func ImageListAddPng(imageList lcl.IImageList, filePath string) {
-	data := resources.Images(filePath)
-	if data != nil {
-		pic := lcl.NewPicture()
-		defer pic.Free()
-
-		mem := lcl.NewMemoryStream()
-		defer mem.Free()
-		lcl.StreamHelper.WriteBuffer(mem, data)
-		mem.SetPosition(0)
-		pic.LoadFromStream(mem)
-		imageList.Add(pic.Bitmap(), nil)
-	} else {
-		data = resources.Images("components/default_150.png")
-		pic := lcl.NewPicture()
-		defer pic.Free()
-
-		mem := lcl.NewMemoryStream()
-		defer mem.Free()
-		lcl.StreamHelper.WriteBuffer(mem, data)
-		mem.SetPosition(0)
-		pic.LoadFromStream(mem)
-		imageList.Add(pic.Bitmap(), nil)
-	}
+func ImageListAddPng(imageList lcl.IImageList, data []byte) {
+	pic := lcl.NewPicture()
+	defer pic.Free()
+	mem := lcl.NewMemoryStream()
+	defer mem.Free()
+	lcl.StreamHelper.WriteBuffer(mem, data)
+	mem.SetPosition(0)
+	pic.LoadFromStream(mem)
+	imageList.Add(pic.Bitmap(), nil)
 }
 
 // 加载图片列表
@@ -118,7 +103,11 @@ func LoadImageList(owner lcl.IComponent, imageList []string, width, height int32
 		images.SetHeight(height)
 	}
 	for _, image := range imageList {
-		ImageListAddPng(images, image)
+		data := resources.Images(image)
+		if data == nil {
+			data = resources.Images("components/default_150.png")
+		}
+		ImageListAddPng(images, data)
 	}
 	return images
 }
