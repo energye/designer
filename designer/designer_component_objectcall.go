@@ -188,9 +188,8 @@ func (m *TDesigningComponent) UpdateTreeNode(updateNodeData *vtedit.TEditNodeDat
 		m.node.SetText(m.TreeName())
 		// 窗体组件
 		if m.ComponentType == consts.CtForm {
-			//m.FormTab.name = m.Name()
 			// 更新设计窗体标签名
-			m.FormTab.sheet.SetCaption(m.Name())
+			m.FormTab.mainPage.SetCaption(m.Name())
 		}
 	}
 	return nil

@@ -59,7 +59,7 @@ func (m *FormTab) NewFormDesigner() {
 	formDesigner.LookupRoot = m.FormRoot // formRoot
 	formDesigner.Form = designerForm
 	designerForm.SetDesigner(formDesigner.Designer())
-	designerForm.SetParent(m.scroll)
+	designerForm.SetParent(m.formDesignPage.formDesignScroll)
 
 	designerForm.SetKeyPreview(true)
 	designerForm.SetOnKeyDown(m.DesignFormOnKeyDown)
@@ -84,7 +84,7 @@ func (m *FormTab) NewFormDesigner() {
 	formDesigner.AddComponentToList(m.FormRoot)
 
 	// 窗体拖拽
-	m.FormRoot.drag = newDrag(m.scroll, consts.DsRightBottom)
+	m.FormRoot.drag = newDrag(m.formDesignPage.formDesignScroll, consts.DsRightBottom)
 	m.FormRoot.drag.mustDS()
 	m.FormRoot.drag.SetRelation(m.FormRoot)
 }

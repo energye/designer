@@ -14,6 +14,8 @@
 package designer
 
 import (
+	"os"
+
 	"github.com/energye/designer/consts"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -25,15 +27,40 @@ import (
 // 组件树右键菜单
 func (m *ContentLayoutProject) TreeOnContextPopup(sender lcl.IObject, mousePos types.TPoint, handled *bool) {
 	node := ProjectTreeSelectNode()
-	if node != nil && node.IsValid() {
-		data := node.Data()
-		component := TreeNodeDataToDesigningComponent(data)
-		if component != nil && component.ComponentType == consts.CtForm {
-			*handled = true
-		} else if component == nil {
+	if node == nil || !node.IsValid() {
+		*handled = true
+		return
+	}
+	data := node.Data()
+	component := TreeNodeDataToDesigningComponent(data)
+	if component != nil {
+		// 组件节点：切换回组件菜单
+		m.tree.SetPopupMenu(m.componentMenu.treePopupMenu)
+		if component.ComponentType == consts.CtForm {
+			// Form 根节点不显示菜单
 			*handled = true
 		}
+		return
 	}
+	// 非组件节点，检查是否为源码节点
+	srcPath := ProjectSrcTreeNodePath(node)
+	if srcPath == "" {
+		*handled = true
+		return
+	}
+	// 源码节点：根据是文件还是文件夹设置菜单项
+	info, err := os.Stat(srcPath)
+	if err != nil {
+		*handled = true
+		return
+	}
+	if info.IsDir() {
+		m.srcFileMenu.SetupForFolder()
+	} else {
+		m.srcFileMenu.SetupForFile()
+	}
+	// 动态切换弹出菜单
+	m.tree.SetPopupMenu(m.srcFileMenu.treePopupMenu)
 }
 
 // 组件树鼠标按下事件
@@ -57,7 +84,7 @@ func (m *ContentLayoutProject) TreeOnChange(sender lcl.IObject, node lcl.ITreeNo
 }
 
 func (m *ContentLayoutProject) TreeOnAdvancedCustomDrawItem(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState, stage types.TCustomDrawStage, paintImages *bool, defaultDraw *bool) {
-	
+
 }
 
 // 数据指针转设计组件

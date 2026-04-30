@@ -33,6 +33,8 @@ type ContentLayoutProject struct {
 	srcTreeNode lcl.ITreeNode
 	// 组件菜单
 	componentMenu *TComponentMenu
+	// 源码文件菜单
+	srcFileMenu *TSrcFileMenu
 }
 
 func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
@@ -60,6 +62,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.box.SetParent(owner.projectPanel)
 
 	m.componentMenu = initComponentMenu(m.box)
+	m.srcFileMenu = initSrcFileMenu(m.box)
 
 	m.tree = lcl.NewTreeView(owner.projectPanel)
 	m.tree.SetAutoExpand(false)

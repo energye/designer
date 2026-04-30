@@ -39,15 +39,16 @@ const (
 
 // 设计窗体的 tab
 type FormTab struct {
-	Id           int                  // 唯一索引, 关联 forms key: index
-	IsDesigner   bool                 // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
-	State        FormTabState         //
-	sheet        *wg.TPage            // tab sheet
-	scroll       lcl.IScrollBox       // 外 滚动条
-	formDesigner *TEngFormDesigner    // 设计器处理器
-	FormRoot     *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
-	recover      *TRecoverForm        // 恢复模式
-	recvMethods  []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
+	Id         int          // 唯一索引, 关联 forms key: index
+	IsDesigner bool         // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
+	State      FormTabState //
+	mainPage   *wg.TPage    // tab sheet
+	//scroll         lcl.IScrollBox       // 外 滚动条
+	formDesigner   *TEngFormDesigner    // 设计器处理器
+	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
+	recover        *TRecoverForm        // 恢复模式
+	recvMethods    []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
+	formDesignPage *TFormDesignPage     // 窗体设计页, 只针对设计窗体和对应的代码 tab page
 }
 
 // UIFile 返回UI文件名 xxx.ui
@@ -71,7 +72,7 @@ func (m *FormTab) SetRecvMethods(methods []*dast.TFuncInfo) {
 
 // 强制关闭当前tab
 func (m *FormTab) Close() {
-	m.sheet.Close()
+	m.mainPage.Close()
 }
 
 func (m *FormTab) IsDuplicateName(currComp *TDesigningComponent, name string) bool {
@@ -236,7 +237,7 @@ func (m *FormTab) designerOnMouseUp(sender lcl.IObject, button types.TMouseButto
 
 // 当前tab隐藏事件
 func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
-	if m.sheet.IsEnterClose() {
+	if m.mainPage.IsEnterClose() {
 		// 关闭状态不处理任何逻辑
 		return
 	}
@@ -250,18 +251,19 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	m.HideOtherDesignHelpers(designComp)
 	// 隐藏掉对象查看器 tab page, 属性列表和事件列表
 	designComp.page.SetVisible(false)
-	m.sheet.Button().Font().SetColor(colors.ClBlack)
+	m.mainPage.Button().Font().SetColor(colors.ClBlack)
 }
 
 // 当前tab显示事件
 func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
-	if m.sheet.IsEnterClose() {
+	if m.mainPage.IsEnterClose() {
 		// 关闭状态不处理任何逻辑
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
-	m.IsDesigner = true
+	//m.formDesignPage.ActiveDesignPage() // 先注释: 需要判断从哪切换过来的
 
+	m.IsDesigner = true
 	designComp := m.FindDesignComponent(m.FormRoot)
 	if designComp == nil {
 		designComp = m.FormRoot
@@ -270,7 +272,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	designComp.page.SetVisible(true)
 	// 恢复模式, 恢复所有设计的子组件
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.sheet.Button().Font().SetColor(0xD47800)
+		m.mainPage.Button().Font().SetColor(0xD47800)
 		m.RecoverComponentPropertyValue()
 		// 确保节点被选中
 		ProjectTreeSetSelected(designComp.node)
@@ -282,17 +284,17 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 }
 
 func (m *FormTab) HideTabPage() {
-	m.sheet.Button().Hide()
-	m.sheet.SetVisible(false)
-	m.sheet.SetActive(false)
+	m.mainPage.Button().Hide()
+	m.mainPage.SetVisible(false)
+	m.mainPage.SetActive(false)
 	designer.tab.RecalculatePosition()
 	m.State = FtsHide
 }
 
 func (m *FormTab) ShowTabPage() {
-	m.sheet.Button().Show()
-	m.sheet.SetVisible(true)
-	m.sheet.SetActive(true)
+	m.mainPage.Button().Show()
+	m.mainPage.SetVisible(true)
+	m.mainPage.SetActive(true)
 	designer.tab.EnableScrollButton(true)
 	designer.tab.RecalculatePosition()
 	m.State = FtsShow
@@ -317,9 +319,9 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 		)
 		// 查找当前激活的窗体, 和要激活其它的窗体
 		for id, formTab := range designer.designerForms {
-			if formTab.sheet.Active() && formTab.sheet == page {
+			if formTab.mainPage.Active() && formTab.mainPage == page {
 				activeId = id
-			} else if activeOtherForm == nil && formTab.sheet.Button().Visible() {
+			} else if activeOtherForm == nil && formTab.mainPage.Button().Visible() {
 				activeOtherForm = formTab
 			}
 			if activeId != -1 && activeOtherForm != nil {
@@ -338,7 +340,7 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 		// 禁用滚动按钮, 因为没有激活的窗体
 		activeCount := 0
 		for _, formTab := range designer.designerForms {
-			if formTab.sheet.Button().Visible() {
+			if formTab.mainPage.Button().Visible() {
 				activeCount++
 				break
 			}
@@ -352,7 +354,7 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 // 删除当前表单
 func (m *FormTab) Remove() {
 	m.State = FtsClose
-	m.sheet.Close()
+	m.mainPage.Close()
 }
 
 // 获取组件名 Caption

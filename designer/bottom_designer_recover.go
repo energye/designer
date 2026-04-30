@@ -172,7 +172,7 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 					property:   uiComponent.Properties,
 				}
 				// 设置属性
-				formTab.sheet.Button().SetCaption(tempUIForm.Name)
+				formTab.mainPage.Button().SetCaption(tempUIForm.Name)
 				// 创建项目树节点->窗体节点
 				formTab.RecoverComponentTree()
 				// 激活最后设计的窗体

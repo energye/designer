@@ -85,7 +85,7 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 
 		designer.tab.HideAllActivated()
 		// 显示 tab page
-		newForm.sheet.SetActive(true)
+		newForm.mainPage.SetActive(true)
 		designer.tab.RecalculatePosition()
 
 		// 创建窗体后执行一次 go mod tidy, TODO 先这样

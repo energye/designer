@@ -19,7 +19,6 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
-	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
@@ -110,10 +109,10 @@ func SetRecvMethods(formId int, methods []*dast.TFuncInfo) {
 	}
 }
 
-func (m *Designer) setDesignerFormTabPageStyle(page *wg.TPage) {
+func setDesignerFormTabPageStyle(page *wg.TPage) {
 	tabColor := colors.ClWhite
 	btnColor := colors.RGBToColor(234, 239, 249)
-	page.Button().SetIconFavoriteFormBytes(resources.Images("components/tform.png"))
+	page.Button().SetIconFavoriteFormBytes(resources.Images("components/design.png"))
 	page.Button().SetIconCloseFormBytes(resources.Images("button/close.png"))
 	page.Button().SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
 	page.Button().SetCloseHintText("关闭设计窗体")
@@ -181,37 +180,16 @@ func (m *Designer) addDesignFormTab(uiForm *bean.TUIForm) *FormTab {
 	// 窗体ID
 	m.designerForms[form.Id] = form
 
-	form.sheet = m.tab.NewPage()
-	form.sheet.Button().SetCaption(form.FormRoot.Name())
-	form.sheet.SetOnHide(form.tabSheetOnHide)
-	form.sheet.SetOnShow(form.tabSheetOnShow)
-	form.sheet.SetOnClose(form.tabSheetOnClose)
-	SetComponentDefaultColor(form.sheet) // 设置背景色
-	m.setDesignerFormTabPageStyle(form.sheet)
-	form.sheet.SetParent(m.tab)
+	form.mainPage = m.tab.NewPage()
+	form.mainPage.Button().SetCaption(form.FormRoot.Name())
+	form.mainPage.SetOnHide(form.tabSheetOnHide)
+	form.mainPage.SetOnShow(form.tabSheetOnShow)
+	form.mainPage.SetOnClose(form.tabSheetOnClose)
+	SetComponentDefaultColor(form.mainPage) // 设置背景色
+	setDesignerFormTabPageStyle(form.mainPage)
 
-	// 代码和窗体 tab
-
-	form.scroll = lcl.NewScrollBox(form.sheet)
-	form.scroll.SetAlign(types.AlClient)
-	form.scroll.SetAutoScroll(true)
-	if tool.IsDarwin {
-		// fix: laz MacOS bug 默认隐藏滚动条, 手动控制显示
-		// 该bug体现为当同时出现横坚滚动条时, UI 锁死崩溃, 在laz 4.6 复现
-		hBar := form.scroll.HorzScrollBar()
-		vBar := form.scroll.VertScrollBar()
-		hBar.SetVisible(false)
-		vBar.SetVisible(false)
-		form.scroll.SetOnResize(func(sender lcl.IObject) {
-			// 这里使用 < 小于做判断
-			// 当滚动box宽或高小于设计窗体大小时显示或隐藏滚动条
-			vBar.SetVisible(form.scroll.Height() < form.formDesigner.Form.Height())
-			hBar.SetVisible(form.scroll.Width() < form.formDesigner.Form.Width())
-		})
-	}
-	form.scroll.SetBorderStyleToBorderStyle(types.BsNone)
-	form.scroll.SetDoubleBuffered(true)
-	form.scroll.SetParent(form.sheet)
+	// 窗体和代码 tab
+	form.formDesignPage = NewFormDesignPage(form)
 
 	// 创建设计窗体
 	form.NewFormDesigner()
@@ -233,7 +211,7 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	// 设为设计窗体
 	tab.IsDesigner = true
 	// 激活当前 tab
-	tab.sheet.SetActive(true)
+	tab.mainPage.SetActive(true)
 }
 
 // GetFormTab 获取指定窗体
