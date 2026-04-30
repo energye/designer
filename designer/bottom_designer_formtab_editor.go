@@ -1,6 +1,21 @@
+// Copyright © yanghy. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and limitations under the License.
+
 package designer
 
 import (
+	"fmt"
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
@@ -10,13 +25,14 @@ import (
 )
 
 // 窗体设计页, 只针对设计窗体和对应的代码 tab page
-// 如果非设计窗口代码, 例如常规代码文件则直接在 sheet 初始化编辑器
+// 如果非设计窗口代码, 常规代码文件直接在 mainPage 初始化编辑器
 type TFormDesignPage struct {
 	formTab            *wg.TTab       // 设计窗体Tab
 	formDesignPage     *wg.TPage      // 设计窗体
 	formDesignScroll   lcl.IScrollBox // 设计窗体滚动条
 	formUserEditorPage *wg.TPage      // 用户代码 tab page
 	//formUIEditorPage   *wg.TPage      // UI 代码 tab page
+	editor editor.IEditor
 }
 
 func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
@@ -31,6 +47,7 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formDesignPage.Button().SetCaption("窗体")
 	m.formUserEditorPage = m.formTab.NewPage()
 	m.formUserEditorPage.Button().SetCaption("代码")
+	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 	//m.formUIEditorPage = m.formTab.NewPage()
 	//m.formUIEditorPage.Button().SetCaption("UI代码")
 
@@ -64,6 +81,10 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formTab.HideAllActivated()
 	m.formDesignPage.SetActive(true)
 	m.formTab.RecalculatePosition()
+
+	if m.editor == nil {
+		m.editor = editor.NewEditor(m.formUserEditorPage)
+	}
 	return m
 }
 
@@ -94,4 +115,14 @@ func (m *TFormDesignPage) ActiveDesignPage() {
 func (m *TFormDesignPage) ActiveEditorPage() {
 	m.formTab.HideAllActivated()
 	m.formUserEditorPage.SetActive(true)
+}
+
+func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
+	fmt.Println("UserEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUserEditorPage.BoundsRect())
+	if m.editor != nil {
+		if wvEditor, ok := m.editor.(editor.IWebviewEditor); ok {
+			wvEditor.LoadURL("E:\\app\\workspace\\designer\\resources\\editor\\monaco.html")
+			wvEditor.CreateBrowser()
+		}
+	}
 }
