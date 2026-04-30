@@ -67,6 +67,9 @@ func runListenFileChange() {
 			logs.Println("ListenFileChange done.")
 		}()
 		for {
+			if gCtx == nil {
+				return
+			}
 			select {
 			case <-gCtx.Done():
 				return
