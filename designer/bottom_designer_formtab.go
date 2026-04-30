@@ -293,6 +293,7 @@ func (m *FormTab) ShowTabPage() {
 	m.sheet.Button().Show()
 	m.sheet.SetVisible(true)
 	m.sheet.SetActive(true)
+	designer.tab.EnableScrollButton(true)
 	designer.tab.RecalculatePosition()
 	m.State = FtsShow
 }
@@ -314,6 +315,7 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 			activeId        = -1
 			activeOtherForm *FormTab
 		)
+		// 查找当前激活的窗体, 和要激活其它的窗体
 		for id, formTab := range designer.designerForms {
 			if formTab.sheet.Active() && formTab.sheet == page {
 				activeId = id
@@ -328,10 +330,21 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 		m.HideAllDesignHelpers()
 		m.HideTabPage()
 
-		// 此时要选择一个设计表单激活设计
+		// 此时要选择一个设计窗体激活设计
 		if activeId != -1 && activeOtherForm != nil {
 			designer.tab.HideAllActivated()
 			designer.ActiveFormTab(activeOtherForm)
+		}
+		// 禁用滚动按钮, 因为没有激活的窗体
+		activeCount := 0
+		for _, formTab := range designer.designerForms {
+			if formTab.sheet.Button().Visible() {
+				activeCount++
+				break
+			}
+		}
+		if activeCount == 0 {
+			designer.tab.EnableScrollButton(false)
 		}
 	}
 }
