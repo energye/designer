@@ -1,251 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ENERGY Designer - Code Editor</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; }
-#editor-container { width: 100%; height: 100%; }
-</style>
+    <meta charset="UTF-8">
+    <title>Monaco 0.55 Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { height: 100vh; display: flex; flex-direction: column; }
+        /*.toolbar { padding: 8px; background: #1e1e1e; color: #fff; }*/
+        /*#lang { padding: 4px; }*/
+        #container { flex: 1; }
+    </style>
 </head>
 <body>
-<div id="editor-container"></div>
-<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+<!--<div class="toolbar">-->
+<!--    语言：-->
+<!--    <select id="lang">-->
+<!--        <option value="javascript">JavaScript</option>-->
+<!--        <option value="typescript">TypeScript</option>-->
+<!--        <option value="html">HTML</option>-->
+<!--        <option value="css">CSS</option>-->
+<!--        <option value="json">JSON</option>-->
+<!--    </select>-->
+<!--</div>-->
+<div id="container"></div>
+
+<script src="./vs/loader.js"></script>
 <script>
-(function() {
-    'use strict';
+    require.config({ paths: { vs: './vs' } });
 
-    var editor = null;
-    var currentModel = null;
-    var originalValue = '';
-
-    // Language detection by file extension
-    var languageMap = {
-        '.go':     'go',
-        '.js':     'javascript',
-        '.jsx':    'javascript',
-        '.ts':     'typescript',
-        '.tsx':    'typescript',
-        '.json':   'json',
-        '.html':   'html',
-        '.htm':    'html',
-        '.css':    'css',
-        '.scss':   'scss',
-        '.less':   'less',
-        '.py':     'python',
-        '.rb':     'ruby',
-        '.java':   'java',
-        '.c':      'c',
-        '.cpp':    'cpp',
-        '.cc':     'cpp',
-        '.h':      'c',
-        '.hpp':    'cpp',
-        '.cs':     'csharp',
-        '.php':    'php',
-        '.swift':  'swift',
-        '.kt':     'kotlin',
-        '.rs':     'rust',
-        '.xml':    'xml',
-        '.yaml':   'yaml',
-        '.yml':    'yaml',
-        '.toml':   'ini',
-        '.ini':    'ini',
-        '.sh':     'shell',
-        '.bash':   'shell',
-        '.zsh':    'shell',
-        '.ps1':    'powershell',
-        '.bat':    'bat',
-        '.cmd':    'bat',
-        '.sql':    'sql',
-        '.md':     'markdown',
-        '.lua':    'lua',
-        '.r':      'r',
-        '.dart':   'dart',
-        '.vue':    'html',
-        '.svelte': 'html',
-        '.graphql':'graphql',
-        '.gql':    'graphql',
-        '.dockerfile': 'dockerfile',
-        '.tf':     'hcl',
-        '.zig':    'zig'
-    };
-
-    function detectLanguage(filePath) {
-        if (!filePath) return 'plaintext';
-        var ext = '';
-        var dotIndex = filePath.lastIndexOf('.');
-        if (dotIndex >= 0) {
-            ext = filePath.substring(dotIndex).toLowerCase();
-        }
-        // Special filenames
-        var fileName = filePath.split(/[/\\]/).pop().toLowerCase();
-        if (fileName === 'dockerfile') return 'dockerfile';
-        if (fileName === 'makefile') return 'makefile';
-        if (fileName === 'cmakelists.txt') return 'cmake';
-        if (fileName.endsWith('.mod')) return 'go';
-        if (fileName.endsWith('.sum')) return 'go';
-        return languageMap[ext] || 'plaintext';
-    }
-
-    // Initialize Monaco
-    require.config({
-        paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' }
-    });
-
-    require(['vs/editor/editor.main'], function() {
-        // Create editor with dark theme
-        editor = monaco.editor.create(document.getElementById('editor-container'), {
+    require(['vs/editor/editor.main'], function(monaco) {
+        const editor = monaco.editor.create(document.getElementById('container'), {
             value: '',
-            language: 'plaintext',
-            theme: 'vs-dark',
-            automaticLayout: true,
+            // language: 'javascript',
+            language: 'go',
+            // theme: 'vs-dark',
             fontSize: 14,
-            fontFamily: "'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace",
-            fontLigatures: true,
-            lineNumbers: 'on',
-            minimap: { enabled: true },
-            scrollBeyondLastLine: false,
-            wordWrap: 'off',
-            tabSize: 4,
-            insertSpaces: true,
-            renderWhitespace: 'selection',
-            bracketPairColorization: { enabled: true },
-            guides: { bracketPairs: true },
-            smoothScrolling: true,
-            cursorBlinking: 'smooth',
-            cursorSmoothCaretAnimation: 'on',
-            padding: { top: 8, bottom: 8 }
+            automaticLayout: true,
+            // quickSuggestions: true,
+            // suggestOnTriggerCharacters: true
         });
+        monaco.languages.registerCompletionItemProvider('go', {
+            provideCompletionItems: (model, position) => {
+                return new Promise((resolve) => {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                    };
 
-        // Track modifications
-        editor.onDidChangeModelContent(function() {
-            if (window.onModified) {
-                window.onModified(editorAPI.isModified());
+                    ipc.emit("gopls-completion", [{
+                        file: model.uri.toString(),
+                        line: position.lineNumber - 1,
+                        column: position.column - 1
+                    }], function (result) {
+                        resolve({
+                            suggestions: result.items.map(item => ({
+                                label: item.label,
+                                kind: monaco.languages.CompletionItemKind.Method,
+                                insertText: item.insertText,
+                                range: range
+                            }))
+                        });
+                    });
+                });
             }
         });
 
-        // Notify Go that editor is ready
-        if (window.onEditorReady) {
-            window.onEditorReady();
-        }
+        // document.getElementById('lang').addEventListener('change', e => {
+        //     monaco.editor.setModelLanguage(editor.getModel(), e.target.value);
+        // });
+
+        window.addEventListener('resize', () => editor.layout());
+        ipc.emit("monaco-inited", [{"Data":"data","aaaa":"bbbb"}]);
     });
-
-    // Public API for Go to call
-    window.editorAPI = {
-        // Load file content into editor
-        loadFile: function(filePath, content, language) {
-            if (!editor) return;
-            var lang = language || detectLanguage(filePath);
-            var oldModel = editor.getModel();
-            if (oldModel) {
-                oldModel.dispose();
-            }
-            currentModel = monaco.editor.createModel(content, lang);
-            editor.setModel(currentModel);
-            originalValue = content;
-            editor.setScrollPosition({ scrollTop: 0, scrollLeft: 0 });
-            editor.focus();
-        },
-
-        // Get current editor content
-        getContent: function() {
-            if (!editor) return '';
-            return editor.getValue();
-        },
-
-        // Check if content has been modified
-        isModified: function() {
-            if (!editor) return false;
-            return editor.getValue() !== originalValue;
-        },
-
-        // Get current file path
-        getFilePath: function() {
-            return window._currentFilePath || '';
-        },
-
-        // Set editor theme
-        setTheme: function(theme) {
-            if (!editor) return;
-            monaco.editor.setTheme(theme || 'vs-dark');
-        },
-
-        // Set font size
-        setFontSize: function(size) {
-            if (!editor) return;
-            editor.updateOptions({ fontSize: size || 14 });
-        },
-
-        // Insert text at cursor
-        insertText: function(text) {
-            if (!editor) return;
-            var selection = editor.getSelection();
-            editor.executeEdits('go-insert', [{
-                range: selection,
-                text: text,
-                forceMoveMarkers: true
-            }]);
-        },
-
-        // Go to specific line
-        goToLine: function(lineNumber) {
-            if (!editor) return;
-            editor.revealLineInCenter(lineNumber);
-            editor.setPosition({ lineNumber: lineNumber, column: 1 });
-            editor.focus();
-        },
-
-        // Get selection text
-        getSelection: function() {
-            if (!editor) return '';
-            return editor.getModel().getValueInRange(editor.getSelection());
-        },
-
-        // Undo
-        undo: function() {
-            if (!editor) return;
-            editor.trigger('go-api', 'undo');
-        },
-
-        // Redo
-        redo: function() {
-            if (!editor) return;
-            editor.trigger('go-api', 'redo');
-        },
-
-        // Format document
-        formatDocument: function() {
-            if (!editor) return;
-            editor.getAction('editor.action.formatDocument').run();
-        },
-
-        // Find
-        find: function() {
-            if (!editor) return;
-            editor.trigger('go-api', 'actions.find');
-        },
-
-        // Replace all occurrences
-        replaceAll: function(find, replace) {
-            if (!editor || !currentModel) return;
-            var text = currentModel.getValue();
-            var regex = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-            currentModel.setValue(text.replace(regex, replace));
-        },
-
-        // Detect language from file path
-        detectLanguage: function(filePath) {
-            return detectLanguage(filePath);
-        },
-
-        // Check if editor is ready
-        isReady: function() {
-            return editor !== null;
-        }
-    };
-})();
 </script>
 </body>
 </html>
