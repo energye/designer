@@ -14,9 +14,12 @@
 package editor
 
 import (
-	"fmt"
+	"github.com/energye/designer/designer/editor/gopls"
+	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources/editor"
 	"github.com/energye/energy/v3/application"
+	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -36,6 +39,7 @@ type TWebviewEditor struct {
 var (
 	wvInitOnce sync.Once
 	gWVApp     *wv.Application
+	gLSPClient *gopls.LSPClient
 )
 
 func WebViewInit() {
@@ -48,6 +52,33 @@ func WebViewInit() {
 			FS:         editor.Assets,
 		})
 		gWVApp.Start()
+		var err error
+		gLSPClient, err = gopls.NewLSPClient(bean.GPath)
+		if err != nil {
+			logs.Error("NewLSPClient:", err)
+		} else {
+			gLSPClient.Initialize(bean.GPath)
+		}
+
+		initIPCEvent()
+	})
+}
+
+func initIPCEvent() {
+	ipc.On("monaco-inited", func(context ipc.IContext) {
+		logs.Info("ipc monaco-inited BrowserId:", context.BrowserId(), context.Data())
+	})
+	type Params struct {
+		File   string `json:"file"`
+		Line   int    `json:"line"`
+		Column int    `json:"column"`
+	}
+	ipc.On("gopls-completion", func(context ipc.IContext) {
+		logs.Info("ipc gopls-completion BrowserId:", context.BrowserId(), context.Data())
+
+		//json.Unmarshal(msg.Data, &params)
+		//result := gLSPClient.Completion(params.File, params.Line, params.Column)
+		context.Result("")
 	})
 }
 
@@ -63,10 +94,7 @@ func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 	m.WVEditor.SetParent(owner)
 	//m.WVEditor.SetDefaultURL("auto:blank")
 	m.WVEditor.SetOnLoadChange(func(url, title string, load wv.TLoadChange) {
-		fmt.Println(url, title, load)
-	})
-	m.WVEditor.SetOnBrowserAfterCreated(func(sender lcl.IObject) {
-		fmt.Println("SetOnBrowserAfterCreated")
+		logs.Info("OnLoadChange:", url, title, load)
 	})
 	return m
 }

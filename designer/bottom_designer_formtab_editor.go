@@ -106,6 +106,7 @@ func setFormDesignPageStyle(page *wg.TPage, icon []byte) {
 	page.SetDefaultColor(tabColor)
 	page.SetActiveColor(btnColor)
 	page.Button().SetCursor(types.CrHandPoint)
+	page.SetColor(tabColor)
 }
 
 func (m *TFormDesignPage) ActiveDesignPage() {
