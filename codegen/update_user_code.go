@@ -64,6 +64,12 @@ func doUpdateSelf(uiGenData designer.TUIGenerationData) {
 		logs.Error("执行更新自引用-Stat:", err.Error())
 		return
 	}
+	newCode, err = dast.UpdateFormStructName(newCode, oldFormName, newFormName)
+	if err != nil {
+		logs.Error("执行更新结构名-UpdateFormStructName:", err.Error())
+		return
+	}
+
 	if err = os.WriteFile(goUserFilePath, newCode, st.Mode()); err != nil {
 		logs.Error("执行更新自引用-WriteFile:", err.Error())
 		return
