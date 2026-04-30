@@ -15,6 +15,8 @@ package editor
 
 import (
 	"fmt"
+	"github.com/energye/designer/resources/editor"
+	"github.com/energye/energy/v3/application"
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -39,6 +41,12 @@ var (
 func WebViewInit() {
 	wvInitOnce.Do(func() {
 		gWVApp = wv.Init(nil, nil)
+		gWVApp.SetLocalLoad(application.LocalLoad{
+			Scheme:     "energy",
+			Domain:     "designer",
+			ResRootDir: "assets",
+			FS:         editor.Assets,
+		})
 		gWVApp.Start()
 	})
 }

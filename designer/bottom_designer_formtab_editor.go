@@ -121,7 +121,7 @@ func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
 	fmt.Println("UserEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUserEditorPage.BoundsRect())
 	if m.editor != nil {
 		if wvEditor, ok := m.editor.(editor.IWebviewEditor); ok {
-			wvEditor.LoadURL("E:\\app\\workspace\\designer\\resources\\editor\\monaco.html")
+			wvEditor.LoadURL("energy://designer/index.html")
 			wvEditor.CreateBrowser()
 		}
 	}

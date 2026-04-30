@@ -14,12 +14,10 @@
 
 package editor
 
-import _ "embed"
+import (
+	"embed"
+	_ "embed"
+)
 
-//go:embed monaco.html
-var monacoHTML []byte
-
-// MonacoHTMLContent returns the embedded Monaco Editor HTML content.
-func MonacoHTMLContent() []byte {
-	return monacoHTML
-}
+//go:embed assets
+var Assets embed.FS
