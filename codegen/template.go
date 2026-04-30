@@ -49,8 +49,8 @@ func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
 		{{$prop.GoPropertySet $formComp $Form}}
 	{{end -}}
 	m.initComponents()
-	window.CallFormCreate(m)
-	m.TWindow.FormCreate(sender, sender)
+	window.CallFormCreate(m, sender)
+	m.TWindow.FormCreate(sender)
 }
 
 // OnShow window display event. Automatic call
