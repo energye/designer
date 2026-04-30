@@ -14,7 +14,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -172,7 +171,6 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 				} else {
 					SetStatusCenterText("Selected: " + m.selectedComponent.name)
 				}
-				fmt.Println("click:", hoverNode.Level(), hoverNode.Text())
 				return
 			}
 		}
