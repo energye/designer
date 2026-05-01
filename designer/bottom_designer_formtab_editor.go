@@ -17,8 +17,6 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/resources"
-	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -30,63 +28,63 @@ var gFromEditor editor.IEditor
 // 窗体设计页, 只针对设计窗体和对应的代码 tab page
 // 如果非设计窗口代码, 常规代码文件直接在 mainPage 初始化编辑器
 type TFormDesignPage struct {
-	formTab            *wg.TTab  // 设计窗体Tab
-	formDesignPage     *wg.TPage // 设计窗体
-	formUserEditorPage *wg.TPage // 用户代码 tab page
-	//formUIEditorPage   *wg.TPage      // UI 代码 tab page
+	//formTab            *wg.TTab  // 设计窗体Tab
+	//formDesignPage     *wg.TPage // 设计窗体
+	//formUserEditorPage *wg.TPage // 用户代码 tab page
+	////formUIEditorPage   *wg.TPage      // UI 代码 tab page
+
 	formDesignScroll lcl.IScrollBox // 设计窗体滚动条
 
 	//
-	//formTab            lcl.IPageControl
-	//formDesignPage     lcl.ITabSheet
-	//formUserEditorPage lcl.ITabSheet
+	formTab            lcl.IPageControl
+	formDesignPage     lcl.ITabSheet
+	formUserEditorPage lcl.ITabSheet
 
 	wvWindowParent wv.IWindowParent
 }
 
 func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m := &TFormDesignPage{}
-	m.formTab = wg.NewTab(formTab.mainPage)
-	m.formTab.SetBounds(0, 0, formTab.mainPage.Width(), formTab.mainPage.Height())
-	m.formTab.SetAlign(types.AlClient)
-	m.formTab.EnableScrollButton(false)
-	m.formTab.SetParent(formTab.mainPage)
-
-	m.formDesignPage = m.formTab.NewPage()
-	m.formDesignPage.SetDoubleBuffered(true)
-	m.formDesignPage.Button().SetCaption("窗体")
-	m.formDesignPage.SetOnHide(func(sender lcl.IObject) {
-		m.formDesignScroll.SetVisible(false)
-	})
-	m.formDesignPage.SetOnShow(func(sender lcl.IObject) {
-		m.formDesignScroll.SetVisible(true)
-	})
-	setFormDesignPageStyle(m.formDesignPage, resources.Images("components/tform.png"))
-
-	m.formUserEditorPage = m.formTab.NewPage()
-	m.formUserEditorPage.SetDoubleBuffered(true)
-	m.formUserEditorPage.Button().SetCaption("代码")
-	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
-	name := tool.GetSVGIconPath("go")
-	codeIconPngData, _ := tool.SVGToPNG(resources.Images(name), 24, 24)
-	setFormDesignPageStyle(m.formUserEditorPage, codeIconPngData)
-
-	//m.formTab = lcl.NewPageControl(formTab.mainPage)
+	//m.formTab = wg.NewTab(formTab.mainPage)
+	//m.formTab.SetBounds(0, 0, formTab.mainPage.Width(), formTab.mainPage.Height())
 	//m.formTab.SetAlign(types.AlClient)
+	//m.formTab.EnableScrollButton(false)
 	//m.formTab.SetParent(formTab.mainPage)
 	//
-	//m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
-	//m.formDesignPage.SetPageControl(m.formTab)
-	//m.formDesignPage.SetCaption("窗体")
+	//m.formDesignPage = m.formTab.NewPage()
+	//m.formDesignPage.SetDoubleBuffered(true)
+	//m.formDesignPage.Button().SetCaption("窗体")
+	//m.formDesignPage.SetOnHide(func(sender lcl.IObject) {
+	//	m.formDesignScroll.SetVisible(false)
+	//})
+	//m.formDesignPage.SetOnShow(func(sender lcl.IObject) {
+	//	m.formDesignScroll.SetVisible(true)
+	//})
+	//setFormDesignPageStyle(m.formDesignPage, resources.Images("components/tform.png"))
 	//
-	//m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
-	//m.formUserEditorPage.SetPageControl(m.formTab)
-	//m.formUserEditorPage.SetCaption("代码")
+	//m.formUserEditorPage = m.formTab.NewPage()
+	//m.formUserEditorPage.SetDoubleBuffered(true)
+	//m.formUserEditorPage.Button().SetCaption("代码")
 	//m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
+	//name := tool.GetSVGIconPath("go")
+	//codeIconPngData, _ := tool.SVGToPNG(resources.Images(name), 24, 24)
+	//setFormDesignPageStyle(m.formUserEditorPage, codeIconPngData)
+
+	m.formTab = lcl.NewPageControl(formTab.mainPage)
+	m.formTab.SetAlign(types.AlClient)
+	m.formTab.SetParent(formTab.mainPage)
+
+	m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
+	m.formDesignPage.SetPageControl(m.formTab)
+	m.formDesignPage.SetCaption("窗体")
+
+	m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
+	m.formUserEditorPage.SetPageControl(m.formTab)
+	m.formUserEditorPage.SetCaption("代码")
+	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 
 	//m.formUIEditorPage = m.formTab.NewPage()
 	//m.formUIEditorPage.Button().SetCaption("UI代码")
-
 	//setFormDesignPageStyle(m.formUIEditorPage)
 
 	m.formDesignScroll = lcl.NewScrollBox(formTab.mainPage)
@@ -110,9 +108,9 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formDesignScroll.SetDoubleBuffered(true)
 	m.formDesignScroll.SetParent(m.formDesignPage)
 
-	m.formTab.HideAllActivated()
-	m.formDesignPage.SetActive(true)
-	m.formTab.RecalculatePosition()
+	//m.formTab.HideAllActivated()
+	//m.formDesignPage.SetActive(true)
+	//m.formTab.RecalculatePosition()
 
 	return m
 }
@@ -154,29 +152,29 @@ func (m *TFormDesignPage) SwitchTabPageEditor() {
 }
 
 func (m *TFormDesignPage) ActiveCodeEditorTab() {
-	isEdit := m.formUserEditorPage.Active()
-	m.formTab.HideAllActivated()
-	m.formDesignPage.SetActive(true)
-	if isEdit {
-		go func() {
-			time.AfterFunc(time.Millisecond*100, func() {
-				lcl.RunOnMainThreadAsync(func(id uint32) {
-					m.formTab.HideAllActivated()
-					m.formUserEditorPage.SetActive(true)
-				})
-			})
-		}()
-	}
-
-	//isEdit := m.formTab.ActivePageIndex() == 1
-	//m.formTab.SetActivePage(m.formDesignPage)
+	//isEdit := m.formUserEditorPage.Active()
+	//m.formTab.HideAllActivated()
+	//m.formDesignPage.SetActive(true)
 	//if isEdit {
 	//	go func() {
-	//		time.AfterFunc(time.Millisecond*150, func() {
+	//		time.AfterFunc(time.Millisecond*100, func() {
 	//			lcl.RunOnMainThreadAsync(func(id uint32) {
-	//				m.formTab.SetActivePage(m.formUserEditorPage)
+	//				m.formTab.HideAllActivated()
+	//				m.formUserEditorPage.SetActive(true)
 	//			})
 	//		})
 	//	}()
 	//}
+
+	isEdit := m.formTab.ActivePageIndex() == 1
+	m.formTab.SetActivePage(m.formDesignPage)
+	if isEdit {
+		go func() {
+			time.AfterFunc(time.Millisecond*200, func() {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.formTab.SetActivePage(m.formUserEditorPage)
+				})
+			})
+		}()
+	}
 }

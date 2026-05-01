@@ -76,6 +76,9 @@ func (m *ContentLayoutProject) TreeOnMouseDown(sender lcl.IObject, button types.
 // 组件树选择事件
 func (m *ContentLayoutProject) TreeOnChange(sender lcl.IObject, node lcl.ITreeNode) {
 	//println("[DEBUG] TreeOnChange")
+	if node == nil {
+		return
+	}
 	data := node.Data()
 	component := TreeNodeDataToDesigningComponent(data)
 	if component != nil && component.FormTab != nil {
