@@ -94,7 +94,5 @@ func (m *FormTab) DesignFormOnKeyDown(sender lcl.IObject, key *types.Word, shift
 	if a == nil {
 		a = m.FormRoot
 	}
-	if shift.In(types.SsCtrl) {
-		println("[Designer Ctrl + KeyDown] key:", *key, "shift:", shift, shift.In(types.SsCtrl), "Form:", m.FormRoot.Name(), "Component:", a.Name())
-	}
+	println("[Designer Ctrl + KeyDown] key:", *key, "shift:", shift, shift.In(types.SsCtrl), "Form:", m.FormRoot.Name(), "Component:", a.Name())
 }

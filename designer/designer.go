@@ -278,7 +278,9 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
 			m.popupMenu(sender, contextMenu)
 		case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-			//println("IsDesignMsg KEYDOWN", message.Msg, sender.ToString(), sender.Name())
+			key := (*types.TLMKey)(unsafe.Pointer(dispatchMsg))
+			println("IsDesignMsg KEYDOWN", message.Msg, sender.ToString(), sender.Name(), "key:", key.Msg, key.CharCode, key.KeyData)
+			message.Result = 1
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 			//println("IsDesignMsg KEYUP", message.Msg, sender.ToString(), sender.Name())
 			//case messages.LM_HSCROLL, messages.LM_VSCROLL:
