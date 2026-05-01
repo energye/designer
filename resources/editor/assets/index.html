@@ -2,13 +2,24 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Monaco 0.55 Editor</title>
+    <title>Designer Code Editor</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { height: 100vh; display: flex; flex-direction: column; }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
         /*.toolbar { padding: 8px; background: #1e1e1e; color: #fff; }*/
         /*#lang { padding: 4px; }*/
-        #container { flex: 1; }
+        #container {
+            flex: 1;
+            min-height: 0;
+        }
     </style>
 </head>
 <body>
@@ -27,9 +38,9 @@
 <script src="./vs/loader.js"></script>
 <script>
     require.config({ paths: { vs: './vs' } });
-
+    let editor = null;
     require(['vs/editor/editor.main'], function(monaco) {
-        const editor = monaco.editor.create(document.getElementById('container'), {
+        editor = monaco.editor.create(document.getElementById('container'), {
             value: '',
             // language: 'javascript',
             language: 'go',
@@ -39,34 +50,34 @@
             // quickSuggestions: true,
             // suggestOnTriggerCharacters: true
         });
-        monaco.languages.registerCompletionItemProvider('go', {
-            provideCompletionItems: (model, position) => {
-                return new Promise((resolve) => {
-                    const word = model.getWordUntilPosition(position);
-                    const range = {
-                        startLineNumber: position.lineNumber,
-                        endLineNumber: position.lineNumber,
-                        startColumn: word.startColumn,
-                        endColumn: word.endColumn
-                    };
-
-                    ipc.emit("gopls-completion", [{
-                        file: model.uri.toString(),
-                        line: position.lineNumber - 1,
-                        column: position.column - 1
-                    }], function (result) {
-                        resolve({
-                            suggestions: result.items.map(item => ({
-                                label: item.label,
-                                kind: monaco.languages.CompletionItemKind.Method,
-                                insertText: item.insertText,
-                                range: range
-                            }))
-                        });
-                    });
-                });
-            }
-        });
+        // monaco.languages.registerCompletionItemProvider('go', {
+        //     provideCompletionItems: (model, position) => {
+        //         return new Promise((resolve) => {
+        //             const word = model.getWordUntilPosition(position);
+        //             const range = {
+        //                 startLineNumber: position.lineNumber,
+        //                 endLineNumber: position.lineNumber,
+        //                 startColumn: word.startColumn,
+        //                 endColumn: word.endColumn
+        //             };
+        //
+        //             ipc.emit("gopls-completion", [{
+        //                 file: model.uri.toString(),
+        //                 line: position.lineNumber - 1,
+        //                 column: position.column - 1
+        //             }], function (result) {
+        //                 resolve({
+        //                     suggestions: result.items.map(item => ({
+        //                         label: item.label,
+        //                         kind: monaco.languages.CompletionItemKind.Method,
+        //                         insertText: item.insertText,
+        //                         range: range
+        //                     }))
+        //                 });
+        //             });
+        //         });
+        //     }
+        // });
 
         // document.getElementById('lang').addEventListener('change', e => {
         //     monaco.editor.setModelLanguage(editor.getModel(), e.target.value);
@@ -75,6 +86,14 @@
         // window.addEventListener('resize', () => editor.layout());
         ipc.emit("monaco-inited", [{"Data":"data","aaaa":"bbbb"}]);
     });
+
+    ipc.on('switch-page', function (data) {
+        if (editor != null){
+            let code = JSON.stringify(data)
+            editor.setValue(code);
+        }
+    })
+
 </script>
 </body>
 </html>

@@ -270,6 +270,9 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	}
 	// 显示掉对象查看器 tab page, 属性列表和事件列表
 	designComp.page.SetVisible(true)
+	// 切换设计窗体代码编辑器
+	m.formDesignPage.ActiveCodeEditorTab()
+
 	// 恢复模式, 恢复所有设计的子组件
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.mainPage.Button().Font().SetColor(0xD47800)

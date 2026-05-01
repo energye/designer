@@ -15,7 +15,14 @@ package editor
 
 import "github.com/energye/lcl/lcl"
 
+type EditType int
+
+const (
+	EtWebview = iota
+)
+
 type IEditor interface {
+	Type() EditType
 }
 
 func NewEditor(owner lcl.IWinControl) IEditor {

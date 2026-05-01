@@ -19,20 +19,29 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
+	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
+	"time"
 )
+
+var gFromEditor editor.IEditor
 
 // 窗体设计页, 只针对设计窗体和对应的代码 tab page
 // 如果非设计窗口代码, 常规代码文件直接在 mainPage 初始化编辑器
 type TFormDesignPage struct {
-	formTab            *wg.TTab       // 设计窗体Tab
-	formDesignPage     *wg.TPage      // 设计窗体
-	formDesignScroll   lcl.IScrollBox // 设计窗体滚动条
-	formUserEditorPage *wg.TPage      // 用户代码 tab page
+	formTab            *wg.TTab  // 设计窗体Tab
+	formDesignPage     *wg.TPage // 设计窗体
+	formUserEditorPage *wg.TPage // 用户代码 tab page
 	//formUIEditorPage   *wg.TPage      // UI 代码 tab page
-	editor editor.IEditor
+	formDesignScroll lcl.IScrollBox // 设计窗体滚动条
+
+	//
+	//formTab            lcl.IPageControl
+	//formDesignPage     lcl.ITabSheet
+	//formUserEditorPage lcl.ITabSheet
+
+	wvWindowParent wv.IWindowParent
 }
 
 func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
@@ -44,17 +53,40 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formTab.SetParent(formTab.mainPage)
 
 	m.formDesignPage = m.formTab.NewPage()
+	m.formDesignPage.SetDoubleBuffered(true)
 	m.formDesignPage.Button().SetCaption("窗体")
+	m.formDesignPage.SetOnHide(func(sender lcl.IObject) {
+		m.formDesignScroll.SetVisible(false)
+	})
+	m.formDesignPage.SetOnShow(func(sender lcl.IObject) {
+		m.formDesignScroll.SetVisible(true)
+	})
+	setFormDesignPageStyle(m.formDesignPage, resources.Images("components/tform.png"))
+
 	m.formUserEditorPage = m.formTab.NewPage()
+	m.formUserEditorPage.SetDoubleBuffered(true)
 	m.formUserEditorPage.Button().SetCaption("代码")
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
-	//m.formUIEditorPage = m.formTab.NewPage()
-	//m.formUIEditorPage.Button().SetCaption("UI代码")
-
-	setFormDesignPageStyle(m.formDesignPage, resources.Images("components/tform.png"))
 	name := tool.GetSVGIconPath("go")
 	codeIconPngData, _ := tool.SVGToPNG(resources.Images(name), 24, 24)
 	setFormDesignPageStyle(m.formUserEditorPage, codeIconPngData)
+
+	//m.formTab = lcl.NewPageControl(formTab.mainPage)
+	//m.formTab.SetAlign(types.AlClient)
+	//m.formTab.SetParent(formTab.mainPage)
+	//
+	//m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
+	//m.formDesignPage.SetPageControl(m.formTab)
+	//m.formDesignPage.SetCaption("窗体")
+	//
+	//m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
+	//m.formUserEditorPage.SetPageControl(m.formTab)
+	//m.formUserEditorPage.SetCaption("代码")
+	//m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
+
+	//m.formUIEditorPage = m.formTab.NewPage()
+	//m.formUIEditorPage.Button().SetCaption("UI代码")
+
 	//setFormDesignPageStyle(m.formUIEditorPage)
 
 	m.formDesignScroll = lcl.NewScrollBox(formTab.mainPage)
@@ -82,48 +114,69 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formDesignPage.SetActive(true)
 	m.formTab.RecalculatePosition()
 
-	if m.editor == nil {
-		m.editor = editor.NewEditor(m.formUserEditorPage)
-	}
 	return m
 }
 
-func setFormDesignPageStyle(page *wg.TPage, icon []byte) {
-	tabColor := colors.ClWhite
-	btnColor := colors.RGBToColor(234, 239, 249)
-	if icon != nil && len(icon) > 0 {
-		page.Button().SetIconFavoriteFormBytes(icon)
-	}
-	page.Button().SetWidth(65)
-	page.Button().Font().SetColor(colors.ClBlack)
-	page.Button().RoundedCorner = types.NewSet(wg.RcLeftTop, wg.RcRightTop)
-	page.Button().TextOffSetX = 10
-	page.Button().SetBorderColor(wg.BbdNone, wg.LightenColor(btnColor, 0.8))
-	page.Button().SetRadius(5)
-	page.Button().SetColor(tabColor)
-	page.Button().SetDownColor(wg.LightenColor(btnColor, 0.3), wg.LightenColor(btnColor, 0.5))
-	page.Button().SetEnterColor(wg.LightenColor(btnColor, 0.1), wg.LightenColor(btnColor, 0.3))
-	page.SetDefaultColor(tabColor)
-	page.SetActiveColor(btnColor)
-	page.Button().SetCursor(types.CrHandPoint)
-	page.SetColor(tabColor)
-}
-
-func (m *TFormDesignPage) ActiveDesignPage() {
-	m.formTab.HideAllActivated()
-	m.formDesignPage.SetActive(true)
-}
-func (m *TFormDesignPage) ActiveEditorPage() {
-	m.formTab.HideAllActivated()
-	m.formUserEditorPage.SetActive(true)
-}
+//func (m *TFormDesignPage) ActiveDesignPage() {
+//	m.formTab.HideAllActivated()
+//	m.formDesignPage.SetActive(true)
+//}
+//func (m *TFormDesignPage) ActiveEditorPage() {
+//	m.formTab.HideAllActivated()
+//	m.formUserEditorPage.SetActive(true)
+//}
 
 func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
 	fmt.Println("UserEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUserEditorPage.BoundsRect())
-	if m.editor != nil {
-		if wvEditor, ok := m.editor.(editor.IWebviewEditor); ok {
-			wvEditor.LoadURL("energy://designer/index.html")
+	// code editor
+	if gFromEditor == nil {
+		gFromEditor = editor.NewEditor(designer.tab)
+		if gFromEditor.Type() == editor.EtWebview {
+			if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+				m.wvWindowParent = wvEditor.Webview().WindowParent()
+			}
+		}
+	} else {
+		if gFromEditor.Type() == editor.EtWebview && m.wvWindowParent == nil {
+			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)
+		}
+	}
+	m.SwitchTabPageEditor()
+}
+
+func (m *TFormDesignPage) SwitchTabPageEditor() {
+	if gFromEditor != nil && m.wvWindowParent != nil {
+		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+			wvEditor.SwitchTabPage(m.formUserEditorPage, m.wvWindowParent)
 			wvEditor.CreateBrowser()
 		}
 	}
+}
+
+func (m *TFormDesignPage) ActiveCodeEditorTab() {
+	isEdit := m.formUserEditorPage.Active()
+	m.formTab.HideAllActivated()
+	m.formDesignPage.SetActive(true)
+	if isEdit {
+		go func() {
+			time.AfterFunc(time.Millisecond*100, func() {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					m.formTab.HideAllActivated()
+					m.formUserEditorPage.SetActive(true)
+				})
+			})
+		}()
+	}
+
+	//isEdit := m.formTab.ActivePageIndex() == 1
+	//m.formTab.SetActivePage(m.formDesignPage)
+	//if isEdit {
+	//	go func() {
+	//		time.AfterFunc(time.Millisecond*150, func() {
+	//			lcl.RunOnMainThreadAsync(func(id uint32) {
+	//				m.formTab.SetActivePage(m.formUserEditorPage)
+	//			})
+	//		})
+	//	}()
+	//}
 }

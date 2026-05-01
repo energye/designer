@@ -21,6 +21,7 @@ import (
 	"github.com/energye/energy/v3/application"
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/wv"
+	engwv "github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"sync"
@@ -30,6 +31,8 @@ type IWebviewEditor interface {
 	IEditor
 	LoadURL(url string)
 	CreateBrowser()
+	SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent)
+	Webview() wv.IWebview
 }
 
 type TWebviewEditor struct {
@@ -87,12 +90,9 @@ func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 	m := &TWebviewEditor{}
 	m.WVEditor = wv.NewWebview(owner)
 	m.WVEditor.SetCaption("")
-	m.WVEditor.SetName(owner.Name() + "_WVEditor")
-	m.WVEditor.SetHeight(owner.Height())
-	m.WVEditor.SetWidth(owner.Width())
 	m.WVEditor.SetAlign(types.AlClient)
-	m.WVEditor.SetParent(owner)
-	//m.WVEditor.SetDefaultURL("auto:blank")
+	m.WVEditor.SetName("WVEditor")
+	m.LoadURL("energy://designer/index.html")
 	m.WVEditor.SetOnLoadChange(func(url, title string, load wv.TLoadChange) {
 		logs.Info("OnLoadChange:", url, title, load)
 	})
@@ -105,4 +105,12 @@ func (m *TWebviewEditor) LoadURL(url string) {
 
 func (m *TWebviewEditor) CreateBrowser() {
 	m.WVEditor.CreateBrowser()
+}
+
+func (m *TWebviewEditor) Type() EditType {
+	return EtWebview
+}
+
+func (m *TWebviewEditor) Webview() wv.IWebview {
+	return m.WVEditor
 }
