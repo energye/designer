@@ -16,14 +16,22 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/designer/editor"
+	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"path/filepath"
 	"time"
 )
 
 var gFromEditor editor.IEditor
+
+type IFormDesignCode interface {
+	UIFile() string
+	GOFile() string
+	GOUserFile() string
+}
 
 // 窗体设计页, 只针对设计窗体和对应的代码 tab page
 // 如果非设计窗口代码, 常规代码文件直接在 mainPage 初始化编辑器
@@ -36,15 +44,17 @@ type TFormDesignPage struct {
 	formDesignScroll lcl.IScrollBox // 设计窗体滚动条
 
 	//
-	formTab            lcl.IPageControl
+	formPageControl    lcl.IPageControl
 	formDesignPage     lcl.ITabSheet
 	formUserEditorPage lcl.ITabSheet
 
 	wvWindowParent wv.IWindowParent
+
+	formDesignCode IFormDesignCode
 }
 
 func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
-	m := &TFormDesignPage{}
+	m := &TFormDesignPage{formDesignCode: formTab}
 	//m.formTab = wg.NewTab(formTab.mainPage)
 	//m.formTab.SetBounds(0, 0, formTab.mainPage.Width(), formTab.mainPage.Height())
 	//m.formTab.SetAlign(types.AlClient)
@@ -70,16 +80,16 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	//codeIconPngData, _ := tool.SVGToPNG(resources.Images(name), 24, 24)
 	//setFormDesignPageStyle(m.formUserEditorPage, codeIconPngData)
 
-	m.formTab = lcl.NewPageControl(formTab.mainPage)
-	m.formTab.SetAlign(types.AlClient)
-	m.formTab.SetParent(formTab.mainPage)
+	m.formPageControl = lcl.NewPageControl(formTab.mainPage)
+	m.formPageControl.SetAlign(types.AlClient)
+	m.formPageControl.SetParent(formTab.mainPage)
 
 	m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
-	m.formDesignPage.SetPageControl(m.formTab)
+	m.formDesignPage.SetPageControl(m.formPageControl)
 	m.formDesignPage.SetCaption("窗体")
 
 	m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
-	m.formUserEditorPage.SetPageControl(m.formTab)
+	m.formUserEditorPage.SetPageControl(m.formPageControl)
 	m.formUserEditorPage.SetCaption("代码")
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 
@@ -145,6 +155,23 @@ func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
 func (m *TFormDesignPage) SwitchTabPageEditor() {
 	if gFromEditor != nil && m.wvWindowParent != nil {
 		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+			canLoad := make(chan error, 1)
+			wvEditor.SetCanLoadChan(canLoad)
+			go func() {
+				fmt.Println("canLoad 等待")
+				err := <-canLoad
+				wvEditor.SetCanLoadChan(nil)
+				close(canLoad)
+				filePath := filepath.Join(projBean.CodePath(), m.formDesignCode.GOFile())
+				fmt.Println("canLoad", err, wvEditor.Initialized(),
+					m.formDesignCode.GOFile(), m.formDesignCode.UIFile(), m.formDesignCode.GOUserFile())
+				fmt.Println("filePath:", filePath)
+				if wvEditor.Initialized() {
+					lcl.RunOnMainThreadSync(func() {
+						editor.OpenFileInEditor(filePath)
+					})
+				}
+			}()
 			wvEditor.SwitchTabPage(m.formUserEditorPage, m.wvWindowParent)
 			wvEditor.CreateBrowser()
 		}
@@ -166,7 +193,7 @@ func (m *TFormDesignPage) ActiveCodeEditorTab() {
 	//	}()
 	//}
 
-	isEdit := m.formTab.ActivePageIndex() == 1
+	isEdit := m.formPageControl.ActivePageIndex() == 1
 	//m.formTab.SetActivePage(m.formDesignPage)
 	m.SwitchTabPageEditor()
 	if isEdit {
