@@ -13,35 +13,29 @@
 
 package editor
 
-import (
-	"github.com/energye/energy/v3/ipc"
-)
-
 func OpenFileInEditor(filePath string, readOnly ...bool) {
-	isReadOnly := len(readOnly) > 0 && readOnly[0]
-	ipc.Emit("open-file", filePath, isReadOnly)
+	if gCurrentEditor != nil {
+		gCurrentEditor.OpenFile(filePath, readOnly...)
+	}
 }
 
 func CloseFileInEditor(filePath string) {
-	ipc.Emit("close-file", filePath)
+	if gCurrentEditor != nil {
+		gCurrentEditor.CloseFile(filePath)
+	}
 }
 
 func SaveCurrentFile() {
-	ipc.Emit("save-current-file", "")
+	if gCurrentEditor != nil {
+		gCurrentEditor.SaveCurrentFile()
+	}
 }
 
 func GetOpenedFiles() []string {
 	var files []string
-
-	type FileData struct {
-		File    string `json:"file"`
-		Content string `json:"content"`
-	}
-
 	for filePath := range GetAllOpenedFiles() {
 		files = append(files, filePath)
 	}
-
 	return files
 }
 
@@ -49,15 +43,15 @@ func GetAllOpenedFiles() map[string]*FileState {
 	if gCurrentEditor == nil {
 		return make(map[string]*FileState)
 	}
-	return gCurrentEditor.fileManager.GetAllFiles()
+	return gCurrentEditor.FileManager().GetAllFiles()
 }
 
-var gCurrentEditor *TWebviewEditor
+var gCurrentEditor IEditor
 
-func SetCurrentEditor(editor *TWebviewEditor) {
-	gCurrentEditor = editor
+func SetCurrentEditor(ed IEditor) {
+	gCurrentEditor = ed
 }
 
-func GetCurrentEditor() *TWebviewEditor {
+func GetCurrentEditor() IEditor {
 	return gCurrentEditor
 }

@@ -17,9 +17,15 @@ type LSPClient struct {
 	cmd       *exec.Cmd
 	stdin     io.WriteCloser
 	stdout    io.ReadCloser
-	scanner   *bufio.Scanner
+	reader    *bufio.Reader
 	mu        sync.Mutex
 	requestID int
+
+	pending   map[int]chan []byte
+	pendingMu sync.Mutex
+
+	diagnosticsHandler func(uri string, diagnostics []Diagnostic)
+	diagMu             sync.Mutex
 }
 
 func NewLSPClient(workspaceDir string) (*LSPClient, error) {
@@ -28,37 +34,56 @@ func NewLSPClient(workspaceDir string) (*LSPClient, error) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gopls stdin pipe: %w", err)
 	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gopls stdout pipe: %w", err)
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("gopls stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("gopls start: %w", err)
 	}
+
+	go func() {
+		buf := make([]byte, 4096)
+		for {
+			n, err := stderr.Read(buf)
+			if err != nil {
+				return
+			}
+			fmt.Printf("[gopls stderr] %s", buf[:n])
+		}
+	}()
 
 	client := &LSPClient{
 		cmd:     cmd,
 		stdin:   stdin,
 		stdout:  stdout,
-		scanner: bufio.NewScanner(stdout),
+		reader:  bufio.NewReaderSize(stdout, 10*1024*1024),
+		pending: make(map[int]chan []byte),
 	}
 
-	// 启动响应监听
 	go client.listenResponses()
 
+	fmt.Printf("[gopls] 启动成功, 工作目录: %s, PID: %d\n", workspaceDir, cmd.Process.Pid)
 	return client, nil
 }
 
-func (c *LSPClient) Initialize(rootURI string) error {
-	c.mu.Lock()
-	c.requestID++
-	id := c.requestID
-	c.mu.Unlock()
+func (c *LSPClient) SetDiagnosticsHandler(handler func(uri string, diagnostics []Diagnostic)) {
+	c.diagMu.Lock()
+	c.diagnosticsHandler = handler
+	c.diagMu.Unlock()
+}
 
+func (c *LSPClient) Initialize(rootURI string) error {
+	fmt.Printf("[gopls] Initialize rootURI: %s\n", rootURI)
 	params := map[string]interface{}{
 		"processId": nil,
 		"rootUri":   rootURI,
@@ -66,23 +91,133 @@ func (c *LSPClient) Initialize(rootURI string) error {
 			"textDocument": map[string]interface{}{
 				"completion": map[string]interface{}{
 					"completionItem": map[string]interface{}{
-						"snippetSupport": true,
+						"snippetSupport":    true,
+						"deprecatedSupport": true,
+						"resolveSupport": map[string]interface{}{
+							"properties": []string{"documentation", "detail", "additionalTextEdits"},
+						},
+						"insertTextModeSupport": map[string]interface{}{
+							"valueSet": []int{1, 2},
+						},
+						"labelDetailsSupport": true,
 					},
+					"insertTextMode": 2,
+					"contextSupport": true,
+				},
+				"signatureHelp": map[string]interface{}{
+					"signatureInformation": map[string]interface{}{
+						"documentationFormat": []string{"markdown", "plaintext"},
+						"parameterInformation": map[string]interface{}{
+							"labelOffsetSupport": true,
+						},
+					},
+					"contextSupport": true,
+				},
+				"hover": map[string]interface{}{
+					"contentFormat": []string{"markdown", "plaintext"},
+				},
+				"codeAction": map[string]interface{}{
+					"codeActionLiteralSupport": map[string]interface{}{
+						"codeActionKind": map[string]interface{}{
+							"valueSet": []string{
+								"quickfix", "refactor", "refactor.extract",
+								"refactor.inline", "refactor.rewrite",
+								"source", "source.organizeImports",
+							},
+						},
+					},
+					"isPreferredSupport": true,
+				},
+				"publishDiagnostics": map[string]interface{}{
+					"relatedInformation": true,
+					"versionSupport":     false,
+					"tagSupport": map[string]interface{}{
+						"valueSet": []int{1, 2},
+					},
+					"codeDescriptionSupport": true,
+				},
+				"synchronization": map[string]interface{}{
+					"dynamicRegistration": false,
+					"willSave":            false,
+					"willSaveWaitUntil":   false,
+					"didSave":             true,
 				},
 			},
 		},
 	}
 
-	_, err := c.sendRequest("initialize", id, params)
-	return err
+	_, err := c.sendRequest("initialize", params)
+	if err != nil {
+		fmt.Printf("[gopls] Initialize 失败: %v\n", err)
+		return err
+	}
+
+	c.sendNotification("initialized", map[string]interface{}{})
+	fmt.Println("[gopls] Initialize 完成")
+	return nil
 }
 
-func (c *LSPClient) Completion(fileURI string, line, column int) ([]CompletionItem, error) {
-	c.mu.Lock()
-	c.requestID++
-	id := c.requestID
-	c.mu.Unlock()
+func (c *LSPClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
+	fmt.Printf("[gopls] Completion 请求: uri=%s line=%d column=%d triggerKind=%d triggerChar=%s\n", fileURI, line, column, triggerKind, triggerChar)
+	params := map[string]interface{}{
+		"textDocument": map[string]string{
+			"uri": fileURI,
+		},
+		"position": map[string]int{
+			"line":      line,
+			"character": column,
+		},
+		"context": map[string]interface{}{
+			"triggerKind":      triggerKind,
+			"triggerCharacter": triggerChar,
+		},
+	}
 
+	resp, err := c.sendRequest("textDocument/completion", params)
+	if err != nil {
+		fmt.Printf("[gopls] Completion 请求失败: %v\n", err)
+		return nil, err
+	}
+	if resp == nil {
+		return nil, fmt.Errorf("gopls 返回空响应")
+	}
+
+	var completionList struct {
+		Items        []CompletionItem `json:"items"`
+		IsIncomplete bool             `json:"isIncomplete"`
+	}
+	if err := json.Unmarshal(resp, &completionList); err != nil {
+		fmt.Printf("[gopls] Completion JSON解析失败: %v\n", err)
+		return nil, nil
+	}
+
+	fmt.Printf("[gopls] Completion 返回 %d 个建议项 (isIncomplete=%v)\n", len(completionList.Items), completionList.IsIncomplete)
+
+	// If result is incomplete, resolve items to get full data (additionalTextEdits etc.)
+	if completionList.IsIncomplete && len(completionList.Items) > 0 {
+		for i := range completionList.Items {
+			if len(completionList.Items[i].AdditionalTextEdits) == 0 {
+				resolved, err := c.ResolveCompletionItem(completionList.Items[i])
+				if err == nil && resolved != nil {
+					if len(resolved.AdditionalTextEdits) > 0 {
+						completionList.Items[i].AdditionalTextEdits = resolved.AdditionalTextEdits
+					}
+					if resolved.Documentation != nil {
+						completionList.Items[i].Documentation = resolved.Documentation
+					}
+					if resolved.Detail != nil {
+						completionList.Items[i].Detail = resolved.Detail
+					}
+				}
+			}
+		}
+	}
+
+	return completionList.Items, nil
+}
+
+func (c *LSPClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
+	fmt.Printf("[gopls] SignatureHelp 请求: uri=%s line=%d column=%d\n", fileURI, line, column)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -93,25 +228,112 @@ func (c *LSPClient) Completion(fileURI string, line, column int) ([]CompletionIt
 		},
 	}
 
-	resp, err := c.sendRequest("textDocument/completion", id, params)
+	resp, err := c.sendRequest("textDocument/signatureHelp", params)
 	if err != nil {
 		return nil, err
 	}
-
-	var result CompletionResponse
-	if err := json.Unmarshal(resp, &result); err != nil {
-		return nil, err
+	if resp == nil {
+		return nil, nil
 	}
 
-	return result.Items, nil
+	var result SignatureHelpResult
+	if err := json.Unmarshal(resp, &result); err != nil {
+		fmt.Printf("[gopls] SignatureHelp JSON解析失败: %v\n", err)
+		return nil, nil
+	}
+
+	fmt.Printf("[gopls] SignatureHelp 返回 %d 个签名, activeSignature=%d, activeParameter=%d\n",
+		len(result.Signatures), result.ActiveSignature, result.ActiveParameter)
+	return &result, nil
 }
 
-func (c *LSPClient) DidOpen(fileURI, languageID, content string) error {
+func (c *LSPClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem, error) {
+	fmt.Printf("[gopls] ResolveCompletionItem: label=%s\n", item.Label)
+	resp, err := c.sendRequest("completionItem/resolve", item)
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return &item, nil
+	}
+	var resolved CompletionItem
+	if err := json.Unmarshal(resp, &resolved); err != nil {
+		return &item, nil
+	}
+	return &resolved, nil
+}
+
+type DiagnosticInput struct {
+	Range struct {
+		Start struct {
+			Line      int `json:"line"`
+			Character int `json:"character"`
+		} `json:"start"`
+		End struct {
+			Line      int `json:"line"`
+			Character int `json:"character"`
+		} `json:"end"`
+	} `json:"range"`
+	Severity int    `json:"severity"`
+	Message  string `json:"message"`
+}
+
+func (c *LSPClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []DiagnosticInput) ([]CodeAction, error) {
+	fmt.Printf("[gopls] CodeAction 请求: uri=%s kinds=%v diagnostics=%d\n", fileURI, kinds, len(diagnostics))
+
+	diagInterfaces := make([]interface{}, len(diagnostics))
+	for i, d := range diagnostics {
+		diagInterfaces[i] = d
+	}
+
+	// If no diagnostics provided but we have kinds like source.organizeImports,
+	// send empty diagnostics - gopls will still process source actions
+	if len(diagInterfaces) == 0 {
+		diagInterfaces = []interface{}{}
+	}
+
+	params := map[string]interface{}{
+		"textDocument": map[string]string{
+			"uri": fileURI,
+		},
+		"range": map[string]interface{}{
+			"start": map[string]int{"line": startLine, "character": startChar},
+			"end":   map[string]int{"line": endLine, "character": endChar},
+		},
+		"context": map[string]interface{}{
+			"diagnostics": diagInterfaces,
+			"only":        kinds,
+			"triggerKind": 2, // Invoked (not automatic)
+		},
+	}
+
+	resp, err := c.sendRequest("textDocument/codeAction", params)
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, nil
+	}
+
+	// gopls may return either []CodeAction or []Command
+	// Try CodeAction first
+	var actions []CodeAction
+	if err := json.Unmarshal(resp, &actions); err != nil {
+		fmt.Printf("[gopls] CodeAction JSON解析失败: %v, raw: %s\n", err, string(resp[:goplsMin(len(resp), 300)]))
+		return nil, nil
+	}
+
+	fmt.Printf("[gopls] CodeAction 返回 %d 个操作\n", len(actions))
+	return actions, nil
+}
+
+func (c *LSPClient) DidOpen(fileURI, languageID, content string, version int) error {
+	fmt.Printf("[gopls] DidOpen: uri=%s lang=%s version=%d contentLen=%d\n", fileURI, languageID, version, len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri":        fileURI,
 			"languageId": languageID,
-			"version":    1,
+			"version":    version,
 			"text":       content,
 		},
 	}
@@ -119,7 +341,61 @@ func (c *LSPClient) DidOpen(fileURI, languageID, content string) error {
 	return c.sendNotification("textDocument/didOpen", params)
 }
 
-func (c *LSPClient) sendRequest(method string, id int, params interface{}) ([]byte, error) {
+func (c *LSPClient) DidChange(fileURI string, version int, content string) error {
+	fmt.Printf("[gopls] DidChange: uri=%s version=%d contentLen=%d\n", fileURI, version, len(content))
+	params := map[string]interface{}{
+		"textDocument": map[string]interface{}{
+			"uri":     fileURI,
+			"version": version,
+		},
+		"contentChanges": []map[string]interface{}{
+			{
+				"text": content,
+			},
+		},
+	}
+
+	if err := c.sendNotification("textDocument/didChange", params); err != nil {
+		fmt.Printf("[gopls] DidChange 发送失败: %v\n", err)
+		return err
+	}
+	return nil
+}
+
+func (c *LSPClient) DidSave(fileURI string, text string) error {
+	fmt.Printf("[gopls] DidSave: uri=%s textLen=%d\n", fileURI, len(text))
+	params := map[string]interface{}{
+		"textDocument": map[string]interface{}{
+			"uri": fileURI,
+		},
+		"text": text,
+	}
+
+	return c.sendNotification("textDocument/didSave", params)
+}
+
+func (c *LSPClient) DidClose(fileURI string) error {
+	fmt.Printf("[gopls] DidClose: uri=%s\n", fileURI)
+	params := map[string]interface{}{
+		"textDocument": map[string]string{
+			"uri": fileURI,
+		},
+	}
+
+	return c.sendNotification("textDocument/didClose", params)
+}
+
+func (c *LSPClient) sendRequest(method string, params interface{}) ([]byte, error) {
+	c.mu.Lock()
+	c.requestID++
+	id := c.requestID
+	c.mu.Unlock()
+
+	respChan := make(chan []byte, 1)
+	c.pendingMu.Lock()
+	c.pending[id] = respChan
+	c.pendingMu.Unlock()
+
 	request := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      id,
@@ -129,24 +405,37 @@ func (c *LSPClient) sendRequest(method string, id int, params interface{}) ([]by
 
 	data, err := json.Marshal(request)
 	if err != nil {
+		c.pendingMu.Lock()
+		delete(c.pending, id)
+		c.pendingMu.Unlock()
 		return nil, err
 	}
 
 	header := fmt.Sprintf("Content-Length: %d\r\n\r\n", len(data))
 
 	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	if _, err := c.stdin.Write([]byte(header)); err != nil {
+		c.mu.Unlock()
+		c.pendingMu.Lock()
+		delete(c.pending, id)
+		c.pendingMu.Unlock()
 		return nil, err
 	}
-
 	if _, err := c.stdin.Write(data); err != nil {
+		c.mu.Unlock()
+		c.pendingMu.Lock()
+		delete(c.pending, id)
+		c.pendingMu.Unlock()
 		return nil, err
 	}
+	c.mu.Unlock()
 
-	// TODO: 等待响应(需要实现响应匹配逻辑)
-	return nil, nil
+	resp, ok := <-respChan
+	if !ok {
+		return nil, fmt.Errorf("gopls 连接已关闭")
+	}
+
+	return resp, nil
 }
 
 func (c *LSPClient) sendNotification(method string, params interface{}) error {
@@ -175,21 +464,101 @@ func (c *LSPClient) sendNotification(method string, params interface{}) error {
 }
 
 func (c *LSPClient) listenResponses() {
-	for c.scanner.Scan() {
-		line := c.scanner.Text()
-		if strings.HasPrefix(line, "Content-Length: ") {
-			length, _ := strconv.Atoi(strings.TrimPrefix(line, "Content-Length: "))
-			c.scanner.Scan() // 跳过空行
-
-			buf := make([]byte, length)
-			c.stdout.Read(buf)
-
-			// 处理响应
-			var resp map[string]interface{}
-			json.Unmarshal(buf, &resp)
-
-			// TODO: 根据 resp["id"] 匹配请求
+	for {
+		line, err := c.reader.ReadString('\n')
+		if err != nil {
+			if err != io.EOF {
+				fmt.Printf("[gopls] listenResponses: 读取header失败: %v\n", err)
+			}
+			return
 		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		if !strings.HasPrefix(line, "Content-Length:") {
+			continue
+		}
+
+		lengthStr := strings.TrimSpace(strings.TrimPrefix(line, "Content-Length:"))
+		length, err := strconv.Atoi(lengthStr)
+		if err != nil || length <= 0 {
+			continue
+		}
+
+		for {
+			headerLine, err := c.reader.ReadString('\n')
+			if err != nil {
+				return
+			}
+			if strings.TrimSpace(headerLine) == "" {
+				break
+			}
+		}
+
+		buf := make([]byte, length)
+		if _, err := io.ReadFull(c.reader, buf); err != nil {
+			break
+		}
+
+		var resp struct {
+			ID     int             `json:"id"`
+			Method string          `json:"method"`
+			Params json.RawMessage `json:"params"`
+			Result json.RawMessage `json:"result"`
+			Error  *struct {
+				Code    int    `json:"code"`
+				Message string `json:"message"`
+			} `json:"error"`
+		}
+
+		if err := json.Unmarshal(buf, &resp); err != nil {
+			continue
+		}
+
+		if resp.ID > 0 {
+			c.pendingMu.Lock()
+			ch, ok := c.pending[resp.ID]
+			c.pendingMu.Unlock()
+
+			if ok {
+				if resp.Error != nil {
+					errData, _ := json.Marshal(resp.Error)
+					select {
+					case ch <- errData:
+					default:
+					}
+				} else {
+					select {
+					case ch <- []byte(resp.Result):
+					default:
+					}
+				}
+			}
+		}
+
+		if resp.Method == "textDocument/publishDiagnostics" && len(resp.Params) > 0 {
+			c.handleDiagnostics(resp.Params)
+		}
+	}
+}
+
+func (c *LSPClient) handleDiagnostics(params json.RawMessage) {
+	var notification struct {
+		URI         string       `json:"uri"`
+		Diagnostics []Diagnostic `json:"diagnostics"`
+	}
+
+	if err := json.Unmarshal(params, &notification); err != nil {
+		return
+	}
+
+	c.diagMu.Lock()
+	handler := c.diagnosticsHandler
+	c.diagMu.Unlock()
+
+	if handler != nil {
+		handler(notification.URI, notification.Diagnostics)
 	}
 }
 
@@ -198,12 +567,125 @@ func (c *LSPClient) Close() {
 	c.cmd.Wait()
 }
 
-type CompletionItem struct {
-	Label      string `json:"label"`
-	Kind       int    `json:"kind"`
-	InsertText string `json:"insertText,omitempty"`
+func goplsMin(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
-type CompletionResponse struct {
-	Items []CompletionItem `json:"items"`
+// --- LSP Type Definitions ---
+
+type CompletionItem struct {
+	Label               string      `json:"label"`
+	Kind                int         `json:"kind"`
+	Detail              interface{} `json:"detail,omitempty"`
+	Documentation       interface{} `json:"documentation,omitempty"`
+	SortText            string      `json:"sortText,omitempty"`
+	FilterText          string      `json:"filterText,omitempty"`
+	InsertText          string      `json:"insertText,omitempty"`
+	InsertTextFormat    int         `json:"insertTextFormat,omitempty"`
+	Preselect           bool        `json:"preselect,omitempty"`
+	AdditionalTextEdits []TextEdit  `json:"additionalTextEdits,omitempty"`
+	TextEdit            interface{} `json:"textEdit,omitempty"`
+	Deprecated          bool        `json:"deprecated,omitempty"`
+}
+
+func (item *CompletionItem) GetDocumentation() string {
+	return ExtractString(item.Documentation)
+}
+
+func (item *CompletionItem) GetDetail() string {
+	return ExtractString(item.Detail)
+}
+
+type TextEdit struct {
+	Range   Range  `json:"range"`
+	NewText string `json:"newText"`
+}
+
+type Range struct {
+	Start Position `json:"start"`
+	End   Position `json:"end"`
+}
+
+type Position struct {
+	Line      int `json:"line"`
+	Character int `json:"character"`
+}
+
+type SignatureHelpResult struct {
+	Signatures      []SignatureInformation `json:"signatures"`
+	ActiveSignature int                    `json:"activeSignature"`
+	ActiveParameter int                    `json:"activeParameter"`
+}
+
+type SignatureInformation struct {
+	Label         string                   `json:"label"`
+	Documentation interface{}              `json:"documentation,omitempty"`
+	Parameters    []ParameterInformation   `json:"parameters,omitempty"`
+}
+
+func (s *SignatureInformation) GetDocumentation() string {
+	return ExtractString(s.Documentation)
+}
+
+type ParameterInformation struct {
+	Label         interface{} `json:"label"`
+	Documentation interface{} `json:"documentation,omitempty"`
+}
+
+func (p *ParameterInformation) GetLabel() string {
+	switch v := p.Label.(type) {
+	case string:
+		return v
+	case []interface{}:
+		if len(v) == 2 {
+			return fmt.Sprintf("[%v,%v]", v[0], v[1])
+		}
+	}
+	data, _ := json.Marshal(p.Label)
+	return string(data)
+}
+
+type CodeAction struct {
+	Title       string        `json:"title"`
+	Kind        string        `json:"kind,omitempty"`
+	Edit        *WorkspaceEdit `json:"edit,omitempty"`
+	IsPreferred bool          `json:"isPreferred,omitempty"`
+}
+
+type WorkspaceEdit struct {
+	Changes map[string][]TextEdit `json:"changes"`
+}
+
+type Diagnostic struct {
+	Range struct {
+		Start struct {
+			Line      int `json:"line"`
+			Character int `json:"character"`
+		} `json:"start"`
+		End struct {
+			Line      int `json:"line"`
+			Character int `json:"character"`
+		} `json:"end"`
+	} `json:"range"`
+	Severity int    `json:"severity"`
+	Message  string `json:"message"`
+}
+
+func ExtractString(v interface{}) string {
+	if v == nil {
+		return ""
+	}
+	switch val := v.(type) {
+	case string:
+		return val
+	case map[string]interface{}:
+		if s, ok := val["value"].(string); ok {
+			return s
+		}
+	}
+	data, _ := json.Marshal(v)
+	return string(data)
 }

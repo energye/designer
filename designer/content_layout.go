@@ -209,6 +209,7 @@ func initBottomBox(window lcl.IWinControl) *ContentLayout {
 func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des := new(Designer)
 	des.designerForms = make(map[int]*FormTab)
+	des.codeEditorTabs = make(map[string]*CodeEditorTab)
 	des.tab = wg.NewTab(m.designerPanel)
 	des.tab.SetBounds(0, 0, m.rightBox.Width(), m.rightBox.Height())
 	des.tab.SetAlign(types.AlClient)

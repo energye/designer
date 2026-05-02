@@ -261,7 +261,6 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
-	//m.formDesignPage.ActiveDesignPage() // 先注释: 需要判断从哪切换过来的
 
 	m.IsDesigner = true
 	designComp := m.FindDesignComponent(m.FormRoot)
@@ -277,12 +276,29 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.mainPage.Button().Font().SetColor(0xD47800)
 		m.RecoverComponentPropertyValue()
-		// 确保节点被选中
-		ProjectTreeSetSelected(designComp.node)
-		// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
-		m.SwitchComponentEditing(designComp)
-		// 聚焦设计窗体
-		m.formDesigner.Form.SetFocus()
+		// 仅在当前选中的是组件节点时才切换选中, 保持源码文件节点选中状态
+		selectedNode := ProjectTreeSelectNode()
+		isComponentNode := false
+		if selectedNode != nil && selectedNode.IsValid() {
+			data := selectedNode.Data()
+			comp := TreeNodeDataToDesigningComponent(data)
+			if comp != nil {
+				isComponentNode = true
+			}
+		}
+		if isComponentNode {
+			// 确保节点被选中
+			ProjectTreeSetSelected(designComp.node)
+			// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
+			m.SwitchComponentEditing(designComp)
+			// 聚焦设计窗体
+			m.formDesigner.Form.SetFocus()
+		} else {
+			// 源码文件节点选中时, 只显示组件 helper 不切换树节点选中
+			m.HideOtherDesignHelpers(designComp)
+			designComp.IsDesign = true
+			designComp.ShowDesignHelpers()
+		}
 	})
 }
 

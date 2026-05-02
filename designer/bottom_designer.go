@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
@@ -24,6 +25,8 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
+	"path/filepath"
+	"strings"
 )
 
 // 窗体设计功能
@@ -36,10 +39,11 @@ var (
 
 // 主设计器
 type Designer struct {
-	tab           *wg.TTab         // 设计器 tabs
-	tabMenu       lcl.IPopupMenu   // tab 菜单
-	designerForms map[int]*FormTab // 设计器窗体列表
-	defaultTip    *wg.TButton      // Home 默认提示
+	tab             *wg.TTab                // 设计器 tabs
+	tabMenu         lcl.IPopupMenu          // tab 菜单
+	designerForms   map[int]*FormTab        // 设计器窗体列表
+	codeEditorTabs  map[string]*CodeEditorTab // 代码编辑器标签列表
+	defaultTip      *wg.TButton             // Home 默认提示
 }
 
 func (m *Designer) IsDuplicateName(currComp *TDesigningComponent, formName string) bool {
@@ -73,6 +77,12 @@ func ResetDesigner() {
 	if designer == nil {
 		return
 	}
+	// 关闭所有已打开的代码编辑器标签
+	for filePath, tab := range designer.codeEditorTabs {
+		editor.CloseFileInEditor(filePath)
+		tab.mainPage.Close()
+	}
+	designer.codeEditorTabs = make(map[string]*CodeEditorTab)
 	// 关闭所有已打开的设计窗体
 	tempForms := designer.designerForms
 	// 关闭之前打开的所有设计窗体
@@ -264,4 +274,62 @@ func (m *Designer) GetFormTab(formId int) *FormTab {
 //				canvas.LineWithIntX4(margin-15, y, margin-10, y)
 //			}
 //		}
-//	}
+// FindFormTabByFile 检查给定文件路径是否属于某个设计窗体
+// 返回对应的 FormTab 和文件类型 ("ui", "uigo", "go"), 如果不属于任何窗体返回 nil
+func (m *Designer) FindFormTabByFile(filePath string) (*FormTab, string) {
+	if m == nil || m.designerForms == nil {
+		return nil, ""
+	}
+	filePath = filepath.Clean(filePath)
+	for _, formTab := range m.designerForms {
+		goPath := filepath.Clean(filepath.Join(bean.CodePath(), formTab.GOFile()))
+		goUserPath := filepath.Clean(filepath.Join(bean.CodePath(), formTab.GOUserFile()))
+		uiPath := filepath.Clean(filepath.Join(bean.CodePath(), formTab.UIFile()))
+		if filePath == goPath {
+			return formTab, "uigo"
+		} else if filePath == goUserPath {
+			return formTab, "go"
+		} else if filePath == uiPath {
+			return formTab, "ui"
+		}
+	}
+	// 检查 .ui 文件是否在 layouts 目录下
+	for _, formTab := range m.designerForms {
+		uiName := strings.ToLower(formTab.FormRoot.Name()) + consts.UIExt
+		if filepath.Base(filePath) == uiName {
+			return formTab, "ui"
+		}
+	}
+	return nil, ""
+}
+
+// openFileInAppropriateTab 根据文件类型在合适的位置打开文件
+// 如果文件属于设计窗体, 切换到对应窗体的子标签
+// 如果不属于任何窗体, 创建或激活代码编辑器标签
+func openFileInAppropriateTab(filePath string) {
+	if designer == nil {
+		return
+	}
+	formTab, fileType := designer.FindFormTabByFile(filePath)
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if formTab != nil {
+			// 先切换子标签页索引, 再激活窗体标签
+			// 这样 tabSheetOnShow 触发时 ActivePageIndex 已经是正确的值
+			switch fileType {
+			case "go":
+				formTab.formDesignPage.formPageControl.SetActivePageIndex(1)
+			case "uigo":
+				formTab.formDesignPage.formPageControl.SetActivePageIndex(2)
+			case "ui":
+				formTab.formDesignPage.formPageControl.SetActivePageIndex(0)
+			}
+			// 激活窗体标签 (会触发 tabSheetOnShow)
+			designer.tab.HideAllActivated()
+			designer.ActiveFormTab(formTab)
+		} else {
+			// 非窗体文件 - 创建或激活代码编辑器标签
+			tab := designer.addCodeEditorTab(filePath)
+			designer.ActivateCodeEditorTab(tab)
+		}
+	})
+}

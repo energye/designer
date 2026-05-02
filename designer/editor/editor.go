@@ -13,16 +13,30 @@
 
 package editor
 
-import "github.com/energye/lcl/lcl"
+import (
+	"github.com/energye/designer/designer/editor/gopls"
+	"github.com/energye/lcl/lcl"
+)
 
 type EditType int
 
 const (
 	EtWebview = iota
+	EtSynEdit
 )
 
 type IEditor interface {
 	Type() EditType
+	OpenFile(filePath string, readOnly ...bool)
+	CloseFile(filePath string)
+	SaveCurrentFile()
+	FileManager() *FileManager
+	Stop()
+}
+
+type ILSPEditor interface {
+	IEditor
+	LSPClient() *gopls.LSPClient
 }
 
 func NewEditor(owner lcl.IWinControl) IEditor {

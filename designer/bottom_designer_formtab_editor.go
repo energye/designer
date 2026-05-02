@@ -45,8 +45,9 @@ type TFormDesignPage struct {
 
 	//
 	formPageControl    lcl.IPageControl
-	formDesignPage     lcl.ITabSheet
-	formUserEditorPage lcl.ITabSheet
+	formDesignPage     lcl.ITabSheet // "窗体"
+	formUserEditorPage lcl.ITabSheet // "代码"
+	formUIEditorPage   lcl.ITabSheet // "UI代码" - 只读
 
 	wvWindowParent wv.IWindowParent
 
@@ -93,16 +94,17 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formUserEditorPage.SetCaption("代码")
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 
-	//m.formUIEditorPage = m.formTab.NewPage()
-	//m.formUIEditorPage.Button().SetCaption("UI代码")
-	//setFormDesignPageStyle(m.formUIEditorPage)
+	m.formUIEditorPage = lcl.NewTabSheet(formTab.mainPage)
+	m.formUIEditorPage.SetPageControl(m.formPageControl)
+	m.formUIEditorPage.SetCaption("UI代码")
+	m.formUIEditorPage.SetOnShow(m.UIEditorPageOnShow)
 
 	m.formDesignScroll = lcl.NewScrollBox(formTab.mainPage)
 	m.formDesignScroll.SetAlign(types.AlClient)
 	m.formDesignScroll.SetAutoScroll(true)
 	if tool.IsDarwin {
 		// fix: laz MacOS bug 默认隐藏滚动条, 手动控制显示
-		// 该bug体现为当同时出现横坚滚动条时, UI 锁死崩溃, 在laz 4.6 复现
+		// 该bug体现为当同时出现横竖滚动条时, UI 锁死崩溃, 在laz 4.6 复现
 		hBar := m.formDesignScroll.HorzScrollBar()
 		vBar := m.formDesignScroll.VertScrollBar()
 		hBar.SetVisible(false)
@@ -136,7 +138,17 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 
 func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
 	fmt.Println("UserEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUserEditorPage.BoundsRect())
-	// code editor
+	m.initEditor()
+	m.SwitchTabPageEditor(false)
+}
+
+func (m *TFormDesignPage) UIEditorPageOnShow(sender lcl.IObject) {
+	fmt.Println("UIEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUIEditorPage.BoundsRect())
+	m.initEditor()
+	m.SwitchTabPageEditor(true)
+}
+
+func (m *TFormDesignPage) initEditor() {
 	if gFromEditor == nil {
 		gFromEditor = editor.NewEditor(designer.tab)
 		if gFromEditor.Type() == editor.EtWebview {
@@ -149,58 +161,56 @@ func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
 			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)
 		}
 	}
-	m.SwitchTabPageEditor()
 }
 
-func (m *TFormDesignPage) SwitchTabPageEditor() {
+func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 	if gFromEditor != nil && m.wvWindowParent != nil {
 		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
 			canLoad := make(chan error, 1)
 			wvEditor.SetCanLoadChan(canLoad)
 			go func() {
-				fmt.Println("canLoad 等待")
 				err := <-canLoad
 				wvEditor.SetCanLoadChan(nil)
 				close(canLoad)
-				filePath := filepath.Join(projBean.CodePath(), m.formDesignCode.GOUserFile())
+				var filePath string
+				var readOnly bool
+				if uiCode {
+					filePath = filepath.Join(projBean.CodePath(), m.formDesignCode.GOFile())
+					readOnly = true
+				} else {
+					filePath = filepath.Join(projBean.CodePath(), m.formDesignCode.GOUserFile())
+					readOnly = false
+				}
 				fmt.Println("canLoad", err, wvEditor.Initialized(),
 					m.formDesignCode.GOFile(), m.formDesignCode.UIFile(), m.formDesignCode.GOUserFile())
 				fmt.Println("filePath:", filePath)
 				if wvEditor.Initialized() {
-					lcl.RunOnMainThreadSync(func() {
-						editor.OpenFileInEditor(filePath)
+					lcl.RunOnMainThreadAsync(func(id uint32) {
+						editor.OpenFileInEditor(filePath, readOnly)
 					})
 				}
 			}()
-			wvEditor.SwitchTabPage(m.formUserEditorPage, m.wvWindowParent)
+			var targetOwner lcl.IWinControl
+			if uiCode {
+				targetOwner = m.formUIEditorPage
+			} else {
+				targetOwner = m.formUserEditorPage
+			}
+			wvEditor.SwitchTabPage(targetOwner, m.wvWindowParent)
 			wvEditor.CreateBrowser()
 		}
 	}
 }
 
 func (m *TFormDesignPage) ActiveCodeEditorTab() {
-	//isEdit := m.formUserEditorPage.Active()
-	//m.formTab.HideAllActivated()
-	//m.formDesignPage.SetActive(true)
-	//if isEdit {
-	//	go func() {
-	//		time.AfterFunc(time.Millisecond*100, func() {
-	//			lcl.RunOnMainThreadAsync(func(id uint32) {
-	//				m.formTab.HideAllActivated()
-	//				m.formUserEditorPage.SetActive(true)
-	//			})
-	//		})
-	//	}()
-	//}
-
-	isEdit := m.formPageControl.ActivePageIndex() == 1
-	//m.formTab.SetActivePage(m.formDesignPage)
-	m.SwitchTabPageEditor()
-	if isEdit {
+	activeIdx := m.formPageControl.ActivePageIndex()
+	m.initEditor()
+	m.SwitchTabPageEditor(activeIdx == 2)
+	if activeIdx >= 1 {
 		go func() {
 			time.AfterFunc(time.Millisecond*200, func() {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
-					//m.formTab.SetActivePage(m.formUserEditorPage)
+					m.formPageControl.SetActivePageIndex(activeIdx)
 				})
 			})
 		}()

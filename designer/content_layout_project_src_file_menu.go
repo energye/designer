@@ -156,6 +156,7 @@ func (m *TSrcFileMenu) OnOpenFile(sender lcl.IObject) {
 		return
 	}
 	logs.Debug("打开文件: ", filePath)
+	openFileInAppropriateTab(filePath)
 }
 
 // OnOpenExternal 用外部编辑器打开文件

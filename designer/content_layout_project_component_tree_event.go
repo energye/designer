@@ -79,11 +79,28 @@ func (m *ContentLayoutProject) TreeOnChange(sender lcl.IObject, node lcl.ITreeNo
 	if node == nil {
 		return
 	}
+
+	// 先检查是否为组件节点
 	data := node.Data()
 	component := TreeNodeDataToDesigningComponent(data)
 	if component != nil && component.FormTab != nil {
 		component.FormTab.SwitchComponentEditing(component)
+		return
 	}
+
+	// 非组件节点, 检查是否为源码文件节点
+	srcPath := ProjectSrcTreeNodePath(node)
+	if srcPath == "" {
+		return
+	}
+
+	// 只处理文件节点 (非目录)
+	info, err := os.Stat(srcPath)
+	if err != nil || info.IsDir() {
+		return
+	}
+
+	openFileInAppropriateTab(srcPath)
 }
 
 func (m *ContentLayoutProject) TreeOnAdvancedCustomDrawItem(sender lcl.ICustomTreeView, node lcl.ITreeNode, state types.TCustomDrawState, stage types.TCustomDrawStage, paintImages *bool, defaultDraw *bool) {
