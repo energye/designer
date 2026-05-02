@@ -14,12 +14,10 @@
 package editor
 
 import (
-	"github.com/energye/energy/v3/ipc"
 	engwv "github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	wv "github.com/energye/wv/windows"
-	"time"
 )
 
 func NewWebviewWindowParent(owner lcl.IWinControl) engwv.IWindowParent {
@@ -32,16 +30,13 @@ func NewWebviewWindowParent(owner lcl.IWinControl) engwv.IWindowParent {
 func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent) {
 	newWindowParent := windowParent.(wv.IWVWindowParent)
 	currentWindowParent := m.WVEditor.WindowParent().(wv.IWVWindowParent)
-	//if newWindowParent.Instance() == currentWindowParent.Instance() {
-	//	return
-	//}
 	currentWindowParent.SetBrowser(nil)
 
 	browser := m.WVEditor.Browser().(wv.IWVBrowser)
+	newWindowParent.SetBrowser(browser)
 	if newWindowParent.Parent() == nil {
 		newWindowParent.SetParent(owner)
 	}
-	newWindowParent.SetBrowser(browser)
 	browser.SetParentWindow(newWindowParent.Handle())
 	browser.SetIsVisible(true)
 	browser.SetBounds(owner.ClientRect())
@@ -49,5 +44,4 @@ func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent engwv
 		browser.NotifyParentWindowPositionChanged()
 		newWindowParent.UpdateSize()
 	})
-	ipc.Emit("switch-page", "webview-editor"+time.Now().String())
 }

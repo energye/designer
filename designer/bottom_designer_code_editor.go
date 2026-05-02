@@ -87,6 +87,12 @@ func (m *CodeEditorTab) onHide(sender lcl.IObject) {
 // onClose 代码编辑器标签关闭事件
 func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	*canClose = true
+	if gFromEditor != nil {
+		// 为了不释放 browser
+		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+			wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
+		}
+	}
 	// 在 Monaco 前端关闭文件
 	editor.CloseFileInEditor(m.filePath)
 	// 从列表中移除
