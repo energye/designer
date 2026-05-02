@@ -41,12 +41,13 @@ func (fm *FileManager) RegisterFile(filePath string) {
 	fm.lock.Lock()
 	defer fm.lock.Unlock()
 
-	if _, exists := fm.files[filePath]; exists {
+	fi, err := os.Stat(filePath)
+	if err != nil {
 		return
 	}
 
-	fi, err := os.Stat(filePath)
-	if err != nil {
+	if state, exists := fm.files[filePath]; exists {
+		state.ModTime = fi.ModTime()
 		return
 	}
 

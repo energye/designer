@@ -14,7 +14,6 @@
 package editor
 
 import (
-	"github.com/energye/designer/designer/editor/gopls"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -32,11 +31,6 @@ type IEditor interface {
 	SaveCurrentFile()
 	FileManager() *FileManager
 	Stop()
-}
-
-type ILSPEditor interface {
-	IEditor
-	LSPClient() *gopls.LSPClient
 }
 
 func NewEditor(owner lcl.IWinControl) IEditor {

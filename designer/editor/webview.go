@@ -15,6 +15,7 @@ package editor
 
 import (
 	"github.com/energye/designer/designer/editor/gopls"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/resources/editor"
 	"github.com/energye/energy/v3/application"
 	"github.com/energye/energy/v3/ipc"
@@ -22,6 +23,7 @@ import (
 	engwv "github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"os"
 	"sync"
 	"time"
 )
@@ -48,7 +50,6 @@ type TWebviewEditor struct {
 var (
 	wvInitOnce sync.Once
 	gWVApp     *wv.Application
-	gLSPClient *gopls.LSPClient
 )
 
 func WebViewInit() {
@@ -85,6 +86,7 @@ func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 
 	m.initIPCEvent()
 	m.startFileChangeChecker()
+	startFormFileWatcher()
 
 	SetCurrentEditor(m)
 
@@ -171,11 +173,21 @@ func (m *TWebviewEditor) checkFileChanges() {
 
 	for _, filePath := range changedFiles {
 		state, _ := m.fileManager.GetFileState(filePath)
+
+		// 更新 ModTime 防止重复检测
+		fi, err := os.Stat(filePath)
+		if err == nil {
+			m.fileManager.UpdateModTime(filePath, fi.ModTime())
+			updateSavedModTime(filePath)
+		}
+
 		if state != nil && state.IsDirty {
+			logs.Info("文件有未保存修改且被外部变更:", filePath)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				ipc.Emit("file-conflict-detected", filePath)
 			})
 		} else {
+			logs.Info("文件被外部修改，通知前端重新加载:", filePath)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				ipc.Emit("file-changed-externally", filePath)
 			})
@@ -188,4 +200,5 @@ func (m *TWebviewEditor) Stop() {
 		m.checkTimer.Stop()
 		close(m.stopChan)
 	}
+	stopFormFileWatcher()
 }

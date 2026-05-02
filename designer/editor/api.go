@@ -31,19 +31,24 @@ func SaveCurrentFile() {
 	}
 }
 
-func GetOpenedFiles() []string {
-	var files []string
-	for filePath := range GetAllOpenedFiles() {
-		files = append(files, filePath)
-	}
-	return files
-}
-
 func GetAllOpenedFiles() map[string]*FileState {
 	if gCurrentEditor == nil {
 		return make(map[string]*FileState)
 	}
 	return gCurrentEditor.FileManager().GetAllFiles()
+}
+
+// NotifyFileChanged 通知gopls文件已被外部修改（如codegen/uigen），
+// 使用 DidClose+DidOpen 强制 gopls 重新读取文件内容。
+func NotifyFileChanged(filePath string) {
+	notifyFileChanged(filePath)
+}
+
+// NotifyFilesChanged 批量通知gopls多个文件已被外部修改
+func NotifyFilesChanged(filePaths []string) {
+	for _, filePath := range filePaths {
+		NotifyFileChanged(filePath)
+	}
 }
 
 var gCurrentEditor IEditor

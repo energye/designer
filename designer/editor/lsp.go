@@ -20,12 +20,14 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/lcl/lcl"
+	"os"
 	"sync"
 	"time"
 )
 
 var (
 	lspInitOnce sync.Once
+	gLSPClient  *gopls.LSPClient
 )
 
 // InitLSP 独立初始化 LSP 客户端，不依赖 WebView
@@ -70,4 +72,21 @@ func SetDiagnosticsHandler(handler func(uri string, diagnostics []gopls.Diagnost
 	if gLSPClient != nil {
 		gLSPClient.SetDiagnosticsHandler(handler)
 	}
+}
+
+// notifyFileChanged 通知 gopls 文件已被外部修改
+// 使用 DidClose+DidOpen 强制 gopls 重新索引，确保补全和诊断信息更新
+func notifyFileChanged(filePath string) {
+	if gLSPClient == nil {
+					return
+		}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return
+	}
+	fileURI := filePathToURI(filePath)
+	go func() {
+		gLSPClient.DidClose(fileURI)
+		gLSPClient.DidOpen(fileURI, detectLanguage(filePath), string(content), 1)
+	}()
 }

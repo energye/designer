@@ -419,6 +419,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 		if fileInfo != nil {
 			m.fileManager.UpdateModTime(fileData.File, fileInfo.ModTime())
 			m.fileManager.SetDirty(fileData.File, false)
+			updateSavedModTime(fileData.File)
 		}
 
 		context.Result("ok")

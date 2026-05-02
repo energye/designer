@@ -683,13 +683,19 @@ ipc.on('file-changed-externally', function (filePath) {
     ipc.emit('reload-file-request', [filePath], function (response) {
         if (!response) return;
         var data = JSON.parse(response);
+                applyingEdit = true;
         info.model.setValue(data.content);
+        applyingEdit = false;
         info.modTime = data.modTime;
-        info.version++;
+                info.version = 1;
+        info.isDirty = false;
         if (currentFilePath === filePath) EditorAdapter.setModel(info.model);
-        ipc.emit('gopls-didChange', [{
-            file: filePath, content: data.content, version: info.version
+        ipc.emit('gopls-didClose', [filePath]);
+        ipc.emit('gopls-didOpen', [{
+            file: filePath, languageId: data.language, content: data.content, version: 1
         }]);
+                ipc.emit('set-file-dirty', [{file: filePath, isDirty: false}]);
+        ipc.emit('register-opened-file', [{file: filePath, modTime: data.modTime}]);
         showNotification('文件已重新加载: ' + getFileName(filePath));
     });
 });
@@ -701,14 +707,19 @@ ipc.on('file-conflict-detected', function (filePath) {
         if (!response) return;
         var data = JSON.parse(response);
         var info = files.get(filePath);
+        applyingEdit = true;
         info.model.setValue(data.content);
+        applyingEdit = false;
         info.modTime = data.modTime;
-        info.version++;
+        info.version = 1;
         info.isDirty = false;
         if (currentFilePath === filePath) EditorAdapter.setModel(info.model);
-        ipc.emit('gopls-didChange', [{
-            file: filePath, content: data.content, version: info.version
+        ipc.emit('gopls-didClose', [filePath]);
+        ipc.emit('gopls-didOpen', [{
+            file: filePath, languageId: data.language, content: data.content, version: 1
         }]);
+        ipc.emit('set-file-dirty', [{file: filePath, isDirty: false}]);
+        ipc.emit('register-opened-file', [{file: filePath, modTime: data.modTime}]);
     });
 });
 </script>
