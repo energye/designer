@@ -27,11 +27,20 @@ import (
 
 var (
 	lspInitOnce sync.Once
+	lspStartOnce sync.Once
 	gLSPClient  *gopls.LSPClient
+	lspReady    bool
+	lspMu       sync.RWMutex
 )
 
-// InitLSP 独立初始化 LSP 客户端，不依赖 WebView
+// InitLSP 启动异步 LSP 初始化，不阻塞调用方
 func InitLSP() {
+	lspStartOnce.Do(func() {
+		go initLSPAsync()
+	})
+}
+
+func initLSPAsync() {
 	lspInitOnce.Do(func() {
 		var err error
 		gLSPClient, err = gopls.NewLSPClient(bean.GPath)
@@ -48,6 +57,7 @@ func InitLSP() {
 		logs.Info("gopls 等待初始索引完成...")
 		time.Sleep(2 * time.Second)
 		logs.Info("gopls 初始化就绪")
+
 		gLSPClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
 			filePath := uriToFilePath(uri)
 			if filePath == "" {
@@ -59,12 +69,23 @@ func InitLSP() {
 				ipc.Emit("gopls-diagnostics", filePath, string(diagData))
 			})
 		})
+
+		lspMu.Lock()
+		lspReady = true
+		lspMu.Unlock()
 	})
 }
 
-// LSPClient 返回全局 LSP 客户端实例
+// LSPClient 返回全局 LSP 客户端实例，未就绪时返回 nil
 func LSPClient() *gopls.LSPClient {
 	return gLSPClient
+}
+
+// IsLSPReady 返回 gopls 是否已初始化完成
+func IsLSPReady() bool {
+	lspMu.RLock()
+	defer lspMu.RUnlock()
+	return lspReady
 }
 
 // SetDiagnosticsHandler 设置诊断处理器，允许原生编辑器覆盖默认行为
@@ -78,8 +99,8 @@ func SetDiagnosticsHandler(handler func(uri string, diagnostics []gopls.Diagnost
 // 使用 DidClose+DidOpen 强制 gopls 重新索引，确保补全和诊断信息更新
 func notifyFileChanged(filePath string) {
 	if gLSPClient == nil {
-					return
-		}
+		return
+	}
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return

@@ -85,6 +85,7 @@ func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 	})
 
 	m.initIPCEvent()
+	m.initDefinitionIPC()
 	m.startFileChangeChecker()
 	startFormFileWatcher()
 

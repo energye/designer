@@ -155,6 +155,7 @@ require(['vs/editor/editor.main'], function (monaco) {
         automaticLayout: true, minimap: {enabled: true},
         scrollBeyondLastLine: false, renderWhitespace: 'selection',
         tabSize: 4, insertSpaces: true,
+        multiCursorModifier: 'altKey',
         quickSuggestions: {other: true, comments: false, strings: false},
         suggestOnTriggerCharacters: true, acceptSuggestionOnEnter: 'on',
         wordBasedSuggestions: 'currentDocument',
@@ -196,6 +197,42 @@ require(['vs/editor/editor.main'], function (monaco) {
     });
 
     ipc.emit("monaco-inited", []);
+
+    // === Go to Definition (Ctrl+Click) ===
+    editor.onMouseDown(function (e) {
+        if (e.event.ctrlKey && e.event.leftButton) {
+            var position = e.target.position;
+            if (!position) return;
+            var model = EditorAdapter.getActiveModel();
+            if (!model) return;
+            var filePath = getFilePathByModel(model);
+            if (!filePath) return;
+
+            ipc.emit('gopls-definition', [{
+                requestID: 0, file: filePath,
+                line: position.lineNumber - 1, column: position.column - 1
+            }], function (response) {
+                if (!response || response === 'null') return;
+                var data = JSON.parse(response);
+                if (!data.file) return;
+
+                var targetPath = data.file;
+                var targetLine = data.range.start.line;
+                var targetCol = data.range.start.character;
+
+                if (targetPath === filePath) {
+                    editor.revealLineInCenter(targetLine + 1);
+                    editor.setPosition({
+                        lineNumber: targetLine + 1,
+                        column: targetCol + 1
+                    });
+                    editor.focus();
+                } else {
+                    ipc.emit('go-to-definition', [{file: targetPath, range: data.range}]);
+                }
+            });
+        }
+    });
 });
 
 // ============================================================
@@ -332,16 +369,39 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
     var K = monacoRef.languages.CompletionItemKind;
     var Snippet = monacoRef.languages.CompletionItemInsertTextRule;
     var suggestions = items.map(function (item) {
+        var insertText = item.insertText || item.label;
+        var kind = lspKindToMonaco(item.kind, K);
+        var isSnippet = item.insertTextFormat === 2;
+
+        // Enhance function/method completions with parentheses and parameter placeholders
+        if ((kind === K.Function || kind === K.Method) && !isSnippet) {
+            var detail = item.detail || '';
+            var sigMatch = detail.match(/^func\(([^)]*)\)/);
+            if (sigMatch) {
+                var params = sigMatch[1].trim();
+                if (params === '') {
+                    insertText = insertText + '()';
+                } else {
+                    var paramList = params.split(',').map(function(p) { return p.trim(); });
+                    var placeholders = paramList.map(function(p, i) { return '${' + (i + 1) + ':' + p + '}'; });
+                    insertText = insertText + '(' + placeholders.join(', ') + ')$0';
+                    isSnippet = true;
+                }
+            } else if (detail.indexOf('func(') === 0 || detail.indexOf('func (') === 0) {
+                insertText = insertText + '()';
+            }
+        }
+
         var s = {
             label: item.label,
-            kind: lspKindToMonaco(item.kind, K),
+            kind: kind,
             detail: item.detail || '',
             documentation: item.documentation || '',
-            insertText: item.insertText || item.label,
+            insertText: insertText,
             sortText: item.sortText || item.label,
             filterText: item.filterText || item.label
         };
-        if (item.insertTextFormat === 2) {
+        if (isSnippet) {
             s.insertTextRules = Snippet.InsertAsSnippet;
         }
         if (item.deprecated) {

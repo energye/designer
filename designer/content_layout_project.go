@@ -96,12 +96,12 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.componentTreeNode = items.AddChild(m.projectTreeNode, "Forms")
 	m.componentTreeNode.SetImageIndex(imageComponents.ImageIndex("design.png"))
 	m.componentTreeNode.SetSelectedIndex(imageComponents.ImageIndex("design.png"))
-	m.componentTreeNode.SetExpanded(false)
+	m.componentTreeNode.SetExpanded(true)
 
 	m.srcTreeNode = items.AddChild(m.projectTreeNode, "src")
 	m.srcTreeNode.SetImageIndex(imageComponents.ImageIndex("folder.png"))
 	m.srcTreeNode.SetSelectedIndex(imageComponents.ImageIndex("folder.png"))
-	m.srcTreeNode.SetExpanded(false)
+	m.srcTreeNode.SetExpanded(true)
 
 	return m
 }

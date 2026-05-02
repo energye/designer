@@ -161,6 +161,7 @@ func (m *TFormDesignPage) initEditor() {
 			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)
 		}
 	}
+	editor.SetOnGoToDefinition(goToDefinition)
 }
 
 func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {

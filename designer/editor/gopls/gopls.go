@@ -136,6 +136,9 @@ func (c *LSPClient) Initialize(rootURI string) error {
 					},
 					"codeDescriptionSupport": true,
 				},
+				"definition": map[string]interface{}{
+					"linkSupport": true,
+				},
 				"synchronization": map[string]interface{}{
 					"dynamicRegistration": false,
 					"willSave":            false,
@@ -575,6 +578,49 @@ func goplsMin(a, b int) int {
 }
 
 // --- LSP Type Definitions ---
+
+type Location struct {
+	URI   string `json:"uri"`
+	Range Range  `json:"range"`
+}
+
+func (c *LSPClient) Definition(fileURI string, line, column int) ([]Location, error) {
+	params := map[string]interface{}{
+		"textDocument": map[string]string{
+			"uri": fileURI,
+		},
+		"position": map[string]int{
+			"line":      line,
+			"character": column,
+		},
+	}
+
+	resp, err := c.sendRequest("textDocument/definition", params)
+	if err != nil {
+		return nil, err
+	}
+	if resp == nil {
+		return nil, nil
+	}
+
+	// Response can be a single Location, an array of Locations, or an array of LocationLink
+	var locations []Location
+
+	// Try array first
+	var arr []Location
+	if err := json.Unmarshal(resp, &arr); err == nil && len(arr) > 0 {
+		return arr, nil
+	}
+
+	// Try single Location
+	var loc Location
+	if err := json.Unmarshal(resp, &loc); err == nil && loc.URI != "" {
+		locations = append(locations, loc)
+		return locations, nil
+	}
+
+	return locations, nil
+}
 
 type CompletionItem struct {
 	Label               string      `json:"label"`

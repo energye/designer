@@ -103,6 +103,7 @@ func (m *CodeEditorTab) initEditor() {
 		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
 			m.wvWindowParent = wvEditor.Webview().WindowParent()
 		}
+		editor.SetOnGoToDefinition(goToDefinition)
 	} else {
 		if gFromEditor.Type() == editor.EtWebview && m.wvWindowParent == nil {
 			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)

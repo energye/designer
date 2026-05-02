@@ -313,8 +313,6 @@ func openFileInAppropriateTab(filePath string) {
 	formTab, fileType := designer.FindFormTabByFile(filePath)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		if formTab != nil {
-			// 先切换子标签页索引, 再激活窗体标签
-			// 这样 tabSheetOnShow 触发时 ActivePageIndex 已经是正确的值
 			switch fileType {
 			case "go":
 				formTab.formDesignPage.formPageControl.SetActivePageIndex(1)
@@ -323,13 +321,19 @@ func openFileInAppropriateTab(filePath string) {
 			case "ui":
 				formTab.formDesignPage.formPageControl.SetActivePageIndex(0)
 			}
-			// 激活窗体标签 (会触发 tabSheetOnShow)
 			designer.tab.HideAllActivated()
 			designer.ActiveFormTab(formTab)
 		} else {
-			// 非窗体文件 - 创建或激活代码编辑器标签
 			tab := designer.addCodeEditorTab(filePath)
 			designer.ActivateCodeEditorTab(tab)
 		}
 	})
+}
+
+// goToDefinition Ctrl+Click 跳转定义处理
+// xxx.ui.go 在当前窗体的 UI代码 子标签打开
+// xxx.go 在当前窗体的 代码 子标签打开
+// 其它文件在主 tab 标签打开
+func goToDefinition(filePath string, line, character int) {
+	openFileInAppropriateTab(filePath)
 }
