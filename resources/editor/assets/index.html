@@ -26,10 +26,9 @@
 <script src="./vs/loader.js"></script>
 <script>
     let editor = null;
-    const models = new Map();
     let currentFilePath = '';
     let saveTimeout = null;
-    const fileStates = new Map();
+    const files = new Map(); // 存储: { model, modTime, isDirty, viewState }
 
     require.config({ paths: { vs: './vs' } });
     require(['vs/editor/editor.main'], function(monaco) {
@@ -47,59 +46,46 @@
         });
 
         editor.onDidChangeModelContent(() => {
-            markCurrentFileDirty();
-            
-            if (saveTimeout) {
-                clearTimeout(saveTimeout);
+            if (currentFilePath && files.has(currentFilePath)) {
+                const info = files.get(currentFilePath);
+                if (!info.isDirty) {
+                    info.isDirty = true;
+                    ipc.emit('set-file-dirty', [{ file: currentFilePath, isDirty: true }]);
+                }
             }
-            saveTimeout = setTimeout(() => {
-                autoSaveCurrentFile();
-            }, 500);
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(autoSave, 500);
         });
 
         ipc.emit("monaco-inited", []);
     });
 
-    function markCurrentFileDirty() {
-        if (currentFilePath && fileStates.has(currentFilePath)) {
-            const state = fileStates.get(currentFilePath);
-            if (!state.isDirty) {
-                state.isDirty = true;
-                ipc.emit('set-file-dirty', [{
-                    file: currentFilePath,
-                    isDirty: true
-                }]);
-            }
-        }
-    }
-
-    function autoSaveCurrentFile() {
-        if (!currentFilePath || !editor) {
-            return;
-        }
-
+    function autoSave() {
+        if (!currentFilePath || !editor) return;
         const model = editor.getModel();
-        if (!model) {
-            return;
-        }
+        if (!model) return;
 
-        const content = model.getValue();
-        ipc.emit('save-file', [{
-            file: currentFilePath,
-            content: content
-        }], function(result) {
-            if (result === 'ok') {
-                if (fileStates.has(currentFilePath)) {
-                    fileStates.get(currentFilePath).isDirty = false;
-                }
+        ipc.emit('save-file', [{ file: currentFilePath, content: model.getValue() }], function(result) {
+            if (result === 'ok' && files.has(currentFilePath)) {
+                files.get(currentFilePath).isDirty = false;
             }
         });
     }
 
-    function openFile(filePath) {
-        if (!editor) {
-            return;
+    function switchToFile(filePath) {
+        const info = files.get(filePath);
+        // 保存当前视图状态
+        if (currentFilePath && files.has(currentFilePath)) {
+            files.get(currentFilePath).viewState = editor.saveViewState();
         }
+        // 切换并恢复视图状态
+        editor.setModel(info.model);
+        if (info.viewState) editor.restoreViewState(info.viewState);
+        currentFilePath = filePath;
+    }
+
+    function openFile(filePath) {
+        if (!editor) return;
 
         ipc.emit('open-file-request', [filePath], function(response) {
             if (!response) {
@@ -107,185 +93,89 @@
                 return;
             }
 
-            const fileInfo = JSON.parse(response);
-            const content = fileInfo.content;
-            const language = fileInfo.language;
-            const modTime = fileInfo.modTime;
-            console.log("open-file-request:", fileInfo)
+            const { content, language, modTime } = JSON.parse(response);
+            console.log("open-file-request:", { content: content.substring(0, 50) + '...', language, modTime });
 
-            // 保存当前文件的编辑器状态
-            saveCurrentEditorState();
-
-            if (models.has(filePath)) {
-                const modelInfo = models.get(filePath);
-                const model = modelInfo.model;
-
-                if (modelInfo.modTime !== modTime && !modelInfo.isDirty) {
-                    const fileName = getFileName(filePath);
-                    const result = confirm('文件 "' + fileName + '" 已被外部修改，是否重新加载？');
-                    if (result) {
-                        model.setValue(content);
-                        modelInfo.modTime = modTime;
-                        modelInfo.isDirty = false;
-                    }
+            if (files.has(filePath)) {
+                const info = files.get(filePath);
+                if (info.modTime !== modTime && !info.isDirty) {
+                    info.model.setValue(content);
+                    info.modTime = modTime;
                 }
-
-                editor.setModel(model);
             } else {
                 const uri = monaco.Uri.parse('file:///' + filePath.replace(/\\/g, '/'));
-                const model = monaco.editor.createModel(content, language, uri);
-                models.set(filePath, {
-                    model: model,
-                    modTime: modTime,
-                    isDirty: false
+                files.set(filePath, {
+                    model: monaco.editor.createModel(content, language, uri),
+                    modTime, isDirty: false, viewState: null
                 });
-                fileStates.set(filePath, {
-                    isDirty: false,
-                    modTime: modTime,
-                    viewState: null
-                });
-                editor.setModel(model);
-
-                ipc.emit('register-opened-file', [{
-                    file: filePath,
-                    modTime: modTime
-                }]);
+                ipc.emit('register-opened-file', [{ file: filePath, modTime }]);
             }
 
-            currentFilePath = filePath;
-
-            // 恢复目标文件的编辑器状态
-            restoreEditorState(filePath);
+            switchToFile(filePath);
         });
     }
 
-    function saveCurrentEditorState() {
-        if (!currentFilePath || !editor) {
-            return;
-        }
-
-        const viewState = editor.saveViewState();
-        if (fileStates.has(currentFilePath)) {
-            fileStates.get(currentFilePath).viewState = viewState;
-        } else {
-            fileStates.set(currentFilePath, {
-                isDirty: false,
-                modTime: null,
-                viewState: viewState
-            });
-        }
-    }
-
-    function restoreEditorState(filePath) {
-        if (!editor || !fileStates.has(filePath)) {
-            return;
-        }
-
-        const state = fileStates.get(filePath);
-        if (state.viewState) {
-            editor.restoreViewState(state.viewState);
-        }
-    }
-
     function closeFile(filePath) {
-        if (models.has(filePath)) {
-            const modelInfo = models.get(filePath);
-            
-            if (modelInfo.isDirty) {
-                const fileName = getFileName(filePath);
-                const result = confirm('文件 "' + fileName + '" 有未保存的修改，是否保存？');
-                if (result) {
-                    const content = modelInfo.model.getValue();
-                    ipc.emit('save-file', [{
-                        file: filePath,
-                        content: content
-                    }]);
-                }
+        if (!files.has(filePath)) return;
+        const info = files.get(filePath);
+
+        if (info.isDirty) {
+            if (confirm('文件 "' + getFileName(filePath) + '" 有未保存的修改，是否保存？')) {
+                ipc.emit('save-file', [{ file: filePath, content: info.model.getValue() }]);
             }
-            
-            modelInfo.model.dispose();
-            models.delete(filePath);
-            fileStates.delete(filePath);
-            
-            ipc.emit('unregister-opened-file', [filePath]);
-            
-            if (currentFilePath === filePath) {
-                currentFilePath = '';
-                if (models.size > 0) {
-                    const firstKey = models.keys().next().value;
-                    const firstModel = models.get(firstKey);
-                    editor.setModel(firstModel);
-                    currentFilePath = firstKey;
-                } else {
-                    const emptyModel = monaco.editor.createModel('', 'plaintext');
-                    editor.setModel(emptyModel);
-                }
+        }
+
+        info.model.dispose();
+        files.delete(filePath);
+        ipc.emit('unregister-opened-file', [filePath]);
+
+        if (currentFilePath === filePath) {
+            currentFilePath = '';
+            if (files.size > 0) {
+                const firstKey = files.keys().next().value;
+                switchToFile(firstKey);
+            } else {
+                editor.setModel(monaco.editor.createModel('', 'plaintext'));
             }
         }
     }
 
-    ipc.on('open-file', function(data) {
-        const filePath = data;
-        console.log("open-file", data)
-        openFile(filePath);
+    ipc.on('open-file', data => openFile(data));
+    ipc.on('close-file', data => closeFile(data));
+    ipc.on('save-current-file', () => autoSave());
+
+    ipc.on('file-changed-externally', filePath => {
+        if (!files.has(filePath)) return;
+        const info = files.get(filePath);
+        if (info.isDirty) return;
+
+        ipc.emit('reload-file-request', [filePath], function(response) {
+            if (!response) return;
+            const { content, modTime } = JSON.parse(response);
+            info.model.setValue(content);
+            info.modTime = modTime;
+            if (currentFilePath === filePath) editor.setModel(info.model);
+            showNotification('文件已重新加载: ' + getFileName(filePath));
+        });
     });
 
-    ipc.on('close-file', function(data) {
-        const filePath = data;
-        closeFile(filePath);
-    });
+    ipc.on('file-conflict-detected', filePath => {
+        if (!files.has(filePath)) return;
+        if (!confirm('文件 "' + getFileName(filePath) + '" 存在冲突！\n\n编辑器中有未保存的修改，但文件也被外部修改。\n\n是否重新加载外部修改？（这将丢失编辑器的修改）')) return;
 
-    ipc.on('save-current-file', function() {
-        autoSaveCurrentFile();
-    });
-
-    ipc.on('file-changed-externally', function(filePath) {
-        if (models.has(filePath)) {
-            const modelInfo = models.get(filePath);
-            
-            if (!modelInfo.isDirty) {
-                ipc.emit('reload-file-request', [filePath], function(response) {
-                    if (response) {
-                        const fileInfo = JSON.parse(response);
-                        modelInfo.model.setValue(fileInfo.content);
-                        modelInfo.modTime = fileInfo.modTime;
-                        
-                        if (currentFilePath === filePath) {
-                            editor.setModel(modelInfo.model);
-                        }
-                        
-                        showNotification('文件已重新加载: ' + getFileName(filePath));
-                    }
-                });
-            }
-        }
-    });
-
-    ipc.on('file-conflict-detected', function(filePath) {
-        if (models.has(filePath)) {
-            const fileName = getFileName(filePath);
-            const result = confirm('文件 "' + fileName + '" 存在冲突！\n\n编辑器中有未保存的修改，但文件也被外部修改。\n\n是否重新加载外部修改？（这将丢失编辑器的修改）');
-            if (result) {
-                ipc.emit('reload-file-request', [filePath], function(response) {
-                    if (response) {
-                        const fileInfo = JSON.parse(response);
-                        const modelInfo = models.get(filePath);
-                        modelInfo.model.setValue(fileInfo.content);
-                        modelInfo.modTime = fileInfo.modTime;
-                        modelInfo.isDirty = false;
-                        
-                        if (currentFilePath === filePath) {
-                            editor.setModel(modelInfo.model);
-                        }
-                    }
-                });
-            }
-        }
+        ipc.emit('reload-file-request', [filePath], function(response) {
+            if (!response) return;
+            const { content, modTime } = JSON.parse(response);
+            const info = files.get(filePath);
+            info.model.setValue(content);
+            info.modTime = modTime;
+            info.isDirty = false;
+            if (currentFilePath === filePath) editor.setModel(info.model);
+        });
     });
 
     function getFileName(filePath) {
-        const parts = filePath.replace(/\\/g, '/').split('/');
-        return parts[parts.length - 1];
+        return filePath.replace(/\\/g, '/').split('/').pop();
     }
 
     function showNotification(message) {
