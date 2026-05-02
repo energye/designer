@@ -167,12 +167,13 @@ func (m *TFormDesignPage) ActiveCodeEditorTab() {
 	//}
 
 	isEdit := m.formTab.ActivePageIndex() == 1
-	m.formTab.SetActivePage(m.formDesignPage)
+	//m.formTab.SetActivePage(m.formDesignPage)
+	m.SwitchTabPageEditor()
 	if isEdit {
 		go func() {
 			time.AfterFunc(time.Millisecond*200, func() {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
-					m.formTab.SetActivePage(m.formUserEditorPage)
+					//m.formTab.SetActivePage(m.formUserEditorPage)
 				})
 			})
 		}()

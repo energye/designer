@@ -30,11 +30,14 @@ func NewWebviewWindowParent(owner lcl.IWinControl) engwv.IWindowParent {
 }
 
 func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent) {
+	newWindowParent := windowParent.(wv.IWVWindowParent)
 	currentWindowParent := m.WVEditor.WindowParent().(wv.IWVWindowParent)
+	//if newWindowParent.Instance() == currentWindowParent.Instance() {
+	//	return
+	//}
 	currentWindowParent.SetBrowser(nil)
 
 	browser := m.WVEditor.Browser().(wv.IWVBrowser)
-	newWindowParent := windowParent.(wv.IWVWindowParent)
 	if newWindowParent.Parent() == nil {
 		newWindowParent.SetParent(owner)
 	}
