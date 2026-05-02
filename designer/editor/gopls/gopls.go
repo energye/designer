@@ -13,7 +13,7 @@ import (
 
 // go install golang.org/x/tools/gopls@latest
 
-type LSPClient struct {
+type PLSClient struct {
 	cmd       *exec.Cmd
 	stdin     io.WriteCloser
 	stdout    io.ReadCloser
@@ -28,7 +28,7 @@ type LSPClient struct {
 	diagMu             sync.Mutex
 }
 
-func NewLSPClient(workspaceDir string) (*LSPClient, error) {
+func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 	cmd := exec.Command("gopls")
 	cmd.Dir = workspaceDir
 
@@ -62,7 +62,7 @@ func NewLSPClient(workspaceDir string) (*LSPClient, error) {
 		}
 	}()
 
-	client := &LSPClient{
+	client := &PLSClient{
 		cmd:     cmd,
 		stdin:   stdin,
 		stdout:  stdout,
@@ -76,13 +76,13 @@ func NewLSPClient(workspaceDir string) (*LSPClient, error) {
 	return client, nil
 }
 
-func (c *LSPClient) SetDiagnosticsHandler(handler func(uri string, diagnostics []Diagnostic)) {
+func (c *PLSClient) SetDiagnosticsHandler(handler func(uri string, diagnostics []Diagnostic)) {
 	c.diagMu.Lock()
 	c.diagnosticsHandler = handler
 	c.diagMu.Unlock()
 }
 
-func (c *LSPClient) Initialize(rootURI string) error {
+func (c *PLSClient) Initialize(rootURI string) error {
 	fmt.Printf("[gopls] Initialize rootURI: %s\n", rootURI)
 	params := map[string]interface{}{
 		"processId": nil,
@@ -160,7 +160,7 @@ func (c *LSPClient) Initialize(rootURI string) error {
 	return nil
 }
 
-func (c *LSPClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
+func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
 	fmt.Printf("[gopls] Completion 请求: uri=%s line=%d column=%d triggerKind=%d triggerChar=%s\n", fileURI, line, column, triggerKind, triggerChar)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -219,7 +219,7 @@ func (c *LSPClient) Completion(fileURI string, line, column int, triggerKind int
 	return completionList.Items, nil
 }
 
-func (c *LSPClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
+func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
 	fmt.Printf("[gopls] SignatureHelp 请求: uri=%s line=%d column=%d\n", fileURI, line, column)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -250,7 +250,7 @@ func (c *LSPClient) SignatureHelp(fileURI string, line, column int) (*SignatureH
 	return &result, nil
 }
 
-func (c *LSPClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem, error) {
+func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem, error) {
 	fmt.Printf("[gopls] ResolveCompletionItem: label=%s\n", item.Label)
 	resp, err := c.sendRequest("completionItem/resolve", item)
 	if err != nil {
@@ -281,7 +281,7 @@ type DiagnosticInput struct {
 	Message  string `json:"message"`
 }
 
-func (c *LSPClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []DiagnosticInput) ([]CodeAction, error) {
+func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []DiagnosticInput) ([]CodeAction, error) {
 	fmt.Printf("[gopls] CodeAction 请求: uri=%s kinds=%v diagnostics=%d\n", fileURI, kinds, len(diagnostics))
 
 	diagInterfaces := make([]interface{}, len(diagnostics))
@@ -330,7 +330,7 @@ func (c *LSPClient) CodeAction(fileURI string, startLine, startChar, endLine, en
 	return actions, nil
 }
 
-func (c *LSPClient) DidOpen(fileURI, languageID, content string, version int) error {
+func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) error {
 	fmt.Printf("[gopls] DidOpen: uri=%s lang=%s version=%d contentLen=%d\n", fileURI, languageID, version, len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -344,7 +344,7 @@ func (c *LSPClient) DidOpen(fileURI, languageID, content string, version int) er
 	return c.sendNotification("textDocument/didOpen", params)
 }
 
-func (c *LSPClient) DidChange(fileURI string, version int, content string) error {
+func (c *PLSClient) DidChange(fileURI string, version int, content string) error {
 	fmt.Printf("[gopls] DidChange: uri=%s version=%d contentLen=%d\n", fileURI, version, len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -365,7 +365,7 @@ func (c *LSPClient) DidChange(fileURI string, version int, content string) error
 	return nil
 }
 
-func (c *LSPClient) DidSave(fileURI string, text string) error {
+func (c *PLSClient) DidSave(fileURI string, text string) error {
 	fmt.Printf("[gopls] DidSave: uri=%s textLen=%d\n", fileURI, len(text))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -377,7 +377,7 @@ func (c *LSPClient) DidSave(fileURI string, text string) error {
 	return c.sendNotification("textDocument/didSave", params)
 }
 
-func (c *LSPClient) DidClose(fileURI string) error {
+func (c *PLSClient) DidClose(fileURI string) error {
 	fmt.Printf("[gopls] DidClose: uri=%s\n", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -388,7 +388,7 @@ func (c *LSPClient) DidClose(fileURI string) error {
 	return c.sendNotification("textDocument/didClose", params)
 }
 
-func (c *LSPClient) sendRequest(method string, params interface{}) ([]byte, error) {
+func (c *PLSClient) sendRequest(method string, params interface{}) ([]byte, error) {
 	c.mu.Lock()
 	c.requestID++
 	id := c.requestID
@@ -441,7 +441,7 @@ func (c *LSPClient) sendRequest(method string, params interface{}) ([]byte, erro
 	return resp, nil
 }
 
-func (c *LSPClient) sendNotification(method string, params interface{}) error {
+func (c *PLSClient) sendNotification(method string, params interface{}) error {
 	notification := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"method":  method,
@@ -466,7 +466,7 @@ func (c *LSPClient) sendNotification(method string, params interface{}) error {
 	return err
 }
 
-func (c *LSPClient) listenResponses() {
+func (c *PLSClient) listenResponses() {
 	for {
 		line, err := c.reader.ReadString('\n')
 		if err != nil {
@@ -546,7 +546,7 @@ func (c *LSPClient) listenResponses() {
 	}
 }
 
-func (c *LSPClient) handleDiagnostics(params json.RawMessage) {
+func (c *PLSClient) handleDiagnostics(params json.RawMessage) {
 	var notification struct {
 		URI         string       `json:"uri"`
 		Diagnostics []Diagnostic `json:"diagnostics"`
@@ -565,7 +565,7 @@ func (c *LSPClient) handleDiagnostics(params json.RawMessage) {
 	}
 }
 
-func (c *LSPClient) Close() {
+func (c *PLSClient) Close() {
 	c.stdin.Close()
 	c.cmd.Wait()
 }
@@ -577,14 +577,14 @@ func goplsMin(a, b int) int {
 	return b
 }
 
-// --- LSP Type Definitions ---
+// --- PLS Type Definitions ---
 
 type Location struct {
 	URI   string `json:"uri"`
 	Range Range  `json:"range"`
 }
 
-func (c *LSPClient) Definition(fileURI string, line, column int) ([]Location, error) {
+func (c *PLSClient) Definition(fileURI string, line, column int) ([]Location, error) {
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -667,9 +667,9 @@ type SignatureHelpResult struct {
 }
 
 type SignatureInformation struct {
-	Label         string                   `json:"label"`
-	Documentation interface{}              `json:"documentation,omitempty"`
-	Parameters    []ParameterInformation   `json:"parameters,omitempty"`
+	Label         string                 `json:"label"`
+	Documentation interface{}            `json:"documentation,omitempty"`
+	Parameters    []ParameterInformation `json:"parameters,omitempty"`
 }
 
 func (s *SignatureInformation) GetDocumentation() string {
@@ -695,10 +695,10 @@ func (p *ParameterInformation) GetLabel() string {
 }
 
 type CodeAction struct {
-	Title       string        `json:"title"`
-	Kind        string        `json:"kind,omitempty"`
+	Title       string         `json:"title"`
+	Kind        string         `json:"kind,omitempty"`
 	Edit        *WorkspaceEdit `json:"edit,omitempty"`
-	IsPreferred bool          `json:"isPreferred,omitempty"`
+	IsPreferred bool           `json:"isPreferred,omitempty"`
 }
 
 type WorkspaceEdit struct {

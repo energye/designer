@@ -39,13 +39,13 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 			return
 		}
 
-		if gLSPClient == nil {
+		if gPLSClient == nil {
 			context.Result("null")
 			return
 		}
 
 		fileURI := filePathToURI(params.File)
-		locations, err := gLSPClient.Definition(fileURI, params.Line, params.Column)
+		locations, err := gPLSClient.Definition(fileURI, params.Line, params.Column)
 		if err != nil || len(locations) == 0 {
 			context.Result("null")
 			return

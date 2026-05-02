@@ -67,7 +67,7 @@ func WebViewInit() {
 
 func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 	WebViewInit()
-	InitLSP()
+	InitPLS()
 	m := &TWebviewEditor{
 		fileManager: NewFileManager(),
 		stopChan:    make(chan struct{}),
@@ -140,8 +140,8 @@ func (m *TWebviewEditor) FileManager() *FileManager {
 	return m.fileManager
 }
 
-func (m *TWebviewEditor) LSPClient() *gopls.LSPClient {
-	return gLSPClient
+func (m *TWebviewEditor) PLSClient() *gopls.PLSClient {
+	return gPLSClient
 }
 
 func (m *TWebviewEditor) Webview() wv.IWebview {

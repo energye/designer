@@ -15,13 +15,13 @@ type TSynEditEditor struct {
 }
 
 func NewSynEditEditor(owner lcl.IWinControl) IEditor {
-	InitLSP()
+	InitPLS()
 	m := &TSynEditEditor{
 		fileManager: NewFileManager(),
 	}
 	m.synEdit = lcl.NewSynEdit(owner)
 	m.synEdit.SetAlign(types.AlClient)
-	// TODO: 通过 LCL 事件直接调用 LSPClient() 实现代码补全、诊断等功能
+	// TODO: 通过 LCL 事件直接调用 PLSClient() 实现代码补全、诊断等功能
 	SetCurrentEditor(m)
 	return m
 }

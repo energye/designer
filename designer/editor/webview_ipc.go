@@ -53,14 +53,14 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient == nil {
+		if gPLSClient == nil {
 			context.Result("[]")
 			return
 		}
 
 		go func() {
 			fileURI := filePathToURI(params.File)
-			result, err := gLSPClient.Completion(fileURI, params.Line, params.Column, params.TriggerKind, params.TriggerChar)
+			result, err := gPLSClient.Completion(fileURI, params.Line, params.Column, params.TriggerKind, params.TriggerChar)
 			if err != nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-completion-response", params.RequestID, "[]")
@@ -137,14 +137,14 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient == nil {
+		if gPLSClient == nil {
 			context.Result("")
 			return
 		}
 
 		go func() {
 			fileURI := filePathToURI(params.File)
-			result, err := gLSPClient.SignatureHelp(fileURI, params.Line, params.Column)
+			result, err := gPLSClient.SignatureHelp(fileURI, params.Line, params.Column)
 			if err != nil || result == nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-signatureHelp-response", params.RequestID, "")
@@ -206,7 +206,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient == nil {
+		if gPLSClient == nil {
 			context.Result("[]")
 			return
 		}
@@ -218,7 +218,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 
 		go func() {
 			fileURI := filePathToURI(params.File)
-			result, err := gLSPClient.CodeAction(fileURI, params.StartLine, params.StartChar, params.EndLine, params.EndChar, kinds, params.Diagnostics)
+			result, err := gPLSClient.CodeAction(fileURI, params.StartLine, params.StartChar, params.EndLine, params.EndChar, kinds, params.Diagnostics)
 			if err != nil || result == nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-codeAction-response", params.RequestID, "[]")
@@ -289,10 +289,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient != nil {
+		if gPLSClient != nil {
 			go func() {
 				fileURI := filePathToURI(params.File)
-				gLSPClient.DidOpen(fileURI, params.LanguageID, params.Content, params.Version)
+				gPLSClient.DidOpen(fileURI, params.LanguageID, params.Content, params.Version)
 			}()
 		}
 		context.Result("ok")
@@ -319,11 +319,11 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient != nil {
+		if gPLSClient != nil {
 			// Synchronous: must complete before gopls processes subsequent
 			// completion/codeAction requests with the updated file content
 			fileURI := filePathToURI(params.File)
-			if err := gLSPClient.DidChange(fileURI, params.Version, params.Content); err != nil {
+			if err := gPLSClient.DidChange(fileURI, params.Version, params.Content); err != nil {
 				logs.Error("gopls-didChange 同步发送失败:", err)
 			}
 		}
@@ -344,10 +344,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gLSPClient != nil {
+		if gPLSClient != nil {
 			go func() {
 				fileURI := filePathToURI(filePath)
-				gLSPClient.DidClose(fileURI)
+				gPLSClient.DidClose(fileURI)
 			}()
 		}
 		context.Result("ok")
@@ -431,10 +431,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 
 		// Notify gopls that file was saved so it can do full analysis
-		if gLSPClient != nil {
+		if gPLSClient != nil {
 			go func() {
 				fileURI := filePathToURI(fileData.File)
-				gLSPClient.DidSave(fileURI, fileData.Content)
+				gPLSClient.DidSave(fileURI, fileData.Content)
 			}()
 		}
 	})

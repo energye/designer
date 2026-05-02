@@ -26,31 +26,31 @@ import (
 )
 
 var (
-	lspInitOnce sync.Once
-	lspStartOnce sync.Once
-	gLSPClient  *gopls.LSPClient
-	lspReady    bool
-	lspMu       sync.RWMutex
+	plsInitOnce  sync.Once
+	plsStartOnce sync.Once
+	gPLSClient   *gopls.PLSClient
+	plsReady     bool
+	plsMu        sync.RWMutex
 )
 
-// InitLSP 启动异步 LSP 初始化，不阻塞调用方
-func InitLSP() {
-	lspStartOnce.Do(func() {
-		go initLSPAsync()
+// InitPLS 启动异步 PLS 初始化，不阻塞调用方
+func InitPLS() {
+	plsStartOnce.Do(func() {
+		go initPLSAsync()
 	})
 }
 
-func initLSPAsync() {
-	lspInitOnce.Do(func() {
+func initPLSAsync() {
+	plsInitOnce.Do(func() {
 		var err error
-		gLSPClient, err = gopls.NewLSPClient(bean.GPath)
+		gPLSClient, err = gopls.NewPLSClient(bean.GPath)
 		if err != nil {
-			logs.Error("NewLSPClient:", err)
+			logs.Error("NewPLSClient:", err)
 			return
 		}
 		rootURI := filePathToURI(bean.GPath)
 		logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
-		if err := gLSPClient.Initialize(rootURI); err != nil {
+		if err := gPLSClient.Initialize(rootURI); err != nil {
 			logs.Error("gopls Initialize 失败:", err)
 			return
 		}
@@ -58,7 +58,7 @@ func initLSPAsync() {
 		time.Sleep(2 * time.Second)
 		logs.Info("gopls 初始化就绪")
 
-		gLSPClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
+		gPLSClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
 			filePath := uriToFilePath(uri)
 			if filePath == "" {
 				return
@@ -70,35 +70,35 @@ func initLSPAsync() {
 			})
 		})
 
-		lspMu.Lock()
-		lspReady = true
-		lspMu.Unlock()
+		plsMu.Lock()
+		plsReady = true
+		plsMu.Unlock()
 	})
 }
 
-// LSPClient 返回全局 LSP 客户端实例，未就绪时返回 nil
-func LSPClient() *gopls.LSPClient {
-	return gLSPClient
+// PLSClient 返回全局 PLS 客户端实例，未就绪时返回 nil
+func PLSClient() *gopls.PLSClient {
+	return gPLSClient
 }
 
-// IsLSPReady 返回 gopls 是否已初始化完成
-func IsLSPReady() bool {
-	lspMu.RLock()
-	defer lspMu.RUnlock()
-	return lspReady
+// IsPLSReady 返回 gopls 是否已初始化完成
+func IsPLSReady() bool {
+	plsMu.RLock()
+	defer plsMu.RUnlock()
+	return plsReady
 }
 
 // SetDiagnosticsHandler 设置诊断处理器，允许原生编辑器覆盖默认行为
 func SetDiagnosticsHandler(handler func(uri string, diagnostics []gopls.Diagnostic)) {
-	if gLSPClient != nil {
-		gLSPClient.SetDiagnosticsHandler(handler)
+	if gPLSClient != nil {
+		gPLSClient.SetDiagnosticsHandler(handler)
 	}
 }
 
 // notifyFileChanged 通知 gopls 文件已被外部修改
 // 使用 DidClose+DidOpen 强制 gopls 重新索引，确保补全和诊断信息更新
 func notifyFileChanged(filePath string) {
-	if gLSPClient == nil {
+	if gPLSClient == nil {
 		return
 	}
 	content, err := os.ReadFile(filePath)
@@ -107,7 +107,7 @@ func notifyFileChanged(filePath string) {
 	}
 	fileURI := filePathToURI(filePath)
 	go func() {
-		gLSPClient.DidClose(fileURI)
-		gLSPClient.DidOpen(fileURI, detectLanguage(filePath), string(content), 1)
+		gPLSClient.DidClose(fileURI)
+		gPLSClient.DidOpen(fileURI, detectLanguage(filePath), string(content), 1)
 	}()
 }
