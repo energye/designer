@@ -384,6 +384,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 			Content:  string(content),
 			Language: detectLanguage(filePath),
 			ModTime:  fileInfo.ModTime().UnixMilli(),
+			ReadOnly: isFileReadOnly(filePath),
 		}
 
 		jsonData, err := json.Marshal(result)
@@ -464,6 +465,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 			Content:  string(content),
 			Language: detectLanguage(filePath),
 			ModTime:  fileInfo.ModTime().UnixMilli(),
+			ReadOnly: isFileReadOnly(filePath),
 		}
 
 		jsonData, err := json.Marshal(result)

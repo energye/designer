@@ -7,6 +7,19 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; width: 100%; overflow: hidden; }
         body { display: flex; flex-direction: column; }
+        #file-path-bar {
+            padding: 3px 12px;
+            background: rgba(255,255,255,0.05);
+            color: #888;
+            font-size: 12px;
+            font-family: Consolas, 'Courier New', monospace;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: none;
+            flex-shrink: 0;
+        }
         #container { flex: 1; min-height: 0; }
         .toast {
             position: fixed; top: 20px; right: 20px;
@@ -19,6 +32,7 @@
     </style>
 </head>
 <body>
+<div id="file-path-bar"></div>
 <div id="container"></div>
 <div id="toast" class="toast"></div>
 
@@ -642,6 +656,21 @@ function switchToFile(filePath) {
     if (info.viewState) EditorAdapter.restoreViewState(info.viewState);
     EditorAdapter.updateOptions({readOnly: !!info.readOnly});
     currentFilePath = filePath;
+    updateFilePathBar(filePath);
+}
+
+function updateFilePathBar(filePath) {
+    var bar = document.getElementById('file-path-bar');
+    if (!bar) return;
+    var info = files.get(filePath);
+    var displayPath = filePath.replace(/\\/g, '/');
+    if (info && info.readOnly) {
+        displayPath = displayPath + '  [Read Only]';
+        bar.style.color = '#c4a44a';
+    } else {
+        bar.style.color = '#888';
+    }
+    bar.textContent = displayPath;
 }
 
 function openFile(filePath, readOnly) {
@@ -654,10 +683,12 @@ function openFile(filePath, readOnly) {
         var content = data.content;
         var language = data.language;
         var modTime = data.modTime;
+        var serverReadOnly = !!data.readOnly;
+        var effectiveReadOnly = readOnly || serverReadOnly;
 
         if (files.has(filePath)) {
             var info = files.get(filePath);
-            info.readOnly = readOnly;
+            info.readOnly = effectiveReadOnly;
             if (info.modTime !== modTime && !info.isDirty) {
                 info.model.setValue(content);
                 info.modTime = modTime;
@@ -670,7 +701,7 @@ function openFile(filePath, readOnly) {
             var uri = EditorAdapter.uri(filePath);
             files.set(filePath, {
                 model: EditorAdapter.createModel(content, language, uri),
-                modTime: modTime, isDirty: false, viewState: null, readOnly: readOnly, version: 1
+                modTime: modTime, isDirty: false, viewState: null, readOnly: effectiveReadOnly, version: 1
             });
             ipc.emit('register-opened-file', [{file: filePath, modTime: modTime}]);
             ipc.emit('gopls-didOpen', [{

@@ -14,7 +14,9 @@
 package editor
 
 import (
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -83,6 +85,7 @@ type FileData struct {
 	Content  string `json:"content"`
 	Language string `json:"language"`
 	ModTime  int64  `json:"modTime"`
+	ReadOnly bool   `json:"readOnly"`
 }
 
 func uriToFilePath(uri string) string {
@@ -97,6 +100,44 @@ func uriToFilePath(uri string) string {
 		return ""
 	}
 	return strings.TrimPrefix(uri, "file://")
+}
+
+// isFileReadOnly checks if a file should be opened as read-only.
+// Files in the Go module cache (GOMODCACHE) or vendor directory are read-only.
+// Files that cannot be written to are also read-only.
+func isFileReadOnly(filePath string) bool {
+	// Check actual file write permission
+	if !isWritable(filePath) {
+		return true
+	}
+	// Check if file is in Go module cache
+	modCache := os.Getenv("GOMODCACHE")
+	if modCache != "" {
+		absPath, _ := filepath.Abs(filePath)
+		if strings.HasPrefix(filepath.ToSlash(absPath), filepath.ToSlash(modCache)) {
+			return true
+		}
+	}
+	// Check if file is in project vendor directory
+	codePath := bean.CodePath()
+	if codePath != "" {
+		vendorPath := filepath.Join(codePath, "vendor")
+		absPath, _ := filepath.Abs(filePath)
+		if strings.HasPrefix(filepath.ToSlash(absPath), filepath.ToSlash(vendorPath)) {
+			return true
+		}
+	}
+	return false
+}
+
+// isWritable checks if a file is writable by attempting to open it for writing
+func isWritable(filePath string) bool {
+	f, err := os.OpenFile(filePath, os.O_WRONLY, 0)
+	if err != nil {
+		return false
+	}
+	f.Close()
+	return true
 }
 
 func filePathToURI(filePath string) string {
