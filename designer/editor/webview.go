@@ -412,10 +412,14 @@ func (m *TWebviewEditor) checkFileChanges() {
 	for _, filePath := range changedFiles {
 		state, _ := m.fileManager.GetFileState(filePath)
 		if state != nil && state.IsDirty {
-			ipc.Emit("file-conflict-detected", filePath)
+			lcl.RunOnMainThreadSync(func() {
+				ipc.Emit("file-conflict-detected", filePath)
+			})
 			logs.Warn("文件冲突:", filePath)
 		} else {
-			ipc.Emit("file-changed-externally", filePath)
+			lcl.RunOnMainThreadSync(func() {
+				ipc.Emit("file-changed-externally", filePath)
+			})
 			logs.Info("文件被外部修改:", filePath)
 		}
 	}

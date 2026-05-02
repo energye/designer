@@ -162,7 +162,7 @@ func (m *TFormDesignPage) SwitchTabPageEditor() {
 				err := <-canLoad
 				wvEditor.SetCanLoadChan(nil)
 				close(canLoad)
-				filePath := filepath.Join(projBean.CodePath(), m.formDesignCode.GOFile())
+				filePath := filepath.Join(projBean.CodePath(), m.formDesignCode.GOUserFile())
 				fmt.Println("canLoad", err, wvEditor.Initialized(),
 					m.formDesignCode.GOFile(), m.formDesignCode.UIFile(), m.formDesignCode.GOUserFile())
 				fmt.Println("filePath:", filePath)

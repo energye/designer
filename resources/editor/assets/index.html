@@ -18,10 +18,31 @@
             flex: 1;
             min-height: 0;
         }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #2d2d2d;
+            color: #e0e0e0;
+            border-left: 3px solid #4fc3f7;
+            border-radius: 4px;
+            font-size: 13px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
     </style>
 </head>
 <body>
 <div id="container"></div>
+<div id="toast" class="toast"></div>
 
 <script src="./vs/loader.js"></script>
 <script>
@@ -119,12 +140,6 @@
         if (!files.has(filePath)) return;
         const info = files.get(filePath);
 
-        if (info.isDirty) {
-            if (confirm('文件 "' + getFileName(filePath) + '" 有未保存的修改，是否保存？')) {
-                ipc.emit('save-file', [{ file: filePath, content: info.model.getValue() }]);
-            }
-        }
-
         info.model.dispose();
         files.delete(filePath);
         ipc.emit('unregister-opened-file', [filePath]);
@@ -161,7 +176,6 @@
 
     ipc.on('file-conflict-detected', filePath => {
         if (!files.has(filePath)) return;
-        if (!confirm('文件 "' + getFileName(filePath) + '" 存在冲突！\n\n编辑器中有未保存的修改，但文件也被外部修改。\n\n是否重新加载外部修改？（这将丢失编辑器的修改）')) return;
 
         ipc.emit('reload-file-request', [filePath], function(response) {
             if (!response) return;
@@ -179,7 +193,10 @@
     }
 
     function showNotification(message) {
-        console.log('[Notification]', message);
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
 </script>
