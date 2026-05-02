@@ -39,11 +39,11 @@ var (
 
 // 主设计器
 type Designer struct {
-	tab             *wg.TTab                // 设计器 tabs
-	tabMenu         lcl.IPopupMenu          // tab 菜单
-	designerForms   map[int]*FormTab        // 设计器窗体列表
-	codeEditorTabs  map[string]*CodeEditorTab // 代码编辑器标签列表
-	defaultTip      *wg.TButton             // Home 默认提示
+	tab            *wg.TTab                  // 设计器 tabs
+	tabMenu        lcl.IPopupMenu            // tab 菜单
+	designerForms  map[int]*FormTab          // 设计器窗体列表
+	codeEditorTabs map[string]*CodeEditorTab // 代码编辑器标签列表
+	defaultTip     *wg.TButton               // Home 默认提示
 }
 
 func (m *Designer) IsDuplicateName(currComp *TDesigningComponent, formName string) bool {
@@ -274,6 +274,7 @@ func (m *Designer) GetFormTab(formId int) *FormTab {
 //				canvas.LineWithIntX4(margin-15, y, margin-10, y)
 //			}
 //		}
+//
 // FindFormTabByFile 检查给定文件路径是否属于某个设计窗体
 // 返回对应的 FormTab 和文件类型 ("ui", "uigo", "go"), 如果不属于任何窗体返回 nil
 func (m *Designer) FindFormTabByFile(filePath string) (*FormTab, string) {
@@ -330,6 +331,7 @@ func openFileInAppropriateTab(filePath string) {
 		} else {
 			tab := designer.addCodeEditorTab(filePath)
 			designer.ActivateCodeEditorTab(tab)
+			designer.tab.RecalculatePosition()
 		}
 	})
 }
