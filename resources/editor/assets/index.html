@@ -112,20 +112,25 @@
             const language = fileInfo.language;
             const modTime = fileInfo.modTime;
             console.log("open-file-request:", fileInfo)
+
+            // 保存当前文件的编辑器状态
+            saveCurrentEditorState();
+
             if (models.has(filePath)) {
                 const modelInfo = models.get(filePath);
-                
+                const model = modelInfo.model;
+
                 if (modelInfo.modTime !== modTime && !modelInfo.isDirty) {
                     const fileName = getFileName(filePath);
                     const result = confirm('文件 "' + fileName + '" 已被外部修改，是否重新加载？');
                     if (result) {
-                        modelInfo.model.setValue(content);
+                        model.setValue(content);
                         modelInfo.modTime = modTime;
                         modelInfo.isDirty = false;
                     }
                 }
-                
-                monaco.editor.setModel(modelInfo.model);
+
+                editor.setModel(model);
             } else {
                 const uri = monaco.Uri.parse('file:///' + filePath.replace(/\\/g, '/'));
                 const model = monaco.editor.createModel(content, language, uri);
@@ -136,10 +141,11 @@
                 });
                 fileStates.set(filePath, {
                     isDirty: false,
-                    modTime: modTime
+                    modTime: modTime,
+                    viewState: null
                 });
-                monaco.editor.setModel(model);
-                
+                editor.setModel(model);
+
                 ipc.emit('register-opened-file', [{
                     file: filePath,
                     modTime: modTime
@@ -147,7 +153,38 @@
             }
 
             currentFilePath = filePath;
+
+            // 恢复目标文件的编辑器状态
+            restoreEditorState(filePath);
         });
+    }
+
+    function saveCurrentEditorState() {
+        if (!currentFilePath || !editor) {
+            return;
+        }
+
+        const viewState = editor.saveViewState();
+        if (fileStates.has(currentFilePath)) {
+            fileStates.get(currentFilePath).viewState = viewState;
+        } else {
+            fileStates.set(currentFilePath, {
+                isDirty: false,
+                modTime: null,
+                viewState: viewState
+            });
+        }
+    }
+
+    function restoreEditorState(filePath) {
+        if (!editor || !fileStates.has(filePath)) {
+            return;
+        }
+
+        const state = fileStates.get(filePath);
+        if (state.viewState) {
+            editor.restoreViewState(state.viewState);
+        }
     }
 
     function closeFile(filePath) {
@@ -177,11 +214,11 @@
                 if (models.size > 0) {
                     const firstKey = models.keys().next().value;
                     const firstModel = models.get(firstKey);
-                    monaco.editor.setModel(firstModel);
+                    editor.setModel(firstModel);
                     currentFilePath = firstKey;
                 } else {
                     const emptyModel = monaco.editor.createModel('', 'plaintext');
-                    monaco.editor.setModel(emptyModel);
+                    editor.setModel(emptyModel);
                 }
             }
         }
@@ -214,7 +251,7 @@
                         modelInfo.modTime = fileInfo.modTime;
                         
                         if (currentFilePath === filePath) {
-                            monaco.editor.setModel(modelInfo.model);
+                            editor.setModel(modelInfo.model);
                         }
                         
                         showNotification('文件已重新加载: ' + getFileName(filePath));
@@ -238,7 +275,7 @@
                         modelInfo.isDirty = false;
                         
                         if (currentFilePath === filePath) {
-                            monaco.editor.setModel(modelInfo.model);
+                            editor.setModel(modelInfo.model);
                         }
                     }
                 });
