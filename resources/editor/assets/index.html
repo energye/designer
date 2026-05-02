@@ -4,20 +4,28 @@
     <meta charset="UTF-8">
     <title>Designer Code Editor</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         html, body {
             height: 100%;
             width: 100%;
             overflow: hidden;
         }
+
         body {
             display: flex;
             flex-direction: column;
         }
+
         #container {
             flex: 1;
             min-height: 0;
         }
+
         .toast {
             position: fixed;
             top: 20px;
@@ -34,6 +42,7 @@
             transition: all 0.3s ease;
             pointer-events: none;
         }
+
         .toast.show {
             opacity: 1;
             transform: translateX(0);
@@ -51,15 +60,15 @@
     let saveTimeout = null;
     const files = new Map(); // 存储: { model, modTime, isDirty, viewState }
 
-    require.config({ paths: { vs: './vs' } });
-    require(['vs/editor/editor.main'], function(monaco) {
+    require.config({paths: {vs: './vs'}});
+    require(['vs/editor/editor.main'], function (monaco) {
         editor = monaco.editor.create(document.getElementById('container'), {
             value: '',
             language: 'go',
             theme: 'vs-dark',
             fontSize: 14,
             automaticLayout: true,
-            minimap: { enabled: true },
+            minimap: {enabled: true},
             scrollBeyondLastLine: false,
             renderWhitespace: 'selection',
             tabSize: 4,
@@ -71,7 +80,7 @@
                 const info = files.get(currentFilePath);
                 if (!info.isDirty) {
                     info.isDirty = true;
-                    ipc.emit('set-file-dirty', [{ file: currentFilePath, isDirty: true }]);
+                    ipc.emit('set-file-dirty', [{file: currentFilePath, isDirty: true}]);
                 }
             }
             clearTimeout(saveTimeout);
@@ -86,7 +95,7 @@
         const model = editor.getModel();
         if (!model) return;
 
-        ipc.emit('save-file', [{ file: currentFilePath, content: model.getValue() }], function(result) {
+        ipc.emit('save-file', [{file: currentFilePath, content: model.getValue()}], function (result) {
             if (result === 'ok' && files.has(currentFilePath)) {
                 files.get(currentFilePath).isDirty = false;
             }
@@ -102,23 +111,25 @@
         // 切换并恢复视图状态
         editor.setModel(info.model);
         if (info.viewState) editor.restoreViewState(info.viewState);
+        editor.updateOptions({readOnly: !!info.readOnly});
         currentFilePath = filePath;
     }
 
-    function openFile(filePath) {
+    function openFile(filePath, readOnly) {
         if (!editor) return;
 
-        ipc.emit('open-file-request', [filePath], function(response) {
+        ipc.emit('open-file-request', [filePath], function (response) {
             if (!response) {
                 console.error('打开文件失败:', filePath);
                 return;
             }
 
-            const { content, language, modTime } = JSON.parse(response);
-            console.log("open-file-request:", { content: content.substring(0, 50) + '...', language, modTime });
+            const {content, language, modTime} = JSON.parse(response);
+            console.log("open-file-request:", {content: content.substring(0, 50) + '...', language, modTime});
 
             if (files.has(filePath)) {
                 const info = files.get(filePath);
+                info.readOnly = readOnly;
                 if (info.modTime !== modTime && !info.isDirty) {
                     info.model.setValue(content);
                     info.modTime = modTime;
@@ -127,9 +138,9 @@
                 const uri = monaco.Uri.parse('file:///' + filePath.replace(/\\/g, '/'));
                 files.set(filePath, {
                     model: monaco.editor.createModel(content, language, uri),
-                    modTime, isDirty: false, viewState: null
+                    modTime, isDirty: false, viewState: null, readOnly
                 });
-                ipc.emit('register-opened-file', [{ file: filePath, modTime }]);
+                ipc.emit('register-opened-file', [{file: filePath, modTime}]);
             }
 
             switchToFile(filePath);
@@ -155,7 +166,7 @@
         }
     }
 
-    ipc.on('open-file', data => openFile(data));
+    ipc.on('open-file', (data, readOnly) => openFile(data, readOnly));
     ipc.on('close-file', data => closeFile(data));
     ipc.on('save-current-file', () => autoSave());
 
@@ -164,9 +175,9 @@
         const info = files.get(filePath);
         if (info.isDirty) return;
 
-        ipc.emit('reload-file-request', [filePath], function(response) {
+        ipc.emit('reload-file-request', [filePath], function (response) {
             if (!response) return;
-            const { content, modTime } = JSON.parse(response);
+            const {content, modTime} = JSON.parse(response);
             info.model.setValue(content);
             info.modTime = modTime;
             if (currentFilePath === filePath) editor.setModel(info.model);
@@ -177,9 +188,9 @@
     ipc.on('file-conflict-detected', filePath => {
         if (!files.has(filePath)) return;
 
-        ipc.emit('reload-file-request', [filePath], function(response) {
+        ipc.emit('reload-file-request', [filePath], function (response) {
             if (!response) return;
-            const { content, modTime } = JSON.parse(response);
+            const {content, modTime} = JSON.parse(response);
             const info = files.get(filePath);
             info.model.setValue(content);
             info.modTime = modTime;

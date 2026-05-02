@@ -17,8 +17,9 @@ import (
 	"github.com/energye/energy/v3/ipc"
 )
 
-func OpenFileInEditor(filePath string) {
-	ipc.Emit("open-file", filePath)
+func OpenFileInEditor(filePath string, readOnly ...bool) {
+	isReadOnly := len(readOnly) > 0 && readOnly[0]
+	ipc.Emit("open-file", filePath, isReadOnly)
 }
 
 func CloseFileInEditor(filePath string) {
