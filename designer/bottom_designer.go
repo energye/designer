@@ -306,8 +306,12 @@ func (m *Designer) FindFormTabByFile(filePath string) (*FormTab, string) {
 // openFileInAppropriateTab 根据文件类型在合适的位置打开文件
 // 如果文件属于设计窗体, 切换到对应窗体的子标签
 // 如果不属于任何窗体, 创建或激活代码编辑器标签
+// 非文本文件(图片、二进制等)不会在编辑器中打开
 func openFileInAppropriateTab(filePath string) {
 	if designer == nil {
+		return
+	}
+	if !editor.IsTextFile(filePath) {
 		return
 	}
 	formTab, fileType := designer.FindFormTabByFile(filePath)

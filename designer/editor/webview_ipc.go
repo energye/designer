@@ -367,6 +367,11 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
+		if !isTextFile(filePath) {
+			context.Result("")
+			return
+		}
+
 		content, err := os.ReadFile(filePath)
 		if err != nil {
 			context.Result("")

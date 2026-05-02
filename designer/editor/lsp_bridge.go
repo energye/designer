@@ -148,6 +148,39 @@ func filePathToURI(filePath string) string {
 	return "file://" + uri
 }
 
+// isTextFile checks if a file is a text file that can be edited.
+// Returns false for binary files, images, archives, etc.
+func isTextFile(filePath string) bool {
+	ext := strings.ToLower(filepath.Ext(filePath))
+	switch ext {
+	// Images
+	case ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp", ".tiff", ".tif":
+		return false
+	// Audio/Video
+	case ".mp3", ".mp4", ".wav", ".avi", ".mkv", ".flac", ".ogg", ".wma", ".wmv", ".mov":
+		return false
+	// Archives
+	case ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar", ".tgz", ".zst":
+		return false
+	// Binaries/Executables
+	case ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".o", ".a", ".lib", ".pdb":
+		return false
+	// Fonts
+	case ".ttf", ".otf", ".woff", ".woff2", ".eot":
+		return false
+	// Documents
+	case ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx":
+		return false
+	// Database
+	case ".db", ".sqlite", ".mdb":
+		return false
+	// Certificate/Key (often binary)
+	case ".p12", ".pfx", ".der", ".crt", ".pem":
+		return true // PEM is text-based
+	}
+	return true
+}
+
 func detectLanguage(filePath string) string {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
