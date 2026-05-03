@@ -17,7 +17,7 @@ require(['vs/editor/editor.main'], function (monaco) {
 
     editor = monaco.editor.create(document.getElementById('container'), {
         value: '', language: 'go',
-        theme: 'vs-dark',
+        // theme: 'vs-dark',
         fontSize: 14,
         automaticLayout: true, minimap: {enabled: true},
         scrollBeyondLastLine: false, renderWhitespace: 'selection',
