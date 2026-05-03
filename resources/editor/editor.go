@@ -16,7 +16,6 @@ package editor
 
 import (
 	"embed"
-	_ "embed"
 )
 
 //go:embed monaco
