@@ -24,8 +24,6 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"path/filepath"
-
-	_ "github.com/energye/designer/designer/editor/webview"
 )
 
 // 代码编辑器标签 - 非设计窗体的代码文件

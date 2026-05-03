@@ -21,74 +21,7 @@ import (
 	"strings"
 )
 
-// JSCompletionItem 发送给前端的补全项
-type JSCompletionItem struct {
-	Label               string       `json:"label"`
-	Kind                int          `json:"kind"`
-	Detail              string       `json:"detail,omitempty"`
-	Documentation       string       `json:"documentation,omitempty"`
-	SortText            string       `json:"sortText,omitempty"`
-	FilterText          string       `json:"filterText,omitempty"`
-	InsertText          string       `json:"insertText,omitempty"`
-	InsertTextFormat    int          `json:"insertTextFormat,omitempty"`
-	AdditionalTextEdits []JSTextEdit `json:"additionalTextEdits,omitempty"`
-	Preselect           bool         `json:"preselect,omitempty"`
-	Deprecated          bool         `json:"deprecated,omitempty"`
-}
-
-type JSTextEdit struct {
-	Range   JSRange `json:"range"`
-	NewText string  `json:"newText"`
-}
-
-type JSRange struct {
-	Start JSPosition `json:"start"`
-	End   JSPosition `json:"end"`
-}
-
-type JSPosition struct {
-	Line      int `json:"line"`
-	Character int `json:"character"`
-}
-
-type JSParameter struct {
-	Label         string `json:"label"`
-	Documentation string `json:"documentation,omitempty"`
-}
-
-type JSSignature struct {
-	Label         string        `json:"label"`
-	Documentation string        `json:"documentation,omitempty"`
-	Parameters    []JSParameter `json:"parameters,omitempty"`
-}
-
-type JSSignatureHelpResult struct {
-	Signatures      []JSSignature `json:"signatures"`
-	ActiveSignature int           `json:"activeSignature"`
-	ActiveParameter int           `json:"activeParameter"`
-}
-
-type JSWorkspaceEdit struct {
-	Changes map[string][]JSTextEdit `json:"changes"`
-}
-
-type JSCodeAction struct {
-	Title       string           `json:"title"`
-	Kind        string           `json:"kind,omitempty"`
-	IsPreferred bool             `json:"isPreferred,omitempty"`
-	Edit        *JSWorkspaceEdit `json:"edit,omitempty"`
-}
-
-// FileData 文件数据结构，用于IPC文件读写
-type FileData struct {
-	File     string `json:"file"`
-	Content  string `json:"content"`
-	Language string `json:"language"`
-	ModTime  int64  `json:"modTime"`
-	ReadOnly bool   `json:"readOnly"`
-}
-
-func uriToFilePath(uri string) string {
+func URIToFilePath(uri string) string {
 	if tool.IsWindows {
 		if !strings.HasPrefix(uri, "file:///") {
 			return ""
@@ -102,15 +35,13 @@ func uriToFilePath(uri string) string {
 	return strings.TrimPrefix(uri, "file://")
 }
 
-// isFileReadOnly checks if a file should be opened as read-only.
+// IsFileReadOnly checks if a file should be opened as read-only.
 // Files in the Go module cache (GOMODCACHE) or vendor directory are read-only.
 // Files that cannot be written to are also read-only.
-func isFileReadOnly(filePath string) bool {
-	// Check actual file write permission
-	if !isWritable(filePath) {
+func IsFileReadOnly(filePath string) bool {
+	if !IsWritable(filePath) {
 		return true
 	}
-	// Check if file is in Go module cache
 	modCache := os.Getenv("GOMODCACHE")
 	if modCache != "" {
 		absPath, _ := filepath.Abs(filePath)
@@ -118,7 +49,6 @@ func isFileReadOnly(filePath string) bool {
 			return true
 		}
 	}
-	// Check if file is in project vendor directory
 	codePath := bean.CodePath()
 	if codePath != "" {
 		vendorPath := filepath.Join(codePath, "vendor")
@@ -130,8 +60,8 @@ func isFileReadOnly(filePath string) bool {
 	return false
 }
 
-// isWritable checks if a file is writable by attempting to open it for writing
-func isWritable(filePath string) bool {
+// IsWritable checks if a file is writable by attempting to open it for writing
+func IsWritable(filePath string) bool {
 	f, err := os.OpenFile(filePath, os.O_WRONLY, 0)
 	if err != nil {
 		return false
@@ -140,7 +70,7 @@ func isWritable(filePath string) bool {
 	return true
 }
 
-func filePathToURI(filePath string) string {
+func FilePathToURI(filePath string) string {
 	uri := filepath.ToSlash(filePath)
 	if tool.IsWindows {
 		return "file:///" + uri
@@ -148,40 +78,32 @@ func filePathToURI(filePath string) string {
 	return "file://" + uri
 }
 
-// isTextFile checks if a file is a text file that can be edited.
+// IsTextFile checks if a file is a text file that can be edited.
 // Returns false for binary files, images, archives, etc.
-func isTextFile(filePath string) bool {
+func IsTextFile(filePath string) bool {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
-	// Images
 	case ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".svg", ".webp", ".tiff", ".tif", ".icns":
 		return false
-	// Audio/Video
 	case ".mp3", ".mp4", ".wav", ".avi", ".mkv", ".flac", ".ogg", ".wma", ".wmv", ".mov":
 		return false
-	// Archives
 	case ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar", ".tgz", ".zst":
 		return false
-	// Binaries/Executables
 	case ".exe", ".dll", ".so", ".dylib", ".bin", ".dat", ".o", ".a", ".lib", ".pdb":
 		return false
-	// Fonts
 	case ".ttf", ".otf", ".woff", ".woff2", ".eot":
 		return false
-	// Documents
 	case ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx":
 		return false
-	// Database
 	case ".db", ".sqlite", ".mdb":
 		return false
-	// Certificate/Key (often binary)
 	case ".p12", ".pfx", ".der", ".crt", ".pem":
-		return true // PEM is text-based
+		return true
 	}
 	return true
 }
 
-func detectLanguage(filePath string) string {
+func DetectLanguage(filePath string) string {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
 	case ".go":

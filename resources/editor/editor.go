@@ -19,5 +19,5 @@ import (
 	_ "embed"
 )
 
-//go:embed assets
+//go:embed monaco
 var Assets embed.FS

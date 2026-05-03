@@ -49,7 +49,7 @@ func initPLSAsync() {
 		plsMu.Unlock()
 		return
 	}
-	rootURI := filePathToURI(bean.GPath)
+	rootURI := FilePathToURI(bean.GPath)
 	logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
 	if err := gPLSClient.Initialize(rootURI); err != nil {
 		logs.Error("gopls Initialize 失败:", err)
@@ -60,7 +60,7 @@ func initPLSAsync() {
 	}
 
 	gPLSClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
-		filePath := uriToFilePath(uri)
+		filePath := URIToFilePath(uri)
 		if filePath == "" {
 			return
 		}
@@ -96,6 +96,13 @@ func IsPLSFailed() bool {
 	return plsFailed
 }
 
+// PLSStatus 返回 gopls 的就绪和失败状态
+func PLSStatus() (ready bool, failed bool) {
+	plsMu.RLock()
+	defer plsMu.RUnlock()
+	return plsReady, plsFailed
+}
+
 // SetDiagnosticsHandler 设置诊断处理器，允许原生编辑器覆盖默认行为
 func SetDiagnosticsHandler(handler func(uri string, diagnostics []gopls.Diagnostic)) {
 	if gPLSClient != nil {
@@ -113,9 +120,9 @@ func notifyFileChanged(filePath string) {
 	if err != nil {
 		return
 	}
-	fileURI := filePathToURI(filePath)
+	fileURI := FilePathToURI(filePath)
 	go func() {
 		gPLSClient.DidClose(fileURI)
-		gPLSClient.DidOpen(fileURI, detectLanguage(filePath), string(content), 1)
+		gPLSClient.DidOpen(fileURI, DetectLanguage(filePath), string(content), 1)
 	}()
 }

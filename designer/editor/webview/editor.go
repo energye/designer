@@ -53,13 +53,13 @@ var (
 	gWVApp     *wv.Application
 )
 
-func WebViewInit() {
+func Init() {
 	wvInitOnce.Do(func() {
 		gWVApp = wv.Init(nil, nil)
 		gWVApp.SetLocalLoad(application.LocalLoad{
 			Scheme:     "energy",
 			Domain:     "designer",
-			ResRootDir: "assets",
+			ResRootDir: "monaco",
 			FS:         reseditor.Assets,
 		})
 		gWVApp.Start()
@@ -67,7 +67,7 @@ func WebViewInit() {
 }
 
 func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
-	WebViewInit()
+	Init()
 	editor.InitPLS()
 	m := &TWebviewEditor{
 		fileManager: editor.NewFileManager(),

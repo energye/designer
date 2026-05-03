@@ -24,8 +24,6 @@ import (
 	"github.com/energye/lcl/types"
 	"path/filepath"
 	"time"
-
-	_ "github.com/energye/designer/designer/editor/webview"
 )
 
 var gFromEditor editor.IEditor
