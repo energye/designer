@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/designer/editor"
+	"github.com/energye/designer/designer/editor/webview"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/energy/v3/wv"
@@ -23,6 +24,8 @@ import (
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"path/filepath"
+
+	_ "github.com/energye/designer/designer/editor/webview"
 )
 
 // 代码编辑器标签 - 非设计窗体的代码文件
@@ -88,7 +91,7 @@ func (m *CodeEditorTab) onHide(sender lcl.IObject) {
 func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	*canClose = true
 	if gFromEditor != nil {
-		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 			// Only reparent the browser if this tab currently holds it,
 			// otherwise we'd detach the browser from the active tab.
 			if m.mainPage.Active() {
@@ -109,13 +112,13 @@ func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 func (m *CodeEditorTab) initEditor() {
 	if gFromEditor == nil {
 		gFromEditor = editor.NewEditor(designer.tab)
-		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 			m.wvWindowParent = wvEditor.Webview().WindowParent()
 		}
-		editor.SetOnGoToDefinition(goToDefinition)
+		webview.SetOnGoToDefinition(goToDefinition)
 	} else {
 		if gFromEditor.Type() == editor.EtWebview && m.wvWindowParent == nil {
-			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)
+			m.wvWindowParent = webview.NewWebviewWindowParent(designer.tab)
 		}
 	}
 }
@@ -123,7 +126,7 @@ func (m *CodeEditorTab) initEditor() {
 // switchEditorToThisTab 将共享编辑器切换到当前代码编辑器标签
 func (m *CodeEditorTab) switchEditorToThisTab() {
 	if gFromEditor != nil && m.wvWindowParent != nil {
-		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 			canLoad := make(chan error, 1)
 			wvEditor.SetCanLoadChan(canLoad)
 			go func() {

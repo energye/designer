@@ -11,12 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package editor
+package webview
 
 import (
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/gopls"
 	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/resources/editor"
+	reseditor "github.com/energye/designer/resources/editor"
 	"github.com/energye/energy/v3/application"
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/wv"
@@ -29,7 +30,7 @@ import (
 )
 
 type IWebviewEditor interface {
-	IEditor
+	editor.IEditor
 	LoadURL(url string)
 	CreateBrowser()
 	SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent)
@@ -40,7 +41,7 @@ type IWebviewEditor interface {
 
 type TWebviewEditor struct {
 	WVEditor    wv.IWebview
-	fileManager *FileManager
+	fileManager *editor.FileManager
 	checkTimer  *time.Ticker
 	stopChan    chan struct{}
 	canLoadChan chan error
@@ -59,17 +60,17 @@ func WebViewInit() {
 			Scheme:     "energy",
 			Domain:     "designer",
 			ResRootDir: "assets",
-			FS:         editor.Assets,
+			FS:         reseditor.Assets,
 		})
 		gWVApp.Start()
 	})
 }
 
-func NewWebviewEditor(owner lcl.IWinControl) IEditor {
+func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 	WebViewInit()
-	InitPLS()
+	editor.InitPLS()
 	m := &TWebviewEditor{
-		fileManager: NewFileManager(),
+		fileManager: editor.NewFileManager(),
 		stopChan:    make(chan struct{}),
 	}
 	m.WVEditor = wv.NewWebview(owner)
@@ -87,11 +88,15 @@ func NewWebviewEditor(owner lcl.IWinControl) IEditor {
 	m.initIPCEvent()
 	m.initDefinitionIPC()
 	m.startFileChangeChecker()
-	startFormFileWatcher()
+	editor.StartFormFileWatcher()
 
-	SetCurrentEditor(m)
+	editor.SetCurrentEditor(m)
 
 	return m
+}
+
+func init() {
+	editor.RegisterEditorFactory(editor.EtWebview, NewWebviewEditor)
 }
 
 func (m *TWebviewEditor) SetCanLoadChan(canLoad chan error) {
@@ -119,8 +124,8 @@ func (m *TWebviewEditor) sendCanLoadSignal() {
 	}
 }
 
-func (m *TWebviewEditor) Type() EditType {
-	return EtWebview
+func (m *TWebviewEditor) Type() editor.EditType {
+	return editor.EtWebview
 }
 
 func (m *TWebviewEditor) OpenFile(filePath string, readOnly ...bool) {
@@ -136,12 +141,12 @@ func (m *TWebviewEditor) SaveCurrentFile() {
 	ipc.Emit("save-current-file", "")
 }
 
-func (m *TWebviewEditor) FileManager() *FileManager {
+func (m *TWebviewEditor) FileManager() *editor.FileManager {
 	return m.fileManager
 }
 
 func (m *TWebviewEditor) PLSClient() *gopls.PLSClient {
-	return gPLSClient
+	return editor.PLSClient()
 }
 
 func (m *TWebviewEditor) Webview() wv.IWebview {
@@ -175,11 +180,10 @@ func (m *TWebviewEditor) checkFileChanges() {
 	for _, filePath := range changedFiles {
 		state, _ := m.fileManager.GetFileState(filePath)
 
-		// 更新 ModTime 防止重复检测
 		fi, err := os.Stat(filePath)
 		if err == nil {
 			m.fileManager.UpdateModTime(filePath, fi.ModTime())
-			updateSavedModTime(filePath)
+			editor.UpdateSavedModTime(filePath)
 		}
 
 		if state != nil && state.IsDirty {
@@ -201,5 +205,5 @@ func (m *TWebviewEditor) Stop() {
 		m.checkTimer.Stop()
 		close(m.stopChan)
 	}
-	stopFormFileWatcher()
+	editor.StopFormFileWatcher()
 }

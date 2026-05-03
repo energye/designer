@@ -1,9 +1,10 @@
-package editor
+package webview
 
 import (
 	"encoding/json"
 	"sync"
 
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/energy/v3/ipc"
 )
 
@@ -38,20 +39,21 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 			return
 		}
 
-		if gPLSClient == nil {
+		plsClient := editor.PLSClient()
+		if plsClient == nil {
 			context.Result("null")
 			return
 		}
 
-		fileURI := filePathToURI(params.File)
-		locations, err := gPLSClient.Definition(fileURI, params.Line, params.Column)
+		fileURI := editor.FilePathToURI(params.File)
+		locations, err := plsClient.Definition(fileURI, params.Line, params.Column)
 		if err != nil || len(locations) == 0 {
 			context.Result("null")
 			return
 		}
 
 		loc := locations[0]
-		filePath := uriToFilePath(loc.URI)
+		filePath := editor.URIToFilePath(loc.URI)
 		if filePath == "" {
 			context.Result("null")
 			return

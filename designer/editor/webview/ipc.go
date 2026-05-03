@@ -11,10 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and limitations under the License.
 
-package editor
+package webview
 
 import (
 	"encoding/json"
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/gopls"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/energy/v3/ipc"
@@ -23,6 +24,73 @@ import (
 	"strings"
 	"time"
 )
+
+// JSCompletionItem 发送给前端的补全项
+type JSCompletionItem struct {
+	Label               string       `json:"label"`
+	Kind                int          `json:"kind"`
+	Detail              string       `json:"detail,omitempty"`
+	Documentation       string       `json:"documentation,omitempty"`
+	SortText            string       `json:"sortText,omitempty"`
+	FilterText          string       `json:"filterText,omitempty"`
+	InsertText          string       `json:"insertText,omitempty"`
+	InsertTextFormat    int          `json:"insertTextFormat,omitempty"`
+	AdditionalTextEdits []JSTextEdit `json:"additionalTextEdits,omitempty"`
+	Preselect           bool         `json:"preselect,omitempty"`
+	Deprecated          bool         `json:"deprecated,omitempty"`
+}
+
+type JSTextEdit struct {
+	Range   JSRange `json:"range"`
+	NewText string  `json:"newText"`
+}
+
+type JSRange struct {
+	Start JSPosition `json:"start"`
+	End   JSPosition `json:"end"`
+}
+
+type JSPosition struct {
+	Line      int `json:"line"`
+	Character int `json:"character"`
+}
+
+type JSParameter struct {
+	Label         string `json:"label"`
+	Documentation string `json:"documentation,omitempty"`
+}
+
+type JSSignature struct {
+	Label         string        `json:"label"`
+	Documentation string        `json:"documentation,omitempty"`
+	Parameters    []JSParameter `json:"parameters,omitempty"`
+}
+
+type JSSignatureHelpResult struct {
+	Signatures      []JSSignature `json:"signatures"`
+	ActiveSignature int           `json:"activeSignature"`
+	ActiveParameter int           `json:"activeParameter"`
+}
+
+type JSWorkspaceEdit struct {
+	Changes map[string][]JSTextEdit `json:"changes"`
+}
+
+type JSCodeAction struct {
+	Title       string           `json:"title"`
+	Kind        string           `json:"kind,omitempty"`
+	IsPreferred bool             `json:"isPreferred,omitempty"`
+	Edit        *JSWorkspaceEdit `json:"edit,omitempty"`
+}
+
+// FileData 文件数据结构，用于IPC文件读写
+type FileData struct {
+	File     string `json:"file"`
+	Content  string `json:"content"`
+	Language string `json:"language"`
+	ModTime  int64  `json:"modTime"`
+	ReadOnly bool   `json:"readOnly"`
+}
 
 // CompletionParams gopls补全请求参数
 type CompletionParams struct {
@@ -83,7 +151,7 @@ type DirtyData struct {
 
 // readFileData 读取文件并返回序列化的FileData JSON，checkText为true时检查是否为文本文件
 func readFileData(filePath string, checkText bool) (string, bool) {
-	if checkText && !isTextFile(filePath) {
+	if checkText && !editor.IsTextFile(filePath) {
 		return "", false
 	}
 	content, err := os.ReadFile(filePath)
@@ -97,9 +165,9 @@ func readFileData(filePath string, checkText bool) (string, bool) {
 	result := FileData{
 		File:     filePath,
 		Content:  string(content),
-		Language: detectLanguage(filePath),
+		Language: editor.DetectLanguage(filePath),
 		ModTime:  fileInfo.ModTime().UnixMilli(),
-		ReadOnly: isFileReadOnly(filePath),
+		ReadOnly: editor.IsFileReadOnly(filePath),
 	}
 	jsonData, err := json.Marshal(result)
 	if err != nil {
@@ -111,19 +179,14 @@ func readFileData(filePath string, checkText bool) (string, bool) {
 func (m *TWebviewEditor) initIPCEvent() {
 	ipc.On("monaco-inited", func(context ipc.IContext) {
 		logs.Info("ipc monaco-inited BrowserId:", context.BrowserId(), context.Data())
-		// Notify frontend about gopls availability
 		go func() {
-			// Wait briefly for PLS init to complete or fail
 			for i := 0; i < 30; i++ {
-				if IsPLSReady() || IsPLSFailed() {
+				if editor.IsPLSReady() || editor.IsPLSFailed() {
 					break
 				}
 				time.Sleep(100 * time.Millisecond)
 			}
-			plsMu.RLock()
-			failed := plsFailed
-			ready := plsReady
-			plsMu.RUnlock()
+			ready, failed := editor.PLSStatus()
 			status := "ready"
 			if failed {
 				status = "unavailable"
@@ -144,14 +207,15 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient == nil {
+		plsClient := editor.PLSClient()
+		if plsClient == nil {
 			context.Result("[]")
 			return
 		}
 
 		go func() {
-			fileURI := filePathToURI(params.File)
-			result, err := gPLSClient.Completion(fileURI, params.Line, params.Column, params.TriggerKind, params.TriggerChar)
+			fileURI := editor.FilePathToURI(params.File)
+			result, err := plsClient.Completion(fileURI, params.Line, params.Column, params.TriggerKind, params.TriggerChar)
 			if err != nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-completion-response", params.RequestID, "[]")
@@ -212,14 +276,15 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient == nil {
+		plsClient := editor.PLSClient()
+		if plsClient == nil {
 			context.Result("")
 			return
 		}
 
 		go func() {
-			fileURI := filePathToURI(params.File)
-			result, err := gPLSClient.SignatureHelp(fileURI, params.Line, params.Column)
+			fileURI := editor.FilePathToURI(params.File)
+			result, err := plsClient.SignatureHelp(fileURI, params.Line, params.Column)
 			if err != nil || result == nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-signatureHelp-response", params.RequestID, "")
@@ -261,7 +326,8 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient == nil {
+		plsClient := editor.PLSClient()
+		if plsClient == nil {
 			context.Result("[]")
 			return
 		}
@@ -272,8 +338,8 @@ func (m *TWebviewEditor) initIPCEvent() {
 		}
 
 		go func() {
-			fileURI := filePathToURI(params.File)
-			result, err := gPLSClient.CodeAction(fileURI, params.StartLine, params.StartChar, params.EndLine, params.EndChar, kinds, params.Diagnostics)
+			fileURI := editor.FilePathToURI(params.File)
+			result, err := plsClient.CodeAction(fileURI, params.StartLine, params.StartChar, params.EndLine, params.EndChar, kinds, params.Diagnostics)
 			if err != nil || result == nil {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					ipc.Emit("gopls-codeAction-response", params.RequestID, "[]")
@@ -293,7 +359,7 @@ func (m *TWebviewEditor) initIPCEvent() {
 						Changes: make(map[string][]JSTextEdit),
 					}
 					for uri, edits := range action.Edit.Changes {
-						filePath := uriToFilePath(uri)
+						filePath := editor.URIToFilePath(uri)
 						key := filePath
 						if key == "" {
 							key = uri
@@ -329,10 +395,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient != nil {
+		if plsClient := editor.PLSClient(); plsClient != nil {
 			go func() {
-				fileURI := filePathToURI(params.File)
-				gPLSClient.DidOpen(fileURI, params.LanguageID, params.Content, params.Version)
+				fileURI := editor.FilePathToURI(params.File)
+				plsClient.DidOpen(fileURI, params.LanguageID, params.Content, params.Version)
 			}()
 		}
 		context.Result("ok")
@@ -345,9 +411,9 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient != nil {
-			fileURI := filePathToURI(params.File)
-			if err := gPLSClient.DidChange(fileURI, params.Version, params.Content); err != nil {
+		if plsClient := editor.PLSClient(); plsClient != nil {
+			fileURI := editor.FilePathToURI(params.File)
+			if err := plsClient.DidChange(fileURI, params.Version, params.Content); err != nil {
 				logs.Error("gopls-didChange 同步发送失败:", err)
 			}
 		}
@@ -361,10 +427,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 			return
 		}
 
-		if gPLSClient != nil {
+		if plsClient := editor.PLSClient(); plsClient != nil {
 			go func() {
-				fileURI := filePathToURI(filePath)
-				gPLSClient.DidClose(fileURI)
+				fileURI := editor.FilePathToURI(filePath)
+				plsClient.DidClose(fileURI)
 			}()
 		}
 		context.Result("ok")
@@ -401,16 +467,15 @@ func (m *TWebviewEditor) initIPCEvent() {
 		if fileInfo != nil {
 			m.fileManager.UpdateModTime(fileData.File, fileInfo.ModTime())
 			m.fileManager.SetDirty(fileData.File, false)
-			updateSavedModTime(fileData.File)
+			editor.UpdateSavedModTime(fileData.File)
 		}
 
 		context.Result("ok")
 
-		// Notify gopls that file was saved so it can do full analysis
-		if gPLSClient != nil {
+		if plsClient := editor.PLSClient(); plsClient != nil {
 			go func() {
-				fileURI := filePathToURI(fileData.File)
-				gPLSClient.DidSave(fileURI, fileData.Content)
+				fileURI := editor.FilePathToURI(fileData.File)
+				plsClient.DidSave(fileURI, fileData.Content)
 			}()
 		}
 	})

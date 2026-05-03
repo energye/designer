@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"github.com/energye/designer/designer/editor"
+	"github.com/energye/designer/designer/editor/webview"
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/energy/v3/wv"
@@ -23,6 +24,8 @@ import (
 	"github.com/energye/lcl/types"
 	"path/filepath"
 	"time"
+
+	_ "github.com/energye/designer/designer/editor/webview"
 )
 
 var gFromEditor editor.IEditor
@@ -152,21 +155,21 @@ func (m *TFormDesignPage) initEditor() {
 	if gFromEditor == nil {
 		gFromEditor = editor.NewEditor(designer.tab)
 		if gFromEditor.Type() == editor.EtWebview {
-			if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+			if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 				m.wvWindowParent = wvEditor.Webview().WindowParent()
 			}
 		}
 	} else {
 		if gFromEditor.Type() == editor.EtWebview && m.wvWindowParent == nil {
-			m.wvWindowParent = editor.NewWebviewWindowParent(designer.tab)
+			m.wvWindowParent = webview.NewWebviewWindowParent(designer.tab)
 		}
 	}
-	editor.SetOnGoToDefinition(goToDefinition)
+	webview.SetOnGoToDefinition(goToDefinition)
 }
 
 func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 	if gFromEditor != nil && m.wvWindowParent != nil {
-		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
+		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 			canLoad := make(chan error, 1)
 			wvEditor.SetCanLoadChan(canLoad)
 			go func() {

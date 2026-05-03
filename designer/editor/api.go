@@ -70,9 +70,3 @@ func NotifyFilesChanged(filePaths []string) {
 		NotifyFileChanged(filePath)
 	}
 }
-
-// IsTextFile checks if a file is a text file that can be opened in the editor.
-// Returns false for binary files, images, archives, etc.
-func IsTextFile(filePath string) bool {
-	return isTextFile(filePath)
-}

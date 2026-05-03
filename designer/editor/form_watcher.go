@@ -21,16 +21,9 @@ import (
 	"time"
 )
 
-// formFileWatcher 监控项目所有窗体关联文件的变更
-// FileManager 只跟踪 Monaco 中打开的文件，而 ui.go 文件通常不在 Monaco 中打开，
-// 所以 formFileWatcher 独立扫描所有窗体文件，确保 gopls 感知外部修改。
-//
-// 职责划分:
-//   - checkFileChanges: 检测 FileManager 注册的文件 → 通知 Monaco + gopls
-//   - formFileWatcher: 检测项目窗体文件 → 仅通知 gopls（Monaco 未打开这些文件）
 type formFileWatcher struct {
 	mu       sync.RWMutex
-	fileInfo map[string]time.Time // filePath -> ModTime
+	fileInfo map[string]time.Time
 	stopCh   chan struct{}
 }
 
@@ -39,7 +32,7 @@ var (
 	watcherMu    sync.RWMutex
 )
 
-func startFormFileWatcher() {
+func StartFormFileWatcher() {
 	watcherMu.RLock()
 	if gFormWatcher != nil {
 		watcherMu.RUnlock()
@@ -60,7 +53,7 @@ func startFormFileWatcher() {
 	go gFormWatcher.run()
 }
 
-func stopFormFileWatcher() {
+func StopFormFileWatcher() {
 	watcherMu.Lock()
 	defer watcherMu.Unlock()
 	if gFormWatcher == nil {
@@ -71,7 +64,7 @@ func stopFormFileWatcher() {
 }
 
 // UpdateSavedModTime 编辑器保存文件后调用，同步 ModTime 防止误判
-func updateSavedModTime(filePath string) {
+func UpdateSavedModTime(filePath string) {
 	watcherMu.RLock()
 	w := gFormWatcher
 	watcherMu.RUnlock()

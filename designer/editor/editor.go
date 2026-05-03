@@ -49,16 +49,21 @@ type IEditor interface {
 	Stop()
 }
 
+var editorFactories = map[EditType]func(lcl.IWinControl) IEditor{}
+
+// RegisterEditorFactory 注册编辑器工厂函数，由子包 init() 调用
+func RegisterEditorFactory(et EditType, factory func(lcl.IWinControl) IEditor) {
+	editorFactories[et] = factory
+}
+
 func NewEditor(owner lcl.IWinControl, editType ...EditType) IEditor {
 	var et EditType = EtWebview
 	if len(editType) > 0 {
 		et = editType[0]
 	}
-	switch et {
-	case EtSynEdit:
-		// SynEdit editor requires build tag "synedit"
+	factory, ok := editorFactories[et]
+	if !ok {
 		return nil
-	default:
-		return NewWebviewEditor(owner)
 	}
+	return factory(owner)
 }
