@@ -364,6 +364,39 @@ func (c *PLSClient) DidSave(fileURI string, text string) error {
 	return c.sendNotification("textDocument/didSave", params)
 }
 
+func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
+	logs.Info("gopls Formatting 请求: uri=", fileURI)
+	params := map[string]interface{}{
+		"textDocument": map[string]string{
+			"uri": fileURI,
+		},
+		"options": map[string]interface{}{
+			"tabSize":           4,
+			"insertSpaces":      true,
+			"trimTrailingWhitespace": true,
+			"insertFinalNewline":     true,
+		},
+	}
+
+	resp, err := c.sendRequest("textDocument/formatting", params)
+	if err != nil {
+		logs.Error("gopls Formatting 请求失败:", err)
+		return nil, err
+	}
+	if resp == nil {
+		return nil, nil
+	}
+
+	var edits []TextEdit
+	if err := json.Unmarshal(resp, &edits); err != nil {
+		logs.Error("gopls Formatting JSON解析失败:", err)
+		return nil, nil
+	}
+
+	logs.Info("gopls Formatting 返回", len(edits), "个编辑")
+	return edits, nil
+}
+
 func (c *PLSClient) DidClose(fileURI string) error {
 	logs.Info("gopls DidClose: uri=", fileURI)
 	params := map[string]interface{}{

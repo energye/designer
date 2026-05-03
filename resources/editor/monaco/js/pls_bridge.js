@@ -32,7 +32,6 @@ function registerPLSProviders() {
 
             return new Promise(function (resolve) {
                 pendingCompletion = {reqID: reqID, resolve: resolve};
-                // Override the timeout-based one since we set pendingCompletion after
                 setTimeout(function () {
                     if (pendingCompletion && pendingCompletion.reqID === reqID) {
                         pendingCompletion = null;
@@ -108,6 +107,9 @@ function registerPLSProviders() {
                     endLine: range.endLineNumber - 1, endChar: range.endColumn - 1,
                     kinds: kinds, diagnostics: rangeDiags
                 }]);
+            }).catch(function () {
+                // Prevent "Uncaught (in promise) Canceled" errors
+                return {actions: [], dispose: function(){}};
             });
         }
     });
@@ -179,7 +181,6 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
         }
         return s;
     });
-
     resolve({suggestions: suggestions});
 });
 
@@ -223,30 +224,63 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
     try { actions = JSON.parse(resultJSON); } catch (e) {}
     if (!Array.isArray(actions)) actions = [];
 
-    var isAutoOrganize = (!pendingCodeAction || pendingCodeAction.reqID !== reqID);
+    var isManualSave = (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID && pendingOrganizeSave.phase === 'organize');
+    var isAutoOrganize = (!pendingCodeAction || pendingCodeAction.reqID !== reqID) && !isManualSave;
 
-    if (isAutoOrganize) {
+    if (isAutoOrganize || isManualSave) {
+        // Apply organize imports edits
         actions.forEach(function (action) {
             if (action.kind === 'source.organizeImports' && action.edit && action.edit.changes) {
                 applyWorkspaceEdit(action.edit);
             }
         });
-        if (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID) {
-            clearTimeout(saveAfterOrganizeTimeout);
-            saveAfterOrganizeTimeout = setTimeout(function () {
-                var fp = pendingOrganizeSave.filePath;
-                pendingOrganizeSave = null;
-                if (fp && files.has(fp)) {
-                    var model = getModelByFilePath(fp);
-                    if (model) {
-                        ipc.emit('save-file', [{file: fp, content: model.getValue()}], function (result) {
-                            if (result === 'ok') {
-                                files.get(fp).isDirty = false;
-                            }
-                        });
-                    }
+
+        if (isManualSave) {
+            // Manual save flow: organize imports done, now format then save
+            var fp = pendingOrganizeSave.filePath;
+            pendingOrganizeSave = null;
+
+            if (!files.has(fp)) { saveInProgress = false; return; }
+            var afterOrganizeModel = getModelByFilePath(fp);
+            if (!afterOrganizeModel) { saveInProgress = false; return; }
+
+            requestFormatting(fp, function (formatEdits) {
+                if (!files.has(fp)) { saveInProgress = false; return; }
+                var currentModel = getModelByFilePath(fp);
+                if (!currentModel) { saveInProgress = false; return; }
+
+                if (formatEdits.length > 0) {
+                    applyingEdit = true;
+                    try {
+                        var monacoEdits = formatEdits.map(function (edit) {
+                            return { range: plsRangeToMonaco(edit.range), text: edit.newText };
+                        }).reverse();
+                        currentModel.applyEdits(monacoEdits);
+                    } finally { applyingEdit = false; }
                 }
-            }, 100);
+                // Save the file to disk
+                ipc.emit('save-file', [{file: fp, content: currentModel.getValue()}], function (result) {
+                    if (result === 'ok' && files.has(fp)) {
+                        files.get(fp).isDirty = false;
+                    }
+                    saveInProgress = false;
+                });
+                showNotification('已保存: ' + getFileName(fp));
+            });
+        } else if (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID) {
+            // Auto-save path (from autoSave function, no phase set)
+            var fp = pendingOrganizeSave.filePath;
+            pendingOrganizeSave = null;
+            if (fp && files.has(fp)) {
+                var model = getModelByFilePath(fp);
+                if (model) {
+                    ipc.emit('save-file', [{file: fp, content: model.getValue()}], function (result) {
+                        if (result === 'ok') {
+                            files.get(fp).isDirty = false;
+                        }
+                    });
+                }
+            }
         }
         return;
     }
@@ -259,7 +293,7 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
             title: action.title,
             kind: action.kind || 'quickfix',
             diagnostics: [],
-            edit: { edits: [] }
+            isPreferred: !!action.isPreferred
         };
 
         if (action.edit && action.edit.changes) {
@@ -273,20 +307,65 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
                     var edit = edits[i];
                     allEdits.push({
                         resource: model.uri,
-                        edit: {
+                        versionId: undefined,
+                        textEdit: {
                             range: plsRangeToMonaco(edit.range),
                             text: edit.newText
                         }
                     });
                 }
             }
-            ca.edit.edits = allEdits;
+            if (allEdits.length > 0) {
+                ca.edit = { edits: allEdits };
+            }
         }
 
         return ca;
     });
 
     resolve({actions: codeActions, dispose: function(){}});
+});
+
+// === Formatting Response Handler ===
+ipc.on('gopls-formatting-response', function (reqID, resultJSON) {
+    if (!pendingFormatting || pendingFormatting.reqID !== reqID) return;
+
+    var callback = pendingFormatting.callback;
+    pendingFormatting = null;
+
+    var edits = [];
+    try { edits = JSON.parse(resultJSON); } catch (e) {}
+    if (!Array.isArray(edits)) edits = [];
+
+    callback(edits);
+});
+
+// === Definition Response Handler (async) ===
+ipc.on('gopls-definition-response', function (reqID, resultJSON) {
+    if (!pendingDefinition || pendingDefinition.reqID !== reqID) return;
+    pendingDefinition = null;
+
+    if (!resultJSON || resultJSON === 'null') return;
+
+    var data = null;
+    try { data = JSON.parse(resultJSON); } catch (e) { return; }
+    if (!data.file) return;
+
+    var sourceFile = getFilePathByModel(editor.getModel());
+    var targetPath = data.file;
+    var targetLine = data.range.start.line;
+    var targetCol = data.range.start.character;
+
+    if (targetPath === sourceFile) {
+        editor.revealLineInCenter(targetLine + 1);
+        editor.setPosition({
+            lineNumber: targetLine + 1,
+            column: targetCol + 1
+        });
+        editor.focus();
+    } else {
+        ipc.emit('go-to-definition', [{file: targetPath, range: data.range}]);
+    }
 });
 
 // === Diagnostics Handler ===
@@ -322,7 +401,7 @@ ipc.on('gopls-diagnostics', function (filePath, diagnosticsJSON) {
     }
 });
 
-// Request organize imports (used both for auto and before-save)
+// Request organize imports (used for auto-diagnostics only, NOT during manualSave)
 function requestOrganizeImports(filePath, model, onSave) {
     clearTimeout(organizeImportsTimeout);
     organizeImportsTimeout = setTimeout(function () {

@@ -137,6 +137,12 @@ type DidChangeParams struct {
 	Version int    `json:"version"`
 }
 
+// FormattingParams gopls格式化请求参数
+type FormattingParams struct {
+	RequestID int    `json:"requestID"`
+	File      string `json:"file"`
+}
+
 // RegData 文件注册数据
 type RegData struct {
 	File    string `json:"file"`
@@ -404,19 +410,21 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
-	// DidChange - 同步：必须在gopls处理后续请求前完成
+	// DidChange - 异步：避免阻塞UI线程
 	ipc.On("gopls-didChange", func(context ipc.IContext) {
 		var params DidChangeParams
 		if !parseIPCParams(context, &params, "ok") {
 			return
 		}
 
-		if plsClient := editor.PLSClient(); plsClient != nil {
-			fileURI := editor.FilePathToURI(params.File)
-			if err := plsClient.DidChange(fileURI, params.Version, params.Content); err != nil {
-				logs.Error("gopls-didChange 同步发送失败:", err)
+		go func() {
+			if plsClient := editor.PLSClient(); plsClient != nil {
+				fileURI := editor.FilePathToURI(params.File)
+				if err := plsClient.DidChange(fileURI, params.Version, params.Content); err != nil {
+					logs.Error("gopls-didChange 发送失败:", err)
+				}
 			}
-		}
+		}()
 		context.Result("ok")
 	})
 
@@ -526,5 +534,48 @@ func (m *TWebviewEditor) initIPCEvent() {
 
 		m.fileManager.SetDirty(dirtyData.File, dirtyData.IsDirty)
 		context.Result("ok")
+	})
+
+	// Formatting
+	ipc.On("gopls-formatting", func(context ipc.IContext) {
+		var params FormattingParams
+		if !parseIPCParams(context, &params, "[]") {
+			return
+		}
+
+		plcClient := editor.PLSClient()
+		if plcClient == nil {
+			context.Result("[]")
+			return
+		}
+
+		go func() {
+			fileURI := editor.FilePathToURI(params.File)
+			result, err := plcClient.Formatting(fileURI)
+			if err != nil || result == nil {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					ipc.Emit("gopls-formatting-response", params.RequestID, "[]")
+				})
+				return
+			}
+
+			jsEdits := make([]JSTextEdit, len(result))
+			for i, te := range result {
+				jsEdits[i] = JSTextEdit{
+					NewText: te.NewText,
+					Range: JSRange{
+						Start: JSPosition{Line: te.Range.Start.Line, Character: te.Range.Start.Character},
+						End:   JSPosition{Line: te.Range.End.Line, Character: te.Range.End.Character},
+					},
+				}
+			}
+
+			respData, _ := json.Marshal(jsEdits)
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				ipc.Emit("gopls-formatting-response", params.RequestID, string(respData))
+			})
+		}()
+
+		context.Result("")
 	})
 }

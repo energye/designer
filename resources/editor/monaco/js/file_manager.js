@@ -1,5 +1,7 @@
 // File open/close/save/reload logic
 
+var pendingGotoPosition = null; // {line, character} - applied after file open completes
+
 function switchToFile(filePath) {
     var info = files.get(filePath);
     if (currentFilePath && files.has(currentFilePath)) {
@@ -10,6 +12,15 @@ function switchToFile(filePath) {
     editor.updateOptions({readOnly: !!info.readOnly});
     currentFilePath = filePath;
     updateFilePathBar(filePath);
+
+    // Apply pending goto position if this is the target file
+    if (pendingGotoPosition && pendingGotoPosition.filePath === filePath) {
+        var pos = pendingGotoPosition;
+        pendingGotoPosition = null;
+        editor.revealLineInCenter(pos.line + 1);
+        editor.setPosition({lineNumber: pos.line + 1, column: pos.character + 1});
+        editor.focus();
+    }
 }
 
 function updateFilePathBar(filePath) {

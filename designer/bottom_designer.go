@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/resources"
+	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -342,4 +343,9 @@ func openFileInAppropriateTab(filePath string) {
 // 其它文件在主 tab 标签打开
 func goToDefinition(filePath string, line, character int) {
 	openFileInAppropriateTab(filePath)
+	// 定位到定义的具体行和列
+	editor.OpenFileInEditor(filePath)
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		ipc.Emit("goto-position", filePath, line, character)
+	})
 }

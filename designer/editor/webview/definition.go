@@ -6,6 +6,7 @@ import (
 
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/energy/v3/ipc"
+	"github.com/energye/lcl/lcl"
 )
 
 type JSDefinition struct {
@@ -39,36 +40,46 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 			return
 		}
 
-		plsClient := editor.PLSClient()
-		if plsClient == nil {
+		plcClient := editor.PLSClient()
+		if plcClient == nil {
 			context.Result("null")
 			return
 		}
 
-		fileURI := editor.FilePathToURI(params.File)
-		locations, err := plsClient.Definition(fileURI, params.Line, params.Column)
-		if err != nil || len(locations) == 0 {
-			context.Result("null")
-			return
-		}
+		context.Result("")
 
-		loc := locations[0]
-		filePath := editor.URIToFilePath(loc.URI)
-		if filePath == "" {
-			context.Result("null")
-			return
-		}
+		go func() {
+			fileURI := editor.FilePathToURI(params.File)
+			locations, err := plcClient.Definition(fileURI, params.Line, params.Column)
+			if err != nil || len(locations) == 0 {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					ipc.Emit("gopls-definition-response", params.RequestID, "null")
+				})
+				return
+			}
 
-		result := JSDefinition{
-			File: filePath,
-			Range: JSRange{
-				Start: JSPosition{Line: loc.Range.Start.Line, Character: loc.Range.Start.Character},
-				End:   JSPosition{Line: loc.Range.End.Line, Character: loc.Range.End.Character},
-			},
-		}
+			loc := locations[0]
+			filePath := editor.URIToFilePath(loc.URI)
+			if filePath == "" {
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					ipc.Emit("gopls-definition-response", params.RequestID, "null")
+				})
+				return
+			}
 
-		respData, _ := json.Marshal(result)
-		context.Result(string(respData))
+			result := JSDefinition{
+				File: filePath,
+				Range: JSRange{
+					Start: JSPosition{Line: loc.Range.Start.Line, Character: loc.Range.Start.Character},
+					End:   JSPosition{Line: loc.Range.End.Line, Character: loc.Range.End.Character},
+				},
+			}
+
+			respData, _ := json.Marshal(result)
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				ipc.Emit("gopls-definition-response", params.RequestID, string(respData))
+			})
+		}()
 	})
 
 	ipc.On("go-to-definition", func(context ipc.IContext) {
