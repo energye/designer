@@ -34,9 +34,21 @@ type formFileWatcher struct {
 	stopCh   chan struct{}
 }
 
-var gFormWatcher *formFileWatcher
+var (
+	gFormWatcher *formFileWatcher
+	watcherMu    sync.RWMutex
+)
 
 func startFormFileWatcher() {
+	watcherMu.RLock()
+	if gFormWatcher != nil {
+		watcherMu.RUnlock()
+		return
+	}
+	watcherMu.RUnlock()
+
+	watcherMu.Lock()
+	defer watcherMu.Unlock()
 	if gFormWatcher != nil {
 		return
 	}
@@ -49,6 +61,8 @@ func startFormFileWatcher() {
 }
 
 func stopFormFileWatcher() {
+	watcherMu.Lock()
+	defer watcherMu.Unlock()
 	if gFormWatcher == nil {
 		return
 	}
@@ -58,16 +72,19 @@ func stopFormFileWatcher() {
 
 // UpdateSavedModTime 编辑器保存文件后调用，同步 ModTime 防止误判
 func updateSavedModTime(filePath string) {
-	if gFormWatcher == nil {
+	watcherMu.RLock()
+	w := gFormWatcher
+	watcherMu.RUnlock()
+	if w == nil {
 		return
 	}
 	fi, err := os.Stat(filePath)
 	if err != nil {
 		return
 	}
-	gFormWatcher.mu.Lock()
-	gFormWatcher.fileInfo[filePath] = fi.ModTime()
-	gFormWatcher.mu.Unlock()
+	w.mu.Lock()
+	w.fileInfo[filePath] = fi.ModTime()
+	w.mu.Unlock()
 }
 
 func (w *formFileWatcher) run() {
@@ -112,26 +129,31 @@ func (w *formFileWatcher) checkChanges() {
 		return
 	}
 
-	var changedFiles []string
-	currentFiles := make(map[string]time.Time)
-
-	w.mu.Lock()
+	var filesToStat []string
 	for _, form := range bean.GProject.UIForms {
 		for _, fileName := range []string{form.GOFile, form.GOUserFile} {
 			if fileName == "" {
 				continue
 			}
-			fp := filepath.Join(codePath, fileName)
-			fi, err := os.Stat(fp)
-			if err != nil {
-				continue
-			}
-			currentFiles[fp] = fi.ModTime()
+			filesToStat = append(filesToStat, filepath.Join(codePath, fileName))
+		}
+	}
 
-			oldModTime, existed := w.fileInfo[fp]
-			if !existed || !fi.ModTime().Equal(oldModTime) {
-				changedFiles = append(changedFiles, fp)
-			}
+	currentFiles := make(map[string]time.Time)
+	for _, fp := range filesToStat {
+		fi, err := os.Stat(fp)
+		if err != nil {
+			continue
+		}
+		currentFiles[fp] = fi.ModTime()
+	}
+
+	w.mu.Lock()
+	var changedFiles []string
+	for fp, modTime := range currentFiles {
+		oldModTime, existed := w.fileInfo[fp]
+		if !existed || !modTime.Equal(oldModTime) {
+			changedFiles = append(changedFiles, fp)
 		}
 	}
 	for fp, modTime := range currentFiles {

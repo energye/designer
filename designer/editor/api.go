@@ -13,29 +13,49 @@
 
 package editor
 
+import "sync"
+
+var (
+	gCurrentEditor IEditor
+	editorMu       sync.RWMutex
+)
+
+func SetCurrentEditor(ed IEditor) {
+	editorMu.Lock()
+	gCurrentEditor = ed
+	editorMu.Unlock()
+}
+
+func GetCurrentEditor() IEditor {
+	editorMu.RLock()
+	defer editorMu.RUnlock()
+	return gCurrentEditor
+}
+
 func OpenFileInEditor(filePath string, readOnly ...bool) {
-	if gCurrentEditor != nil {
-		gCurrentEditor.OpenFile(filePath, readOnly...)
+	if ed := GetCurrentEditor(); ed != nil {
+		ed.OpenFile(filePath, readOnly...)
 	}
 }
 
 func CloseFileInEditor(filePath string) {
-	if gCurrentEditor != nil {
-		gCurrentEditor.CloseFile(filePath)
+	if ed := GetCurrentEditor(); ed != nil {
+		ed.CloseFile(filePath)
 	}
 }
 
 func SaveCurrentFile() {
-	if gCurrentEditor != nil {
-		gCurrentEditor.SaveCurrentFile()
+	if ed := GetCurrentEditor(); ed != nil {
+		ed.SaveCurrentFile()
 	}
 }
 
 func GetAllOpenedFiles() map[string]*FileState {
-	if gCurrentEditor == nil {
+	ed := GetCurrentEditor()
+	if ed == nil {
 		return make(map[string]*FileState)
 	}
-	return gCurrentEditor.FileManager().GetAllFiles()
+	return ed.FileManager().GetAllFiles()
 }
 
 // NotifyFileChanged 通知gopls文件已被外部修改（如codegen/uigen），
@@ -55,14 +75,4 @@ func NotifyFilesChanged(filePaths []string) {
 // Returns false for binary files, images, archives, etc.
 func IsTextFile(filePath string) bool {
 	return isTextFile(filePath)
-}
-
-var gCurrentEditor IEditor
-
-func SetCurrentEditor(ed IEditor) {
-	gCurrentEditor = ed
-}
-
-func GetCurrentEditor() IEditor {
-	return gCurrentEditor
 }

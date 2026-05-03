@@ -20,10 +20,9 @@ import (
 )
 
 type FileState struct {
-	Path         string
-	ModTime      time.Time
-	IsDirty      bool
-	LastSaveTime time.Time
+	Path    string
+	ModTime time.Time
+	IsDirty bool
 }
 
 type FileManager struct {
@@ -38,24 +37,24 @@ func NewFileManager() *FileManager {
 }
 
 func (fm *FileManager) RegisterFile(filePath string) {
-	fm.lock.Lock()
-	defer fm.lock.Unlock()
-
 	fi, err := os.Stat(filePath)
 	if err != nil {
 		return
 	}
+	modTime := fi.ModTime()
+
+	fm.lock.Lock()
+	defer fm.lock.Unlock()
 
 	if state, exists := fm.files[filePath]; exists {
-		state.ModTime = fi.ModTime()
+		state.ModTime = modTime
 		return
 	}
 
 	fm.files[filePath] = &FileState{
-		Path:         filePath,
-		ModTime:      fi.ModTime(),
-		IsDirty:      false,
-		LastSaveTime: time.Now(),
+		Path:    filePath,
+		ModTime: modTime,
+		IsDirty: false,
 	}
 }
 
@@ -71,9 +70,6 @@ func (fm *FileManager) SetDirty(filePath string, isDirty bool) {
 
 	if state, exists := fm.files[filePath]; exists {
 		state.IsDirty = isDirty
-		if !isDirty {
-			state.LastSaveTime = time.Now()
-		}
 	}
 }
 
@@ -96,16 +92,21 @@ func (fm *FileManager) GetFileState(filePath string) (*FileState, bool) {
 
 func (fm *FileManager) CheckExternalChanges() []string {
 	fm.lock.RLock()
-	defer fm.lock.RUnlock()
+	paths := make([]string, 0, len(fm.files))
+	modTimes := make(map[string]time.Time, len(fm.files))
+	for filePath, state := range fm.files {
+		paths = append(paths, filePath)
+		modTimes[filePath] = state.ModTime
+	}
+	fm.lock.RUnlock()
 
 	var changed []string
-	for filePath, state := range fm.files {
+	for _, filePath := range paths {
 		fi, err := os.Stat(filePath)
 		if err != nil {
 			continue
 		}
-
-		if !fi.ModTime().Equal(state.ModTime) {
+		if !fi.ModTime().Equal(modTimes[filePath]) {
 			changed = append(changed, filePath)
 		}
 	}

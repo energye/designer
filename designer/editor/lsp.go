@@ -22,58 +22,52 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"sync"
-	"time"
 )
 
 var (
-	plsInitOnce  sync.Once
-	plsStartOnce sync.Once
-	gPLSClient   *gopls.PLSClient
-	plsReady     bool
-	plsMu        sync.RWMutex
+	plsOnce    sync.Once
+	gPLSClient *gopls.PLSClient
+	plsReady   bool
+	plsMu      sync.RWMutex
 )
 
 // InitPLS 启动异步 PLS 初始化，不阻塞调用方
 func InitPLS() {
-	plsStartOnce.Do(func() {
+	plsOnce.Do(func() {
 		go initPLSAsync()
 	})
 }
 
 func initPLSAsync() {
-	plsInitOnce.Do(func() {
-		var err error
-		gPLSClient, err = gopls.NewPLSClient(bean.GPath)
-		if err != nil {
-			logs.Error("NewPLSClient:", err)
-			return
-		}
-		rootURI := filePathToURI(bean.GPath)
-		logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
-		if err := gPLSClient.Initialize(rootURI); err != nil {
-			logs.Error("gopls Initialize 失败:", err)
-			return
-		}
-		logs.Info("gopls 等待初始索引完成...")
-		time.Sleep(2 * time.Second)
-		logs.Info("gopls 初始化就绪")
+	var err error
+	gPLSClient, err = gopls.NewPLSClient(bean.GPath)
+	if err != nil {
+		logs.Error("NewPLSClient:", err)
+		return
+	}
+	rootURI := filePathToURI(bean.GPath)
+	logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
+	if err := gPLSClient.Initialize(rootURI); err != nil {
+		logs.Error("gopls Initialize 失败:", err)
+		return
+	}
 
-		gPLSClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
-			filePath := uriToFilePath(uri)
-			if filePath == "" {
-				return
-			}
-			logs.Info("gopls 诊断: file=", filePath, "count=", len(diagnostics))
-			diagData, _ := json.Marshal(diagnostics)
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				ipc.Emit("gopls-diagnostics", filePath, string(diagData))
-			})
+	gPLSClient.SetDiagnosticsHandler(func(uri string, diagnostics []gopls.Diagnostic) {
+		filePath := uriToFilePath(uri)
+		if filePath == "" {
+			return
+		}
+		logs.Info("gopls 诊断: file=", filePath, "count=", len(diagnostics))
+		diagData, _ := json.Marshal(diagnostics)
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			ipc.Emit("gopls-diagnostics", filePath, string(diagData))
 		})
-
-		plsMu.Lock()
-		plsReady = true
-		plsMu.Unlock()
 	})
+
+	plsMu.Lock()
+	plsReady = true
+	plsMu.Unlock()
+	logs.Info("gopls 初始化就绪")
 }
 
 // PLSClient 返回全局 PLS 客户端实例，未就绪时返回 nil

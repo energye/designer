@@ -88,9 +88,12 @@ func (m *CodeEditorTab) onHide(sender lcl.IObject) {
 func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	*canClose = true
 	if gFromEditor != nil {
-		// 为了不释放 browser
 		if wvEditor, ok := gFromEditor.(editor.IWebviewEditor); ok {
-			wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
+			// Only reparent the browser if this tab currently holds it,
+			// otherwise we'd detach the browser from the active tab.
+			if m.mainPage.Active() {
+				wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
+			}
 		}
 	}
 	// 在 Monaco 前端关闭文件

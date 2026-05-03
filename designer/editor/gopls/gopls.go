@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
+
+	"github.com/energye/designer/pkg/logs"
 )
 
 // go install golang.org/x/tools/gopls@latest
@@ -58,7 +61,7 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 			if err != nil {
 				return
 			}
-			fmt.Printf("[gopls stderr] %s", buf[:n])
+			logs.Info("gopls stderr:", strings.TrimRight(string(buf[:n]), "\n"))
 		}
 	}()
 
@@ -72,7 +75,7 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 
 	go client.listenResponses()
 
-	fmt.Printf("[gopls] 启动成功, 工作目录: %s, PID: %d\n", workspaceDir, cmd.Process.Pid)
+	logs.Info("gopls 启动成功, 工作目录:", workspaceDir, "PID:", cmd.Process.Pid)
 	return client, nil
 }
 
@@ -83,7 +86,7 @@ func (c *PLSClient) SetDiagnosticsHandler(handler func(uri string, diagnostics [
 }
 
 func (c *PLSClient) Initialize(rootURI string) error {
-	fmt.Printf("[gopls] Initialize rootURI: %s\n", rootURI)
+	logs.Info("gopls Initialize rootURI:", rootURI)
 	params := map[string]interface{}{
 		"processId": nil,
 		"rootUri":   rootURI,
@@ -151,17 +154,17 @@ func (c *PLSClient) Initialize(rootURI string) error {
 
 	_, err := c.sendRequest("initialize", params)
 	if err != nil {
-		fmt.Printf("[gopls] Initialize 失败: %v\n", err)
+		logs.Error("gopls Initialize 失败:", err)
 		return err
 	}
 
 	c.sendNotification("initialized", map[string]interface{}{})
-	fmt.Println("[gopls] Initialize 完成")
+	logs.Info("gopls Initialize 完成")
 	return nil
 }
 
 func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
-	fmt.Printf("[gopls] Completion 请求: uri=%s line=%d column=%d triggerKind=%d triggerChar=%s\n", fileURI, line, column, triggerKind, triggerChar)
+	logs.Info("gopls Completion 请求: uri=", fileURI, "line=", line, "column=", column, "triggerKind=", triggerKind, "triggerChar=", triggerChar)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -178,7 +181,7 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 
 	resp, err := c.sendRequest("textDocument/completion", params)
 	if err != nil {
-		fmt.Printf("[gopls] Completion 请求失败: %v\n", err)
+		logs.Error("gopls Completion 请求失败:", err)
 		return nil, err
 	}
 	if resp == nil {
@@ -190,11 +193,11 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 		IsIncomplete bool             `json:"isIncomplete"`
 	}
 	if err := json.Unmarshal(resp, &completionList); err != nil {
-		fmt.Printf("[gopls] Completion JSON解析失败: %v\n", err)
+		logs.Error("gopls Completion JSON解析失败:", err)
 		return nil, nil
 	}
 
-	fmt.Printf("[gopls] Completion 返回 %d 个建议项 (isIncomplete=%v)\n", len(completionList.Items), completionList.IsIncomplete)
+	logs.Info("gopls Completion 返回", len(completionList.Items), "个建议项, isIncomplete=", completionList.IsIncomplete)
 
 	// If result is incomplete, resolve items to get full data (additionalTextEdits etc.)
 	if completionList.IsIncomplete && len(completionList.Items) > 0 {
@@ -220,7 +223,7 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 }
 
 func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
-	fmt.Printf("[gopls] SignatureHelp 请求: uri=%s line=%d column=%d\n", fileURI, line, column)
+	logs.Info("gopls SignatureHelp 请求: uri=", fileURI, "line=", line, "column=", column)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -241,17 +244,16 @@ func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureH
 
 	var result SignatureHelpResult
 	if err := json.Unmarshal(resp, &result); err != nil {
-		fmt.Printf("[gopls] SignatureHelp JSON解析失败: %v\n", err)
+		logs.Error("gopls SignatureHelp JSON解析失败:", err)
 		return nil, nil
 	}
 
-	fmt.Printf("[gopls] SignatureHelp 返回 %d 个签名, activeSignature=%d, activeParameter=%d\n",
-		len(result.Signatures), result.ActiveSignature, result.ActiveParameter)
+	logs.Info("gopls SignatureHelp 返回", len(result.Signatures), "个签名, activeSignature=", result.ActiveSignature, "activeParameter=", result.ActiveParameter)
 	return &result, nil
 }
 
 func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem, error) {
-	fmt.Printf("[gopls] ResolveCompletionItem: label=%s\n", item.Label)
+	logs.Info("gopls ResolveCompletionItem: label=", item.Label)
 	resp, err := c.sendRequest("completionItem/resolve", item)
 	if err != nil {
 		return nil, err
@@ -266,23 +268,8 @@ func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem,
 	return &resolved, nil
 }
 
-type DiagnosticInput struct {
-	Range struct {
-		Start struct {
-			Line      int `json:"line"`
-			Character int `json:"character"`
-		} `json:"start"`
-		End struct {
-			Line      int `json:"line"`
-			Character int `json:"character"`
-		} `json:"end"`
-	} `json:"range"`
-	Severity int    `json:"severity"`
-	Message  string `json:"message"`
-}
-
-func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []DiagnosticInput) ([]CodeAction, error) {
-	fmt.Printf("[gopls] CodeAction 请求: uri=%s kinds=%v diagnostics=%d\n", fileURI, kinds, len(diagnostics))
+func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []Diagnostic) ([]CodeAction, error) {
+	logs.Info("gopls CodeAction 请求: uri=", fileURI, "kinds=", kinds, "diagnostics=", len(diagnostics))
 
 	diagInterfaces := make([]interface{}, len(diagnostics))
 	for i, d := range diagnostics {
@@ -322,16 +309,16 @@ func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, en
 	// Try CodeAction first
 	var actions []CodeAction
 	if err := json.Unmarshal(resp, &actions); err != nil {
-		fmt.Printf("[gopls] CodeAction JSON解析失败: %v, raw: %s\n", err, string(resp[:goplsMin(len(resp), 300)]))
+		logs.Error("gopls CodeAction JSON解析失败:", err, "raw:", string(resp[:goplsMin(len(resp), 300)]))
 		return nil, nil
 	}
 
-	fmt.Printf("[gopls] CodeAction 返回 %d 个操作\n", len(actions))
+	logs.Info("gopls CodeAction 返回", len(actions), "个操作")
 	return actions, nil
 }
 
 func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) error {
-	fmt.Printf("[gopls] DidOpen: uri=%s lang=%s version=%d contentLen=%d\n", fileURI, languageID, version, len(content))
+	logs.Info("gopls DidOpen: uri=", fileURI, "lang=", languageID, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri":        fileURI,
@@ -345,7 +332,7 @@ func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) er
 }
 
 func (c *PLSClient) DidChange(fileURI string, version int, content string) error {
-	fmt.Printf("[gopls] DidChange: uri=%s version=%d contentLen=%d\n", fileURI, version, len(content))
+	logs.Info("gopls DidChange: uri=", fileURI, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri":     fileURI,
@@ -359,14 +346,14 @@ func (c *PLSClient) DidChange(fileURI string, version int, content string) error
 	}
 
 	if err := c.sendNotification("textDocument/didChange", params); err != nil {
-		fmt.Printf("[gopls] DidChange 发送失败: %v\n", err)
+		logs.Error("gopls DidChange 发送失败:", err)
 		return err
 	}
 	return nil
 }
 
 func (c *PLSClient) DidSave(fileURI string, text string) error {
-	fmt.Printf("[gopls] DidSave: uri=%s textLen=%d\n", fileURI, len(text))
+	logs.Info("gopls DidSave: uri=", fileURI, "textLen=", len(text))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri": fileURI,
@@ -378,7 +365,7 @@ func (c *PLSClient) DidSave(fileURI string, text string) error {
 }
 
 func (c *PLSClient) DidClose(fileURI string) error {
-	fmt.Printf("[gopls] DidClose: uri=%s\n", fileURI)
+	logs.Info("gopls DidClose: uri=", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -433,12 +420,18 @@ func (c *PLSClient) sendRequest(method string, params interface{}) ([]byte, erro
 	}
 	c.mu.Unlock()
 
-	resp, ok := <-respChan
-	if !ok {
-		return nil, fmt.Errorf("gopls 连接已关闭")
+	select {
+	case resp, ok := <-respChan:
+		if !ok {
+			return nil, fmt.Errorf("gopls 连接已关闭")
+		}
+		return resp, nil
+	case <-time.After(10 * time.Second):
+		c.pendingMu.Lock()
+		delete(c.pending, id)
+		c.pendingMu.Unlock()
+		return nil, fmt.Errorf("gopls 请求超时: %s", method)
 	}
-
-	return resp, nil
 }
 
 func (c *PLSClient) sendNotification(method string, params interface{}) error {
@@ -471,7 +464,7 @@ func (c *PLSClient) listenResponses() {
 		line, err := c.reader.ReadString('\n')
 		if err != nil {
 			if err != io.EOF {
-				fmt.Printf("[gopls] listenResponses: 读取header失败: %v\n", err)
+				logs.Error("gopls listenResponses: 读取header失败:", err)
 			}
 			return
 		}

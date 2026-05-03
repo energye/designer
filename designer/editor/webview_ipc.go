@@ -23,33 +23,99 @@ import (
 	"strings"
 )
 
+// CompletionParams gopls补全请求参数
+type CompletionParams struct {
+	RequestID   int    `json:"requestID"`
+	File        string `json:"file"`
+	Line        int    `json:"line"`
+	Column      int    `json:"column"`
+	TriggerKind int    `json:"triggerKind"`
+	TriggerChar string `json:"triggerChar"`
+}
+
+// SignatureHelpParams gopls签名帮助请求参数
+type SignatureHelpParams struct {
+	RequestID int    `json:"requestID"`
+	File      string `json:"file"`
+	Line      int    `json:"line"`
+	Column    int    `json:"column"`
+}
+
+// CodeActionParams gopls代码操作请求参数
+type CodeActionParams struct {
+	RequestID   int                `json:"requestID"`
+	File        string             `json:"file"`
+	StartLine   int                `json:"startLine"`
+	StartChar   int                `json:"startChar"`
+	EndLine     int                `json:"endLine"`
+	EndChar     int                `json:"endChar"`
+	Kinds       string             `json:"kinds,omitempty"`
+	Diagnostics []gopls.Diagnostic `json:"diagnostics,omitempty"`
+}
+
+// DidOpenParams gopls文件打开通知参数
+type DidOpenParams struct {
+	File       string `json:"file"`
+	LanguageID string `json:"languageId"`
+	Content    string `json:"content"`
+	Version    int    `json:"version"`
+}
+
+// DidChangeParams gopls文件变更通知参数
+type DidChangeParams struct {
+	File    string `json:"file"`
+	Content string `json:"content"`
+	Version int    `json:"version"`
+}
+
+// RegData 文件注册数据
+type RegData struct {
+	File    string `json:"file"`
+	ModTime int64  `json:"modTime"`
+}
+
+// DirtyData 文件脏状态数据
+type DirtyData struct {
+	File    string `json:"file"`
+	IsDirty bool   `json:"isDirty"`
+}
+
+// readFileData 读取文件并返回序列化的FileData JSON，checkText为true时检查是否为文本文件
+func readFileData(filePath string, checkText bool) (string, bool) {
+	if checkText && !isTextFile(filePath) {
+		return "", false
+	}
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", false
+	}
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return "", false
+	}
+	result := FileData{
+		File:     filePath,
+		Content:  string(content),
+		Language: detectLanguage(filePath),
+		ModTime:  fileInfo.ModTime().UnixMilli(),
+		ReadOnly: isFileReadOnly(filePath),
+	}
+	jsonData, err := json.Marshal(result)
+	if err != nil {
+		return "", false
+	}
+	return string(jsonData), true
+}
+
 func (m *TWebviewEditor) initIPCEvent() {
 	ipc.On("monaco-inited", func(context ipc.IContext) {
 		logs.Info("ipc monaco-inited BrowserId:", context.BrowserId(), context.Data())
 	})
 
-	type CompletionParams struct {
-		RequestID   int    `json:"requestID"`
-		File        string `json:"file"`
-		Line        int    `json:"line"`
-		Column      int    `json:"column"`
-		TriggerKind int    `json:"triggerKind"`
-		TriggerChar string `json:"triggerChar"`
-	}
-
+	// Completion
 	ipc.On("gopls-completion", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("[]")
-			return
-		}
-
 		var params CompletionParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			logs.Error("gopls-completion: 解析参数失败:", err)
-			context.Result("[]")
+		if !parseIPCParams(context, &params, "[]") {
 			return
 		}
 
@@ -115,25 +181,9 @@ func (m *TWebviewEditor) initIPCEvent() {
 	})
 
 	// Signature Help
-	type SignatureHelpParams struct {
-		RequestID int    `json:"requestID"`
-		File      string `json:"file"`
-		Line      int    `json:"line"`
-		Column    int    `json:"column"`
-	}
-
 	ipc.On("gopls-signatureHelp", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("")
-			return
-		}
-
 		var params SignatureHelpParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			context.Result("")
+		if !parseIPCParams(context, &params, "") {
 			return
 		}
 
@@ -180,29 +230,9 @@ func (m *TWebviewEditor) initIPCEvent() {
 	})
 
 	// Code Action
-	type CodeActionParams struct {
-		RequestID   int                     `json:"requestID"`
-		File        string                  `json:"file"`
-		StartLine   int                     `json:"startLine"`
-		StartChar   int                     `json:"startChar"`
-		EndLine     int                     `json:"endLine"`
-		EndChar     int                     `json:"endChar"`
-		Kinds       string                  `json:"kinds,omitempty"`
-		Diagnostics []gopls.DiagnosticInput `json:"diagnostics,omitempty"`
-	}
-
 	ipc.On("gopls-codeAction", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("[]")
-			return
-		}
-
 		var params CodeActionParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			context.Result("[]")
+		if !parseIPCParams(context, &params, "[]") {
 			return
 		}
 
@@ -267,25 +297,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("")
 	})
 
-	type DidOpenParams struct {
-		File       string `json:"file"`
-		LanguageID string `json:"languageId"`
-		Content    string `json:"content"`
-		Version    int    `json:"version"`
-	}
-
+	// DidOpen
 	ipc.On("gopls-didOpen", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("ok")
-			return
-		}
-
 		var params DidOpenParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			context.Result("ok")
+		if !parseIPCParams(context, &params, "ok") {
 			return
 		}
 
@@ -298,30 +313,14 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
-	type DidChangeParams struct {
-		File    string `json:"file"`
-		Content string `json:"content"`
-		Version int    `json:"version"`
-	}
-
+	// DidChange - 同步：必须在gopls处理后续请求前完成
 	ipc.On("gopls-didChange", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("ok")
-			return
-		}
-
 		var params DidChangeParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			context.Result("ok")
+		if !parseIPCParams(context, &params, "ok") {
 			return
 		}
 
 		if gPLSClient != nil {
-			// Synchronous: must complete before gopls processes subsequent
-			// completion/codeAction requests with the updated file content
 			fileURI := filePathToURI(params.File)
 			if err := gPLSClient.DidChange(fileURI, params.Version, params.Content); err != nil {
 				logs.Error("gopls-didChange 同步发送失败:", err)
@@ -330,17 +329,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
+	// DidClose
 	ipc.On("gopls-didClose", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("ok")
-			return
-		}
-
-		filePath, ok := arr[0].(string)
+		filePath, ok := parseIPCString(context, "ok")
 		if !ok {
-			context.Result("ok")
 			return
 		}
 
@@ -353,66 +345,25 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
+	// Open file request
 	ipc.On("open-file-request", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("")
+		filePath, ok := parseIPCString(context, "")
+		if !ok {
 			return
 		}
 
-		filePath, ok := arr[0].(string)
+		result, ok := readFileData(filePath, true)
 		if !ok {
 			context.Result("")
 			return
 		}
-
-		if !isTextFile(filePath) {
-			context.Result("")
-			return
-		}
-
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		fileInfo, err := os.Stat(filePath)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		result := FileData{
-			File:     filePath,
-			Content:  string(content),
-			Language: detectLanguage(filePath),
-			ModTime:  fileInfo.ModTime().UnixMilli(),
-			ReadOnly: isFileReadOnly(filePath),
-		}
-
-		jsonData, err := json.Marshal(result)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		context.Result(string(jsonData))
+		context.Result(result)
 	})
 
+	// Save file
 	ipc.On("save-file", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("error: invalid data")
-			return
-		}
-
 		var fileData FileData
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &fileData); err != nil {
-			context.Result("error: " + err.Error())
+		if !parseIPCParams(context, &fileData, "error: invalid data") {
 			return
 		}
 
@@ -439,65 +390,25 @@ func (m *TWebviewEditor) initIPCEvent() {
 		}
 	})
 
+	// Reload file request
 	ipc.On("reload-file-request", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("")
+		filePath, ok := parseIPCString(context, "")
+		if !ok {
 			return
 		}
 
-		filePath, ok := arr[0].(string)
+		result, ok := readFileData(filePath, false)
 		if !ok {
 			context.Result("")
 			return
 		}
-
-		content, err := os.ReadFile(filePath)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		fileInfo, err := os.Stat(filePath)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		result := FileData{
-			File:     filePath,
-			Content:  string(content),
-			Language: detectLanguage(filePath),
-			ModTime:  fileInfo.ModTime().UnixMilli(),
-			ReadOnly: isFileReadOnly(filePath),
-		}
-
-		jsonData, err := json.Marshal(result)
-		if err != nil {
-			context.Result("")
-			return
-		}
-
-		context.Result(string(jsonData))
+		context.Result(result)
 	})
 
+	// Register opened file
 	ipc.On("register-opened-file", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("error")
-			return
-		}
-
-		type RegData struct {
-			File    string `json:"file"`
-			ModTime int64  `json:"modTime"`
-		}
 		var regData RegData
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &regData); err != nil {
-			context.Result("error")
+		if !parseIPCParams(context, &regData, "error") {
 			return
 		}
 
@@ -505,17 +416,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
+	// Unregister opened file
 	ipc.On("unregister-opened-file", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("error")
-			return
-		}
-
-		filePath, ok := arr[0].(string)
+		filePath, ok := parseIPCString(context, "error")
 		if !ok {
-			context.Result("error")
 			return
 		}
 
@@ -523,22 +427,10 @@ func (m *TWebviewEditor) initIPCEvent() {
 		context.Result("ok")
 	})
 
+	// Set file dirty
 	ipc.On("set-file-dirty", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("error")
-			return
-		}
-
-		type DirtyData struct {
-			File    string `json:"file"`
-			IsDirty bool   `json:"isDirty"`
-		}
 		var dirtyData DirtyData
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &dirtyData); err != nil {
-			context.Result("error")
+		if !parseIPCParams(context, &dirtyData, "error") {
 			return
 		}
 

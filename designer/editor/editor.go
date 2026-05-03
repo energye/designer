@@ -14,6 +14,7 @@
 package editor
 
 import (
+	"github.com/energye/designer/designer/editor/gopls"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -24,6 +25,21 @@ const (
 	EtSynEdit
 )
 
+// LSPService defines the interface for Language Server Protocol operations.
+// Implementations communicate with an LSP server (e.g., gopls) to provide
+// code intelligence features like completion, diagnostics, and navigation.
+type LSPService interface {
+	Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]gopls.CompletionItem, error)
+	SignatureHelp(fileURI string, line, column int) (*gopls.SignatureHelpResult, error)
+	CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []gopls.Diagnostic) ([]gopls.CodeAction, error)
+	Definition(fileURI string, line, column int) ([]gopls.Location, error)
+	DidOpen(fileURI, languageID, content string, version int) error
+	DidChange(fileURI string, version int, content string) error
+	DidSave(fileURI string, text string) error
+	DidClose(fileURI string) error
+	SetDiagnosticsHandler(handler func(uri string, diagnostics []gopls.Diagnostic))
+}
+
 type IEditor interface {
 	Type() EditType
 	OpenFile(filePath string, readOnly ...bool)
@@ -33,6 +49,16 @@ type IEditor interface {
 	Stop()
 }
 
-func NewEditor(owner lcl.IWinControl) IEditor {
-	return NewWebviewEditor(owner)
+func NewEditor(owner lcl.IWinControl, editType ...EditType) IEditor {
+	var et EditType = EtWebview
+	if len(editType) > 0 {
+		et = editType[0]
+	}
+	switch et {
+	case EtSynEdit:
+		// SynEdit editor requires build tag "synedit"
+		return nil
+	default:
+		return NewWebviewEditor(owner)
+	}
 }

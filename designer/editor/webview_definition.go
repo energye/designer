@@ -2,6 +2,8 @@ package editor
 
 import (
 	"encoding/json"
+	"sync"
+
 	"github.com/energye/energy/v3/ipc"
 )
 
@@ -10,32 +12,29 @@ type JSDefinition struct {
 	Range JSRange `json:"range"`
 }
 
-var onGoToDefinition func(filePath string, line, character int)
+var (
+	onGoToDefinition func(filePath string, line, character int)
+	defMu            sync.RWMutex
+)
 
 func SetOnGoToDefinition(handler func(filePath string, line, character int)) {
+	defMu.Lock()
 	onGoToDefinition = handler
+	defMu.Unlock()
+}
+
+// DefinitionParams gopls定义跳转请求参数
+type DefinitionParams struct {
+	RequestID int    `json:"requestID"`
+	File      string `json:"file"`
+	Line      int    `json:"line"`
+	Column    int    `json:"column"`
 }
 
 func (m *TWebviewEditor) initDefinitionIPC() {
-	type DefinitionParams struct {
-		RequestID int    `json:"requestID"`
-		File      string `json:"file"`
-		Line      int    `json:"line"`
-		Column    int    `json:"column"`
-	}
-
 	ipc.On("gopls-definition", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("null")
-			return
-		}
-
 		var params DefinitionParams
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &params); err != nil {
-			context.Result("null")
+		if !parseIPCParams(context, &params, "null") {
 			return
 		}
 
@@ -71,22 +70,16 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 	})
 
 	ipc.On("go-to-definition", func(context ipc.IContext) {
-		data := context.Data()
-		arr, ok := data.([]any)
-		if !ok || len(arr) == 0 {
-			context.Result("ok")
-			return
-		}
-
 		var def JSDefinition
-		jsonData, _ := json.Marshal(arr[0])
-		if err := json.Unmarshal(jsonData, &def); err != nil {
-			context.Result("ok")
+		if !parseIPCParams(context, &def, "ok") {
 			return
 		}
 
-		if onGoToDefinition != nil {
-			onGoToDefinition(def.File, def.Range.Start.Line, def.Range.Start.Character)
+		defMu.RLock()
+		handler := onGoToDefinition
+		defMu.RUnlock()
+		if handler != nil {
+			handler(def.File, def.Range.Start.Line, def.Range.Start.Character)
 		}
 		context.Result("ok")
 	})
