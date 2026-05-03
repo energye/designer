@@ -30,7 +30,7 @@ require(['vs/editor/editor.main'], function (monaco) {
         parameterHints: {enabled: true}
     });
 
-    registerLSPProviders();
+    registerPLSProviders();
 
     // Content change handler
     editor.onDidChangeModelContent(function () {

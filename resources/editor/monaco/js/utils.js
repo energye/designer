@@ -1,8 +1,8 @@
-// LSP kind mapping and diagnostic severity utilities
+// PLS kind mapping and diagnostic severity utilities
 
 var goplsStatus = 'loading'; // 'loading' | 'ready' | 'unavailable'
 
-function lspKindToMonaco(kind, K) {
+function plsKindToMonaco(kind, K) {
     switch (kind) {
         case 1: return K.Text; case 2: return K.Method; case 3: return K.Function;
         case 4: return K.Constructor; case 5: return K.Field; case 6: return K.Variable;
@@ -52,8 +52,8 @@ function showNotification(message) {
     setTimeout(function () { toast.classList.remove('show'); }, 3000);
 }
 
-// Convert LSP range to Monaco range (0-based to 1-based)
-function lspRangeToMonaco(range) {
+// Convert PLS range to Monaco range (0-based to 1-based)
+function plsRangeToMonaco(range) {
     return {
         startLineNumber: range.start.line + 1,
         startColumn: range.start.character + 1,
@@ -62,11 +62,11 @@ function lspRangeToMonaco(range) {
     };
 }
 
-// Convert LSP text edits to Monaco edits (reversed for safe application)
-function lspEditsToMonaco(edits) {
+// Convert PLS text edits to Monaco edits (reversed for safe application)
+function plsEditsToMonaco(edits) {
     return edits.slice().reverse().map(function (edit) {
         return {
-            range: lspRangeToMonaco(edit.range),
+            range: plsRangeToMonaco(edit.range),
             text: edit.newText
         };
     });

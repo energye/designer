@@ -1,4 +1,4 @@
-// LSP provider registration and response handlers
+// PLS provider registration and response handlers
 
 var completionRequestID = 0;
 var pendingCompletion = null;
@@ -7,7 +7,7 @@ var pendingSignatureHelp = null;
 var codeActionRequestID = 0;
 var pendingCodeAction = null;
 
-function registerLSPProviders() {
+function registerPLSProviders() {
     // Completion provider
     monacoRef.languages.registerCompletionItemProvider('go', {
         triggerCharacters: ['.', '(', '"', "'", '/', '@'],
@@ -31,7 +31,6 @@ function registerLSPProviders() {
             }
 
             return new Promise(function (resolve) {
-                createLSPRequest({value: pendingCompletion}, reqID, resolve, {suggestions: []});
                 pendingCompletion = {reqID: reqID, resolve: resolve};
                 // Override the timeout-based one since we set pendingCompletion after
                 setTimeout(function () {
@@ -133,7 +132,7 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
     var Snippet = monacoRef.languages.CompletionItemInsertTextRule;
     var suggestions = items.map(function (item) {
         var insertText = item.insertText || item.label;
-        var kind = lspKindToMonaco(item.kind, K);
+        var kind = plsKindToMonaco(item.kind, K);
         var isSnippet = item.insertTextFormat === 2;
 
         // Enhance function/method completions with parentheses and parameter placeholders
@@ -173,7 +172,7 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
         if (item.additionalTextEdits && item.additionalTextEdits.length > 0) {
             s.additionalTextEdits = item.additionalTextEdits.map(function (edit) {
                 return {
-                    range: lspRangeToMonaco(edit.range),
+                    range: plsRangeToMonaco(edit.range),
                     text: edit.newText
                 };
             });
@@ -275,7 +274,7 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
                     allEdits.push({
                         resource: model.uri,
                         edit: {
-                            range: lspRangeToMonaco(edit.range),
+                            range: plsRangeToMonaco(edit.range),
                             text: edit.newText
                         }
                     });
@@ -359,7 +358,7 @@ function applyWorkspaceEdit(workspaceEdit) {
             var edits = workspaceEdit.changes[filePath];
             var model = getModelByFilePath(filePath);
             if (!model) continue;
-            var monacoEdits = lspEditsToMonaco(edits);
+            var monacoEdits = plsEditsToMonaco(edits);
             model.applyEdits(monacoEdits);
         }
     } finally {
