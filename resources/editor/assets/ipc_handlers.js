@@ -13,3 +13,8 @@ ipc.on('file-changed-externally', function (filePath) {
 ipc.on('file-conflict-detected', function (filePath) {
     reloadFileFromDisk(filePath);
 });
+
+ipc.on('gopls-status', function (status) {
+    goplsStatus = status;
+    if (currentFilePath) updateFilePathBar(currentFilePath);
+});

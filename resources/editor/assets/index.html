@@ -9,11 +9,11 @@
         body { display: flex; flex-direction: column; }
         #file-path-bar {
             padding: 3px 12px;
-            background: rgba(255,255,255,0.05);
-            color: #888;
+            background: var(--bar-bg, rgba(128,128,128,0.1));
+            color: var(--bar-fg, rgba(128,128,128,0.8));
             font-size: 12px;
             font-family: Consolas, 'Courier New', monospace;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid var(--bar-border, rgba(128,128,128,0.15));
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;

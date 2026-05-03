@@ -21,6 +21,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"strings"
+	"time"
 )
 
 // CompletionParams gopls补全请求参数
@@ -110,6 +111,30 @@ func readFileData(filePath string, checkText bool) (string, bool) {
 func (m *TWebviewEditor) initIPCEvent() {
 	ipc.On("monaco-inited", func(context ipc.IContext) {
 		logs.Info("ipc monaco-inited BrowserId:", context.BrowserId(), context.Data())
+		// Notify frontend about gopls availability
+		go func() {
+			// Wait briefly for PLS init to complete or fail
+			for i := 0; i < 30; i++ {
+				if IsPLSReady() || IsPLSFailed() {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
+			plsMu.RLock()
+			failed := plsFailed
+			ready := plsReady
+			plsMu.RUnlock()
+			status := "ready"
+			if failed {
+				status = "unavailable"
+			} else if !ready {
+				status = "loading"
+			}
+			lcl.RunOnMainThreadAsync(func(id uint32) {
+				ipc.Emit("gopls-status", status)
+			})
+		}()
+		context.Result("")
 	})
 
 	// Completion

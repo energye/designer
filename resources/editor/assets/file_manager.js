@@ -17,11 +17,14 @@ function updateFilePathBar(filePath) {
     if (!bar) return;
     var info = files.get(filePath);
     var displayPath = filePath.replace(/\\/g, '/');
+    bar.style.color = '';
     if (info && info.readOnly) {
         displayPath = displayPath + '  [Read Only]';
-        bar.style.color = '#c4a44a';
-    } else {
-        bar.style.color = '#888';
+        bar.style.color = '#b8860b';
+    }
+    if (goplsStatus === 'unavailable' && filePath.replace(/\\/g, '/').endsWith('.go')) {
+        displayPath = '⚠ gopls missing  |  ' + displayPath;
+        bar.style.color = '#b8860b';
     }
     bar.textContent = displayPath;
 }

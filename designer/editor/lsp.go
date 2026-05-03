@@ -28,6 +28,7 @@ var (
 	plsOnce    sync.Once
 	gPLSClient *gopls.PLSClient
 	plsReady   bool
+	plsFailed  bool
 	plsMu      sync.RWMutex
 )
 
@@ -43,12 +44,18 @@ func initPLSAsync() {
 	gPLSClient, err = gopls.NewPLSClient(bean.GPath)
 	if err != nil {
 		logs.Error("NewPLSClient:", err)
+		plsMu.Lock()
+		plsFailed = true
+		plsMu.Unlock()
 		return
 	}
 	rootURI := filePathToURI(bean.GPath)
 	logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
 	if err := gPLSClient.Initialize(rootURI); err != nil {
 		logs.Error("gopls Initialize 失败:", err)
+		plsMu.Lock()
+		plsFailed = true
+		plsMu.Unlock()
 		return
 	}
 
@@ -80,6 +87,13 @@ func IsPLSReady() bool {
 	plsMu.RLock()
 	defer plsMu.RUnlock()
 	return plsReady
+}
+
+// IsPLSFailed 返回 gopls 是否初始化失败（如未安装）
+func IsPLSFailed() bool {
+	plsMu.RLock()
+	defer plsMu.RUnlock()
+	return plsFailed
 }
 
 // SetDiagnosticsHandler 设置诊断处理器，允许原生编辑器覆盖默认行为

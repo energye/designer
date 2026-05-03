@@ -1,5 +1,7 @@
 // LSP kind mapping and diagnostic severity utilities
 
+var goplsStatus = 'loading'; // 'loading' | 'ready' | 'unavailable'
+
 function lspKindToMonaco(kind, K) {
     switch (kind) {
         case 1: return K.Text; case 2: return K.Method; case 3: return K.Function;
@@ -48,17 +50,6 @@ function showNotification(message) {
     toast.textContent = message;
     toast.classList.add('show');
     setTimeout(function () { toast.classList.remove('show'); }, 3000);
-}
-
-// Create a pending LSP request with timeout
-function createLSPRequest(pendingMap, reqID, resolve, defaultResult, timeoutMs) {
-    pendingMap.value = {reqID: reqID, resolve: resolve};
-    setTimeout(function () {
-        if (pendingMap.value && pendingMap.value.reqID === reqID) {
-            pendingMap.value = null;
-            resolve(defaultResult);
-        }
-    }, timeoutMs || 3000);
 }
 
 // Convert LSP range to Monaco range (0-based to 1-based)
