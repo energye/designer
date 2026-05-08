@@ -97,6 +97,10 @@ func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 			}
 		}
 	}
+	if plsClient := editor.PLSClient(); plsClient != nil {
+		fileURI := editor.FilePathToURI(m.filePath)
+		_ = plsClient.DidClose(fileURI)
+	}
 	// 在 Monaco 前端关闭文件
 	editor.CloseFileInEditor(m.filePath)
 	// 从列表中移除
@@ -128,10 +132,9 @@ func (m *CodeEditorTab) switchEditorToThisTab() {
 			canLoad := make(chan error, 1)
 			wvEditor.SetCanLoadChan(canLoad)
 			go func() {
-				err := <-canLoad
+				_ = <-canLoad
 				wvEditor.SetCanLoadChan(nil)
 				close(canLoad)
-				fmt.Println("CodeEditorTab canLoad", err, wvEditor.Initialized(), "filePath:", m.filePath)
 				if wvEditor.Initialized() {
 					lcl.RunOnMainThreadAsync(func(id uint32) {
 						editor.OpenFileInEditor(m.filePath, false)

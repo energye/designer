@@ -124,7 +124,7 @@ func DetectLanguage(filePath string) string {
 		return "scss"
 	case ".less":
 		return "less"
-	case ".json":
+	case ".json", ".egp":
 		return "json"
 	case ".xml":
 		return "xml"

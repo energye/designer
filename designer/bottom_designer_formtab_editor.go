@@ -171,8 +171,10 @@ func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 				_ = <-canLoad
 				wvEditor.SetCanLoadChan(nil)
 				close(canLoad)
-				var filePath string
-				var readOnly bool
+				var (
+					filePath string
+					readOnly bool
+				)
 				if uiCode {
 					filePath = filepath.Join(projBean.CodePath(), m.formDesignCode.GOFile())
 					readOnly = true

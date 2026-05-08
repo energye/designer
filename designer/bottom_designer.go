@@ -96,7 +96,11 @@ func ResetDesigner() {
 	designer.designerForms = make(map[int]*FormTab) // 清空设计窗体
 	ProjectTreeClearComponentTreeNode()
 	ProjectTreeClearSrcTreeNode()
-	gFromEditor = nil
+
+	if gFromEditor != nil {
+		gFromEditor.Stop()
+		gFromEditor = nil
+	}
 }
 
 func UpdateHistoryProject(egpFilePath string) {
@@ -276,6 +280,7 @@ func (m *Designer) GetFormTab(formId int) *FormTab {
 //			}
 //		}
 //
+
 // FindFormTabByFile 检查给定文件路径是否属于某个设计窗体
 // 返回对应的 FormTab 和文件类型 ("ui", "uigo", "go"), 如果不属于任何窗体返回 nil
 func (m *Designer) FindFormTabByFile(filePath string) (*FormTab, string) {
@@ -288,7 +293,7 @@ func (m *Designer) FindFormTabByFile(filePath string) (*FormTab, string) {
 		goUserPath := filepath.Clean(filepath.Join(bean.CodePath(), formTab.GOUserFile()))
 		uiPath := filepath.Clean(filepath.Join(bean.CodePath(), formTab.UIFile()))
 		if filePath == goPath {
-			return formTab, "uigo"
+			//return formTab, "uigo"
 		} else if filePath == goUserPath {
 			return formTab, "go"
 		} else if filePath == uiPath {
@@ -322,8 +327,8 @@ func openFileInAppropriateTab(filePath string) {
 			switch fileType {
 			case "go":
 				formTab.formDesignPage.formPageControl.SetActivePageIndex(1)
-			case "uigo":
-				formTab.formDesignPage.formPageControl.SetActivePageIndex(2)
+			//case "uigo":
+			//formTab.formDesignPage.formPageControl.SetActivePageIndex(0)
 			case "ui":
 				formTab.formDesignPage.formPageControl.SetActivePageIndex(0)
 			}

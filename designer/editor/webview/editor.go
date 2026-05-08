@@ -85,6 +85,9 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 		}
 	})
 
+	ipc.SetMainDefaultBrowserId(0)
+	ipc.RegisterProcessMessage(m.WVEditor)
+
 	m.initIPCEvent()
 	m.initDefinitionIPC()
 
@@ -204,6 +207,7 @@ func (m *TWebviewEditor) checkFileChanges() {
 }
 
 func (m *TWebviewEditor) Stop() {
+	ipc.UnRegisterProcessMessage(m.WVEditor)
 	if m.checkTimer != nil {
 		m.checkTimer.Stop()
 		close(m.stopChan)
