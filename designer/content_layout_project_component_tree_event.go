@@ -70,6 +70,10 @@ func (m *ContentLayoutProject) TreeOnMouseDown(sender lcl.IObject, button types.
 		if selectNode != nil && selectNode.IsValid() {
 			ProjectTreeSetSelected(selectNode)
 		}
+	} else if button == types.MbLeft {
+		selectNode := ProjectTreeGetNodeAt(X, Y)
+		ProjectTreeSetSelected(selectNode)
+		m.TreeOnChange(sender, selectNode)
 	}
 }
 

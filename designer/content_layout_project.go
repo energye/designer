@@ -20,21 +20,15 @@ import (
 )
 
 type ContentLayoutProject struct {
-	topBox lcl.IPanel
-	title  lcl.ILabel
-	box    lcl.IPanel
-	// 项目栏 tree, 1个项目节点 projectRoot 2个项目管理根节点 componentRoot assetsRoot
-	tree lcl.ITreeView
-	// 项目根节点
-	projectTreeNode lcl.ITreeNode
-	// 组件根节点(所有窗体和组件)
+	topBox            lcl.IPanel
+	title             lcl.ILabel
+	box               lcl.IPanel
+	tree              lcl.ITreeView
+	projectTreeNode   lcl.ITreeNode
 	componentTreeNode lcl.ITreeNode
-	// 项目源码目录和文件根节点（所有代码和文件）
-	srcTreeNode lcl.ITreeNode
-	// 组件菜单
-	componentMenu *TComponentMenu
-	// 源码文件菜单
-	srcFileMenu *TSrcFileMenu
+	srcTreeNode       lcl.ITreeNode
+	componentMenu     *TComponentMenu
+	srcFileMenu       *TSrcFileMenu
 }
 
 func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
@@ -77,7 +71,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.tree.SetImages(imageComponents.ImageList50())
 	//m.tree.SetImages(imageComponents.ImageList100())
 	//m.tree.SetMultiSelect(true) // 多选控制
-	m.tree.SetOnChange(m.TreeOnChange)
+	//m.tree.SetOnChange(m.TreeOnChange)
 	m.tree.SetOnExpanding(m.TreeOnExpanding)
 	m.tree.SetOnMouseDown(m.TreeOnMouseDown)
 	m.tree.SetOnContextPopup(m.TreeOnContextPopup)
