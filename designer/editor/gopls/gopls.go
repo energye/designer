@@ -3,6 +3,7 @@ package gopls
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os/exec"
@@ -157,6 +158,9 @@ func (c *PLSClient) Initialize(rootURI string) error {
 }
 
 func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return nil, errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls Completion 请求: uri=", fileURI, "line=", line, "column=", column, "triggerKind=", triggerKind, "triggerChar=", triggerChar)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -216,6 +220,9 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 }
 
 func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return nil, errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls SignatureHelp 请求: uri=", fileURI, "line=", line, "column=", column)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -262,6 +269,9 @@ func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem,
 }
 
 func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []Diagnostic) ([]CodeAction, error) {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return nil, errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls CodeAction 请求: uri=", fileURI, "kinds=", kinds, "diagnostics=", len(diagnostics))
 
 	diagInterfaces := make([]interface{}, len(diagnostics))
@@ -310,6 +320,9 @@ func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, en
 }
 
 func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) error {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls DidOpen: uri=", fileURI, "lang=", languageID, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -324,6 +337,9 @@ func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) er
 }
 
 func (c *PLSClient) DidChange(fileURI string, version int, content string) error {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls DidChange: uri=", fileURI, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -345,6 +361,9 @@ func (c *PLSClient) DidChange(fileURI string, version int, content string) error
 }
 
 func (c *PLSClient) DidSave(fileURI string, text string) error {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls DidSave: uri=", fileURI, "textLen=", len(text))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
@@ -357,6 +376,9 @@ func (c *PLSClient) DidSave(fileURI string, text string) error {
 }
 
 func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return nil, errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls Formatting 请求: uri=", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -390,6 +412,9 @@ func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
 }
 
 func (c *PLSClient) DidClose(fileURI string) error {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return errors.New("ignored file directories: " + fileURI)
+	}
 	logs.Debug("gopls DidClose: uri=", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
@@ -603,6 +628,9 @@ type Location struct {
 }
 
 func (c *PLSClient) Definition(fileURI string, line, column int) ([]Location, error) {
+	if ShouldIgnoreFile(fileURI, nil) {
+		return nil, errors.New("ignored file directories: " + fileURI)
+	}
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,

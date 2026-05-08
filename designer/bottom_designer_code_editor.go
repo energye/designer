@@ -14,7 +14,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/webview"
 	"github.com/energye/designer/resources"
@@ -73,7 +72,6 @@ func (m *Designer) ActivateCodeEditorTab(tab *CodeEditorTab) {
 
 // onShow 代码编辑器标签显示事件
 func (m *CodeEditorTab) onShow(sender lcl.IObject) {
-	fmt.Println("CodeEditorTab onShow:", m.filePath)
 	m.initEditor()
 	m.switchEditorToThisTab()
 }
