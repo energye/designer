@@ -193,12 +193,12 @@ func (m *TWebviewEditor) checkFileChanges() {
 		}
 
 		if state != nil && state.IsDirty {
-			logs.Info("文件有未保存修改且被外部变更:", filePath)
+			logs.Debug("文件有未保存修改且被外部变更:", filePath)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				ipc.Emit("file-conflict-detected", filePath)
 			})
 		} else {
-			logs.Info("文件被外部修改，通知前端重新加载:", filePath)
+			logs.Debug("文件被外部修改，通知前端重新加载:", filePath)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				ipc.Emit("file-changed-externally", filePath)
 			})

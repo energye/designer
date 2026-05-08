@@ -106,7 +106,7 @@ func IsTextFile(filePath string) bool {
 func DetectLanguage(filePath string) string {
 	ext := strings.ToLower(filepath.Ext(filePath))
 	switch ext {
-	case ".go":
+	case ".go", ".mod":
 		return "go"
 	case ".js":
 		return "javascript"

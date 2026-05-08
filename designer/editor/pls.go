@@ -44,7 +44,7 @@ func initPLSAsync() {
 		return
 	}
 	rootURI := FilePathToURI(bean.GPath)
-	logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
+	logs.Debug("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
 	if err := gPLSClient.Initialize(rootURI); err != nil {
 		logs.Error("gopls Initialize 失败:", err)
 		return
@@ -55,13 +55,13 @@ func initPLSAsync() {
 		if filePath == "" {
 			return
 		}
-		logs.Info("gopls 诊断: file=", filePath, "count=", len(diagnostics))
+		logs.Debug("gopls 诊断: file=", filePath, "count=", len(diagnostics))
 		diagData, _ := json.Marshal(diagnostics)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			ipc.Emit("gopls-diagnostics", filePath, string(diagData))
 		})
 	})
-	logs.Info("gopls 初始化就绪")
+	logs.Debug("gopls 初始化就绪")
 }
 
 // PLSClient 返回全局 PLS 客户端实例，未就绪时返回 nil

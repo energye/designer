@@ -276,8 +276,11 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.mainPage.Button().Font().SetColor(0xD47800)
 		m.RecoverComponentPropertyValue()
-		// 仅在当前选中的是组件节点时才切换选中, 保持源码文件节点选中状态
+		// 在当前选中的是组件节点时才切换选中, 保持源码文件节点选中状态
 		selectedNode := ProjectTreeSelectNode()
+		if selectedNode == nil || !selectedNode.IsValid() {
+			selectedNode = designComp.node
+		}
 		isComponentNode := false
 		if selectedNode != nil && selectedNode.IsValid() {
 			data := selectedNode.Data()

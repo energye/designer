@@ -60,7 +60,7 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 			if err != nil {
 				return
 			}
-			logs.Info("gopls stderr:", strings.TrimRight(string(buf[:n]), "\n"))
+			logs.Debug("gopls stderr:", strings.TrimRight(string(buf[:n]), "\n"))
 		}
 	}()
 
@@ -74,7 +74,7 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 
 	go client.listenResponses()
 
-	logs.Info("gopls 启动成功, 工作目录:", workspaceDir, "PID:", cmd.Process.Pid)
+	logs.Debug("gopls 启动成功, 工作目录:", workspaceDir, "PID:", cmd.Process.Pid)
 	return client, nil
 }
 
@@ -83,7 +83,7 @@ func (c *PLSClient) SetDiagnosticsHandler(handler func(uri string, diagnostics [
 }
 
 func (c *PLSClient) Initialize(rootURI string) error {
-	logs.Info("gopls Initialize rootURI:", rootURI)
+	logs.Debug("gopls Initialize rootURI:", rootURI)
 	params := map[string]interface{}{
 		"processId": nil,
 		"rootUri":   rootURI,
@@ -152,12 +152,12 @@ func (c *PLSClient) Initialize(rootURI string) error {
 	}
 
 	c.sendNotification("initialized", map[string]interface{}{})
-	logs.Info("gopls Initialize 完成")
+	logs.Debug("gopls Initialize 完成")
 	return nil
 }
 
 func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int, triggerChar string) ([]CompletionItem, error) {
-	logs.Info("gopls Completion 请求: uri=", fileURI, "line=", line, "column=", column, "triggerKind=", triggerKind, "triggerChar=", triggerChar)
+	logs.Debug("gopls Completion 请求: uri=", fileURI, "line=", line, "column=", column, "triggerKind=", triggerKind, "triggerChar=", triggerChar)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -190,7 +190,7 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 		return nil, nil
 	}
 
-	logs.Info("gopls Completion 返回", len(completionList.Items), "个建议项, isIncomplete=", completionList.IsIncomplete)
+	logs.Debug("gopls Completion 返回", len(completionList.Items), "个建议项, isIncomplete=", completionList.IsIncomplete)
 
 	// If result is incomplete, resolve items to get full data (additionalTextEdits etc.)
 	if completionList.IsIncomplete && len(completionList.Items) > 0 {
@@ -216,7 +216,7 @@ func (c *PLSClient) Completion(fileURI string, line, column int, triggerKind int
 }
 
 func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureHelpResult, error) {
-	logs.Info("gopls SignatureHelp 请求: uri=", fileURI, "line=", line, "column=", column)
+	logs.Debug("gopls SignatureHelp 请求: uri=", fileURI, "line=", line, "column=", column)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -241,12 +241,12 @@ func (c *PLSClient) SignatureHelp(fileURI string, line, column int) (*SignatureH
 		return nil, nil
 	}
 
-	logs.Info("gopls SignatureHelp 返回", len(result.Signatures), "个签名, activeSignature=", result.ActiveSignature, "activeParameter=", result.ActiveParameter)
+	logs.Debug("gopls SignatureHelp 返回", len(result.Signatures), "个签名, activeSignature=", result.ActiveSignature, "activeParameter=", result.ActiveParameter)
 	return &result, nil
 }
 
 func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem, error) {
-	logs.Info("gopls ResolveCompletionItem: label=", item.Label)
+	logs.Debug("gopls ResolveCompletionItem: label=", item.Label)
 	resp, err := c.sendRequest("completionItem/resolve", item)
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ func (c *PLSClient) ResolveCompletionItem(item CompletionItem) (*CompletionItem,
 }
 
 func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, endChar int, kinds []string, diagnostics []Diagnostic) ([]CodeAction, error) {
-	logs.Info("gopls CodeAction 请求: uri=", fileURI, "kinds=", kinds, "diagnostics=", len(diagnostics))
+	logs.Debug("gopls CodeAction 请求: uri=", fileURI, "kinds=", kinds, "diagnostics=", len(diagnostics))
 
 	diagInterfaces := make([]interface{}, len(diagnostics))
 	for i, d := range diagnostics {
@@ -305,12 +305,12 @@ func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, en
 		logs.Error("gopls CodeAction JSON解析失败:", err, "raw:", string(resp[:goplsMin(len(resp), 300)]))
 		return nil, nil
 	}
-	logs.Info("gopls CodeAction 返回", len(actions), "个操作")
+	logs.Debug("gopls CodeAction 返回", len(actions), "个操作")
 	return actions, nil
 }
 
 func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) error {
-	logs.Info("gopls DidOpen: uri=", fileURI, "lang=", languageID, "version=", version, "contentLen=", len(content))
+	logs.Debug("gopls DidOpen: uri=", fileURI, "lang=", languageID, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri":        fileURI,
@@ -324,7 +324,7 @@ func (c *PLSClient) DidOpen(fileURI, languageID, content string, version int) er
 }
 
 func (c *PLSClient) DidChange(fileURI string, version int, content string) error {
-	logs.Info("gopls DidChange: uri=", fileURI, "version=", version, "contentLen=", len(content))
+	logs.Debug("gopls DidChange: uri=", fileURI, "version=", version, "contentLen=", len(content))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri":     fileURI,
@@ -345,7 +345,7 @@ func (c *PLSClient) DidChange(fileURI string, version int, content string) error
 }
 
 func (c *PLSClient) DidSave(fileURI string, text string) error {
-	logs.Info("gopls DidSave: uri=", fileURI, "textLen=", len(text))
+	logs.Debug("gopls DidSave: uri=", fileURI, "textLen=", len(text))
 	params := map[string]interface{}{
 		"textDocument": map[string]interface{}{
 			"uri": fileURI,
@@ -357,7 +357,7 @@ func (c *PLSClient) DidSave(fileURI string, text string) error {
 }
 
 func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
-	logs.Info("gopls Formatting 请求: uri=", fileURI)
+	logs.Debug("gopls Formatting 请求: uri=", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
@@ -385,12 +385,12 @@ func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
 		return nil, nil
 	}
 
-	logs.Info("gopls Formatting 返回", len(edits), "个编辑")
+	logs.Debug("gopls Formatting 返回", len(edits), "个编辑")
 	return edits, nil
 }
 
 func (c *PLSClient) DidClose(fileURI string) error {
-	logs.Info("gopls DidClose: uri=", fileURI)
+	logs.Debug("gopls DidClose: uri=", fileURI)
 	params := map[string]interface{}{
 		"textDocument": map[string]string{
 			"uri": fileURI,
