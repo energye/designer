@@ -90,7 +90,9 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 
 	m.startFileChangeChecker()
 
+	editor.StopFormFileWatcher()
 	editor.StartFormFileWatcher()
+
 	editor.SetCurrentEditor(m)
 
 	return m
@@ -159,7 +161,7 @@ func (m *TWebviewEditor) Initialized() bool {
 }
 
 func (m *TWebviewEditor) startFileChangeChecker() {
-	m.checkTimer = time.NewTicker(500 * time.Millisecond)
+	m.checkTimer = time.NewTicker(time.Second)
 	go func() {
 		for {
 			select {

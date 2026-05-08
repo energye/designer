@@ -21,6 +21,8 @@ import (
 	"time"
 )
 
+// 窗体代码文件 Watcher
+
 type formFileWatcher struct {
 	mu       sync.RWMutex
 	fileInfo map[string]time.Time
@@ -29,19 +31,9 @@ type formFileWatcher struct {
 
 var (
 	gFormWatcher *formFileWatcher
-	watcherMu    sync.RWMutex
 )
 
 func StartFormFileWatcher() {
-	watcherMu.RLock()
-	if gFormWatcher != nil {
-		watcherMu.RUnlock()
-		return
-	}
-	watcherMu.RUnlock()
-
-	watcherMu.Lock()
-	defer watcherMu.Unlock()
 	if gFormWatcher != nil {
 		return
 	}
@@ -54,8 +46,6 @@ func StartFormFileWatcher() {
 }
 
 func StopFormFileWatcher() {
-	watcherMu.Lock()
-	defer watcherMu.Unlock()
 	if gFormWatcher == nil {
 		return
 	}
@@ -65,19 +55,16 @@ func StopFormFileWatcher() {
 
 // UpdateSavedModTime 编辑器保存文件后调用，同步 ModTime 防止误判
 func UpdateSavedModTime(filePath string) {
-	watcherMu.RLock()
-	w := gFormWatcher
-	watcherMu.RUnlock()
-	if w == nil {
+	if gFormWatcher == nil {
 		return
 	}
 	fi, err := os.Stat(filePath)
 	if err != nil {
 		return
 	}
-	w.mu.Lock()
-	w.fileInfo[filePath] = fi.ModTime()
-	w.mu.Unlock()
+	gFormWatcher.mu.Lock()
+	gFormWatcher.fileInfo[filePath] = fi.ModTime()
+	gFormWatcher.mu.Unlock()
 }
 
 func (w *formFileWatcher) run() {

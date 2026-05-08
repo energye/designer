@@ -22,8 +22,8 @@ var (
 
 func SetCurrentEditor(ed IEditor) {
 	editorMu.Lock()
+	defer editorMu.Unlock()
 	gCurrentEditor = ed
-	editorMu.Unlock()
 }
 
 func GetCurrentEditor() IEditor {
