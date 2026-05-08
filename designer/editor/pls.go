@@ -27,9 +27,6 @@ import (
 var (
 	plsOnce    sync.Once
 	gPLSClient *gopls.PLSClient
-	plsReady   bool
-	plsFailed  bool
-	plsMu      sync.RWMutex
 )
 
 // InitPLS 启动异步 PLS 初始化，不阻塞调用方
@@ -44,18 +41,12 @@ func initPLSAsync() {
 	gPLSClient, err = gopls.NewPLSClient(bean.GPath)
 	if err != nil {
 		logs.Error("NewPLSClient:", err)
-		plsMu.Lock()
-		plsFailed = true
-		plsMu.Unlock()
 		return
 	}
 	rootURI := FilePathToURI(bean.GPath)
 	logs.Info("gopls 初始化, rootURI:", rootURI, "GPath:", bean.GPath)
 	if err := gPLSClient.Initialize(rootURI); err != nil {
 		logs.Error("gopls Initialize 失败:", err)
-		plsMu.Lock()
-		plsFailed = true
-		plsMu.Unlock()
 		return
 	}
 
@@ -70,37 +61,12 @@ func initPLSAsync() {
 			ipc.Emit("gopls-diagnostics", filePath, string(diagData))
 		})
 	})
-
-	plsMu.Lock()
-	plsReady = true
-	plsMu.Unlock()
 	logs.Info("gopls 初始化就绪")
 }
 
 // PLSClient 返回全局 PLS 客户端实例，未就绪时返回 nil
 func PLSClient() *gopls.PLSClient {
 	return gPLSClient
-}
-
-// IsPLSReady 返回 gopls 是否已初始化完成
-func IsPLSReady() bool {
-	plsMu.RLock()
-	defer plsMu.RUnlock()
-	return plsReady
-}
-
-// IsPLSFailed 返回 gopls 是否初始化失败（如未安装）
-func IsPLSFailed() bool {
-	plsMu.RLock()
-	defer plsMu.RUnlock()
-	return plsFailed
-}
-
-// PLSStatus 返回 gopls 的就绪和失败状态
-func PLSStatus() (ready bool, failed bool) {
-	plsMu.RLock()
-	defer plsMu.RUnlock()
-	return plsReady, plsFailed
 }
 
 // SetDiagnosticsHandler 设置诊断处理器，允许原生编辑器覆盖默认行为

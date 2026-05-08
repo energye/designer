@@ -10,7 +10,7 @@ var pendingCodeAction = null;
 function registerPLSProviders() {
     // Completion provider
     monacoRef.languages.registerCompletionItemProvider('go', {
-        triggerCharacters: ['.', '(', '"', "'", '/', '@'],
+        triggerCharacters: ['.', '('],
         provideCompletionItems: function (model, position, token, context) {
             var filePath = getFilePathByModel(model);
             if (!filePath) return {suggestions: []};
@@ -79,7 +79,10 @@ function registerPLSProviders() {
     monacoRef.languages.registerCodeActionProvider('go', {
         provideCodeActions: function (model, range, context) {
             var filePath = getFilePathByModel(model);
-            if (!filePath) return {actions: [], dispose: function(){}};
+            if (!filePath) return {
+                actions: [], dispose: function () {
+                }
+            };
 
             codeActionRequestID++;
             var reqID = codeActionRequestID;
@@ -97,7 +100,10 @@ function registerPLSProviders() {
                 setTimeout(function () {
                     if (pendingCodeAction && pendingCodeAction.reqID === reqID) {
                         pendingCodeAction = null;
-                        resolve({actions: [], dispose: function(){}});
+                        resolve({
+                            actions: [], dispose: function () {
+                            }
+                        });
                     }
                 }, 3000);
 
@@ -109,7 +115,10 @@ function registerPLSProviders() {
                 }]);
             }).catch(function () {
                 // Prevent "Uncaught (in promise) Canceled" errors
-                return {actions: [], dispose: function(){}};
+                return {
+                    actions: [], dispose: function () {
+                    }
+                };
             });
         }
     });
@@ -128,7 +137,8 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
         if (Array.isArray(parsed)) {
             items = parsed;
         }
-    } catch (e) {}
+    } catch (e) {
+    }
 
     var K = monacoRef.languages.CompletionItemKind;
     var Snippet = monacoRef.languages.CompletionItemInsertTextRule;
@@ -146,8 +156,12 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
                 if (params === '') {
                     insertText = insertText + '()';
                 } else {
-                    var paramList = params.split(',').map(function(p) { return p.trim(); });
-                    var placeholders = paramList.map(function(p, i) { return '${' + (i + 1) + ':' + p + '}'; });
+                    var paramList = params.split(',').map(function (p) {
+                        return p.trim();
+                    });
+                    var placeholders = paramList.map(function (p, i) {
+                        return '${' + (i + 1) + ':' + p + '}';
+                    });
                     insertText = insertText + '(' + placeholders.join(', ') + ')$0';
                     isSnippet = true;
                 }
@@ -191,19 +205,30 @@ ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
     var resolve = pendingSignatureHelp.resolve;
     pendingSignatureHelp = null;
 
-    if (!resultJSON) { resolve(null); return; }
+    if (!resultJSON) {
+        resolve(null);
+        return;
+    }
 
     var data = null;
-    try { data = JSON.parse(resultJSON); } catch (e) { resolve(null); return; }
+    try {
+        data = JSON.parse(resultJSON);
+    } catch (e) {
+        resolve(null);
+        return;
+    }
 
-    if (!data.signatures || data.signatures.length === 0) { resolve(null); return; }
+    if (!data.signatures || data.signatures.length === 0) {
+        resolve(null);
+        return;
+    }
 
     var signatures = data.signatures.map(function (sig) {
         return {
             label: sig.label,
             documentation: sig.documentation || '',
             parameters: (sig.parameters || []).map(function (p) {
-                return { label: p.label, documentation: p.documentation || '' };
+                return {label: p.label, documentation: p.documentation || ''};
             })
         };
     });
@@ -214,14 +239,18 @@ ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
             activeSignature: data.activeSignature >= 0 ? data.activeSignature : 0,
             activeParameter: data.activeParameter >= 0 ? data.activeParameter : 0
         },
-        dispose: function () {}
+        dispose: function () {
+        }
     });
 });
 
 // === Code Action Response Handler ===
 ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
     var actions = [];
-    try { actions = JSON.parse(resultJSON); } catch (e) {}
+    try {
+        actions = JSON.parse(resultJSON);
+    } catch (e) {
+    }
     if (!Array.isArray(actions)) actions = [];
 
     var isManualSave = (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID && pendingOrganizeSave.phase === 'organize');
@@ -240,23 +269,37 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
             var fp = pendingOrganizeSave.filePath;
             pendingOrganizeSave = null;
 
-            if (!files.has(fp)) { saveInProgress = false; return; }
+            if (!files.has(fp)) {
+                saveInProgress = false;
+                return;
+            }
             var afterOrganizeModel = getModelByFilePath(fp);
-            if (!afterOrganizeModel) { saveInProgress = false; return; }
+            if (!afterOrganizeModel) {
+                saveInProgress = false;
+                return;
+            }
 
             requestFormatting(fp, function (formatEdits) {
-                if (!files.has(fp)) { saveInProgress = false; return; }
+                if (!files.has(fp)) {
+                    saveInProgress = false;
+                    return;
+                }
                 var currentModel = getModelByFilePath(fp);
-                if (!currentModel) { saveInProgress = false; return; }
+                if (!currentModel) {
+                    saveInProgress = false;
+                    return;
+                }
 
                 if (formatEdits.length > 0) {
                     applyingEdit = true;
                     try {
                         var monacoEdits = formatEdits.map(function (edit) {
-                            return { range: plsRangeToMonaco(edit.range), text: edit.newText };
+                            return {range: plsRangeToMonaco(edit.range), text: edit.newText};
                         }).reverse();
                         currentModel.applyEdits(monacoEdits);
-                    } finally { applyingEdit = false; }
+                    } finally {
+                        applyingEdit = false;
+                    }
                 }
                 // Save the file to disk
                 ipc.emit('save-file', [{file: fp, content: currentModel.getValue()}], function (result) {
@@ -316,14 +359,17 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
                 }
             }
             if (allEdits.length > 0) {
-                ca.edit = { edits: allEdits };
+                ca.edit = {edits: allEdits};
             }
         }
 
         return ca;
     });
 
-    resolve({actions: codeActions, dispose: function(){}});
+    resolve({
+        actions: codeActions, dispose: function () {
+        }
+    });
 });
 
 // === Formatting Response Handler ===
@@ -334,7 +380,10 @@ ipc.on('gopls-formatting-response', function (reqID, resultJSON) {
     pendingFormatting = null;
 
     var edits = [];
-    try { edits = JSON.parse(resultJSON); } catch (e) {}
+    try {
+        edits = JSON.parse(resultJSON);
+    } catch (e) {
+    }
     if (!Array.isArray(edits)) edits = [];
 
     callback(edits);
@@ -348,7 +397,11 @@ ipc.on('gopls-definition-response', function (reqID, resultJSON) {
     if (!resultJSON || resultJSON === 'null') return;
 
     var data = null;
-    try { data = JSON.parse(resultJSON); } catch (e) { return; }
+    try {
+        data = JSON.parse(resultJSON);
+    } catch (e) {
+        return;
+    }
     if (!data.file) return;
 
     var sourceFile = getFilePathByModel(editor.getModel());
@@ -375,7 +428,11 @@ ipc.on('gopls-diagnostics', function (filePath, diagnosticsJSON) {
     if (!model) return;
 
     var diags = [];
-    try { diags = JSON.parse(diagnosticsJSON); } catch (e) { return; }
+    try {
+        diags = JSON.parse(diagnosticsJSON);
+    } catch (e) {
+        return;
+    }
     if (!Array.isArray(diags)) return;
 
     currentDiagnostics.set(filePath, diags);

@@ -22,7 +22,6 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"strings"
-	"time"
 )
 
 // JSCompletionItem 发送给前端的补全项
@@ -183,29 +182,6 @@ func readFileData(filePath string, checkText bool) (string, bool) {
 }
 
 func (m *TWebviewEditor) initIPCEvent() {
-	ipc.On("monaco-inited", func(context ipc.IContext) {
-		logs.Info("ipc monaco-inited BrowserId:", context.BrowserId(), context.Data())
-		go func() {
-			for i := 0; i < 30; i++ {
-				if editor.IsPLSReady() || editor.IsPLSFailed() {
-					break
-				}
-				time.Sleep(100 * time.Millisecond)
-			}
-			ready, failed := editor.PLSStatus()
-			status := "ready"
-			if failed {
-				status = "unavailable"
-			} else if !ready {
-				status = "loading"
-			}
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				ipc.Emit("gopls-status", status)
-			})
-		}()
-		context.Result("")
-	})
-
 	// Completion
 	ipc.On("gopls-completion", func(context ipc.IContext) {
 		var params CompletionParams

@@ -14,7 +14,6 @@
 package designer
 
 import (
-	"fmt"
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/webview"
 	projBean "github.com/energye/designer/options/bean"
@@ -95,10 +94,10 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formUserEditorPage.SetCaption("代码")
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 
-	m.formUIEditorPage = lcl.NewTabSheet(formTab.mainPage)
-	m.formUIEditorPage.SetPageControl(m.formPageControl)
-	m.formUIEditorPage.SetCaption("UI代码")
-	m.formUIEditorPage.SetOnShow(m.UIEditorPageOnShow)
+	//m.formUIEditorPage = lcl.NewTabSheet(formTab.mainPage)
+	//m.formUIEditorPage.SetPageControl(m.formPageControl)
+	//m.formUIEditorPage.SetCaption("UI代码")
+	//m.formUIEditorPage.SetOnShow(m.UIEditorPageOnShow)
 
 	m.formDesignScroll = lcl.NewScrollBox(formTab.mainPage)
 	m.formDesignScroll.SetAlign(types.AlClient)
@@ -138,13 +137,11 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 //}
 
 func (m *TFormDesignPage) UserEditorPageOnShow(sender lcl.IObject) {
-	fmt.Println("UserEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUserEditorPage.BoundsRect())
 	m.initEditor()
 	m.SwitchTabPageEditor(false)
 }
 
 func (m *TFormDesignPage) UIEditorPageOnShow(sender lcl.IObject) {
-	fmt.Println("UIEditorPageOnShow IsMainThread:", tool.IsMainThread(), m.formUIEditorPage.BoundsRect())
 	m.initEditor()
 	m.SwitchTabPageEditor(true)
 }
@@ -171,7 +168,7 @@ func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 			canLoad := make(chan error, 1)
 			wvEditor.SetCanLoadChan(canLoad)
 			go func() {
-				err := <-canLoad
+				_ = <-canLoad
 				wvEditor.SetCanLoadChan(nil)
 				close(canLoad)
 				var filePath string
@@ -183,9 +180,6 @@ func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 					filePath = filepath.Join(projBean.CodePath(), m.formDesignCode.GOUserFile())
 					readOnly = false
 				}
-				fmt.Println("canLoad", err, wvEditor.Initialized(),
-					m.formDesignCode.GOFile(), m.formDesignCode.UIFile(), m.formDesignCode.GOUserFile())
-				fmt.Println("filePath:", filePath)
 				if wvEditor.Initialized() {
 					lcl.RunOnMainThreadAsync(func(id uint32) {
 						editor.OpenFileInEditor(filePath, readOnly)
@@ -193,7 +187,7 @@ func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
 				}
 			}()
 			var targetOwner lcl.IWinControl
-			if uiCode {
+			if uiCode && m.formUIEditorPage != nil {
 				targetOwner = m.formUIEditorPage
 			} else {
 				targetOwner = m.formUserEditorPage

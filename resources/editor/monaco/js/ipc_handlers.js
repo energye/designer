@@ -1,8 +1,16 @@
 // Inbound IPC event listeners from Go
 
-ipc.on('open-file', function (data, readOnly) { openFile(data, readOnly); });
-ipc.on('close-file', function (data) { closeFile(data); });
-ipc.on('save-current-file', function () { manualSave(); });
+ipc.on('open-file', function (data, readOnly) {
+    openFile(data, readOnly);
+});
+
+ipc.on('close-file', function (data) {
+    closeFile(data);
+});
+
+ipc.on('save-current-file', function () {
+    manualSave();
+});
 
 ipc.on('goto-position', function (filePath, line, character) {
     if (!editor) return;
@@ -27,7 +35,3 @@ ipc.on('file-conflict-detected', function (filePath) {
     reloadFileFromDisk(filePath);
 });
 
-ipc.on('gopls-status', function (status) {
-    goplsStatus = status;
-    if (currentFilePath) updateFilePathBar(currentFilePath);
-});

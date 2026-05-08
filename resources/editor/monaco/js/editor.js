@@ -58,8 +58,6 @@ require(['vs/editor/editor.main'], function (monaco) {
         saveTimeout = setTimeout(autoSave, 500);
     });
 
-    ipc.emit("monaco-inited", []);
-
     // Ctrl+S save with format + organize imports
     editor.addCommand(monacoRef.KeyMod.CtrlCmd | monacoRef.KeyCode.KeyS, function () {
         manualSave();
@@ -95,7 +93,10 @@ function modelUri(path) {
 // Request gopls formatting for a file
 function requestFormatting(filePath, callback) {
     var model = getModelByFilePath(filePath);
-    if (!model) { callback([]); return; }
+    if (!model) {
+        callback([]);
+        return;
+    }
 
     formattingRequestID++;
     var reqID = formattingRequestID;
@@ -132,7 +133,10 @@ function manualSave() {
 
     var filePath = currentFilePath;
     var model = getModelByFilePath(filePath);
-    if (!model) { saveInProgress = false; return; }
+    if (!model) {
+        saveInProgress = false;
+        return;
+    }
 
     // Step 1: organize imports first (gopls already has current file state)
     var fullRange = model.getFullModelRange();

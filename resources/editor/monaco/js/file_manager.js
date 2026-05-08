@@ -33,10 +33,6 @@ function updateFilePathBar(filePath) {
         displayPath = displayPath + '  [Read Only]';
         bar.style.color = '#b8860b';
     }
-    if (goplsStatus === 'unavailable' && filePath.replace(/\\/g, '/').endsWith('.go')) {
-        displayPath = '⚠ gopls missing  |  ' + displayPath;
-        bar.style.color = '#b8860b';
-    }
     bar.textContent = displayPath;
 }
 
