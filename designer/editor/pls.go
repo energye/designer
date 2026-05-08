@@ -21,19 +21,19 @@ import (
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/lcl/lcl"
 	"os"
-	"sync"
 )
 
 var (
-	plsOnce    sync.Once
 	gPLSClient *gopls.PLSClient
 )
 
 // InitPLS 启动异步 PLS 初始化，不阻塞调用方
 func InitPLS() {
-	plsOnce.Do(func() {
-		go initPLSAsync()
-	})
+	if gPLSClient != nil {
+		gPLSClient.Close()
+		gPLSClient = nil
+	}
+	go initPLSAsync()
 }
 
 func initPLSAsync() {

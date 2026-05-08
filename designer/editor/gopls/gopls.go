@@ -28,7 +28,6 @@ type PLSClient struct {
 	pendingMu sync.Mutex
 
 	diagnosticsHandler func(uri string, diagnostics []Diagnostic)
-	diagMu             sync.Mutex
 }
 
 func NewPLSClient(workspaceDir string) (*PLSClient, error) {
@@ -80,9 +79,7 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 }
 
 func (c *PLSClient) SetDiagnosticsHandler(handler func(uri string, diagnostics []Diagnostic)) {
-	c.diagMu.Lock()
 	c.diagnosticsHandler = handler
-	c.diagMu.Unlock()
 }
 
 func (c *PLSClient) Initialize(rootURI string) error {
@@ -123,8 +120,7 @@ func (c *PLSClient) Initialize(rootURI string) error {
 					"codeActionLiteralSupport": map[string]interface{}{
 						"codeActionKind": map[string]interface{}{
 							"valueSet": []string{
-								"quickfix", "refactor", "refactor.extract",
-								"refactor.inline", "refactor.rewrite",
+								"quickfix",
 								"source", "source.organizeImports",
 							},
 						},
@@ -143,10 +139,7 @@ func (c *PLSClient) Initialize(rootURI string) error {
 					"linkSupport": true,
 				},
 				"synchronization": map[string]interface{}{
-					"dynamicRegistration": false,
-					"willSave":            false,
-					"willSaveWaitUntil":   false,
-					"didSave":             true,
+					"didSave": true,
 				},
 			},
 		},
@@ -312,7 +305,6 @@ func (c *PLSClient) CodeAction(fileURI string, startLine, startChar, endLine, en
 		logs.Error("gopls CodeAction JSON解析失败:", err, "raw:", string(resp[:goplsMin(len(resp), 300)]))
 		return nil, nil
 	}
-
 	logs.Info("gopls CodeAction 返回", len(actions), "个操作")
 	return actions, nil
 }
@@ -371,8 +363,8 @@ func (c *PLSClient) Formatting(fileURI string) ([]TextEdit, error) {
 			"uri": fileURI,
 		},
 		"options": map[string]interface{}{
-			"tabSize":           4,
-			"insertSpaces":      true,
+			"tabSize":                4,
+			"insertSpaces":           true,
 			"trimTrailingWhitespace": true,
 			"insertFinalNewline":     true,
 		},
@@ -473,21 +465,17 @@ func (c *PLSClient) sendNotification(method string, params interface{}) error {
 		"method":  method,
 		"params":  params,
 	}
-
 	data, err := json.Marshal(notification)
 	if err != nil {
 		return err
 	}
-
 	header := fmt.Sprintf("Content-Length: %d\r\n\r\n", len(data))
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if _, err := c.stdin.Write([]byte(header)); err != nil {
 		return err
 	}
-
 	_, err = c.stdin.Write(data)
 	return err
 }
@@ -567,11 +555,17 @@ func (c *PLSClient) listenResponses() {
 		}
 
 		if resp.Method == "textDocument/publishDiagnostics" && len(resp.Params) > 0 {
+			// 诊断信息
 			c.handleDiagnostics(resp.Params)
 		}
 	}
 }
 
+// 诊断信息 触发时机
+//
+//	打开一个文件 (textDocument/didOpen)
+//	修改了文件内容 (textDocument/didChange)
+//	保存了文件 (textDocument/didSave)
 func (c *PLSClient) handleDiagnostics(params json.RawMessage) {
 	var notification struct {
 		URI         string       `json:"uri"`
@@ -582,9 +576,7 @@ func (c *PLSClient) handleDiagnostics(params json.RawMessage) {
 		return
 	}
 
-	c.diagMu.Lock()
 	handler := c.diagnosticsHandler
-	c.diagMu.Unlock()
 
 	if handler != nil {
 		handler(notification.URI, notification.Diagnostics)

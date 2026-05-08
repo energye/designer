@@ -68,7 +68,7 @@ func Init() {
 
 func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 	Init()
-	//editor.InitPLS() // TODO 功能未完善
+	editor.InitPLS() // TODO 功能未完善
 	m := &TWebviewEditor{
 		fileManager: editor.NewFileManager(),
 		stopChan:    make(chan struct{}),
@@ -87,9 +87,10 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 
 	m.initIPCEvent()
 	m.initDefinitionIPC()
-	m.startFileChangeChecker()
-	editor.StartFormFileWatcher()
 
+	m.startFileChangeChecker()
+
+	editor.StartFormFileWatcher()
 	editor.SetCurrentEditor(m)
 
 	return m

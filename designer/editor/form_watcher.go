@@ -81,7 +81,7 @@ func UpdateSavedModTime(filePath string) {
 }
 
 func (w *formFileWatcher) run() {
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
 	for {
