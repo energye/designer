@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	desTool "github.com/energye/designer/pkg/tool"
+	engLCL "github.com/energye/energy/v3/lcl"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
@@ -51,7 +52,7 @@ type TMainMenu struct {
 	editUndo      lcl.IMenuItem
 	editRedo      lcl.IMenuItem
 	editDel       lcl.IMenuItem
-	shortcutKey   *TShortcutKey
+	editing       *engLCL.TMenuEditing
 
 	// view
 	viewWidgets   lcl.IMenuItem
@@ -71,8 +72,6 @@ type TMainMenu struct {
 	environmentOption lcl.IMenuItem
 	frameworkOption   lcl.IMenuItem
 	projectOption     lcl.IMenuItem
-
-	actionList lcl.IActionList
 }
 
 // 设计器主菜单
@@ -83,8 +82,6 @@ func (m *TAppWindow) initMainMenu() {
 
 	mainMenu := new(TMainMenu)
 	m.mainMenu = mainMenu
-
-	m.mainMenu.actionList = lcl.NewActionList(m)
 
 	mainMenu.main = lcl.NewMainMenu(m)
 	mainMenu.main.SetImages(imageMenu.ImageList100())
@@ -239,48 +236,16 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 }
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
-	m.shortcutKey = &TShortcutKey{}
-
-	m.shortcutKey.cutAction = lcl.NewEditCut(m.actionList)
-	m.shortcutKey.cutAction.SetShortCut(api.TextToShortCut(platformControl() + "+X"))
-	m.shortcutKey.cutAction.SetCaption("剪切")
-
-	m.shortcutKey.copyAction = lcl.NewEditCopy(m.actionList)
-	m.shortcutKey.copyAction.SetShortCut(api.TextToShortCut(platformControl() + "+C"))
-	m.shortcutKey.copyAction.SetCaption("复制")
-
-	m.shortcutKey.pasteAction = lcl.NewEditPaste(m.actionList)
-	m.shortcutKey.pasteAction.SetShortCut(api.TextToShortCut(platformControl() + "+V"))
-	m.shortcutKey.pasteAction.SetCaption("粘贴")
-
-	m.shortcutKey.selectAllAction = lcl.NewEditSelectAll(m.actionList)
-	m.shortcutKey.selectAllAction.SetShortCut(api.TextToShortCut(platformControl() + "+A"))
-	m.shortcutKey.selectAllAction.SetCaption("全选")
-
-	m.shortcutKey.undoAction = lcl.NewEditUndo(m.actionList)
-	m.shortcutKey.undoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Z"))
-	m.shortcutKey.undoAction.SetCaption("撤销")
-
-	m.shortcutKey.redoAction = lcl.NewAction(m.actionList)
-	m.shortcutKey.redoAction.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+Z"))
-	m.shortcutKey.redoAction.SetCaption("恢复")
-
-	m.shortcutKey.init()
-
-	m.shortcutKey.deleteAction = lcl.NewEditDelete(m.actionList)
-	m.shortcutKey.deleteAction.SetShortCut(api.TextToShortCut(platformControl() + "+Del"))
-	m.shortcutKey.deleteAction.SetCaption("删除")
+	m.editing = engLCL.NewMenuEditing(owner)
 
 	// ====
 
 	m.editUndo = lcl.NewMenuItem(owner)
-	m.editUndo.SetCaption(m.shortcutKey.undoAction.Caption())
-	m.editUndo.SetAction(m.shortcutKey.undoAction)
+	m.editUndo.SetAction(m.editing.UndoAction)
 	m.edit.Add(m.editUndo)
 
 	m.editRedo = lcl.NewMenuItem(owner)
-	m.editRedo.SetCaption(m.shortcutKey.redoAction.Caption())
-	m.editRedo.SetAction(m.shortcutKey.redoAction)
+	m.editRedo.SetAction(m.editing.RedoAction)
 	m.edit.Add(m.editRedo)
 
 	separator := lcl.NewMenuItem(owner)
@@ -288,18 +253,15 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(separator)
 
 	m.editCut = lcl.NewMenuItem(owner)
-	m.editCut.SetCaption(m.shortcutKey.cutAction.Caption())
-	m.editCut.SetAction(m.shortcutKey.cutAction)
+	m.editCut.SetAction(m.editing.CutAction)
 	m.edit.Add(m.editCut)
 
 	m.editCopy = lcl.NewMenuItem(owner)
-	m.editCopy.SetCaption(m.shortcutKey.copyAction.Caption())
-	m.editCopy.SetAction(m.shortcutKey.copyAction)
+	m.editCopy.SetAction(m.editing.CopyAction)
 	m.edit.Add(m.editCopy)
 
 	m.editPaste = lcl.NewMenuItem(owner)
-	m.editPaste.SetCaption(m.shortcutKey.pasteAction.Caption())
-	m.editPaste.SetAction(m.shortcutKey.pasteAction)
+	m.editPaste.SetAction(m.editing.PasteAction)
 	m.edit.Add(m.editPaste)
 
 	separator = lcl.NewMenuItem(owner)
@@ -307,13 +269,11 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.edit.Add(separator)
 
 	m.editSelectAll = lcl.NewMenuItem(owner)
-	m.editSelectAll.SetCaption(m.shortcutKey.selectAllAction.Caption())
-	m.editSelectAll.SetAction(m.shortcutKey.selectAllAction)
+	m.editSelectAll.SetAction(m.editing.SelectAllAction)
 	m.edit.Add(m.editSelectAll)
 
 	m.editDel = lcl.NewMenuItem(owner)
-	m.editDel.SetCaption(m.shortcutKey.deleteAction.Caption())
-	m.editDel.SetAction(m.shortcutKey.deleteAction)
+	m.editDel.SetAction(m.editing.DeleteAction)
 	m.edit.Add(m.editDel)
 }
 

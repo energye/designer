@@ -155,30 +155,26 @@ type DirtyData struct {
 }
 
 // readFileData 读取文件并返回序列化的FileData JSON，checkText为true时检查是否为文本文件
-func readFileData(filePath string, checkText bool) (string, bool) {
+func readFileData(filePath string, checkText bool) (*FileData, bool) {
 	if checkText && !editor.IsTextFile(filePath) {
-		return "", false
+		return nil, false
 	}
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		return "", false
+		return nil, false
 	}
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		return "", false
+		return nil, false
 	}
-	result := FileData{
+	result := &FileData{
 		File:     filePath,
 		Content:  string(content),
 		Language: editor.DetectLanguage(filePath),
 		ModTime:  fileInfo.ModTime().UnixMilli(),
 		ReadOnly: editor.IsFileReadOnly(filePath),
 	}
-	jsonData, err := json.Marshal(result)
-	if err != nil {
-		return "", false
-	}
-	return string(jsonData), true
+	return result, true
 }
 
 func (m *TWebviewEditor) initIPCEvent() {

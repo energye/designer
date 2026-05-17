@@ -26,7 +26,7 @@ ipc.on('goto-position', function (filePath, line, character) {
 });
 
 ipc.on('file-changed-externally', function (filePath) {
-    var info = files.get(filePath);
+    let info = files.get(filePath);
     if (!info || info.isDirty) return;
     reloadFileFromDisk(filePath, '文件已重新加载: ' + getFileName(filePath));
 });

@@ -1,27 +1,27 @@
 // PLS provider registration and response handlers
 
-var completionRequestID = 0;
-var pendingCompletion = null;
-var signatureHelpRequestID = 0;
-var pendingSignatureHelp = null;
-var codeActionRequestID = 0;
-var pendingCodeAction = null;
+let completionRequestID = 0;
+let pendingCompletion = null;
+let signatureHelpRequestID = 0;
+let pendingSignatureHelp = null;
+let codeActionRequestID = 0;
+let pendingCodeAction = null;
 
 function registerPLSProviders() {
     // Completion provider
     monacoRef.languages.registerCompletionItemProvider('go', {
         triggerCharacters: ['.', '('],
         provideCompletionItems: function (model, position, token, context) {
-            var filePath = getFilePathByModel(model);
+            let filePath = getFilePathByModel(model);
             if (!filePath) return {suggestions: []};
 
-            var line = position.lineNumber - 1;
-            var column = position.column - 1;
+            let line = position.lineNumber - 1;
+            let column = position.column - 1;
             completionRequestID++;
-            var reqID = completionRequestID;
+            let reqID = completionRequestID;
 
-            var triggerKind = 1;
-            var triggerChar = '';
+            let triggerKind = 1;
+            let triggerChar = '';
             if (context && context.triggerKind === 2) {
                 triggerKind = 2;
                 triggerChar = context.triggerCharacter || '';
@@ -51,13 +51,13 @@ function registerPLSProviders() {
     monacoRef.languages.registerSignatureHelpProvider('go', {
         signatureHelpTriggerCharacters: ['(', ','],
         provideSignatureHelp: function (model, position, token, context) {
-            var filePath = getFilePathByModel(model);
+            let filePath = getFilePathByModel(model);
             if (!filePath) return null;
 
-            var line = position.lineNumber - 1;
-            var column = position.column - 1;
+            let line = position.lineNumber - 1;
+            let column = position.column - 1;
             signatureHelpRequestID++;
-            var reqID = signatureHelpRequestID;
+            let reqID = signatureHelpRequestID;
 
             return new Promise(function (resolve) {
                 pendingSignatureHelp = {reqID: reqID, resolve: resolve};
@@ -78,20 +78,20 @@ function registerPLSProviders() {
     // Code Action provider
     monacoRef.languages.registerCodeActionProvider('go', {
         provideCodeActions: function (model, range, context) {
-            var filePath = getFilePathByModel(model);
+            let filePath = getFilePathByModel(model);
             if (!filePath) return {
                 actions: [], dispose: function () {
                 }
             };
 
             codeActionRequestID++;
-            var reqID = codeActionRequestID;
+            let reqID = codeActionRequestID;
 
-            var kinds = 'quickfix,source.organizeImports';
-            var diags = currentDiagnostics.get(filePath) || [];
-            var rangeDiags = diags.filter(function (d) {
-                var dStartLine = (d.range && d.range.start ? d.range.start.line + 1 : 1);
-                var dEndLine = (d.range && d.range.end ? d.range.end.line + 1 : 1);
+            let kinds = 'quickfix,source.organizeImports';
+            let diags = currentDiagnostics.get(filePath) || [];
+            let rangeDiags = diags.filter(function (d) {
+                let dStartLine = (d.range && d.range.start ? d.range.start.line + 1 : 1);
+                let dEndLine = (d.range && d.range.end ? d.range.end.line + 1 : 1);
                 return dEndLine >= range.startLineNumber && dStartLine <= range.endLineNumber;
             });
 
@@ -128,38 +128,38 @@ function registerPLSProviders() {
 ipc.on('gopls-completion-response', function (reqID, resultJSON) {
     if (!pendingCompletion || pendingCompletion.reqID !== reqID) return;
 
-    var resolve = pendingCompletion.resolve;
+    let resolve = pendingCompletion.resolve;
     pendingCompletion = null;
 
-    var items = [];
+    let items = [];
     try {
-        var parsed = JSON.parse(resultJSON);
+        let parsed = JSON.parse(resultJSON);
         if (Array.isArray(parsed)) {
             items = parsed;
         }
     } catch (e) {
     }
 
-    var K = monacoRef.languages.CompletionItemKind;
-    var Snippet = monacoRef.languages.CompletionItemInsertTextRule;
-    var suggestions = items.map(function (item) {
-        var insertText = item.insertText || item.label;
-        var kind = plsKindToMonaco(item.kind, K);
-        var isSnippet = item.insertTextFormat === 2;
+    let K = monacoRef.languages.CompletionItemKind;
+    let Snippet = monacoRef.languages.CompletionItemInsertTextRule;
+    let suggestions = items.map(function (item) {
+        let insertText = item.insertText || item.label;
+        let kind = plsKindToMonaco(item.kind, K);
+        let isSnippet = item.insertTextFormat === 2;
 
         // Enhance function/method completions with parentheses and parameter placeholders
         if ((kind === K.Function || kind === K.Method) && !isSnippet) {
-            var detail = item.detail || '';
-            var sigMatch = detail.match(/^func\(([^)]*)\)/);
+            let detail = item.detail || '';
+            let sigMatch = detail.match(/^func\(([^)]*)\)/);
             if (sigMatch) {
-                var params = sigMatch[1].trim();
+                let params = sigMatch[1].trim();
                 if (params === '') {
                     insertText = insertText + '()';
                 } else {
-                    var paramList = params.split(',').map(function (p) {
+                    let paramList = params.split(',').map(function (p) {
                         return p.trim();
                     });
-                    var placeholders = paramList.map(function (p, i) {
+                    let placeholders = paramList.map(function (p, i) {
                         return '${' + (i + 1) + ':' + p + '}';
                     });
                     insertText = insertText + '(' + placeholders.join(', ') + ')$0';
@@ -170,7 +170,7 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
             }
         }
 
-        var s = {
+        let s = {
             label: item.label,
             kind: kind,
             detail: item.detail || '',
@@ -202,7 +202,7 @@ ipc.on('gopls-completion-response', function (reqID, resultJSON) {
 ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
     if (!pendingSignatureHelp || pendingSignatureHelp.reqID !== reqID) return;
 
-    var resolve = pendingSignatureHelp.resolve;
+    let resolve = pendingSignatureHelp.resolve;
     pendingSignatureHelp = null;
 
     if (!resultJSON) {
@@ -210,7 +210,7 @@ ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
         return;
     }
 
-    var data = null;
+    let data = null;
     try {
         data = JSON.parse(resultJSON);
     } catch (e) {
@@ -223,7 +223,7 @@ ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
         return;
     }
 
-    var signatures = data.signatures.map(function (sig) {
+    let signatures = data.signatures.map(function (sig) {
         return {
             label: sig.label,
             documentation: sig.documentation || '',
@@ -246,15 +246,15 @@ ipc.on('gopls-signatureHelp-response', function (reqID, resultJSON) {
 
 // === Code Action Response Handler ===
 ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
-    var actions = [];
+    let actions = [];
     try {
         actions = JSON.parse(resultJSON);
     } catch (e) {
     }
     if (!Array.isArray(actions)) actions = [];
 
-    var isManualSave = (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID && pendingOrganizeSave.phase === 'organize');
-    var isAutoOrganize = (!pendingCodeAction || pendingCodeAction.reqID !== reqID) && !isManualSave;
+    let isManualSave = (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID && pendingOrganizeSave.phase === 'organize');
+    let isAutoOrganize = (!pendingCodeAction || pendingCodeAction.reqID !== reqID) && !isManualSave;
 
     if (isAutoOrganize || isManualSave) {
         // Apply organize imports edits
@@ -266,14 +266,14 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
 
         if (isManualSave) {
             // Manual save flow: organize imports done, now format then save
-            var fp = pendingOrganizeSave.filePath;
+            let fp = pendingOrganizeSave.filePath;
             pendingOrganizeSave = null;
 
             if (!files.has(fp)) {
                 saveInProgress = false;
                 return;
             }
-            var afterOrganizeModel = getModelByFilePath(fp);
+            let afterOrganizeModel = getModelByFilePath(fp);
             if (!afterOrganizeModel) {
                 saveInProgress = false;
                 return;
@@ -284,7 +284,7 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
                     saveInProgress = false;
                     return;
                 }
-                var currentModel = getModelByFilePath(fp);
+                let currentModel = getModelByFilePath(fp);
                 if (!currentModel) {
                     saveInProgress = false;
                     return;
@@ -293,7 +293,7 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
                 if (formatEdits.length > 0) {
                     applyingEdit = true;
                     try {
-                        var monacoEdits = formatEdits.map(function (edit) {
+                        let monacoEdits = formatEdits.map(function (edit) {
                             return {range: plsRangeToMonaco(edit.range), text: edit.newText};
                         }).reverse();
                         currentModel.applyEdits(monacoEdits);
@@ -312,10 +312,10 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
             });
         } else if (pendingOrganizeSave && pendingOrganizeSave.reqID === reqID) {
             // Auto-save path (from autoSave function, no phase set)
-            var fp = pendingOrganizeSave.filePath;
+            let fp = pendingOrganizeSave.filePath;
             pendingOrganizeSave = null;
             if (fp && files.has(fp)) {
-                var model = getModelByFilePath(fp);
+                let model = getModelByFilePath(fp);
                 if (model) {
                     ipc.emit('save-file', [{file: fp, content: model.getValue()}], function (result) {
                         if (result === 'ok') {
@@ -328,11 +328,11 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
         return;
     }
 
-    var resolve = pendingCodeAction.resolve;
+    let resolve = pendingCodeAction.resolve;
     pendingCodeAction = null;
 
-    var codeActions = actions.map(function (action) {
-        var ca = {
+    let codeActions = actions.map(function (action) {
+        let ca = {
             title: action.title,
             kind: action.kind || 'quickfix',
             diagnostics: [],
@@ -340,14 +340,14 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
         };
 
         if (action.edit && action.edit.changes) {
-            var allEdits = [];
-            for (var filePath in action.edit.changes) {
+            let allEdits = [];
+            for (let filePath in action.edit.changes) {
                 if (!action.edit.changes.hasOwnProperty(filePath)) continue;
-                var edits = action.edit.changes[filePath];
-                var model = getModelByFilePath(filePath);
+                let edits = action.edit.changes[filePath];
+                let model = getModelByFilePath(filePath);
                 if (!model) continue;
-                for (var i = 0; i < edits.length; i++) {
-                    var edit = edits[i];
+                for (let i = 0; i < edits.length; i++) {
+                    let edit = edits[i];
                     allEdits.push({
                         resource: model.uri,
                         versionId: undefined,
@@ -376,10 +376,10 @@ ipc.on('gopls-codeAction-response', function (reqID, resultJSON) {
 ipc.on('gopls-formatting-response', function (reqID, resultJSON) {
     if (!pendingFormatting || pendingFormatting.reqID !== reqID) return;
 
-    var callback = pendingFormatting.callback;
+    let callback = pendingFormatting.callback;
     pendingFormatting = null;
 
-    var edits = [];
+    let edits = [];
     try {
         edits = JSON.parse(resultJSON);
     } catch (e) {
@@ -396,7 +396,7 @@ ipc.on('gopls-definition-response', function (reqID, resultJSON) {
 
     if (!resultJSON || resultJSON === 'null') return;
 
-    var data = null;
+    let data = null;
     try {
         data = JSON.parse(resultJSON);
     } catch (e) {
@@ -404,10 +404,10 @@ ipc.on('gopls-definition-response', function (reqID, resultJSON) {
     }
     if (!data.file) return;
 
-    var sourceFile = getFilePathByModel(editor.getModel());
-    var targetPath = data.file;
-    var targetLine = data.range.start.line;
-    var targetCol = data.range.start.character;
+    let sourceFile = getFilePathByModel(editor.getModel());
+    let targetPath = data.file;
+    let targetLine = data.range.start.line;
+    let targetCol = data.range.start.character;
 
     if (targetPath === sourceFile) {
         editor.revealLineInCenter(targetLine + 1);
@@ -424,10 +424,10 @@ ipc.on('gopls-definition-response', function (reqID, resultJSON) {
 // === Diagnostics Handler ===
 ipc.on('gopls-diagnostics', function (filePath, diagnosticsJSON) {
     if (!monacoRef) return;
-    var model = getModelByFilePath(filePath);
+    let model = getModelByFilePath(filePath);
     if (!model) return;
 
-    var diags = [];
+    let diags = [];
     try {
         diags = JSON.parse(diagnosticsJSON);
     } catch (e) {
@@ -437,7 +437,7 @@ ipc.on('gopls-diagnostics', function (filePath, diagnosticsJSON) {
 
     currentDiagnostics.set(filePath, diags);
 
-    var markers = diags.map(function (d) {
+    let markers = diags.map(function (d) {
         return {
             severity: diagSeverityToMonaco(d.severity),
             message: d.message,
@@ -450,7 +450,7 @@ ipc.on('gopls-diagnostics', function (filePath, diagnosticsJSON) {
 
     monacoRef.editor.setModelMarkers(model, 'gopls', markers);
 
-    var hasUnusedImport = diags.some(function (d) {
+    let hasUnusedImport = diags.some(function (d) {
         return d.message && d.message.indexOf('imported and not used') >= 0;
     });
     if (hasUnusedImport && filePath === currentFilePath) {
@@ -463,10 +463,10 @@ function requestOrganizeImports(filePath, model, onSave) {
     clearTimeout(organizeImportsTimeout);
     organizeImportsTimeout = setTimeout(function () {
         codeActionRequestID++;
-        var reqID = codeActionRequestID;
-        var kinds = 'source.organizeImports';
-        var diags = currentDiagnostics.get(filePath) || [];
-        var fullRange = model.getFullModelRange();
+        let reqID = codeActionRequestID;
+        let kinds = 'source.organizeImports';
+        let diags = currentDiagnostics.get(filePath) || [];
+        let fullRange = model.getFullModelRange();
 
         if (onSave) {
             pendingOrganizeSave = {filePath: filePath, reqID: reqID};
@@ -489,20 +489,20 @@ function applyWorkspaceEdit(workspaceEdit) {
     if (!workspaceEdit || !workspaceEdit.changes) return;
     applyingEdit = true;
     try {
-        for (var filePath in workspaceEdit.changes) {
+        for (let filePath in workspaceEdit.changes) {
             if (!workspaceEdit.changes.hasOwnProperty(filePath)) continue;
-            var edits = workspaceEdit.changes[filePath];
-            var model = getModelByFilePath(filePath);
+            let edits = workspaceEdit.changes[filePath];
+            let model = getModelByFilePath(filePath);
             if (!model) continue;
-            var monacoEdits = plsEditsToMonaco(edits);
+            let monacoEdits = plsEditsToMonaco(edits);
             model.applyEdits(monacoEdits);
         }
     } finally {
         applyingEdit = false;
-        for (var filePath in workspaceEdit.changes) {
+        for (let filePath in workspaceEdit.changes) {
             if (!workspaceEdit.changes.hasOwnProperty(filePath)) continue;
             if (files.has(filePath)) {
-                var info = files.get(filePath);
+                let info = files.get(filePath);
                 info.version++;
                 ipc.emit('gopls-didChange', [{
                     file: filePath,

@@ -21,9 +21,9 @@ func initToolBtnLayout(window lcl.IWinControl) *TToolBtnLayout {
 	} else {
 		m.box.SetAlign(types.AlCustom)
 		m.box.SetAnchors(types.NewSet(types.AkLeft, types.AkTop, types.AkRight))
-		m.box.SetBounds(0, 0, windowBr.Width(), toolBarHeight)
 		m.box.SetHeight(toolBarHeight)
 	}
+	m.box.SetBounds(0, 0, windowBr.Width(), toolBarHeight)
 	m.box.SetParent(window)
 
 	m.initToolBarBtns()

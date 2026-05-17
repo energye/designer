@@ -1,9 +1,9 @@
 // File open/close/save/reload logic
 
-var pendingGotoPosition = null; // {line, character} - applied after file open completes
+let pendingGotoPosition = null; // {line, character} - applied after file open completes
 
 function switchToFile(filePath) {
-    var info = files.get(filePath);
+    let info = files.get(filePath);
     if (currentFilePath && files.has(currentFilePath)) {
         files.get(currentFilePath).viewState = editor.saveViewState();
     }
@@ -15,7 +15,7 @@ function switchToFile(filePath) {
 
     // Apply pending goto position if this is the target file
     if (pendingGotoPosition && pendingGotoPosition.filePath === filePath) {
-        var pos = pendingGotoPosition;
+        let pos = pendingGotoPosition;
         pendingGotoPosition = null;
         editor.revealLineInCenter(pos.line + 1);
         editor.setPosition({lineNumber: pos.line + 1, column: pos.character + 1});
@@ -24,10 +24,10 @@ function switchToFile(filePath) {
 }
 
 function updateFilePathBar(filePath) {
-    var bar = document.getElementById('file-path-bar');
+    let bar = document.getElementById('file-path-bar');
     if (!bar) return;
-    var info = files.get(filePath);
-    var displayPath = filePath.replace(/\\/g, '/');
+    let info = files.get(filePath);
+    let displayPath = filePath.replace(/\\/g, '/');
     bar.style.color = '';
     if (info && info.readOnly) {
         displayPath = displayPath + '  [Read Only]';
@@ -41,16 +41,20 @@ function openFile(filePath, readOnly) {
 
     ipc.emit('open-file-request', [filePath], function (response) {
         if (!response) return;
-
-        var data = JSON.parse(response);
-        var content = data.content;
-        var language = data.language;
-        var modTime = data.modTime;
-        var serverReadOnly = !!data.readOnly;
-        var effectiveReadOnly = readOnly || serverReadOnly;
+        let data;
+        if (typeof response === 'string') {
+            data = JSON.parse(response);
+        } else if (typeof response === 'object') {
+            data = response;
+        }
+        let content = data.content;
+        let language = data.language;
+        let modTime = data.modTime;
+        let serverReadOnly = !!data.readOnly;
+        let effectiveReadOnly = readOnly || serverReadOnly;
 
         if (files.has(filePath)) {
-            var info = files.get(filePath);
+            let info = files.get(filePath);
             info.readOnly = effectiveReadOnly;
             if (info.modTime !== modTime && !info.isDirty) {
                 info.model.setValue(content);
@@ -61,7 +65,8 @@ function openFile(filePath, readOnly) {
                 }]);
             }
         } else {
-            var uri = modelUri(filePath);
+            // let uri = modelUri(filePath);
+            let uri = filePath;
             files.set(filePath, {
                 model: monacoRef.editor.createModel(content, language, uri),
                 modTime: modTime, isDirty: false, viewState: null, readOnly: effectiveReadOnly, version: 1
@@ -78,7 +83,7 @@ function openFile(filePath, readOnly) {
 
 function closeFile(filePath) {
     if (!files.has(filePath)) return;
-    var info = files.get(filePath);
+    let info = files.get(filePath);
 
     ipc.emit('gopls-didClose', [filePath]);
     info.model.dispose();
@@ -88,7 +93,7 @@ function closeFile(filePath) {
     if (currentFilePath === filePath) {
         currentFilePath = '';
         if (files.size > 0) {
-            var firstKey = files.keys().next().value;
+            let firstKey = files.keys().next().value;
             switchToFile(firstKey);
         } else {
             editor.setModel(monacoRef.editor.createModel('', 'plaintext'));
@@ -98,7 +103,7 @@ function closeFile(filePath) {
 
 function autoSave() {
     if (!currentFilePath || !editor) return;
-    var model = editor.getModel();
+    let model = editor.getModel();
     if (!model) return;
 
     requestOrganizeImports(currentFilePath, model, true);
@@ -110,8 +115,8 @@ function reloadFileFromDisk(filePath, notifyMessage) {
 
     ipc.emit('reload-file-request', [filePath], function (response) {
         if (!response) return;
-        var data = JSON.parse(response);
-        var info = files.get(filePath);
+        let data = JSON.parse(response);
+        let info = files.get(filePath);
         applyingEdit = true;
         info.model.setValue(data.content);
         applyingEdit = false;

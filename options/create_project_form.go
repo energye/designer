@@ -48,6 +48,13 @@ var (
 	minGoVersion            = "1.20"
 )
 
+func init() {
+	if tool.IsLinux {
+		createProjectFormWidth = 550
+		createProjectFormHeight = 300
+	}
+}
+
 // NewCreateProjectForm 创建一个新的项目创建表单实例
 // 该函数初始化一个 TCreateProjectForm 结构体，并通过 lcl.Application.NewForm 方法将其注册为应用程序窗体
 func NewCreateProjectForm() *TCreateProjectForm {
@@ -124,7 +131,11 @@ func (m *TCreateProjectForm) initComponents() {
 	{
 		m.projNameEdit = lcl.NewLabeledEdit(m)
 		m.projNameEdit.SetLeft(100)
-		m.projNameEdit.SetTop(nextTop(20))
+		if tool.IsLinux {
+			m.projNameEdit.SetTop(nextTop(10))
+		} else {
+			m.projNameEdit.SetTop(nextTop(20))
+		}
 		m.projNameEdit.SetWidth(textWidth)
 		m.projNameEdit.SetDoubleBuffered(true)
 		m.projNameEdit.SetParentColor(false)
@@ -135,9 +146,14 @@ func (m *TCreateProjectForm) initComponents() {
 		projNameText.SetCaption("项目名称")
 	}
 	{
+
 		m.projPathEdit = lcl.NewLabeledEdit(m)
 		m.projPathEdit.SetLeft(100)
-		m.projPathEdit.SetTop(nextTop(30))
+		if tool.IsLinux {
+			m.projPathEdit.SetTop(nextTop(40))
+		} else {
+			m.projPathEdit.SetTop(nextTop(30))
+		}
 		m.projPathEdit.SetWidth(textWidth - 40)
 		m.projPathEdit.SetDoubleBuffered(true)
 		m.projPathEdit.SetTextHint("/your/app/path/name")
@@ -172,7 +188,11 @@ func (m *TCreateProjectForm) initComponents() {
 
 		m.goVersionStatus = wg.NewButton(m)
 		m.goVersionStatus.SetRadius(0)
-		goVersionRect := types.TRect{Left: 100, Top: goVersionText.Top() - 5}
+		goVersionRectTop := goVersionText.Top()
+		if !tool.IsLinux {
+			goVersionRectTop = goVersionRectTop - 5
+		}
+		goVersionRect := types.TRect{Left: 100, Top: goVersionRectTop}
 		goVersionRect.SetWidth(textWidth)
 		goVersionRect.SetHeight(25)
 		color := wg.LightenColor(colors.RGBToColor(214, 234, 242), 0.5)

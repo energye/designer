@@ -3,9 +3,9 @@ module github.com/energye/designer
 go 1.20
 
 require (
-	github.com/energye/energy/v3 v3.0.8
-	github.com/energye/lcl v1.0.4
-	github.com/energye/wv v1.0.5
+	github.com/energye/energy/v3 v3.0.10
+	github.com/energye/lcl v1.0.5
+	github.com/energye/wv v1.0.6
 	golang.org/x/image v0.24.0
 )
 

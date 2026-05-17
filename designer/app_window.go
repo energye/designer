@@ -135,6 +135,8 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.SetOnWindowStateChange(m.WindowOnWindowStateChange)
 	// 创建设计器布局
 	m.initDesignerLayoutV2()
+
+	m.initTray()
 }
 
 func (m *TAppWindow) initAllImageList() {

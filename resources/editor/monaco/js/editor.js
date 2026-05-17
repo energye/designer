@@ -1,19 +1,19 @@
 // Monaco editor initialization and content change handling
 
-var editor = null;
-var monacoRef = null;
-var currentFilePath = '';
-var saveTimeout = null;
-var applyingEdit = false;
-var organizeImportsTimeout = null;
-var pendingOrganizeSave = null;
-var files = new Map();
-var currentDiagnostics = new Map();
-var definitionRequestID = 0;
-var pendingDefinition = null;
-var formattingRequestID = 0;
-var pendingFormatting = null;
-var saveInProgress = false;
+let editor = null;
+let monacoRef = null;
+let currentFilePath = '';
+let saveTimeout = null;
+let applyingEdit = false;
+let organizeImportsTimeout = null;
+let pendingOrganizeSave = null;
+let files = new Map();
+let currentDiagnostics = new Map();
+let definitionRequestID = 0;
+let pendingDefinition = null;
+let formattingRequestID = 0;
+let pendingFormatting = null;
+let saveInProgress = false;
 
 require.config({paths: {vs: './vs'}});
 require(['vs/editor/editor.main'], function (monaco) {
@@ -40,9 +40,9 @@ require(['vs/editor/editor.main'], function (monaco) {
     editor.onDidChangeModelContent(function () {
         if (applyingEdit) return;
 
-        var changedFilePath = getFilePathByModel(editor.getModel());
+        let changedFilePath = getFilePathByModel(editor.getModel());
         if (changedFilePath && files.has(changedFilePath)) {
-            var info = files.get(changedFilePath);
+            let info = files.get(changedFilePath);
             if (!info.isDirty) {
                 info.isDirty = true;
                 ipc.emit('set-file-dirty', [{file: changedFilePath, isDirty: true}]);
@@ -66,15 +66,15 @@ require(['vs/editor/editor.main'], function (monaco) {
     // Go to Definition (Ctrl+Click) - async to avoid UI freeze
     editor.onMouseDown(function (e) {
         if (e.event.ctrlKey && e.event.leftButton) {
-            var position = e.target.position;
+            let position = e.target.position;
             if (!position) return;
-            var model = editor.getModel();
+            let model = editor.getModel();
             if (!model) return;
-            var filePath = getFilePathByModel(model);
+            let filePath = getFilePathByModel(model);
             if (!filePath) return;
 
             definitionRequestID++;
-            var reqID = definitionRequestID;
+            let reqID = definitionRequestID;
             pendingDefinition = {reqID: reqID, sourceFile: filePath};
 
             ipc.emit('gopls-definition', [{
@@ -92,14 +92,14 @@ function modelUri(path) {
 
 // Request gopls formatting for a file
 function requestFormatting(filePath, callback) {
-    var model = getModelByFilePath(filePath);
+    let model = getModelByFilePath(filePath);
     if (!model) {
         callback([]);
         return;
     }
 
     formattingRequestID++;
-    var reqID = formattingRequestID;
+    let reqID = formattingRequestID;
     pendingFormatting = {reqID: reqID, callback: callback};
 
     ipc.emit('gopls-formatting', [{
@@ -112,7 +112,7 @@ function requestFormatting(filePath, callback) {
 // then after imports are cleaned we format, then save.
 function manualSave() {
     if (!currentFilePath || !editor) return;
-    var info = files.get(currentFilePath);
+    let info = files.get(currentFilePath);
     if (!info) return;
 
     // If a previous save is stuck (e.g. pendingOrganizeSave was overwritten),
@@ -131,17 +131,17 @@ function manualSave() {
     clearTimeout(organizeImportsTimeout);
     pendingOrganizeSave = null;
 
-    var filePath = currentFilePath;
-    var model = getModelByFilePath(filePath);
+    let filePath = currentFilePath;
+    let model = getModelByFilePath(filePath);
     if (!model) {
         saveInProgress = false;
         return;
     }
 
     // Step 1: organize imports first (gopls already has current file state)
-    var fullRange = model.getFullModelRange();
+    let fullRange = model.getFullModelRange();
     codeActionRequestID++;
-    var organizeReqID = codeActionRequestID;
+    let organizeReqID = codeActionRequestID;
     pendingOrganizeSave = {filePath: filePath, reqID: organizeReqID, phase: 'organize'};
 
     ipc.emit('gopls-codeAction', [{

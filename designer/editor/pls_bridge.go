@@ -23,16 +23,18 @@ import (
 
 func URIToFilePath(uri string) string {
 	if tool.IsWindows {
-		if !strings.HasPrefix(uri, "file:///") {
-			return ""
-		}
 		path := strings.TrimPrefix(uri, "file:///")
 		return strings.ReplaceAll(path, "/", "\\")
 	}
-	if !strings.HasPrefix(uri, "file://") {
-		return ""
-	}
 	return strings.TrimPrefix(uri, "file://")
+}
+
+func FilePathToURI(filePath string) string {
+	uri := filepath.ToSlash(filePath)
+	if tool.IsWindows {
+		return "file:///" + uri
+	}
+	return "file://" + uri
 }
 
 // IsFileReadOnly checks if a file should be opened as read-only.
@@ -68,14 +70,6 @@ func IsWritable(filePath string) bool {
 	}
 	f.Close()
 	return true
-}
-
-func FilePathToURI(filePath string) string {
-	uri := filepath.ToSlash(filePath)
-	if tool.IsWindows {
-		return "file:///" + uri
-	}
-	return "file://" + uri
 }
 
 // IsTextFile checks if a file is a text file that can be edited.

@@ -86,21 +86,23 @@ func (m *CodeEditorTab) onHide(sender lcl.IObject) {
 // onClose 代码编辑器标签关闭事件
 func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	*canClose = true
-	if gFromEditor != nil {
-		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
-			// Only reparent the browser if this tab currently holds it,
-			// otherwise we'd detach the browser from the active tab.
-			if m.mainPage.Active() {
-				wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
-			}
-		}
-	}
 	if plsClient := editor.PLSClient(); plsClient != nil {
 		fileURI := editor.FilePathToURI(m.filePath)
 		_ = plsClient.DidClose(fileURI)
 	}
 	// 在 Monaco 前端关闭文件
 	editor.CloseFileInEditor(m.filePath)
+	// 注释：Linux : 非设计窗体代码编辑器 tab 关闭后，窗体也一同被关闭
+	//if gFromEditor != nil {
+	//	if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
+	//		_ = wvEditor
+	//		// Only reparent the browser if this tab currently holds it,
+	//		// otherwise we'd detach the browser from the active tab.
+	//		if m.mainPage.Active() {
+	//			//wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
+	//		}
+	//	}
+	//}
 	// 从列表中移除
 	delete(designer.codeEditorTabs, m.filePath)
 	if len(designer.tab.Pages()) == 0 {

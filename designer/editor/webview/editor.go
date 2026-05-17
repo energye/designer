@@ -16,6 +16,7 @@ package webview
 import (
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/gopls"
+	"github.com/energye/designer/pkg/assetserve"
 	"github.com/energye/designer/pkg/logs"
 	reseditor "github.com/energye/designer/resources/editor"
 	"github.com/energye/energy/v3/application"
@@ -26,6 +27,7 @@ import (
 	"github.com/energye/lcl/types"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -40,12 +42,14 @@ type IWebviewEditor interface {
 }
 
 type TWebviewEditor struct {
-	WVEditor    wv.IWebview
-	fileManager *editor.FileManager
-	checkTimer  *time.Ticker
-	stopChan    chan struct{}
-	canLoadChan chan error
-	initialized bool
+	WVEditor            wv.IWebview
+	currentWindowParent engwv.IWindowParent
+	fileManager         *editor.FileManager
+	checkTimer          *time.Ticker
+	stopChan            chan struct{}
+	canLoadChan         chan error
+	initialized         bool
+	refd                atomic.Bool
 }
 
 var (
@@ -55,12 +59,22 @@ var (
 
 func Init() {
 	wvInitOnce.Do(func() {
-		gWVApp = wv.Init(nil, nil)
-		gWVApp.SetLocalLoad(application.LocalLoad{
-			Scheme:     "energy",
-			Domain:     "designer",
-			ResRootDir: "monaco",
-			FS:         reseditor.Assets,
+		server := assetserve.New()
+		server.PORT = 22022
+		server.AssetsFSName = "monaco"
+		server.Assets = reseditor.Assets
+		go server.StartHttpServer()
+
+		gWVApp = wv.Init()
+		//gWVApp.SetLocalLoad(application.LocalLoad{
+		//	Scheme:     "energy",
+		//	Domain:     "designer",
+		//	ResRootDir: "monaco",
+		//	FS:         reseditor.Assets,
+		//})
+		gWVApp.SetOptions(application.Options{
+			//Linux: application.Linux{HardwareGPU: application.HGPUDisable}, // VM WARE
+			Linux: application.Linux{HardwareGPU: application.HGPUEnable}, // GPU Device
 		})
 		gWVApp.Start()
 	})
@@ -77,13 +91,16 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 	m.WVEditor.SetCaption("")
 	m.WVEditor.SetAlign(types.AlClient)
 	m.WVEditor.SetName("WVEditor")
-	m.LoadURL("energy://designer/index.html")
+	//m.LoadURL("energy://designer/index.html")
+	//m.LoadURL("http://localhost:22022/test.html")
+	m.LoadURL("http://localhost:22022/index.html")
 	m.WVEditor.SetOnLoadChange(func(url, title string, load wv.TLoadChange) {
 		if load == wv.LcFinish {
 			m.initialized = true
 			m.sendCanLoadSignal()
 		}
 	})
+	m.PlatformPreProcess()
 
 	ipc.SetMainDefaultBrowserId(0)
 	ipc.RegisterProcessMessage(m.WVEditor)
@@ -207,6 +224,7 @@ func (m *TWebviewEditor) checkFileChanges() {
 }
 
 func (m *TWebviewEditor) Stop() {
+	m.PlatformClose()
 	ipc.UnRegisterProcessMessage(m.WVEditor)
 	if m.checkTimer != nil {
 		m.checkTimer.Stop()

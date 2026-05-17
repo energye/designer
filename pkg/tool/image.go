@@ -31,13 +31,13 @@ import (
 func Scale(data []byte, targetW, targetH int) []byte {
 	pngBuf := &bytes.Buffer{}
 	if _, err := pngBuf.Write(data); err != nil {
-		logs.Error("图标缩放 PNG Write Buffer:", err.Error())
+		logs.Error("Image Scale PNG Write Buffer:", err.Error())
 		return nil
 	}
 	// 解码 png 到 image
 	pngImg, err := png.Decode(pngBuf)
 	if err != nil {
-		logs.Error("图标缩放 PNG Decode:", err.Error())
+		logs.Error("Image Scale PNG Decode:", err.Error())
 		return nil
 	}
 	pngBounds := pngImg.Bounds()
@@ -47,7 +47,7 @@ func Scale(data []byte, targetW, targetH int) []byte {
 	// 最后保存缩放 png
 	scalePngBuf := &bytes.Buffer{}
 	if err := png.Encode(scalePngBuf, scaledImg); err != nil {
-		logs.Error("图标缩放 PNG Encode Save Buffer:", err.Error())
+		logs.Error("Image Scale PNG Encode Save Buffer:", err.Error())
 		return nil
 	}
 	data = scalePngBuf.Bytes()
@@ -69,7 +69,6 @@ func DetectImageFormatByte(imageData []byte) (string, error) {
 	if len(imageData) < 16 {
 		return "", errors.New("图片太小")
 	}
-	// 读取文件前16字节（足够覆盖常见格式）
 	buffer := imageData[:16]
 
 	// 特殊处理ICO中嵌套PNG的情况

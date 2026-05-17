@@ -26,8 +26,8 @@ var (
 )
 
 func init() {
-	if tool.IsWindows {
-		//switchAutoContentLayoutAlign = false
+	if tool.IsLinux {
+		return
 	}
 	switchAutoContentLayoutAlign = false
 }

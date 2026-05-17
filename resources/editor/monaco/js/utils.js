@@ -58,7 +58,7 @@ function plsKindToMonaco(kind, K) {
 }
 
 function diagSeverityToMonaco(severity) {
-    var S = monacoRef.MarkerSeverity;
+    let S = monacoRef.MarkerSeverity;
     switch (severity) {
         case 1:
             return S.Error;
@@ -74,10 +74,10 @@ function diagSeverityToMonaco(severity) {
 }
 
 function getFilePathByModel(model) {
-    var iter = files.entries();
-    var pair = iter.next();
+    let iter = files.entries();
+    let pair = iter.next();
     while (!pair.done) {
-        var entry = pair.value;
+        let entry = pair.value;
         if (entry[1].model === model) return entry[0];
         pair = iter.next();
     }
@@ -85,7 +85,7 @@ function getFilePathByModel(model) {
 }
 
 function getModelByFilePath(filePath) {
-    var info = files.get(filePath);
+    let info = files.get(filePath);
     return info ? info.model : null;
 }
 
@@ -94,7 +94,7 @@ function getFileName(filePath) {
 }
 
 function showNotification(message) {
-    var toast = document.getElementById('toast');
+    let toast = document.getElementById('toast');
     toast.textContent = message;
     toast.classList.add('show');
     setTimeout(function () {

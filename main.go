@@ -53,18 +53,19 @@ func main() {
 	api.SetDebug(true)
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
-	//logs.Level = logs.LevelDebug
-	logs.Level = logs.LevelInfo
+	logs.Level = logs.LevelDebug
+	//logs.Level = logs.LevelInfo
 	//logs.Level = logs.LevelError
-	//os.Setenv("--ws", "gtk3")
 	libname.LibName = frameworks.ExtractLibrary()
-	lcl.Init(nil, nil)
+	lcl.Init()
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器
 	designer.Run()
 }
 
 func init() {
+	os.Setenv("--ws", "gtk3") // for linux
+
 	// 初始化Go环境变量, macOS linux
 	config.InitGoEnv()
 	// 初始化事件系统
