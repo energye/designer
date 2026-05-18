@@ -16,6 +16,7 @@ package designer
 import (
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/webview"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/energy/v3/wv"
@@ -92,17 +93,16 @@ func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	}
 	// 在 Monaco 前端关闭文件
 	editor.CloseFileInEditor(m.filePath)
-	// 注释：Linux : 非设计窗体代码编辑器 tab 关闭后，窗体也一同被关闭
-	//if gFromEditor != nil {
-	//	if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
-	//		_ = wvEditor
-	//		// Only reparent the browser if this tab currently holds it,
-	//		// otherwise we'd detach the browser from the active tab.
-	//		if m.mainPage.Active() {
-	//			//wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
-	//		}
-	//	}
-	//}
+	// Linux: 不需要手动切换, 非设计窗体代码编辑器 tab 关闭后，窗体也一同被关闭
+	if gFromEditor != nil && tool.IsWindows {
+		// windows 需要提前把 browser 转移到windowParent
+		if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
+			// 仅当当前标签页拥有浏览器时才重新设置其父节点，否则我们会将浏览器从活动标签页中分离出来。
+			if m.mainPage.Active() {
+				wvEditor.SwitchTabPage(designer.tab, wvEditor.Webview().WindowParent())
+			}
+		}
+	}
 	// 从列表中移除
 	delete(designer.codeEditorTabs, m.filePath)
 	if len(designer.tab.Pages()) == 0 {
