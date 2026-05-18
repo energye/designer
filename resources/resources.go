@@ -9,6 +9,7 @@ package resources
 import (
 	"embed"
 	engLCL "github.com/energye/energy/v3/lcl"
+	"github.com/energye/lcl/emfs"
 	"github.com/energye/lcl/lcl"
 )
 
@@ -36,5 +37,6 @@ func SetIcon() {
 }
 
 func init() {
+	emfs.RegisterEmbedFS(emfs.FSName, icon)
 	engLCL.SetOnBeforeRun(SetIcon)
 }
