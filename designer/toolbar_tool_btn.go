@@ -112,10 +112,10 @@ func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	MainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
 	MainWindow.openDialog.SetFilterIndex(1)
 	if MainWindow.openDialog.Execute() {
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			filePath := MainWindow.openDialog.FileName()
-			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
-		})
+		ProjectTreeClearComponentTreeNode()
+		ProjectTreeClearSrcTreeNode()
+		filePath := MainWindow.openDialog.FileName()
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 	}
 }
 
