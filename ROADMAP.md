@@ -85,7 +85,7 @@
 - ❄️ Linux-其它: 尝试安装包集成离线依赖, 和依赖检查自动安装
 - ❌ 组件 CEF: 增加 CEF 组件集成, 联动 energy
 - ✅ 系统通知 windows: 增加 windows 系统系统通知, 联动 energy
-- ❌ 系统通知 linux: 增加 linux 系统系统通知, 联动 energy
+- ✅ 系统通知 linux: 增加 linux 系统系统通知, 联动 energy
 - ❌ 组件 TFrame: 增加 TFrame 设计功能
 - ❌ 设计 画布: 增加网格点（需优化性能）
 - ✅ 【bug】 设计 放置组件: 放置组件删除后，恢复项目再次放置会出现组件名功能性问题（显示名“”，删除时有残留）
