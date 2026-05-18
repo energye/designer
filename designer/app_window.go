@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/internal/notification"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -137,6 +138,7 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.initDesignerLayoutV2()
 
 	m.initTray()
+	notification.Init()
 }
 
 func (m *TAppWindow) initAllImageList() {
