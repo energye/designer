@@ -14,3 +14,197 @@
 //go:build linux
 
 package packager
+
+import (
+	"fmt"
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/app"
+	"github.com/energye/designer/resources/frameworks/lib"
+	"os"
+	"path/filepath"
+)
+
+// rpmArchName 将 GOARCH 转换为 RPM 架构名
+func rpmArchName(goarch string) string {
+	switch goarch {
+	case "amd64":
+		return "x86_64"
+	case "386":
+		return "i686"
+	case "arm64":
+		return "aarch64"
+	case "arm":
+		return "armv7hl"
+	case "loong64":
+		return "loongarch64"
+	default:
+		return goarch
+	}
+}
+
+// rpmbuild 构建 RPM 包
+func (m *Package) rpmbuild() bool {
+	event.ConsoleWriteInfo("Package - RPM")
+	if !checkToolCMD("rpmbuild") {
+		event.ConsoleWriteError("Package - RPM: rpmbuild command not found. Install with: sudo dnf install rpm-build")
+		return false
+	}
+
+	proj := bean.GProject
+	option := proj.BuildOption
+	appOption := proj.AppOption
+	output := option.Output
+	if !filepath.IsAbs(option.Output) {
+		output = filepath.Join(bean.GPath, output)
+	}
+
+	goarch := lib.GOARCH()
+	rpmArch := rpmArchName(goarch)
+
+	// 创建 rpmbuild 目录结构
+	rpmBuildDir := filepath.Join(output, "rpmbuild")
+	specsDir := filepath.Join(rpmBuildDir, "SPECS")
+	stageDir := filepath.Join(rpmBuildDir, "stage", "usr")
+
+	dirs := []string{
+		filepath.Join(stageDir, "bin"),
+		filepath.Join(stageDir, "share", "applications"),
+		filepath.Join(stageDir, "share", "icons"),
+		specsDir,
+	}
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			event.ConsoleWriteError("Package - RPM: mkdir failed:", err.Error())
+			return false
+		}
+	}
+
+	// 复制可执行文件
+	srcBin := filepath.Join(output, option.BuildFileName)
+	dstBin := filepath.Join(stageDir, "bin", option.PackageName)
+	if err := tool.CopyFile(srcBin, dstBin); err != nil {
+		event.ConsoleWriteError("Package - RPM: copy binary failed:", err.Error())
+		return false
+	}
+	if err := os.Chmod(dstBin, 0755); err != nil {
+		event.ConsoleWriteError("Package - RPM: chmod binary failed:", err.Error())
+		return false
+	}
+
+	// 生成 .desktop 文件
+	desktopData := renderDesktopFile(option.PackageName, option.PackageName, option.PackageName,
+		appOption.Desc, option.PackageName, appOption.Linux.Categories)
+	if desktopData == nil {
+		event.ConsoleWriteError("Package - RPM: render desktop failed")
+		return false
+	}
+	dstDesktop := filepath.Join(stageDir, "share", "applications", option.PackageName+".desktop")
+	if err := os.WriteFile(dstDesktop, desktopData, 0644); err != nil {
+		event.ConsoleWriteError("Package - RPM: write desktop failed:", err.Error())
+		return false
+	}
+
+	// 复制图标
+	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
+	if tool.IsExist(srcIcon) {
+		dstIcon := filepath.Join(stageDir, "share", "icons", option.PackageName+".png")
+		if err := tool.CopyFile(srcIcon, dstIcon); err != nil {
+			event.ConsoleWriteError("Package - RPM: copy icon failed:", err.Error())
+			return false
+		}
+	}
+
+	// 渲染 spec 文件
+	specTemplate := app.Packager("linux/app.spec")
+	if specTemplate == nil {
+		event.ConsoleWriteError("Package - RPM: spec template not found")
+		return false
+	}
+
+	depends := parseDependsToRequires(option.Depends)
+
+	specData := map[string]interface{}{
+		"PackageName": option.PackageName,
+		"App":         appOption,
+		"Linux":       appOption.Linux,
+		"Depends":     depends,
+	}
+	specContent, err := tool.RenderTemplate(string(specTemplate), specData)
+	if err != nil {
+		event.ConsoleWriteError("Package - RPM: render spec failed:", err.Error())
+		return false
+	}
+	specFile := filepath.Join(specsDir, option.PackageName+".spec")
+	if err := os.WriteFile(specFile, specContent, 0644); err != nil {
+		event.ConsoleWriteError("Package - RPM: write spec failed:", err.Error())
+		return false
+	}
+
+	// 构建 RPM 包
+	stagePath := filepath.Join(rpmBuildDir, "stage")
+	cmd := RunCMD(output, "rpmbuild", "-bb",
+		"--define", fmt.Sprintf("_topdir %s", rpmBuildDir),
+		"--define", fmt.Sprintf("_appdir %s", stagePath),
+		"--target", rpmArch,
+		specFile)
+	if cmd != nil {
+		event.ConsoleWriteError("Package - RPM: build failed:", cmd.Error())
+		return false
+	}
+
+	// 从 RPMS 目录复制到输出目录
+	rpmsDir := filepath.Join(rpmBuildDir, "RPMS", rpmArch)
+	var rpmFile string
+	_ = filepath.Walk(rpmsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+		if !info.IsDir() && filepath.Ext(path) == ".rpm" {
+			rpmFile = path
+		}
+		return nil
+	})
+	if rpmFile == "" {
+		event.ConsoleWriteError("Package - RPM: output file not found")
+		return false
+	}
+
+	rpmFileName := filepath.Base(rpmFile)
+	if m.AppendPlatform {
+		rpmFileName = fmt.Sprintf("%s_%s_%s_%s.rpm", option.PackageName, appOption.Version, lib.GOOS(), rpmArch)
+	}
+	dstRpm := filepath.Join(output, rpmFileName)
+	_ = os.Remove(dstRpm)
+	if err := tool.CopyFile(rpmFile, dstRpm); err != nil {
+		event.ConsoleWriteError("Package - RPM: copy output failed:", err.Error())
+		return false
+	}
+
+	// 清理临时目录
+	_ = os.RemoveAll(rpmBuildDir)
+
+	event.ConsoleWriteInfo("Package - RPM:", rpmFileName, "created successfully")
+	return true
+}
+
+// renderDesktopFile 渲染 .desktop 文件
+func renderDesktopFile(name, exec, icon, comment, wmClass, categories string) []byte {
+	desktopTemplate := app.Packager("linux/app.desktop")
+	if desktopTemplate == nil {
+		return nil
+	}
+	if categories == "" {
+		categories = "Utility;"
+	}
+	data := map[string]string{
+		"Name":     name,
+		"Exec":     exec,
+		"Icon":     icon,
+		"Comments": comment,
+		"WMClass":  wmClass,
+	}
+	rendered, _ := tool.RenderTemplate(string(desktopTemplate), data)
+	return rendered
+}

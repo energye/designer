@@ -26,7 +26,7 @@ import (
 	"strings"
 )
 
-func buildWindows() bool {
+func buildWindows(env Envs) bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -125,15 +125,18 @@ func buildWindows() bool {
 		cmd.BeforeRun = func(cmd *exec.Cmd) {
 			cmd.Env = append(os.Environ(), env...)
 		}
+		cmd.Console = func(data string, level command.Level) {
+			event.ConsoleWriteInfo(data)
+		}
 		cmd.Command("go", tempArgs...)
 		//if option.BuildModeRelease {
 		//	event.ConsoleWriteInfo("strip", output)
 		//	cmd.Command("strip", output)
 		//}
 	}
-	buildFileName := buildBinFileName(option)
+	buildFileName := buildBinFileName(env, option)
 	outputFilename := filepath.Join(output, buildFileName)
-	runGoBuild(nil, outputFilename)
+	runGoBuild(env.ToArray(), outputFilename)
 
 	event.ConsoleWriteInfo("Build Successfully")
 	return true

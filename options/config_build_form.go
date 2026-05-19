@@ -128,6 +128,10 @@ type TBuildForm struct {
 	linuxRPMCheckBox      lcl.ICheckBox
 	linuxAppImageCheckBox lcl.ICheckBox
 	dependsEdit           lcl.IEdit
+	categoriesEdit        lcl.IEdit
+	homepageEdit          lcl.IEdit
+	maintainerEdit        lcl.IEdit
+	licenseEdit           lcl.IEdit
 
 	// 操作按钮
 	saveBtn    *wg.TButton
@@ -826,6 +830,10 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.LinuxRPM = m.linuxRPMCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxAppImage = m.linuxAppImageCheckBox.Checked()
 	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()
+	bean.GProject.AppOption.Linux.Categories = m.categoriesEdit.Text()
+	bean.GProject.AppOption.Linux.Homepage = m.homepageEdit.Text()
+	bean.GProject.AppOption.Linux.Maintainer = m.maintainerEdit.Text()
+	bean.GProject.AppOption.Linux.License = m.licenseEdit.Text()
 	go func() {
 		// 更新项目配置文件
 		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {

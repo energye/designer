@@ -26,7 +26,7 @@ import (
 	"strings"
 )
 
-func buildDarwin() bool {
+func buildDarwin(env Envs) bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -45,18 +45,18 @@ func buildDarwin() bool {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
-		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "10.15")
-		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=10.15")
-		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
+		env.Put("MACOSX_DEPLOYMENT_TARGET", "10.15")
+		env.Put("CGO_CFLAGS", "-mmacosx-version-min=10.15")
+		env.Put("CGO_LDFLAGS", "-mmacosx-version-min=10.15")
 	}
 	if isArm64 {
 		if !option.ArchArm64 {
 			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
-		os.Setenv("MACOSX_DEPLOYMENT_TARGET", "11.0")
-		os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
-		os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
+		env.Put("MACOSX_DEPLOYMENT_TARGET", "11.0")
+		env.Put("CGO_CFLAGS", "-mmacosx-version-min=11.0")
+		env.Put("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
 	}
 	if !option.UICocoa {
 		event.ConsoleWriteWarn("Build - UI Cocoa is not enabled for the project.Project Settings > Build Configurations")
@@ -140,6 +140,9 @@ func buildDarwin() bool {
 		cmd.BeforeRun = func(cmd *exec.Cmd) {
 			cmd.Env = append(os.Environ(), env...)
 		}
+		cmd.Console = func(data string, level command.Level) {
+			event.ConsoleWriteInfo(data)
+		}
 		cmd.Command("go", tempArgs...)
 		if option.BuildModeRelease && tool.IsDarwin {
 			event.ConsoleWriteInfo("strip", output)
@@ -164,12 +167,12 @@ func buildDarwin() bool {
 			_ = os.Remove(arm64OutputFilename)
 		}()
 		// merge universal
-		outputFilename := filepath.Join(output, buildBinFileName(option))
+		outputFilename := filepath.Join(output, buildBinFileName(env, option))
 		mergeUniversal(amd64OutputFilename, arm64OutputFilename, outputFilename)
 		verifyUniversal(outputFilename)
 	} else {
-		outputFilename := filepath.Join(output, buildBinFileName(option))
-		runGoBuild(nil, outputFilename)
+		outputFilename := filepath.Join(output, buildBinFileName(env, option))
+		runGoBuild(env.ToArray(), outputFilename)
 		verifyUniversal(outputFilename)
 	}
 

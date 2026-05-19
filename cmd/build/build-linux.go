@@ -26,7 +26,7 @@ import (
 	"strings"
 )
 
-func buildLinux() bool {
+func buildLinux(env Envs) bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -148,6 +148,9 @@ func buildLinux() bool {
 		cmd.BeforeRun = func(cmd *exec.Cmd) {
 			cmd.Env = append(os.Environ(), env...)
 		}
+		cmd.Console = func(data string, level command.Level) {
+			event.ConsoleWriteInfo(data)
+		}
 		cmd.Command("go", tempArgs...)
 		if option.BuildModeRelease && tool.IsLinux {
 			event.ConsoleWriteInfo("strip", output)
@@ -155,8 +158,8 @@ func buildLinux() bool {
 		}
 	}
 
-	outputFilename := filepath.Join(output, buildBinFileName(option))
-	runGoBuild(nil, outputFilename)
+	outputFilename := filepath.Join(output, buildBinFileName(env, option))
+	runGoBuild(env.ToArray(), outputFilename)
 
 	event.ConsoleWriteInfo("Build Successfully")
 	return true

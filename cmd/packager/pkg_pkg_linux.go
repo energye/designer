@@ -48,8 +48,19 @@ func (m *Package) packager() bool {
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
 	if option.LinuxDEB {
+		if !m.dpkg() {
+			return false
+		}
 	}
 	if option.LinuxRPM {
+		if !m.rpmbuild() {
+			return false
+		}
+	}
+	if option.LinuxAppImage {
+		if !m.appImage() {
+			return false
+		}
 	}
 	return true
 }
@@ -58,7 +69,7 @@ func (m *Package) createAppBundle() bool {
 	return true
 }
 
-// 检查命令工具
+// checkToolCMD 检查命令工具是否可用
 func checkToolCMD(name string) bool {
 	_, err := exec.LookPath(name)
 	if err != nil {

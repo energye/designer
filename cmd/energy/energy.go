@@ -51,11 +51,17 @@ func main() {
 	})
 	cmd.Add(&dflag.Command{
 		Name: "build",
-		Long: "energy build, Build the application binary",
+		Long: `energy build, Build the application binary
+  --all: build all platform, cgo disable and enable other platform.`,
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
-			build.Run()
+			isAll := args.Contains("all")
+			if isAll {
+				build.RunAll()
+			} else {
+				build.Run()
+			}
 		},
 	})
 	cmd.Add(&dflag.Command{

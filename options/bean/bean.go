@@ -184,6 +184,10 @@ type TAppMacOS struct {
 }
 
 type TAppLinux struct {
+	Categories string `json:"categories"` // .desktop 分类 如: Development;Utility;
+	Homepage   string `json:"homepage"`   // 项目主页
+	Maintainer string `json:"maintainer"` // 维护者 如: Name <email@example.com>
+	License    string `json:"license"`    // 许可证 如: MIT, GPL-3.0
 }
 
 var (
@@ -237,6 +241,8 @@ func (m *TProject) InitAppOption() {
 	}
 	{
 		// linux 默认值
+		m.AppOption.Linux.Categories = "Utility;"
+		m.AppOption.Linux.License = "MIT"
 	}
 }
 

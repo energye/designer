@@ -3,7 +3,6 @@ package build
 import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"os"
 )
 
 // RunAll 执行全平台构建逻辑。
@@ -23,23 +22,16 @@ func RunAll() {
 	 */
 	isBuildOtherPlatform := !proj.BuildOption.BuildCGOEnabled && proj.BuildOption.BuildOtherPlatform
 	if isBuildOtherPlatform {
-		defaultCGO_ENABLED := os.Getenv("CGO_ENABLED")
-		defaultGOARCH := os.Getenv("GOARCH")
-		defaultGOOS := os.Getenv("GOOS")
-		defer func() {
-			_ = os.Setenv("CGO_ENABLED", defaultCGO_ENABLED)
-			_ = os.Setenv("GOARCH", defaultGOARCH)
-			_ = os.Setenv("GOOS", defaultGOOS)
-			_ = os.Setenv(buildAllPlatform, "false")
-		}()
-		_ = os.Setenv("CGO_ENABLED", "0")
-		_ = os.Setenv(buildAllPlatform, "true")
 		for _, env := range buildPlatformENVs {
 			//RunGoCleanCacheCMD()
-			_ = os.Setenv("GOOS", env.OS)
-			_ = os.Setenv("GOARCH", env.ARCH)
 			event.ConsoleWriteInfo("Build - GOOS:", env.OS, ", GOARCH:", env.ARCH)
-			env.Run()
+			envs := Envs{
+				"GOOS":           env.OS,
+				"GOARCH":         env.ARCH,
+				"CGO_ENABLED":    "0",
+				buildAllPlatform: "true",
+			}
+			env.Run(envs)
 		}
 	}
 }
@@ -56,7 +48,7 @@ var buildPlatformENVs = []buildPlatformENV{
 }
 
 type buildPlatformENV struct {
-	OS   string      // windows darwin linux
-	ARCH string      // amd64 386 arm64 arm
-	Run  func() bool // build func
+	OS   string              // windows darwin linux
+	ARCH string              // amd64 386 arm64 arm
+	Run  func(env Envs) bool // build func
 }

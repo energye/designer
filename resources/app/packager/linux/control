@@ -1,8 +1,10 @@
-Package: {{.Dpkg.Package}}
-Version: {{.Info.ProductVersion}}
-Section: Application
+Package: {{.PackageName}}
+Version: {{.Version}}
+Section: {{.Section}}
 Priority: optional
 Architecture: {{.Arch}}
-Maintainer: {{.Author.Name}} <{{.Author.Email}}>
-Description: {{.Info.Comments}}
-Homepage: {{.Dpkg.Homepage}}
+Installed-Size: {{.InstalledSize}}
+Depends: {{.Depends}}
+Maintainer: {{.Maintainer}}
+Homepage: {{.Homepage}}
+Description: {{.Description}}
