@@ -65,6 +65,21 @@ func (m *TBuildForm) initLinuxOptions() {
 	configTitle.SetParent(m.platformTabPageLinux)
 
 	anchors := types.NewSet(types.AkLeft, types.AkRight, types.AkTop)
+
+	/*
+		depends 格式规则：
+		  - 括号版本约束：libc6 (>= 2.17) — DEB 需要括号，RPM 侧会自动去掉
+		  - 多依赖逗号分隔：libc6 (>= 2.17), libgtk-3-0
+		  - | 表示替代关系：libfoo | libbar（RPM 不支持 OR，取第一个）
+		  示例输入：
+		  libc6 (>= 2.17), libgtk-3-0, libnss3
+		  DEB 直接使用（原样透传）：
+		  Depends: libc6 (>= 2.17), libgtk-3-0, libnss3
+		  RPM 自动转换后：
+		  Requires: libc6 >= 2.17
+		  Requires: libgtk-3-0
+		  Requires: libnss3
+	*/
 	m.dependsEdit = lcl.NewEdit(m)
 	m.dependsEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.dependsEdit.SetFont(m.font)
@@ -73,7 +88,6 @@ func (m *TBuildForm) initLinuxOptions() {
 	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
 	m.dependsEdit.SetAnchors(anchors)
 	m.dependsEdit.SetParent(m.platformTabPageLinux)
-
 	m.categoriesEdit = lcl.NewEdit(m)
 	m.categoriesEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.categoriesEdit.SetFont(m.font)
