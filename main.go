@@ -57,7 +57,6 @@ func main() {
 	//logs.Level = logs.LevelInfo
 	//logs.Level = logs.LevelError
 	libname.LibName = frameworks.ExtractLibrary()
-	libname.LibName = "/home/yanghy/app/workspace/gen/gout/libenergy-gtk3.so"
 	lcl.Init()
 	logs.Debug(strings.Join(os.Args, " "))
 	// 运行设计器

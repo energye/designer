@@ -40,7 +40,10 @@
     - 多格式安装包制作
         - ✅ macOS: 支持 .pkg .dmg 安装包及 Universal Binary (amd64/arm64) 构建。
         - ✅ Windows: 集成 NSIS 脚本生成 .exe 安装程序，支持 AppX 打包
-        - ❌ Linux: 支持 .deb .rpm 包生成
+        - ❌ Linux: 支持 .deb .rpm .AppImage 包生成
+          - GTK2/3 libenergy.so 运行时选择
+          - GTK2/3 依赖
+          - GTK3 webkit2gtk 依赖
     - ✅ 资源嵌入：自动处理应用图标 (.ico/.icns)、版本信息 (Version Info) 及 manifest 文件的注入。
     - 签名
         - ✅ macOS: 使用系统内置签名工具
