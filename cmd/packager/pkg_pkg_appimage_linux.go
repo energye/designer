@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
@@ -111,6 +112,19 @@ func (m *Package) appImage() bool {
 			event.ConsoleWriteError("Package - AppImage: copy icon failed:", err.Error())
 			return false
 		}
+	}
+
+	// 复制运行时库 libenergy.so
+	libName := lib.GetDLLName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	if tool.IsExist(srcLib) {
+		dstLib := filepath.Join(appDir, "usr", "lib", libName)
+		if err := tool.CopyFile(srcLib, dstLib); err != nil {
+			event.ConsoleWriteError("Package - AppImage: copy libenergy failed:", err.Error())
+			return false
+		}
+	} else {
+		event.ConsoleWriteWarn("Package - AppImage: runtime library not found:", srcLib)
 	}
 
 	// 构建 AppImage

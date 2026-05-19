@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
@@ -74,6 +75,7 @@ func (m *Package) rpmbuild() bool {
 		filepath.Join(stageDir, "bin"),
 		filepath.Join(stageDir, "share", "applications"),
 		filepath.Join(stageDir, "share", "icons"),
+		filepath.Join(stageDir, "lib"),
 		specsDir,
 	}
 	for _, dir := range dirs {
@@ -118,6 +120,23 @@ func (m *Package) rpmbuild() bool {
 		}
 	}
 
+	// 复制运行时库 libenergy.so
+	libName := lib.GetDLLName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	if tool.IsExist(srcLib) {
+		dstLib := filepath.Join(stageDir, "lib", libName)
+		if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
+			event.ConsoleWriteError("Package - RPM: mkdir lib failed:", err.Error())
+			return false
+		}
+		if err := tool.CopyFile(srcLib, dstLib); err != nil {
+			event.ConsoleWriteError("Package - RPM: copy libenergy failed:", err.Error())
+			return false
+		}
+	} else {
+		event.ConsoleWriteWarn("Package - RPM: runtime library not found:", srcLib)
+	}
+
 	// 渲染 spec 文件
 	specTemplate := app.Packager("linux/app.spec")
 	if specTemplate == nil {
@@ -127,11 +146,17 @@ func (m *Package) rpmbuild() bool {
 
 	depends := parseDependsToRequires(option.Depends)
 
+	specLibName := ""
+	if tool.IsExist(filepath.Join(stageDir, "lib", libName)) {
+		specLibName = libName
+	}
+
 	specData := map[string]interface{}{
 		"PackageName": option.PackageName,
 		"App":         appOption,
 		"Linux":       appOption.Linux,
 		"Depends":     depends,
+		"LibName":     specLibName,
 	}
 	specContent, err := tool.RenderTemplate(string(specTemplate), specData)
 	if err != nil {

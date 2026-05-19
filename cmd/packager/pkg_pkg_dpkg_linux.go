@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
@@ -143,6 +144,23 @@ func (m *Package) dpkg() bool {
 		}
 	} else {
 		event.ConsoleWriteWarn("Package - DEB: icon not found, skipping")
+	}
+
+	// 复制运行时库 libenergy.so
+	libName := lib.GetDLLName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	if tool.IsExist(srcLib) {
+		dstLib := filepath.Join(debRoot, "usr", "lib", libName)
+		if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
+			event.ConsoleWriteError("Package - DEB: mkdir lib failed:", err.Error())
+			return false
+		}
+		if err := tool.CopyFile(srcLib, dstLib); err != nil {
+			event.ConsoleWriteError("Package - DEB: copy libenergy failed:", err.Error())
+			return false
+		}
+	} else {
+		event.ConsoleWriteWarn("Package - DEB: runtime library not found:", srcLib)
 	}
 
 	// 渲染 control 文件
