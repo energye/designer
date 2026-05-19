@@ -49,10 +49,10 @@ var (
 )
 
 func init() {
-	if tool.IsLinux {
-		createProjectFormWidth = 550
-		createProjectFormHeight = 300
-	}
+	//if tool.IsLinux {
+	//	createProjectFormWidth = 550
+	//	createProjectFormHeight = 300
+	//}
 }
 
 // NewCreateProjectForm 创建一个新的项目创建表单实例
@@ -261,11 +261,11 @@ func (m *TCreateProjectForm) onShow(sender lcl.IObject) {
 		br.SetWidth(createProjectFormWidth)
 		br.SetHeight(createProjectFormHeight)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		constr := m.Constraints()
-		constr.SetMaxWidth(createProjectFormWidth)
-		constr.SetMaxHeight(createProjectFormHeight)
-		constr.SetMinWidth(createProjectFormWidth)
-		constr.SetMinHeight(createProjectFormHeight)
+		//constr := m.Constraints()
+		//constr.SetMaxWidth(createProjectFormWidth)
+		//constr.SetMaxHeight(createProjectFormHeight)
+		//constr.SetMinWidth(createProjectFormWidth)
+		//constr.SetMinHeight(createProjectFormHeight)
 		go m.checkGoVersion()
 	})
 }

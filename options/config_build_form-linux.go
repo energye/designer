@@ -16,6 +16,7 @@ package options
 import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
 )
 
 func (m *TBuildForm) initLinuxOptions() {
@@ -63,38 +64,45 @@ func (m *TBuildForm) initLinuxOptions() {
 	configTitle.SetFont(m.titleFontTwo)
 	configTitle.SetParent(m.platformTabPageLinux)
 
+	anchors := types.NewSet(types.AkLeft, types.AkRight, types.AkTop)
 	m.dependsEdit = lcl.NewEdit(m)
-	m.dependsEdit.SetBounds(20, nextTop(30), 515, 30)
+	m.dependsEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.dependsEdit.SetFont(m.font)
-	m.dependsEdit.SetTextHint("用逗号分隔的依赖项列表, 如: libc6 (>= 2.14)")
+	m.dependsEdit.SetTextHint("CSV list of dependencies, e.g: libc6 (>= 2.14)")
+	m.dependsEdit.SetShowHint(true)
 	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
+	m.dependsEdit.SetAnchors(anchors)
 	m.dependsEdit.SetParent(m.platformTabPageLinux)
 
 	m.categoriesEdit = lcl.NewEdit(m)
 	m.categoriesEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.categoriesEdit.SetFont(m.font)
-	m.categoriesEdit.SetTextHint("Categories, 如: Development;Utility;")
+	m.categoriesEdit.SetTextHint("Categories, e.g: Development;Utility;")
 	m.categoriesEdit.SetText(bean.GProject.AppOption.Linux.Categories)
+	m.categoriesEdit.SetAnchors(anchors)
 	m.categoriesEdit.SetParent(m.platformTabPageLinux)
 
 	m.homepageEdit = lcl.NewEdit(m)
 	m.homepageEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.homepageEdit.SetFont(m.font)
-	m.homepageEdit.SetTextHint("Homepage, 如: https://example.com")
+	m.homepageEdit.SetTextHint("Homepage, e.g: https://example.com")
 	m.homepageEdit.SetText(bean.GProject.AppOption.Linux.Homepage)
+	m.homepageEdit.SetAnchors(anchors)
 	m.homepageEdit.SetParent(m.platformTabPageLinux)
 
 	m.maintainerEdit = lcl.NewEdit(m)
 	m.maintainerEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.maintainerEdit.SetFont(m.font)
-	m.maintainerEdit.SetTextHint("Maintainer, 如: Name <email@example.com>")
+	m.maintainerEdit.SetTextHint("Maintainer, e.g: Name <email@example.com>")
 	m.maintainerEdit.SetText(bean.GProject.AppOption.Linux.Maintainer)
+	m.maintainerEdit.SetAnchors(anchors)
 	m.maintainerEdit.SetParent(m.platformTabPageLinux)
 
 	m.licenseEdit = lcl.NewEdit(m)
 	m.licenseEdit.SetBounds(20, nextTop(35), 515, 30)
 	m.licenseEdit.SetFont(m.font)
-	m.licenseEdit.SetTextHint("License, 如: MIT, GPL-3.0")
+	m.licenseEdit.SetTextHint("License, e.g: MIT, GPL-3.0")
 	m.licenseEdit.SetText(bean.GProject.AppOption.Linux.License)
+	m.licenseEdit.SetAnchors(anchors)
 	m.licenseEdit.SetParent(m.platformTabPageLinux)
 }

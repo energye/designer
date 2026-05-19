@@ -152,11 +152,11 @@ func (m *TConfigProjectForm) onShow(sender lcl.IObject) {
 		br.SetWidth(configProjectFormWidth)
 		br.SetHeight(configProjectFormHeight + addSize)
 		m.SetBoundsRect(br) // trigger WM_NCCALCSIZE hook msg
-		constr := m.Constraints()
+		//constr := m.Constraints()
 		//constr.SetMaxWidth(configProjectFormWidth)
 		//constr.SetMaxHeight(configProjectFormHeight + addSize)
-		constr.SetMinWidth(configProjectFormWidth)
-		constr.SetMinHeight(configProjectFormHeight + addSize)
+		//constr.SetMinWidth(configProjectFormWidth)
+		//constr.SetMinHeight(configProjectFormHeight + addSize)
 		// 初始时设置图标
 		m.appIconData = bean.GProject.AppOption.Icon
 		go func() {
