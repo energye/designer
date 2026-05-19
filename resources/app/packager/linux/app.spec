@@ -1,9 +1,11 @@
 Name:           {{.PackageName}}
 Version:        {{.App.Version}}
 Release:        1%{?dist}
-Summary:        {{.App.Desc}}
-License:        {{.Linux.License}}
+Summary:        {{if .App.Desc}}{{.App.Desc}}{{else}}No description{{end}}
+License:        {{if .Linux.License}}{{.Linux.License}}{{else}}Unknown{{end}}
+{{- if .Linux.Homepage}}
 URL:            {{.Linux.Homepage}}
+{{- end}}
 Group:          Applications/System
 
 {{.Depends}}

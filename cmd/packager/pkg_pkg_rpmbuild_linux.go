@@ -24,6 +24,8 @@ import (
 	"github.com/energye/designer/resources/frameworks/lib"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // rpmArchName 将 GOARCH 转换为 RPM 架构名
@@ -144,11 +146,18 @@ func (m *Package) rpmbuild() bool {
 
 	// 构建 RPM 包
 	stagePath := filepath.Join(rpmBuildDir, "stage")
-	cmd := RunCMD(output, "rpmbuild", "-bb",
+	args := []string{
+		"-bb",
 		"--define", fmt.Sprintf("_topdir %s", rpmBuildDir),
 		"--define", fmt.Sprintf("_appdir %s", stagePath),
 		"--target", rpmArch,
-		specFile)
+	}
+	// 交叉编译时禁用 strip 等后处理，避免宿主 strip 无法识别目标架构二进制
+	if runtime.GOARCH != goarch {
+		args = append(args, "--define", "__os_install_post %{nil}")
+	}
+	args = append(args, specFile)
+	cmd := RunCMD(output, "rpmbuild", args...)
 	if cmd != nil {
 		event.ConsoleWriteError("Package - RPM: build failed:", cmd.Error())
 		return false
@@ -171,9 +180,10 @@ func (m *Package) rpmbuild() bool {
 		return false
 	}
 
-	rpmFileName := filepath.Base(rpmFile)
+	debArch := debArchName(goarch)
+	rpmFileName := fmt.Sprintf("%s_%s_%s.rpm", option.PackageName, appOption.Version, debArch)
 	if m.AppendPlatform {
-		rpmFileName = fmt.Sprintf("%s_%s_%s_%s.rpm", option.PackageName, appOption.Version, lib.GOOS(), rpmArch)
+		rpmFileName = fmt.Sprintf("%s_%s_%s_%s.rpm", option.PackageName, appOption.Version, lib.GOOS(), debArch)
 	}
 	dstRpm := filepath.Join(output, rpmFileName)
 	_ = os.Remove(dstRpm)
@@ -198,12 +208,14 @@ func renderDesktopFile(name, exec, icon, comment, wmClass, categories string) []
 	if categories == "" {
 		categories = "Utility;"
 	}
+	categories = strings.TrimRight(categories, ";") + ";"
 	data := map[string]string{
-		"Name":     name,
-		"Exec":     exec,
-		"Icon":     icon,
-		"Comments": comment,
-		"WMClass":  wmClass,
+		"Name":       name,
+		"Exec":       exec,
+		"Icon":       icon,
+		"Comments":   comment,
+		"WMClass":    wmClass,
+		"Categories": categories,
 	}
 	rendered, _ := tool.RenderTemplate(string(desktopTemplate), data)
 	return rendered

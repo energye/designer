@@ -103,12 +103,18 @@ func (m *Package) dpkg() bool {
 			event.ConsoleWriteError("Package - DEB: desktop template not found")
 			return false
 		}
+		categories := appOption.Linux.Categories
+		if categories == "" {
+			categories = "Utility;"
+		}
+		categories = strings.TrimRight(categories, ";") + ";"
 		data := map[string]string{
-			"Name":     option.PackageName,
-			"Exec":     option.PackageName,
-			"Icon":     option.PackageName,
-			"Comments": appOption.Desc,
-			"WMClass":  option.PackageName,
+			"Name":       option.PackageName,
+			"Exec":       option.PackageName,
+			"Icon":       option.PackageName,
+			"Comments":   appOption.Desc,
+			"WMClass":    option.PackageName,
+			"Categories": categories,
 		}
 		rendered, err := tool.RenderTemplate(string(desktopTemplate), data)
 		if err != nil {

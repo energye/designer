@@ -115,9 +115,10 @@ func (m *Package) appImage() bool {
 
 	// 构建 AppImage
 	goarch := lib.GOARCH()
-	appImageName := fmt.Sprintf("%s_%s_%s.AppImage", option.PackageName, appOption.Version, goarch)
+	debArch := debArchName(goarch)
+	appImageName := fmt.Sprintf("%s_%s_%s.AppImage", option.PackageName, appOption.Version, debArch)
 	if m.AppendPlatform {
-		appImageName = fmt.Sprintf("%s_%s_%s_%s.AppImage", option.PackageName, appOption.Version, lib.GOOS(), goarch)
+		appImageName = fmt.Sprintf("%s_%s_%s_%s.AppImage", option.PackageName, appOption.Version, lib.GOOS(), debArch)
 	}
 	appImagePath := filepath.Join(output, appImageName)
 	_ = os.Remove(appImagePath)

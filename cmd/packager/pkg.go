@@ -15,6 +15,7 @@ package packager
 
 import (
 	"bytes"
+	"errors"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/resources/frameworks"
@@ -77,14 +78,22 @@ func RunCMD(dir, name string, args ...string) error {
 	if dir != "" {
 		cmd.Dir = dir
 	}
+	var lastError string
 	cmd.Console = func(data string, level command.Level) {
 		if level == command.LError {
+			lastError = data
 			event.ConsoleWriteError(data)
 		} else {
 			event.ConsoleWriteInfo(data)
 		}
 	}
 	cmd.Command(name, args...)
+	if cmd.Cmd != nil && cmd.Cmd.ProcessState != nil && !cmd.Cmd.ProcessState.Success() {
+		if lastError != "" {
+			return errors.New(lastError)
+		}
+		return errors.New(name + " exited with non-zero code")
+	}
 	return nil
 }
 
