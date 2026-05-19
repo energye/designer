@@ -94,6 +94,7 @@ type TBuildOption struct {
 	MacCommonLib             bool     `json:"mac_common_lib"`
 	LinuxDEB                 bool     `json:"linux_deb"`
 	LinuxRPM                 bool     `json:"linux_rpm"`
+	LinuxAppImage            bool     `json:"linux_app_image"`
 	Depends                  string   `json:"depends"`
 }
 

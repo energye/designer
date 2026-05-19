@@ -33,7 +33,7 @@ func (m *TBuildForm) initLinuxOptions() {
 	linuxPackageFmtTitle.SetParent(m.platformTabPageLinux)
 
 	m.linuxDEBCheckBox = lcl.NewCheckBox(m)
-	m.linuxDEBCheckBox.SetCaption("DEB 包")
+	m.linuxDEBCheckBox.SetCaption("deb")
 	m.linuxDEBCheckBox.SetLeft(20)
 	m.linuxDEBCheckBox.SetTop(nextTop(30))
 	m.linuxDEBCheckBox.SetFont(m.font)
@@ -41,12 +41,20 @@ func (m *TBuildForm) initLinuxOptions() {
 	m.linuxDEBCheckBox.SetParent(m.platformTabPageLinux)
 
 	m.linuxRPMCheckBox = lcl.NewCheckBox(m)
-	m.linuxRPMCheckBox.SetCaption("RPM 包")
+	m.linuxRPMCheckBox.SetCaption("rpm")
 	m.linuxRPMCheckBox.SetLeft(210)
 	m.linuxRPMCheckBox.SetTop(m.linuxDEBCheckBox.Top())
 	m.linuxRPMCheckBox.SetFont(m.font)
 	m.linuxRPMCheckBox.SetChecked(bean.GProject.BuildOption.LinuxRPM)
 	m.linuxRPMCheckBox.SetParent(m.platformTabPageLinux)
+
+	m.linuxAppImageCheckBox = lcl.NewCheckBox(m)
+	m.linuxAppImageCheckBox.SetCaption("AppImage")
+	m.linuxAppImageCheckBox.SetLeft(390)
+	m.linuxAppImageCheckBox.SetTop(m.linuxRPMCheckBox.Top())
+	m.linuxAppImageCheckBox.SetFont(m.font)
+	m.linuxAppImageCheckBox.SetChecked(bean.GProject.BuildOption.LinuxAppImage)
+	m.linuxAppImageCheckBox.SetParent(m.platformTabPageLinux)
 
 	dependsTitle := lcl.NewLabel(m)
 	dependsTitle.SetCaption("配置选项")
