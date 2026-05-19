@@ -30,6 +30,7 @@ func (m *Package) platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
+
 	if !build.Run() {
 		return
 	}

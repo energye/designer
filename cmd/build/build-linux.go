@@ -14,6 +14,7 @@
 package build
 
 import (
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
@@ -26,7 +27,7 @@ import (
 	"strings"
 )
 
-func buildLinux(env Envs) bool {
+func buildLinux() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -158,8 +159,8 @@ func buildLinux(env Envs) bool {
 		}
 	}
 
-	outputFilename := filepath.Join(output, buildBinFileName(env, option))
-	runGoBuild(env.ToArray(), outputFilename)
+	outputFilename := filepath.Join(output, buildBinFileName(option))
+	runGoBuild(env.ToEnviron(), outputFilename)
 
 	event.ConsoleWriteInfo("Build Successfully")
 	return true

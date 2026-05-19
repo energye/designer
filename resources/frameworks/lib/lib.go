@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api/libname"
@@ -186,7 +187,7 @@ func GetDLLName() string {
 }
 
 func GOOS() (goos string) {
-	goos = os.Getenv("GOOS")
+	goos = env.Get("GOOS")
 	if goos == "" {
 		goos = runtime.GOOS
 	}
@@ -194,7 +195,7 @@ func GOOS() (goos string) {
 }
 
 func GOARCH() (goarch string) {
-	goarch = os.Getenv("GOARCH")
+	goarch = env.Get("GOARCH")
 	if goarch == "" {
 		goarch = runtime.GOARCH
 	}

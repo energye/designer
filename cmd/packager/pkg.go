@@ -78,7 +78,11 @@ func RunCMD(dir, name string, args ...string) error {
 		cmd.Dir = dir
 	}
 	cmd.Console = func(data string, level command.Level) {
-		event.ConsoleWriteInfo(data)
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
 	}
 	cmd.Command(name, args...)
 	return nil

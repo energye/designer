@@ -16,6 +16,7 @@ package build
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/resources/frameworks/lib"
@@ -28,11 +29,11 @@ func Run() bool {
 	event.ConsoleWriteInfo("CMD-build-run")
 	goos := lib.GOOS()
 	if goos == "windows" {
-		return buildWindows(Envs{})
+		return buildWindows()
 	} else if goos == "darwin" {
-		return buildDarwin(Envs{})
+		return buildDarwin()
 	} else if goos == "linux" {
-		return buildLinux(Envs{})
+		return buildLinux()
 	}
 	return false
 }
@@ -65,19 +66,13 @@ func xBuildPackVar() (result []string) {
 //
 // 参数:
 //   - buildOption: 包含构建配置信息的选项结构体，用于获取基础文件名。
-func buildBinFileName(env Envs, buildOption bean.TBuildOption) string {
+func buildBinFileName(buildOption bean.TBuildOption) string {
 	buildFileName := buildOption.BuildFileName
-	goos := env.Get("GOOS")
-	goarch := env.Get("GOARCH")
-	if goos == "" {
-		goos = lib.GOOS()
-	}
-	if goarch == "" {
-		goarch = lib.GOARCH()
-	}
+	goos := lib.GOOS()
+	goarch := lib.GOARCH()
 	// 在跨平台构建模式下（通常对应 CGO 禁用场景），
 	// 为文件名添加操作系统和架构标识，以区分不同平台的产物。
-	if IsBuildAllPlatform(env) {
+	if IsBuildAllPlatform() {
 		// CGO disable
 		buildFileName = fmt.Sprintf("%s_%s_%s", buildFileName, goos, goarch)
 	}
@@ -93,7 +88,7 @@ const buildAllPlatform = "IsBuildAllPlatform"
 
 // IsBuildAllPlatform 检查当前是否处于构建其他平台的环境。
 // 通过读取环境变量 "IsBuildOtherPlatform" 来判断，如果值为 "true" 则返回 true。
-func IsBuildAllPlatform(env Envs) bool {
+func IsBuildAllPlatform() bool {
 	return env.HasName(buildAllPlatform)
 }
 
@@ -101,24 +96,4 @@ func RunGoCleanCacheCMD() {
 	cmd := command.NewCMD()
 	cmd.HideWindow = true
 	cmd.Command("go", "clean", "--cache")
-}
-
-type Envs map[string]string
-
-func (m Envs) Put(name, value string) {
-	m[name] = value
-}
-func (m Envs) Get(name string) string {
-	return m[name]
-}
-func (m Envs) ToArray() []string {
-	var envs []string
-	for k, v := range m {
-		envs = append(envs, fmt.Sprintf("%s=%s", k, v))
-	}
-	return envs
-}
-func (m Envs) HasName(name string) bool {
-	_, ok := m[name]
-	return ok
 }

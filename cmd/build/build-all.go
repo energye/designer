@@ -1,6 +1,7 @@
 package build
 
 import (
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 )
@@ -14,24 +15,19 @@ func RunAll() {
 		event.ConsoleWriteError("Build-All - project GProject is nil")
 		return
 	}
-	/*
-	 * 当项目配置为禁用 CGO 且启用了跨平台构建时，执行全平台编译流程。
-	 * 首先备份当前的 CGO_ENABLED 环境变量并强制设为 "0"，同时设置全平台构建标记。
-	 * 随后遍历预定义的目标平台列表，动态切换 GOOS 和 GOARCH 环境变量，
-	 * 依次触发各平台的构建任务。函数退出前会自动恢复原始的环境变量状态。
-	 */
+	// 当项目配置为禁用 CGO 且启用了跨平台构建时，执行全平台编译流程。
+	// 依次触发各平台的构建任务。
 	isBuildOtherPlatform := !proj.BuildOption.BuildCGOEnabled && proj.BuildOption.BuildOtherPlatform
 	if isBuildOtherPlatform {
-		for _, env := range buildPlatformENVs {
+		defer env.Clear()
+		for _, buildEnv := range buildPlatformENVs {
 			//RunGoCleanCacheCMD()
-			event.ConsoleWriteInfo("Build - GOOS:", env.OS, ", GOARCH:", env.ARCH)
-			envs := Envs{
-				"GOOS":           env.OS,
-				"GOARCH":         env.ARCH,
-				"CGO_ENABLED":    "0",
-				buildAllPlatform: "true",
-			}
-			env.Run(envs)
+			event.ConsoleWriteInfo("Build - GOOS:", buildEnv.OS, ", GOARCH:", buildEnv.ARCH)
+			env.Put("GOOS", buildEnv.OS)
+			env.Put("GOARCH", buildEnv.ARCH)
+			env.Put("CGO_ENABLED", "0")
+			env.Put(buildAllPlatform, "true")
+			buildEnv.Run()
 		}
 	}
 }
@@ -48,7 +44,7 @@ var buildPlatformENVs = []buildPlatformENV{
 }
 
 type buildPlatformENV struct {
-	OS   string              // windows darwin linux
-	ARCH string              // amd64 386 arm64 arm
-	Run  func(env Envs) bool // build func
+	OS   string      // windows darwin linux
+	ARCH string      // amd64 386 arm64 arm
+	Run  func() bool // build func
 }

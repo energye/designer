@@ -14,6 +14,7 @@
 package build
 
 import (
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
@@ -26,7 +27,7 @@ import (
 	"strings"
 )
 
-func buildWindows(env Envs) bool {
+func buildWindows() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -134,9 +135,9 @@ func buildWindows(env Envs) bool {
 		//	cmd.Command("strip", output)
 		//}
 	}
-	buildFileName := buildBinFileName(env, option)
+	buildFileName := buildBinFileName(option)
 	outputFilename := filepath.Join(output, buildFileName)
-	runGoBuild(env.ToArray(), outputFilename)
+	runGoBuild(env.ToEnviron(), outputFilename)
 
 	event.ConsoleWriteInfo("Build Successfully")
 	return true

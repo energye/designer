@@ -14,6 +14,7 @@
 package build
 
 import (
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
@@ -26,7 +27,7 @@ import (
 	"strings"
 )
 
-func buildDarwin(env Envs) bool {
+func buildDarwin() bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -40,6 +41,11 @@ func buildDarwin(env Envs) bool {
 	}
 	isAmd64 := lib.GOARCH() == "amd64"
 	isArm64 := lib.GOARCH() == "arm64"
+	defer func() {
+		env.Delete("MACOSX_DEPLOYMENT_TARGET")
+		env.Delete("CGO_CFLAGS")
+		env.Delete("CGO_LDFLAGS")
+	}()
 	if isAmd64 {
 		if !option.ArchAmd64 {
 			event.ConsoleWriteWarn("Build - amd64 architecture not enabled for Project Settings > Build Configurations")
@@ -167,12 +173,12 @@ func buildDarwin(env Envs) bool {
 			_ = os.Remove(arm64OutputFilename)
 		}()
 		// merge universal
-		outputFilename := filepath.Join(output, buildBinFileName(env, option))
+		outputFilename := filepath.Join(output, buildBinFileName(option))
 		mergeUniversal(amd64OutputFilename, arm64OutputFilename, outputFilename)
 		verifyUniversal(outputFilename)
 	} else {
-		outputFilename := filepath.Join(output, buildBinFileName(env, option))
-		runGoBuild(env.ToArray(), outputFilename)
+		outputFilename := filepath.Join(output, buildBinFileName(option))
+		runGoBuild(env.ToEnviron(), outputFilename)
 		verifyUniversal(outputFilename)
 	}
 
