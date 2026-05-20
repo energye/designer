@@ -8,11 +8,12 @@ URL:            {{.Linux.Homepage}}
 {{- end}}
 Group:          Applications/System
 
+{{- if .Depends}}
 {{.Depends}}
-Requires:       /bin/sh
+{{- end}}
 
 %description
-{{.App.Desc}}
+{{if .App.Desc}}{{.App.Desc}}{{else}}No description{{end}}
 
 %prep
 # noop

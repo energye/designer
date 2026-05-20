@@ -208,9 +208,6 @@ func (m *Package) dpkg() bool {
 	}
 
 	homepage := appOption.Linux.Homepage
-	if homepage == "" {
-		homepage = ""
-	}
 
 	section := "utils"
 

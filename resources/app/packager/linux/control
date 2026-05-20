@@ -4,7 +4,13 @@ Section: {{.Section}}
 Priority: optional
 Architecture: {{.Arch}}
 Installed-Size: {{.InstalledSize}}
+{{- if .Depends}}
 Depends: {{.Depends}}
+{{- end}}
+{{- if .Maintainer}}
 Maintainer: {{.Maintainer}}
+{{- end}}
+{{- if .Homepage}}
 Homepage: {{.Homepage}}
+{{- end}}
 Description: {{.Description}}
