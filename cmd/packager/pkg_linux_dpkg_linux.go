@@ -192,7 +192,15 @@ func (m *Package) dpkg() bool {
 	// 计算安装大小 (KB)
 	installedSize := calcDirSize(debRoot) / 1024
 
-	depends := appOption.Linux.Depends
+	debAutoDeps, _ := linuxAutoDeps()
+	debAutoDeps, _ = linuxUserOverrideWebKit(debAutoDeps, "", appOption.Linux.Depends)
+	depends := debAutoDeps
+	if userDeps := appOption.Linux.Depends; userDeps != "" {
+		if depends != "" {
+			depends += ", "
+		}
+		depends += userDeps
+	}
 
 	maintainer := appOption.Linux.Maintainer
 	if maintainer == "" {

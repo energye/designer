@@ -24,6 +24,7 @@ import (
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/api"
 	"os/exec"
+	"strings"
 )
 
 func (m *Package) platformPackage() {
@@ -124,4 +125,61 @@ func choiceLibEnergySOWS() {
 	if wsGtk == api.WtGTK3 {
 		env.Put("--ws", "gtk3")
 	}
+}
+
+// linuxAutoDeps 根据 GUIRenderFramework 和 UI 配置生成自动依赖
+// 返回 DEB 和 RPM 格式的依赖字符串
+func linuxAutoDeps() (debDeps, rpmDeps string) {
+	proj := bean.GProject
+	option := proj.BuildOption
+	gtk3 := false
+	webkit := false
+
+	if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_LCL) {
+		if option.UIGtk3 {
+			gtk3 = true
+		}
+	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
+		gtk3 = true
+		webkit = true
+	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_CEF) {
+		gtk3 = true
+	}
+
+	if gtk3 {
+		debDeps = "libgtk-3-0 (>= 3.24.24), libglib2.0-0 (>= 2.66.0)"
+		rpmDeps = "Requires: gtk3 >= 3.24.24\nRequires: glib2 >= 2.66.0"
+		if webkit {
+			if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
+				// CGO + webkit2_4_1 build tag -> 4.1
+				debDeps += ", libwebkit2gtk-4.1-0"
+				rpmDeps += "\nRequires: webkit2gtk4.1"
+			} else if option.BuildCGOEnabled {
+				// CGO 默认 -> 4.0
+				debDeps += ", libwebkit2gtk-4.0-37"
+				rpmDeps += "\nRequires: webkit2gtk4.0"
+			} else {
+				// 非 CGO dlopen 自动降级
+				debDeps += ", libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37"
+				rpmDeps += "\nRequires: webkit2gtk4.1"
+			}
+		}
+	} else {
+		debDeps = "libgtk2.0-0"
+		rpmDeps = "Requires: gtk2"
+	}
+	return
+}
+
+// linuxUserOverrideWebKit 检测用户是否指定了 webkit2gtk 4.0，调整依赖顺序
+// 非 CGO 模式下，如果用户在 Depends 里指定了 4.0，将优先级调整为用户的版本
+func linuxUserOverrideWebKit(debDeps, rpmDeps, userDeps string) (string, string) {
+	if !strings.Contains(userDeps, "webkit2gtk-4.0") && !strings.Contains(userDeps, "webkit2gtk4.0") {
+		return debDeps, rpmDeps
+	}
+	// DEB: 4.0 | 4.1
+	debDeps = strings.Replace(debDeps, "libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37", "libwebkit2gtk-4.0-37 | libwebkit2gtk-4.1-0", 1)
+	// RPM: Requires: webkit2gtk4.0
+	rpmDeps = strings.Replace(rpmDeps, "Requires: webkit2gtk4.1", "Requires: webkit2gtk4.0", 1)
+	return debDeps, rpmDeps
 }

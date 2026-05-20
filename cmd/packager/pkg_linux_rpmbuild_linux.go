@@ -149,7 +149,15 @@ func (m *Package) rpmbuild() bool {
 		return false
 	}
 
-	depends := parseDependsToRequires(appOption.Linux.Depends)
+	_, rpmAutoDeps := linuxAutoDeps()
+	_, rpmAutoDeps = linuxUserOverrideWebKit("", rpmAutoDeps, appOption.Linux.Depends)
+	depends := rpmAutoDeps
+	if userDeps := parseDependsToRequires(appOption.Linux.Depends); userDeps != "" {
+		if depends != "" {
+			depends += "\n"
+		}
+		depends += userDeps
+	}
 
 	specData := map[string]interface{}{
 		"PackageName": option.PackageName,
