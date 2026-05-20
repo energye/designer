@@ -13,47 +13,46 @@
 
 package options
 
-// main.go 文件代码模板
-const runLCLCodeTemplate = `// ==============================================================================
-// Application startup portal
+// resources/resources.go
+// 资源代码模板
+const resourcesGoTemplate = `// ==============================================================================
+// embedded resource
 // ==============================================================================
 
-package main
+package resources
 
 import (
-	"github.com/energye/energy/v3/lcl"
-	"{{.Name}}/app"
-	_ "{{.Name}}/resources"
+	"embed"
+	"github.com/energye/lcl/emfs"
+	"github.com/energye/lcl/lcl"
 )
 
-func main() {
-	// Global Initialization
-	lcl.Init()
-	// Start application message loop
-	lcl.Run(app.Forms...)
+//go:embed embed
+var icon embed.FS
+
+// Embed Get embedded resources
+// Function signature cannot be modified
+func Embed(fileName string) []byte {
+	data, _ := icon.ReadFile("embed/" + fileName)
+	return data
 }
-`
 
-// main.go 文件代码模板
-const runWVCodeTemplate = `// ==============================================================================
-// Application startup portal
-// ==============================================================================
+// SetIcon Set application icon
+// Function signature cannot be modified
+func SetIcon() {
+	stream := lcl.NewMemoryStream()
+	lcl.StreamHelper.Write(stream, Embed("icon.png"))
+	stream.SetPosition(0)
+	png := lcl.NewPortableNetworkGraphic()
+	png.LoadFromStreamWithStream(stream)
+	lcl.Application.Icon().Assign(png)
+	png.Free()
+	stream.Free()
+}
 
-package main
-
-import (
-	"github.com/energye/energy/v3/application"
-	"github.com/energye/energy/v3/wv"
-	"{{.Name}}/app"
-	_ "{{.Name}}/resources"
-)
-
-func main() {
-	// Global Initialization
-	wvApp := wv.Init(nil, nil)
-	wvApp.SetOptions(application.Options{DefaultURL: "about:blank"})
-	// Start application message loop
-	wv.Run(app.Forms...)
+func init() {
+	emfs.RegisterEmbedFS(emfs.FSName, icon)
+	lcl.SetOnBeforeRun(SetIcon)
 }
 `
 
@@ -102,50 +101,6 @@ const goModTemplate = `module {{.Name}}
 go 1.20
 
 {{.Data}}
-`
-
-// resources/resources.go
-// 资源代码模板
-const resourcesGoTemplate = `// ==============================================================================
-// embedded resource
-// ==============================================================================
-
-package resources
-
-import (
-	"embed"
-	engLCL "github.com/energye/energy/v3/lcl"
-	"github.com/energye/lcl/emfs"
-	"github.com/energye/lcl/lcl"
-)
-
-//go:embed embed
-var icon embed.FS
-
-// Embed Get embedded resources
-// Function signature cannot be modified
-func Embed(fileName string) []byte {
-	data, _ := icon.ReadFile("embed/" + fileName)
-	return data
-}
-
-// SetIcon Set application icon
-// Function signature cannot be modified
-func SetIcon() {
-	stream := lcl.NewMemoryStream()
-	lcl.StreamHelper.Write(stream, Embed("icon.png"))
-	stream.SetPosition(0)
-	png := lcl.NewPortableNetworkGraphic()
-	png.LoadFromStreamWithStream(stream)
-	lcl.Application.Icon().Assign(png)
-	png.Free()
-	stream.Free()
-}
-
-func init() {
-	emfs.RegisterEmbedFS(emfs.FSName, icon)
-	engLCL.SetOnBeforeRun(SetIcon)
-}
 `
 
 // resources/metadata_windows.go

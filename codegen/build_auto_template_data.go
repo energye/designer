@@ -45,11 +45,23 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 		UserFile: formTab.GOUserFile(),
 	}
 	data.Imports.Add(lcl)
-	data.Imports.Add(energyWindow)
+	isLCL := tool.Equal(projBean.GProject.GUIRenderFramework, projBean.GUIRenderFramework_LCL)
+	isWV := tool.Equal(projBean.GProject.GUIRenderFramework, projBean.GUIRenderFramework_WV)
+	if isWV {
+		data.Imports.Add(energyWindow)
+		data.Imports.Add(lclTypes)
+	}
 	data.IncludePackage()
 
+	codeTemplate := ""
+	if isLCL {
+		codeTemplate = lclAutoCodeTemplate
+	} else if isWV {
+		codeTemplate = wvAutoCodeTemplate
+	}
+
 	// 解析模板
-	tmpl, err := template.New("auto").Parse(autoCodeTemplate)
+	tmpl, err := template.New("auto").Parse(codeTemplate)
 	if err != nil {
 		return fmt.Errorf("解析自动代码模板失败: %w", err)
 	}
