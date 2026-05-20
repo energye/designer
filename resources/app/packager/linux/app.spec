@@ -29,20 +29,16 @@ mkdir -p %{buildroot}/usr/lib
 install -m 755 %{_appdir}/usr/bin/{{.PackageName}} %{buildroot}/usr/bin/{{.PackageName}}
 install -m 644 %{_appdir}/usr/share/applications/{{.PackageName}}.desktop %{buildroot}/usr/share/applications/{{.PackageName}}.desktop
 install -m 644 %{_appdir}/usr/share/icons/{{.PackageName}}.png %{buildroot}/usr/share/icons/{{.PackageName}}.png
-{{- if .LibName}}
 install -m 755 %{_appdir}/usr/lib/{{.LibName}} %{buildroot}/usr/lib/{{.LibName}}
-{{- end}}
 
 %files
 %attr(755, root, root) /usr/bin/{{.PackageName}}
 /usr/share/applications/{{.PackageName}}.desktop
 /usr/share/icons/{{.PackageName}}.png
-{{- if .LibName}}
 /usr/lib/{{.LibName}}
-{{- end}}
 
 %post
-# noop
+/sbin/ldconfig
 
 %preun
-# noop
+/sbin/ldconfig

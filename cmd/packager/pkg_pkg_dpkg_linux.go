@@ -149,18 +149,31 @@ func (m *Package) dpkg() bool {
 	// 复制运行时库 libenergy.so
 	libName := lib.GetDLLName()
 	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
-	if tool.IsExist(srcLib) {
-		dstLib := filepath.Join(debRoot, "usr", "lib", libName)
-		if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
-			event.ConsoleWriteError("Package - DEB: mkdir lib failed:", err.Error())
-			return false
-		}
-		if err := tool.CopyFile(srcLib, dstLib); err != nil {
-			event.ConsoleWriteError("Package - DEB: copy libenergy failed:", err.Error())
-			return false
-		}
-	} else {
-		event.ConsoleWriteWarn("Package - DEB: runtime library not found:", srcLib)
+	if !tool.IsExist(srcLib) {
+		event.ConsoleWriteError("Package - DEB: runtime library not found:", srcLib)
+		return false
+	}
+	dstLib := filepath.Join(debRoot, "usr", "lib", libName)
+	if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
+		event.ConsoleWriteError("Package - DEB: mkdir lib failed:", err.Error())
+		return false
+	}
+	if err := tool.CopyFile(srcLib, dstLib); err != nil {
+		event.ConsoleWriteError("Package - DEB: copy libenergy failed:", err.Error())
+		return false
+	}
+
+	// ldconfig 脚本
+	ldconfigScript := "#!/bin/sh\n/sbin/ldconfig\n"
+	postinst := filepath.Join(debRoot, "DEBIAN", "postinst")
+	if err := os.WriteFile(postinst, []byte(ldconfigScript), 0755); err != nil {
+		event.ConsoleWriteError("Package - DEB: write postinst failed:", err.Error())
+		return false
+	}
+	prerm := filepath.Join(debRoot, "DEBIAN", "prerm")
+	if err := os.WriteFile(prerm, []byte(ldconfigScript), 0755); err != nil {
+		event.ConsoleWriteError("Package - DEB: write prerm failed:", err.Error())
+		return false
 	}
 
 	// 渲染 control 文件

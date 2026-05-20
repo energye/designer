@@ -123,18 +123,18 @@ func (m *Package) rpmbuild() bool {
 	// 复制运行时库 libenergy.so
 	libName := lib.GetDLLName()
 	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
-	if tool.IsExist(srcLib) {
-		dstLib := filepath.Join(stageDir, "lib", libName)
-		if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
-			event.ConsoleWriteError("Package - RPM: mkdir lib failed:", err.Error())
-			return false
-		}
-		if err := tool.CopyFile(srcLib, dstLib); err != nil {
-			event.ConsoleWriteError("Package - RPM: copy libenergy failed:", err.Error())
-			return false
-		}
-	} else {
-		event.ConsoleWriteWarn("Package - RPM: runtime library not found:", srcLib)
+	if !tool.IsExist(srcLib) {
+		event.ConsoleWriteError("Package - RPM: runtime library not found:", srcLib)
+		return false
+	}
+	dstLib := filepath.Join(stageDir, "lib", libName)
+	if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
+		event.ConsoleWriteError("Package - RPM: mkdir lib failed:", err.Error())
+		return false
+	}
+	if err := tool.CopyFile(srcLib, dstLib); err != nil {
+		event.ConsoleWriteError("Package - RPM: copy libenergy failed:", err.Error())
+		return false
 	}
 
 	// 渲染 spec 文件
@@ -146,17 +146,12 @@ func (m *Package) rpmbuild() bool {
 
 	depends := parseDependsToRequires(option.Depends)
 
-	specLibName := ""
-	if tool.IsExist(filepath.Join(stageDir, "lib", libName)) {
-		specLibName = libName
-	}
-
 	specData := map[string]interface{}{
 		"PackageName": option.PackageName,
 		"App":         appOption,
 		"Linux":       appOption.Linux,
 		"Depends":     depends,
-		"LibName":     specLibName,
+		"LibName":     libName,
 	}
 	specContent, err := tool.RenderTemplate(string(specTemplate), specData)
 	if err != nil {
