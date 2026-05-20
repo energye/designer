@@ -84,8 +84,8 @@ var Forms = []lcl.IEngForm{
 }
 
 func init() {
-	if "{{.GUIRenderFramework}}" == "WV" {
-		// linux webkit2 > gtk3
+	if {{.CheckLinuxWSGTK3}} {
+		// for linux
 		os.Setenv("--ws", "gtk3")
 	}
 	if runtime.GOOS == "darwin" {

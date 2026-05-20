@@ -29,16 +29,16 @@ var (
 
 // TProject 项目信息 xxx.egp 配置文件
 type TProject struct {
-	Name               string       `json:"name"`                 // 项目名 "Your Application"
-	EGPName            string       `json:"egp_name"`             // 项目配置文件名 "xxx.egp"
-	Package            string       `json:"package"`              // 项目(应用)包名 package "app"
-	Main               string       `json:"main"`                 // 主程序入口文件或相对文件目录名 "main.go"
-	GUIRenderFramework string       `json:"gui_render_framework"` // GUI 渲染框架  lcl, webview, cef
-	UIForms            []TUIForm    `json:"ui_forms"`             // 窗体信息
-	ActiveUIForm       int          `json:"active_ui_form"`       // 当前激活设计的窗体Id
-	BuildOption        TBuildOption `json:"build_option"`         // 构建配置
-	AppOption          TAppOption   `json:"app_option"`           // 应用配置
-	Data               any          `json:"-"`                    // 其它数据
+	Name               string             `json:"name"`                 // 项目名 "Your Application"
+	EGPName            string             `json:"egp_name"`             // 项目配置文件名 "xxx.egp"
+	Package            string             `json:"package"`              // 项目(应用)包名 package "app"
+	Main               string             `json:"main"`                 // 主程序入口文件或相对文件目录名 "main.go"
+	GUIRenderFramework GUIRenderFramework `json:"gui_render_framework"` // GUI 渲染框架  LCL, WV, CEF
+	UIForms            []TUIForm          `json:"ui_forms"`             // 窗体信息
+	ActiveUIForm       int                `json:"active_ui_form"`       // 当前激活设计的窗体Id
+	BuildOption        TBuildOption       `json:"build_option"`         // 构建配置
+	AppOption          TAppOption         `json:"app_option"`           // 应用配置
+	Data               any                `json:"-"`                    // 其它数据
 }
 
 // TUIForm 窗体信息
@@ -259,7 +259,9 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.UIWin32 = true
 	m.BuildOption.UICocoa = true
 	m.BuildOption.UIGtk2 = true
-	m.BuildOption.UIGtk3 = true
+	if !tool.Equal(m.GUIRenderFramework, GUIRenderFramework_LCL) {
+		m.BuildOption.UIGtk3 = true // 非纯 LCL 默认开启
+	}
 	m.BuildOption.Output = "./build"
 	m.BuildOption.BuildFileName = m.Name
 	m.BuildOption.BuildModeDebug = true
@@ -290,6 +292,36 @@ func (m *TProject) GoFormNames() string {
 		buf.WriteString("&", form.Name, ", ")
 	}
 	return buf.String()
+}
+
+// CheckLinuxWSGTK3 根据GUI渲染框架和GTK版本选择对应的运行时库
+func (m *TProject) CheckLinuxWSGTK3() bool {
+	// linux 分为 gtk2/gtk3
+	// 根据渲染框架选择不同的 libenergy.so
+	// 根据构建选项 UI (GTK2, GTK3) 配置
+	// GUIRenderFramework：分为 LCL, LCL + WV, LCL + CEF 3种
+	// 规则：
+	//	GUIRenderFramework			UI				libenergy.so
+	//	LCL							GTK2 or GTK3	GTK3
+	//	LCL							GTK2			GTK2
+	//	LCL + WV 					GTK3			GTK3
+	//	LCL + CEF					GTK3			GTK3
+	option := m.BuildOption
+	// 渲染框架
+	if tool.Equal(m.GUIRenderFramework, GUIRenderFramework_LCL) {
+		// LCL 启用 GTK3
+		if option.UIGtk3 {
+			// 可选：使用 GTK3
+			return true
+		}
+	} else if tool.Equal(m.GUIRenderFramework, GUIRenderFramework_WV) {
+		// 强制：Webkit2Gtk 使用 GTK3
+		return true
+	} else if tool.Equal(m.GUIRenderFramework, GUIRenderFramework_CEF) {
+		// 强制：CEF 使用 GTK3
+		return true
+	}
+	return false
 }
 
 func init() {

@@ -396,7 +396,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk2Box.SetFont(m.font)
 	m.uiGtk2Box.SetChecked(bean.GProject.BuildOption.UIGtk2)
 	m.uiGtk2Box.SetShowHint(true)
-	m.uiGtk2Box.SetHint("Linux: 当 UI 是 LCL 默认")
+	m.uiGtk2Box.SetHint("Linux: UI is LCL")
 	m.uiGtk2Box.SetParent(m.buildTabPageConfig)
 
 	m.uiGtk3Box = lcl.NewCheckBox(m)
@@ -406,7 +406,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.uiGtk3Box.SetFont(m.font)
 	m.uiGtk3Box.SetChecked(bean.GProject.BuildOption.UIGtk3)
 	m.uiGtk3Box.SetShowHint(true)
-	m.uiGtk3Box.SetHint("Linux: 当 UI 是 LCL + (WV CEF) 默认")
+	m.uiGtk3Box.SetHint("Linux: UI is LCL + (WV or CEF)")
 	m.uiGtk3Box.SetParent(m.buildTabPageConfig)
 
 	outputTitle := lcl.NewLabel(m)

@@ -103,7 +103,7 @@ func checkCreate(dir string) bool {
 }
 
 // 运行创建项目
-func doRunCreate(name, dir, guiRenderFramework string) bool {
+func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
 	// 开始创建项目
 	event.ConsoleWriteInfo("开始创建项目", name)
 	newProject := new(bean.TProject)
@@ -140,6 +140,10 @@ func doRunCreate(name, dir, guiRenderFramework string) bool {
 func WriteEGPConfig(path string, project *bean.TProject) error {
 	if project == nil {
 		return errors.New("项目配置为空")
+	}
+	if project.CheckLinuxWSGTK3() {
+		// Linux: 如果渲染框架为 WV 或 CEF 则强制启用 GTK3
+		project.BuildOption.UIGtk3 = true
 	}
 	data, err := json.MarshalIndent(project, "", "  ")
 	if err != nil {

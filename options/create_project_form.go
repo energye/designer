@@ -368,7 +368,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 	guiRenderFramework := m.guiRenderFrameworkBox.Text()
-	guiRenderFrameworkGUI := ""
+	guiRenderFrameworkGUI := bean.GUIRenderFramework("")
 	bean.GUIRenderFrameworks.Iterate(func(gui, guiDesc string) bool {
 		if guiRenderFramework == guiDesc {
 			guiRenderFrameworkGUI = gui
