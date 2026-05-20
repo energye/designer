@@ -259,7 +259,7 @@ func (m *TProject) InitBuildOption() {
 	m.BuildOption.UIWin32 = true
 	m.BuildOption.UICocoa = true
 	m.BuildOption.UIGtk2 = true
-	m.BuildOption.UIGtk3 = false
+	m.BuildOption.UIGtk3 = true
 	m.BuildOption.Output = "./build"
 	m.BuildOption.BuildFileName = m.Name
 	m.BuildOption.BuildModeDebug = true
