@@ -29,7 +29,7 @@ import (
 
 func main() {
 	// Global Initialization
-	wvApp := wv.Init(nil, nil)
+	wvApp := wv.Init()
 	wvApp.SetOptions(application.Options{DefaultURL: "about:blank"})
 	// Start application message loop
 	wv.Run(app.Forms...)
