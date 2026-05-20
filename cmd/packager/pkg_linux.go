@@ -129,6 +129,7 @@ func choiceLibEnergySOWS() {
 
 // linuxAutoDeps 根据 GUIRenderFramework 和 UI 配置生成自动依赖
 // 返回 DEB 和 RPM 格式的依赖字符串
+// RPM 使用文件依赖(.so)，兼容所有发行版
 func linuxAutoDeps() (debDeps, rpmDeps string) {
 	proj := bean.GProject
 	option := proj.BuildOption
@@ -146,22 +147,29 @@ func linuxAutoDeps() (debDeps, rpmDeps string) {
 		gtk3 = true
 	}
 
+	// 64位架构需要 (64bit) 后缀
+	soSuffix := ""
+	goarch := lib.GOARCH()
+	if goarch == "amd64" || goarch == "arm64" || goarch == "loong64" {
+		soSuffix = "()(64bit)"
+	}
+
 	if gtk3 {
 		debDeps = "libgtk-3-0 (>= 3.24.24), libglib2.0-0 (>= 2.66.0)"
 		rpmDeps = "Requires: gtk3 >= 3.24.24\nRequires: glib2 >= 2.66.0"
 		if webkit {
 			if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
 				// CGO + webkit2_4_1 build tag -> 4.1
-				debDeps += ", libwebkit2gtk-4.1-0"
-				rpmDeps += "\nRequires: webkit2gtk4.1"
+				debDeps += ", libwebkit2gtk-4.1-0 (>= 2.40.0)"
+				rpmDeps += "\nRequires: libwebkit2gtk-4.1.so.0" + soSuffix
 			} else if option.BuildCGOEnabled {
 				// CGO 默认 -> 4.0
-				debDeps += ", libwebkit2gtk-4.0-37"
-				rpmDeps += "\nRequires: webkit2gtk4.0"
+				debDeps += ", libwebkit2gtk-4.0-37 (>= 2.40.0)"
+				rpmDeps += "\nRequires: libwebkit2gtk-4.0.so.37" + soSuffix
 			} else {
 				// 非 CGO dlopen 自动降级
-				debDeps += ", libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37"
-				rpmDeps += "\nRequires: webkit2gtk4.1"
+				debDeps += ", libwebkit2gtk-4.1-0 (>= 2.40.0) | libwebkit2gtk-4.0-37 (>= 2.40.0)"
+				rpmDeps += "\nRequires: (libwebkit2gtk-4.1.so.0" + soSuffix + " or libwebkit2gtk-4.0.so.37" + soSuffix + ")"
 			}
 		}
 	} else {
@@ -177,9 +185,12 @@ func linuxUserOverrideWebKit(debDeps, rpmDeps, userDeps string) (string, string)
 	if !strings.Contains(userDeps, "webkit2gtk-4.0") && !strings.Contains(userDeps, "webkit2gtk4.0") {
 		return debDeps, rpmDeps
 	}
-	// DEB: 4.0 | 4.1
-	debDeps = strings.Replace(debDeps, "libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37", "libwebkit2gtk-4.0-37 | libwebkit2gtk-4.1-0", 1)
-	// RPM: Requires: webkit2gtk4.0
-	rpmDeps = strings.Replace(rpmDeps, "Requires: webkit2gtk4.1", "Requires: webkit2gtk4.0", 1)
+	// DEB: swap OR order
+	debDeps = strings.Replace(debDeps, "libwebkit2gtk-4.1-0 (>= 2.40.0) | libwebkit2gtk-4.0-37 (>= 2.40.0)", "libwebkit2gtk-4.0-37 (>= 2.40.0) | libwebkit2gtk-4.1-0 (>= 2.40.0)", 1)
+	// RPM (.so 文件依赖): 交换 4.1 <-> 4.0
+	// 用临时占位符避免二次替换冲突
+	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-4.1.so.0", "libwebkit2gtk-__TMP_A__")
+	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-4.0.so.37", "libwebkit2gtk-4.1.so.0")
+	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-__TMP_A__", "libwebkit2gtk-4.0.so.37")
 	return debDeps, rpmDeps
 }
