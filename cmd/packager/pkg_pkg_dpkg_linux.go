@@ -186,10 +186,7 @@ func (m *Package) dpkg() bool {
 	// 计算安装大小 (KB)
 	installedSize := calcDirSize(debRoot) / 1024
 
-	depends := option.Depends
-	if depends == "" {
-		depends = "libc6"
-	}
+	depends := appOption.Linux.Depends
 
 	maintainer := appOption.Linux.Maintainer
 	if maintainer == "" {

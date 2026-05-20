@@ -829,7 +829,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	bean.GProject.BuildOption.LinuxDEB = m.linuxDEBCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxRPM = m.linuxRPMCheckBox.Checked()
 	bean.GProject.BuildOption.LinuxAppImage = m.linuxAppImageCheckBox.Checked()
-	bean.GProject.BuildOption.Depends = m.dependsEdit.Text()
+	bean.GProject.AppOption.Linux.Depends = m.dependsEdit.Text()
 	bean.GProject.AppOption.Linux.Categories = m.categoriesEdit.Text()
 	bean.GProject.AppOption.Linux.Homepage = m.homepageEdit.Text()
 	bean.GProject.AppOption.Linux.Maintainer = m.maintainerEdit.Text()

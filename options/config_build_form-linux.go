@@ -85,7 +85,7 @@ func (m *TBuildForm) initLinuxOptions() {
 	m.dependsEdit.SetFont(m.font)
 	m.dependsEdit.SetTextHint("CSV list of dependencies, e.g: libc6 (>= 2.14)")
 	m.dependsEdit.SetShowHint(true)
-	m.dependsEdit.SetText(bean.GProject.BuildOption.Depends)
+	m.dependsEdit.SetText(bean.GProject.AppOption.Linux.Depends)
 	m.dependsEdit.SetAnchors(anchors)
 	m.dependsEdit.SetParent(m.platformTabPageLinux)
 	m.categoriesEdit = lcl.NewEdit(m)

@@ -95,7 +95,6 @@ type TBuildOption struct {
 	LinuxDEB                 bool     `json:"linux_deb"`
 	LinuxRPM                 bool     `json:"linux_rpm"`
 	LinuxAppImage            bool     `json:"linux_app_image"`
-	Depends                  string   `json:"depends"`
 }
 
 type TSign struct {
@@ -188,6 +187,7 @@ type TAppLinux struct {
 	Homepage   string `json:"homepage"`   // 项目主页
 	Maintainer string `json:"maintainer"` // 维护者 如: Name <email@example.com>
 	License    string `json:"license"`    // 许可证 如: MIT, GPL-3.0
+	Depends    string `json:"depends"`    // 依赖 如: libc6 (>= 2.17), libgtk-3-0
 }
 
 var (
@@ -281,7 +281,6 @@ func (m *TProject) InitBuildOption() {
 	}
 	m.BuildOption.MacCommonLib = false
 	m.BuildOption.LinuxDEB = true
-	m.BuildOption.Depends = ""
 }
 
 // 模板调用 返回当前项目的所有窗体名称

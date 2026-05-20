@@ -144,7 +144,7 @@ func (m *Package) rpmbuild() bool {
 		return false
 	}
 
-	depends := parseDependsToRequires(option.Depends)
+	depends := parseDependsToRequires(appOption.Linux.Depends)
 
 	specData := map[string]interface{}{
 		"PackageName": option.PackageName,
