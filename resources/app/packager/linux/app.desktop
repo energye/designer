@@ -8,4 +8,3 @@ StartupWMClass={{.WMClass}}
 Categories={{.Categories}}
 Terminal=false
 StartupNotify=true
-Encoding=UTF-8
