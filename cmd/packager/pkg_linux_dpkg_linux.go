@@ -271,7 +271,7 @@ func calcDirSize(dir string) int64 {
 	return size
 }
 
-// parseDependsToRequires 将 DEB 格式的 Depends 转为 RPM Requires 行
+// 将 DEB 格式的 Depends 转为 RPM Requires 行
 func parseDependsToRequires(depends string) string {
 	if depends == "" {
 		return ""
