@@ -169,7 +169,11 @@ func GetDLLName() string {
 		ext = "dylib"
 	case "linux":
 		ext = "so"
-		if envws := os.Getenv("--ws"); envws != "" {
+		envws := env.Get("--ws")
+		if envws == "" {
+			envws = os.Getenv("--ws")
+		}
+		if envws != "" {
 			ws = envws // use gtk3
 		} else {
 			ws = "gtk2"

@@ -17,6 +17,7 @@ package packager
 
 import (
 	"fmt"
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
@@ -61,6 +62,10 @@ func (m *Package) dpkg() bool {
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
+
+	// 处理使用的 libenergy.so 运行时库, lib.GetDLLName()
+	defer env.Delete("--ws") // 删除环境变量 --ws
+	choiceLibEnergySOWS()
 
 	goarch := lib.GOARCH()
 	debArch := debArchName(goarch)
@@ -147,6 +152,7 @@ func (m *Package) dpkg() bool {
 	}
 
 	// 复制运行时库 libenergy.so
+
 	libName := lib.GetDLLName()
 	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
 	if !tool.IsExist(srcLib) {

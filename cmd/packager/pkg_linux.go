@@ -17,9 +17,12 @@ package packager
 
 import (
 	"github.com/energye/designer/cmd/build"
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/api"
 	"os/exec"
 )
 
@@ -77,4 +80,48 @@ func checkToolCMD(name string) bool {
 		return false
 	}
 	return true
+}
+
+// choiceLibEnergySOWS 根据GUI渲染框架和GTK版本选择对应的libenergy.so运行时库
+//
+// 该函数根据不同的GUI渲染框架(LCL/WV/CEF)和GTK版本(GTK2/GTK3)配置,
+// 设置相应的窗口系统类型,以确保使用正确的libenergy.so动态链接库。
+//
+// 选择规则:
+//   - LCL + GTK3启用    -> GTK3
+//   - LCL + GTK2        -> GTK2
+//   - LCL + WV          -> GTK3
+//   - LCL + CEF         -> GTK3
+//   - 默认情况          -> GTK2
+func choiceLibEnergySOWS() {
+	// 处理使用的 libenergy.so 运行时库, lib.GetDLLName()
+	// linux 分为 gtk2/gtk3
+	// 根据渲染框架选择不同的 libenergy.so
+	// 根据构建选项 UI (GTK2, GTK3) 配置
+	// GUIRenderFramework：分为 LCL, LCL + WV, LCL + CEF 3种
+	// 规则：
+	//	GUIRenderFramework			UI				libenergy.so
+	//	LCL							GTK2 or GTK3	GTK3
+	//	LCL							GTK2			GTK2
+	//	LCL + WV 					GTK3			GTK3
+	//	LCL + CEF					GTK3			GTK3
+	proj := bean.GProject
+	option := proj.BuildOption
+	wsGtk := api.WtGTK2 // 默认 GTK2
+	// 渲染框架
+	if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_LCL) {
+		// LCL 启用了 GTK3
+		if option.UIGtk3 {
+			wsGtk = api.WtGTK3
+		}
+	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
+		// Webkit2Gtk 使用 GTK3
+		wsGtk = api.WtGTK3
+	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_CEF) {
+		// CEF 使用 GTK3
+		wsGtk = api.WtGTK3
+	}
+	if wsGtk == api.WtGTK3 {
+		env.Put("--ws", "gtk3")
+	}
 }
