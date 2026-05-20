@@ -326,7 +326,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.i386CheckBox.SetFont(m.font)
 	m.i386CheckBox.SetChecked(bean.GProject.BuildOption.Arch386)
 	m.i386CheckBox.SetShowHint(true)
-	m.i386CheckBox.SetHint("macOS 不支持")
+	m.i386CheckBox.SetHint("macOS Not supported")
 	m.i386CheckBox.SetParent(m.buildTabPageConfig)
 
 	m.arm64CheckBox = lcl.NewCheckBox(m)
@@ -336,7 +336,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.arm64CheckBox.SetFont(m.font)
 	m.arm64CheckBox.SetChecked(bean.GProject.BuildOption.ArchArm64)
 	m.arm64CheckBox.SetShowHint(true)
-	m.arm64CheckBox.SetHint("windows 不支持")
+	m.arm64CheckBox.SetHint("windows Not supported")
 	m.arm64CheckBox.SetParent(m.buildTabPageConfig)
 
 	m.armCheckBox = lcl.NewCheckBox(m)
@@ -346,7 +346,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.armCheckBox.SetFont(m.font)
 	m.armCheckBox.SetChecked(bean.GProject.BuildOption.ArchArm)
 	m.armCheckBox.SetShowHint(true)
-	m.armCheckBox.SetHint("windows, macOS 不支持")
+	m.armCheckBox.SetHint("windows and macOS Not supported")
 	m.armCheckBox.SetParent(m.buildTabPageConfig)
 
 	m.loong64CheckBox = lcl.NewCheckBox(m)
@@ -357,7 +357,7 @@ func (m *TBuildForm) initConfigComponent() {
 	m.loong64CheckBox.SetEnabled(false)
 	m.loong64CheckBox.SetChecked(bean.GProject.BuildOption.ArchLoong64)
 	m.loong64CheckBox.SetShowHint(true)
-	m.loong64CheckBox.SetHint("暂时不支持")
+	m.loong64CheckBox.SetHint("Not supported temporarily")
 	m.loong64CheckBox.SetParent(m.buildTabPageConfig)
 
 	widgetTitle := lcl.NewLabel(m)
@@ -375,7 +375,7 @@ func (m *TBuildForm) initConfigComponent() {
 	//m.uiWin32Box.SetChecked(gProject.BuildOption.UIWin32)
 	m.uiWin32Box.SetChecked(true)
 	m.uiWin32Box.SetShowHint(true)
-	m.uiWin32Box.SetHint("Windows: 固定")
+	m.uiWin32Box.SetHint("Windows")
 	m.uiWin32Box.SetParent(m.buildTabPageConfig)
 
 	m.uiCocoaBox = lcl.NewCheckBox(m)
@@ -386,7 +386,7 @@ func (m *TBuildForm) initConfigComponent() {
 	//m.uiCocoaBox.SetChecked(gProject.BuildOption.UICocoa)
 	m.uiCocoaBox.SetChecked(true)
 	m.uiCocoaBox.SetShowHint(true)
-	m.uiCocoaBox.SetHint("MacOS: 固定")
+	m.uiCocoaBox.SetHint("macOS")
 	m.uiCocoaBox.SetParent(m.buildTabPageConfig)
 
 	m.uiGtk2Box = lcl.NewCheckBox(m)
