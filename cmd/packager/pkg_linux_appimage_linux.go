@@ -28,6 +28,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -114,8 +115,16 @@ func copySODeps(soName, dstDir string) bool {
 // appImage 构建 AppImage 包
 func (m *Package) appImage() bool {
 	event.ConsoleWriteInfo("Package - AppImage")
+
+	// AppImage 内嵌的 runtime 是宿主架构的，不支持跨架构构建
+	targetArch := lib.GOARCH()
+	if runtime.GOARCH != targetArch {
+		event.ConsoleWriteWarn("Package - AppImage: skipped, cross-architecture build is not supported. Current:", runtime.GOARCH, ", Target:", targetArch)
+		return true
+	}
+
 	if !checkToolCMD("appimagetool") {
-		event.ConsoleWriteError(`Package - AppImage: appimagetool command not found. Download from: https://github.com/AppImage/AppImageKit/releases  
+		event.ConsoleWriteError(`Package - AppImage: appimagetool command not found. Download from: https://github.com/AppImage/AppImageKit/releases
 	chmod +x appimagetool-x86_64.AppImage
   	sudo mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
   	sudo apt install libfuse2`)
@@ -136,6 +145,7 @@ func (m *Package) appImage() bool {
 
 	// 创建 AppDir 目录结构
 	appDir := filepath.Join(output, option.PackageName+".AppDir")
+	_ = os.RemoveAll(appDir) // 清理上次构建残留
 	dirs := []string{
 		filepath.Join(appDir, "usr", "bin"),
 		filepath.Join(appDir, "usr", "lib"),

@@ -153,32 +153,55 @@ func linuxAutoDeps() (debDeps, rpmDeps string) {
 	if goarch == "amd64" || goarch == "arm64" || goarch == "loong64" {
 		soSuffix = "()(64bit)"
 	}
-
+	var (
+		deb []string // ,
+		rpm []string // /n
+	)
 	if gtk3 {
-		debDeps = "libgtk-3-0 (>= 3.24.24), libglib2.0-0 (>= 2.66.0)"
-		rpmDeps = `Requires: libgtk-3.so.0` + soSuffix + ` >= 3.24.24
-Requires: libglib-2.0.so.0` + soSuffix + ` >= 2.66.0`
+		deb = append(deb, "libgtk-3-0 (>= 3.24.24)")
+		deb = append(deb, "libglib2.0-0 (>= 2.66.0)")
+		rpm = append(rpm, "Requires: libgtk-3.so.0"+soSuffix+" >= 3.24.24")
+		rpm = append(rpm, "Requires: libglib-2.0.so.0"+soSuffix+" >= 2.66.0")
+
+		//debDeps = "libgtk-3-0 (>= 3.24.24), libglib2.0-0 (>= 2.66.0)"
+		//rpmDeps = `Requires: libgtk-3.so.0` + soSuffix + ` >= 3.24.24 Requires: libglib-2.0.so.0` + soSuffix + ` >= 2.66.0`
 		if webkit {
 			// deb := " (>= 2.40.0)"
 			// rpm := " >= 2.40.0"
 			if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
 				// CGO + webkit2_4_1 build tag -> 4.1
-				debDeps += ", libwebkit2gtk-4.1-0"
-				rpmDeps += "\nRequires: libwebkit2gtk-4.1.so.0" + soSuffix
+				deb = append(deb, "libwebkit2gtk-4.1-0")
+				rpm = append(rpm, "Requires: libwebkit2gtk-4.1.so.0"+soSuffix)
+
+				//debDeps += ", libwebkit2gtk-4.1-0"
+				//rpmDeps += "\nRequires: libwebkit2gtk-4.1.so.0" + soSuffix
 			} else if option.BuildCGOEnabled {
 				// CGO 默认 -> 4.0
-				debDeps += ", libwebkit2gtk-4.0-37"
-				rpmDeps += "\nRequires: libwebkit2gtk-4.0.so.37" + soSuffix
+				deb = append(deb, "libwebkit2gtk-4.0-37")
+				rpm = append(rpm, "Requires: libwebkit2gtk-4.1.so.0"+soSuffix)
+
+				//debDeps += ", libwebkit2gtk-4.0-37"
+				//rpmDeps += "\nRequires: libwebkit2gtk-4.0.so.37" + soSuffix
 			} else {
 				// 非 CGO dlopen 自动降级
-				debDeps += ", libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37"
-				rpmDeps += "\nRequires: (libwebkit2gtk-4.1.so.0" + soSuffix + " or libwebkit2gtk-4.0.so.37" + soSuffix + ")"
+				deb = append(deb, "libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37")
+				rpm = append(rpm, "Requires: (libwebkit2gtk-4.1.so.0"+soSuffix+" or libwebkit2gtk-4.0.so.37"+soSuffix+")")
+
+				//debDeps += ", libwebkit2gtk-4.1-0 | libwebkit2gtk-4.0-37"
+				//rpmDeps += "\nRequires: (libwebkit2gtk-4.1.so.0" + soSuffix + " or libwebkit2gtk-4.0.so.37" + soSuffix + ")"
 			}
 		}
 	} else {
-		debDeps = "libgtk2.0-0 (>= 2.24.0)"
-		rpmDeps = "Requires: libgtk-2.0.so.0" + soSuffix + " >= 2.24.0"
+		deb = append(deb, "libgtk2.0-0 (>= 2.24.0)")
+		rpm = append(rpm, "Requires: libgtk-2.0.so.0"+soSuffix+" >= 2.24.0")
+		//debDeps = "libgtk2.0-0 (>= 2.24.0)"
+		//rpmDeps = "Requires: libgtk-2.0.so.0" + soSuffix + " >= 2.24.0"
 	}
+	deb = append(deb, "libharfbuzz-gobject0")
+	rpm = append(rpm, "Requires: libharfbuzz-gobject.so.0"+soSuffix)
+
+	debDeps = strings.Join(deb, ",")
+	rpmDeps = strings.Join(rpm, "\n")
 	return
 }
 
