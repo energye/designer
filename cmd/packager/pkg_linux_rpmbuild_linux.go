@@ -76,6 +76,9 @@ func (m *Package) rpmbuild() bool {
 	specsDir := filepath.Join(rpmBuildDir, "SPECS")
 	stageDir := filepath.Join(rpmBuildDir, "stage", "usr")
 
+	// 清理临时目录
+	defer os.RemoveAll(rpmBuildDir)
+
 	dirs := []string{
 		filepath.Join(stageDir, "bin"),
 		filepath.Join(stageDir, "share", "applications"),
@@ -224,9 +227,6 @@ func (m *Package) rpmbuild() bool {
 		event.ConsoleWriteError("Package - RPM: copy output failed:", err.Error())
 		return false
 	}
-
-	// 清理临时目录
-	_ = os.RemoveAll(rpmBuildDir)
 
 	event.ConsoleWriteInfo("Package - RPM:", rpmFileName, "created successfully")
 	return true

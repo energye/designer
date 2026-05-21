@@ -74,6 +74,9 @@ func (m *Package) dpkg() bool {
 	debDirName := fmt.Sprintf("%s_%s_%s", option.PackageName, appOption.Version, debArch)
 	debRoot := filepath.Join(output, debDirName)
 
+	// 清理临时目录
+	defer os.RemoveAll(debRoot)
+
 	// 创建目录结构
 	dirs := []string{
 		filepath.Join(debRoot, "DEBIAN"),
@@ -248,9 +251,6 @@ func (m *Package) dpkg() bool {
 		event.ConsoleWriteError("Package - DEB: build failed:", cmd.Error())
 		return false
 	}
-
-	// 清理临时目录
-	_ = os.RemoveAll(debRoot)
 
 	event.ConsoleWriteInfo("Package - DEB:", debFileName, "created successfully")
 	return true

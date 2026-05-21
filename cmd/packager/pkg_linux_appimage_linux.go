@@ -145,7 +145,10 @@ func (m *Package) appImage() bool {
 
 	// 创建 AppDir 目录结构
 	appDir := filepath.Join(output, option.PackageName+".AppDir")
-	_ = os.RemoveAll(appDir) // 清理上次构建残留
+
+	// 清理临时目录
+	defer os.RemoveAll(appDir)
+
 	dirs := []string{
 		filepath.Join(appDir, "usr", "bin"),
 		filepath.Join(appDir, "usr", "lib"),
@@ -251,9 +254,6 @@ func (m *Package) appImage() bool {
 		event.ConsoleWriteError("Package - AppImage: build failed:", cmd.Error())
 		return false
 	}
-
-	// 清理临时目录
-	_ = os.RemoveAll(appDir)
 
 	event.ConsoleWriteInfo("Package - AppImage:", appImageName, "created successfully")
 	return true
