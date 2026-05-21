@@ -39,7 +39,15 @@ install -m 755 %{_appdir}/usr/lib/{{.LibName}} %{buildroot}/usr/lib/{{.LibName}}
 /usr/lib/{{.LibName}}
 
 %post
+{{- if .Is64bit}}
+# 64位系统: 创建 lib64 软链接
+mkdir -p /usr/lib64
+ln -sf /usr/lib/{{.LibName}} /usr/lib64/{{.LibName}}
+{{- end}}
 /sbin/ldconfig
 
 %preun
+{{- if .Is64bit}}
+rm -f /usr/lib64/{{.LibName}}
+{{- end}}
 /sbin/ldconfig

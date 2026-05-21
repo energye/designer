@@ -168,6 +168,7 @@ func (m *Package) rpmbuild() bool {
 		"Linux":       appOption.Linux,
 		"Depends":     depends,
 		"LibName":     libName,
+		"Is64bit":     goarch == "amd64" || goarch == "arm64" || goarch == "loong64",
 	}
 	specContent, err := tool.RenderTemplate(string(specTemplate), specData)
 	if err != nil {
