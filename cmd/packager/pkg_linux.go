@@ -199,8 +199,8 @@ func linuxAutoDeps() (debDeps, rpmDeps string) {
 		//debDeps = "libgtk2.0-0 (>= 2.24.0)"
 		//rpmDeps = "Requires: libgtk-2.0.so.0" + soSuffix + " >= 2.24.0"
 	}
-	deb = append(deb, "libharfbuzz-gobject0")
-	rpm = append(rpm, "Requires: libharfbuzz-gobject.so.0"+soSuffix)
+	deb = append(deb, "libharfbuzz-gobject0", "libgl1")
+	rpm = append(rpm, "Requires: libharfbuzz-gobject.so.0"+soSuffix, "Requires: libGL.so.1"+soSuffix)
 
 	debDeps = strings.Join(deb, ",")
 	rpmDeps = strings.Join(rpm, "\n")
