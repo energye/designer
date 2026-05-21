@@ -1,4 +1,10 @@
 
+---
+deb: 展开所有文件
+dpkg -x packagename.deb ./packagename
+
+---
+
 rpm: 展开所有文件
 rpm2cpio ./myapplcl_1.0.0.0_linux_amd64.rpm | cpio -idv
 

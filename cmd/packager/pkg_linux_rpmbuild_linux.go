@@ -129,13 +129,14 @@ func (m *Package) rpmbuild() bool {
 	}
 
 	// 复制运行时库 libenergy.so
-	libName := lib.GetDLLName()
-	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	srcLibName := lib.GetDLLName()
+	dstLibName := packageLibName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), srcLibName)
 	if !tool.IsExist(srcLib) {
 		event.ConsoleWriteError("Package - RPM: runtime library not found:", srcLib)
 		return false
 	}
-	dstLib := filepath.Join(stageDir, "lib", libName)
+	dstLib := filepath.Join(stageDir, "lib", dstLibName)
 	if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
 		event.ConsoleWriteError("Package - RPM: mkdir lib failed:", err.Error())
 		return false
@@ -167,7 +168,7 @@ func (m *Package) rpmbuild() bool {
 		"App":         appOption,
 		"Linux":       appOption.Linux,
 		"Depends":     depends,
-		"LibName":     libName,
+		"LibName":     dstLibName,
 		"Is64bit":     goarch == "amd64" || goarch == "arm64" || goarch == "loong64",
 	}
 	specContent, err := tool.RenderTemplate(string(specTemplate), specData)

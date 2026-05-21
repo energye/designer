@@ -155,14 +155,14 @@ func (m *Package) dpkg() bool {
 	}
 
 	// 复制运行时库 libenergy.so
-
-	libName := lib.GetDLLName()
-	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	srcLibName := lib.GetDLLName()
+	dstLibName := packageLibName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), srcLibName)
 	if !tool.IsExist(srcLib) {
 		event.ConsoleWriteError("Package - DEB: runtime library not found:", srcLib)
 		return false
 	}
-	dstLib := filepath.Join(debRoot, "usr", "lib", libName)
+	dstLib := filepath.Join(debRoot, "usr", "lib", dstLibName)
 	if err := os.MkdirAll(filepath.Dir(dstLib), 0755); err != nil {
 		event.ConsoleWriteError("Package - DEB: mkdir lib failed:", err.Error())
 		return false

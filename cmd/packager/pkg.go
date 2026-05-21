@@ -19,8 +19,10 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/resources/frameworks"
+	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -101,4 +103,34 @@ func WriteFile(filePath string, data []byte) error {
 	_ = os.Remove(filePath)
 	err := os.WriteFile(filePath, data, 0644)
 	return err
+}
+
+// packageLibName 返回打包时使用的运行时库文件名
+// Debug 模式保留架构前缀 (如 libenergy-amd64-gtk3.so)
+// Release 模式去掉架构前缀 (如 libenergy-gtk3.so)，与 SONAME 一致
+func packageLibName() string {
+	libName := lib.GetDLLName()
+	proj := bean.GProject
+	if proj != nil && proj.BuildOption.BuildModeRelease {
+		libName = sonameFromLib(libName)
+	}
+	return libName
+}
+
+// sonameFromLib 从库文件名中去掉架构前缀，得到 SONAME
+// Linux:   "libenergy-amd64-gtk3.so" -> "libenergy-gtk3.so"     (3段，去掉中间的arch)
+// Windows: "libenergy-amd64.dll"     -> "libenergy.dll"          (2段，去掉arch)
+// macOS:   "libenergy-amd64.dylib"   -> "libenergy.dylib"        (2段，去掉arch)
+func sonameFromLib(libName string) string {
+	parts := strings.SplitN(libName, "-", 3)
+	switch len(parts) {
+	case 3:
+		// Linux: libenergy-{arch}-{ws}.so -> libenergy-{ws}.so
+		return parts[0] + "-" + parts[2]
+	case 2:
+		// Windows/macOS: libenergy-{arch}.dll -> libenergy.dll
+		return parts[0] + "." + strings.SplitN(parts[1], ".", 2)[1]
+	default:
+		return libName
+	}
 }

@@ -476,7 +476,7 @@ func copyFiles() bool {
 	contentsResources := filepath.Join(contents, AppContentsResources)
 
 	outputRuntimeFilePath := ""
-	outputCurrRuntimeFilePath := filepath.Join(contentsFrameworks, lib.GetDLLName())
+	outputCurrRuntimeFilePath := filepath.Join(contentsFrameworks, packageLibName())
 	outputUnivRuntimeFilePath := filepath.Join(contentsFrameworks, lib.DarwinUniversalBinaryName)
 	if proj.BuildOption.MacCommonLib {
 		// 通用二进制

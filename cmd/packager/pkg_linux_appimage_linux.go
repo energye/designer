@@ -219,13 +219,14 @@ func (m *Package) appImage() bool {
 	}
 
 	// 复制运行时库 libenergy.so
-	libName := lib.GetDLLName()
-	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), libName)
+	srcLibName := lib.GetDLLName()
+	dstLibName := packageLibName()
+	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), srcLibName)
 	if !tool.IsExist(srcLib) {
 		event.ConsoleWriteError("Package - AppImage: runtime library not found:", srcLib)
 		return false
 	}
-	dstLib := filepath.Join(appDir, "usr", "lib", libName)
+	dstLib := filepath.Join(appDir, "usr", "lib", dstLibName)
 	if err := tool.CopyFile(srcLib, dstLib); err != nil {
 		event.ConsoleWriteError("Package - AppImage: copy libenergy failed:", err.Error())
 		return false

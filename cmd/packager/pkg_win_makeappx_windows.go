@@ -154,7 +154,8 @@ func (m *Package) packageAppx() bool {
 		return false
 	}
 	copyAppBinary := filepath.Join(energyMsixAppRootDir, buildFileName)
-	copyLibEnergyBinary := filepath.Join(energyMsixAppRootDir, libEnergy)
+	dstLibName := packageLibName()
+	copyLibEnergyBinary := filepath.Join(energyMsixAppRootDir, dstLibName)
 
 	// 应用二进制程序使用的图片
 	srcIconPng := filepath.Join(embedPath, "icon.png")

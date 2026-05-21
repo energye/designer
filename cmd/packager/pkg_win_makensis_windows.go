@@ -148,7 +148,8 @@ func (m *Package) packageNSIS() bool {
 	libEnergyPath := filepath.Join(frameworkRuntime, libEnergy)
 	libWebView2LoaderPath := filepath.Join(frameworkRuntime, libWebview2)
 	binaryFileNamePath := filepath.Join(output, buildFileName)
-	libEnergyCopyPath := filepath.Join(output, libEnergy)
+	dstLibName := packageLibName()
+	libEnergyCopyPath := filepath.Join(output, dstLibName)
 
 	err := tool.CopyFile(libEnergyPath, libEnergyCopyPath)
 	if err != nil {
