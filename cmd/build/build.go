@@ -22,6 +22,8 @@ import (
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 // Run 执行构建命令的入口函数
@@ -96,4 +98,38 @@ func RunGoCleanCacheCMD() {
 	cmd := command.NewCMD()
 	cmd.HideWindow = true
 	cmd.Command("go", "clean", "--cache")
+}
+
+func ExtractTags(tags string) string {
+	reTags := regexp.MustCompile(`-tags(?:=|\s+)(?:"((?:\\.|[^"])*)"|'([^']*)'|([^\s]+))`)
+	match := reTags.FindStringSubmatch(tags)
+	if len(match) > 0 {
+		val := match[1]
+		if val == "" {
+			val = match[2]
+		}
+		if val == "" {
+			val = match[3]
+		}
+		val = strings.ReplaceAll(val, `\"`, `"`)
+		return val
+	}
+	return ""
+}
+
+func ExtractLdflags(input string) string {
+	reLdflags := regexp.MustCompile(`-ldflags(?:=|\s+)(?:"((?:\\.|[^"])*)"|'([^']*)'|([^\s]+))`)
+	match := reLdflags.FindStringSubmatch(input)
+	if len(match) == 0 {
+		return ""
+	}
+	val := match[1]
+	if val == "" {
+		val = match[2]
+	}
+	if val == "" {
+		val = match[3]
+	}
+	val = strings.ReplaceAll(val, `\"`, `"`)
+	return val
 }

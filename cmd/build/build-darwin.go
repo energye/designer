@@ -23,7 +23,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -76,21 +75,10 @@ func buildDarwin() bool {
 	}
 	// 编译参数
 	buildArgs := option.GoArgs
-	buildArgs = strings.ReplaceAll(buildArgs, "'", "\"")
-	reTags := regexp.MustCompile(`-tags\s+([^\s-]+)`)
-	reLdflags := regexp.MustCompile(`-ldflags\s+"([^"]+)"`)
 	// 提取 tags
-	tagMatches := reTags.FindStringSubmatch(buildArgs)
-	customTags := ""
-	customLdflags := ""
-	if len(tagMatches) > 1 {
-		customTags = tagMatches[1]
-	}
+	customTags := ExtractTags(buildArgs)
 	// 提取 ldflags
-	ldMatches := reLdflags.FindStringSubmatch(buildArgs)
-	if len(ldMatches) > 1 {
-		customLdflags = ldMatches[1]
-	}
+	customLdflags := ExtractLdflags(buildArgs)
 	buildMode := "dev"
 	if option.BuildModeRelease {
 		buildMode = "prod"
