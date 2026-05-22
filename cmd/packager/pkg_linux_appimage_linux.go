@@ -31,39 +31,8 @@ import (
 	"strings"
 )
 
-//go:embed gtk-bundle.sh
-var gtkBundleScript []byte
-
-// configGTKVersion 根据项目配置获取 GTK 版本和依赖信息
-// 返回: gtkVersion, webkitVersion
-// gtkVersion: "2" 或 "3"
-// webkitVersion: "" (不需要), "4.0", "4.1"
-func configGTKVersion() (string, string) {
-	proj := bean.GProject
-	option := proj.BuildOption
-
-	gtkVersion := "3"
-	webkitVersion := ""
-
-	if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_LCL) {
-		if !option.UIGtk3 {
-			gtkVersion = "2"
-		}
-	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
-		// WV 框架需要 WebKit
-		if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
-			webkitVersion = "4.1"
-		} else if option.BuildCGOEnabled {
-			webkitVersion = "4.0"
-		} else {
-			// 非 CGO 默认 4.1
-			webkitVersion = "4.1"
-		}
-	}
-	// CEF 框架只需要 GTK3，不需要 WebKit
-
-	return gtkVersion, webkitVersion
-}
+//go:embed linuxdeploy-plugin-gtk.sh
+var gtkPluginScript []byte
 
 // downloadLinuxdeploy 下载 linuxdeploy 工具
 func downloadLinuxdeploy(arch, buildDir string) (string, error) {
@@ -100,18 +69,6 @@ func downloadAppRun(arch, appDir string) error {
 		return fmt.Errorf("download AppRun failed: %s\n%s", err, string(output))
 	}
 	return os.Chmod(path, 0755)
-}
-
-// writeGTKBundleScript 写入 GTK 打包脚本
-func writeGTKBundleScript(buildDir string) (string, error) {
-	path := filepath.Join(buildDir, "gtk-bundle.sh")
-	if tool.IsExist(path) {
-		return path, nil
-	}
-	if err := os.WriteFile(path, gtkBundleScript, 0755); err != nil {
-		return "", err
-	}
-	return path, nil
 }
 
 // appImage 构建 AppImage 包
@@ -152,7 +109,7 @@ func (m *Package) appImage() bool {
 	// 创建目录
 	appDir := filepath.Join(output, option.PackageName+".AppDir")
 	buildDir := filepath.Join(output, ".appimage-build")
-	defer os.RemoveAll(buildDir)
+	//defer os.RemoveAll(buildDir)
 
 	for _, dir := range []string{
 		filepath.Join(appDir, "usr", "bin"),
@@ -230,30 +187,25 @@ func (m *Package) appImage() bool {
 		return false
 	}
 
-	// 获取 GTK 版本和依赖信息
-	gtkVersion, webkitVersion := configGTKVersion()
-	event.ConsoleWriteInfo("Package - AppImage: GTK version", gtkVersion, "WebKit version", webkitVersion)
-
-	// 写入 GTK 打包脚本
-	gtkScriptPath, err := writeGTKBundleScript(buildDir)
-	if err != nil {
-		event.ConsoleWriteError("Package - AppImage: write GTK script failed:", err.Error())
+	// 写出 GTK 插件脚本
+	pluginPath := filepath.Join(buildDir, "linuxdeploy-plugin-gtk.sh")
+	if err := os.WriteFile(pluginPath, gtkPluginScript, 0755); err != nil {
+		event.ConsoleWriteError("Package - AppImage: write GTK plugin failed:", err.Error())
 		return false
 	}
 
-	// 运行 GTK 打包脚本
-	event.ConsoleWriteInfo("Package - AppImage: running GTK bundle script...")
-	gtkCmd := exec.Command(gtkScriptPath, appDir, gtkVersion, webkitVersion)
-	gtkCmd.Env = append(os.Environ(), "LINUXDEPLOY="+linuxdeployPath)
-	gtkOutput, err := gtkCmd.CombinedOutput()
-	if err != nil {
-		event.ConsoleWriteError("Package - AppImage: GTK bundle failed:", err.Error())
-		event.ConsoleWriteError("Output:", string(gtkOutput))
-		return false
-	}
-	event.ConsoleWriteInfo("GTK bundle output:", string(gtkOutput))
+	// 自动检测 GTK 版本
+	gtkVersion, webkitVersion := detectedVersion()
 
-	// 运行 linuxdeploy 生成 AppImage
+	event.ConsoleWriteInfo("Package - AppImage: detected GTK version", gtkVersion, "Webkit2Gtk version", webkitVersion)
+
+	// 检查是否需要禁用 strip
+	needNoStrip := hasRelrDynSections()
+	if needNoStrip {
+		event.ConsoleWriteInfo("Package - AppImage: detected .relr.dyn sections, disabling strip")
+	}
+
+	// 构建输出文件名
 	goarch := lib.GOARCH()
 	debArch := debArchName(goarch)
 	appImageName := fmt.Sprintf("%s_%s_%s.AppImage", option.PackageName, appOption.Version, debArch)
@@ -263,27 +215,96 @@ func (m *Package) appImage() bool {
 	appImagePath := filepath.Join(output, appImageName)
 	_ = os.Remove(appImagePath)
 
-	event.ConsoleWriteInfo("Package - AppImage: building AppImage...")
-	cmd := exec.Command(linuxdeployPath, "--appimage-extract-and-run", "--appdir", appDir, "--output", "appimage")
+	// 准备环境变量（清除插件模式残留，设置 GTK 版本和输出文件名）
+
+	cmdEnv := append(os.Environ(),
+		fmt.Sprintf("DEPLOY_GTK_VERSION=%s", gtkVersion),
+		fmt.Sprintf("OUTPUT=%s", appImageName),
+	)
+	if needNoStrip {
+		cmdEnv = append(cmdEnv, "NO_STRIP=1")
+	}
+
+	// 执行 linuxdeploy（带 GTK 插件，一次性完成依赖部署和打包）
+	event.ConsoleWriteInfo("Package - AppImage: building AppImage with linuxdeploy (GTK plugin)...")
+	cmd := exec.Command(linuxdeployPath, "--appimage-extract-and-run", "--appdir", appDir, "--output", "appimage", "--plugin", "gtk")
 	cmd.Dir = buildDir
-	cmd.Env = append(os.Environ(), "OUTPUT="+appImageName)
-	linuxdeployOutput, err := cmd.CombinedOutput()
+	cmd.Env = cmdEnv
+
+	outputBytes, err := cmd.CombinedOutput()
 	if err != nil {
-		event.ConsoleWriteError("Package - AppImage: build failed:", err.Error())
-		event.ConsoleWriteError("Output:", string(linuxdeployOutput))
+		event.ConsoleWriteError("Package - AppImage: linuxdeploy failed:", err.Error())
+		event.ConsoleWriteError("Output:", string(outputBytes))
 		return false
 	}
 
-	// 移动到输出目录
+	// 移动生成的 AppImage 到输出目录
 	srcAppImage := filepath.Join(buildDir, appImageName)
-	if tool.IsExist(srcAppImage) {
-		if err := os.Rename(srcAppImage, appImagePath); err != nil {
-			event.ConsoleWriteError("Package - AppImage: move failed:", err.Error())
-			return false
-		}
+	if !tool.IsExist(srcAppImage) {
+		event.ConsoleWriteError("Package - AppImage: generated AppImage not found:", srcAppImage)
+		return false
+	}
+	if err := os.Rename(srcAppImage, appImagePath); err != nil {
+		event.ConsoleWriteError("Package - AppImage: move failed:", err.Error())
+		return false
 	}
 
 	_ = os.RemoveAll(appDir)
 	event.ConsoleWriteInfo("Package - AppImage:", appImageName, "created successfully")
 	return true
+}
+
+// detectedVersion 根据项目配置获取 GTK 版本和依赖信息
+// 返回: gtkVersion, webkitVersion
+// gtkVersion: "2" 或 "3"
+// webkitVersion: "" (不需要), "4.0", "4.1"
+func detectedVersion() (string, string) {
+	proj := bean.GProject
+	option := proj.BuildOption
+
+	gtkVersion := "3"
+	webkitVersion := ""
+
+	if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_LCL) {
+		if !option.UIGtk3 {
+			gtkVersion = "2"
+		}
+	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
+		// WV 框架需要 WebKit
+		if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
+			webkitVersion = "4.1"
+		} else if option.BuildCGOEnabled {
+			webkitVersion = "4.0"
+		} else {
+			// 非 CGO 默认 4.1
+			webkitVersion = "4.1"
+		}
+	}
+	// CEF 框架只需要 GTK3，不需要 WebKit
+
+	return gtkVersion, webkitVersion
+}
+
+// hasRelrDynSections 检查系统库是否包含 .relr.dyn 段（现代工具链）
+func hasRelrDynSections() bool {
+	testLibs := []string{
+		"/usr/lib/libgtk-4.so.1",
+		"/usr/lib64/libgtk-4.so.1",
+		"/usr/lib/x86_64-linux-gnu/libgtk-4.so.1",
+		"/usr/lib/aarch64-linux-gnu/libgtk-4.so.1",
+		"/usr/lib/libgtk-3.so.0",
+		"/usr/lib64/libgtk-3.so.0",
+		"/usr/lib/x86_64-linux-gnu/libgtk-3.so.0",
+		"/usr/lib/aarch64-linux-gnu/libgtk-3.so.0",
+	}
+	for _, lib := range testLibs {
+		if _, err := os.Stat(lib); err == nil {
+			cmd := exec.Command("readelf", "-S", lib)
+			output, err := cmd.Output()
+			if err == nil && strings.Contains(string(output), ".relr.dyn") {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -14,6 +14,7 @@
 package main
 
 import (
+	_ "github.com/energye/designer/app"
 	"github.com/energye/designer/codegen"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
