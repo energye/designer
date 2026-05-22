@@ -68,8 +68,8 @@ package {{.Package}}
 
 import (
 	"github.com/energye/energy/v3/application/pack"
+	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
-	"os"
 	"runtime"
 )
 
@@ -84,13 +84,11 @@ var Forms = []lcl.IEngForm{
 }
 
 func init() {
-	if {{.CheckLinuxWSGTK3}} {
-		// for linux
-		os.Setenv("--ws", "gtk3")
+	if runtime.GOOS == "linux" {
+		libname.UseWS = "{{.LinuxWS}}"
 	}
 	if runtime.GOOS == "darwin" {
-		// macOS universal-binary
-		{{ if not .BuildOption.MacCommonLib }}// {{ end }}os.Setenv("--universal-binary", "universal")
+		libname.EnableUniversalBinary = {{.BuildOption.MacCommonLib}}
 	}
 }
 `

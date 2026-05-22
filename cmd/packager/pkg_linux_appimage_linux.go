@@ -140,7 +140,7 @@ func (m *Package) appImage() bool {
 	}
 
 	// 处理使用的 libenergy.so 运行时库, lib.GetDLLName()
-	defer env.Delete("--ws") // 删除环境变量 --ws
+	defer env.Delete("ENERGY_WS") // 删除环境变量 ENERGY_WS
 	choiceLibEnergySOWS()
 
 	// 创建 AppDir 目录结构

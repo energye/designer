@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/options"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/preview"
 	_ "github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/frameworks"
@@ -64,8 +65,12 @@ func main() {
 }
 
 func init() {
-	os.Setenv("--ws", "gtk3") // for linux
-
+	if tool.IsLinux {
+		libname.UseWS = "gtk3"
+	}
+	if tool.IsDarwin {
+		// libname.EnableUniversalBinary = true
+	}
 	// 初始化Go环境变量, macOS linux
 	config.InitGoEnv()
 	// 初始化事件系统
@@ -94,6 +99,5 @@ func init() {
 			os.Setenv("CGO_CFLAGS", "-mmacosx-version-min=11.0")
 			os.Setenv("CGO_LDFLAGS", "-mmacosx-version-min=11.0")
 		}
-		// os.Setenv("--universal-binary", "universal")
 	}
 }

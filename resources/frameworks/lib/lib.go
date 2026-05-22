@@ -24,7 +24,6 @@ import (
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/tool/command"
-	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -169,12 +168,12 @@ func GetDLLName() string {
 		ext = "dylib"
 	case "linux":
 		ext = "so"
-		envws := env.Get("--ws")
+		envws := env.Get("ENERGY_WS")
 		if envws == "" {
-			envws = os.Getenv("--ws")
+			envws = libname.UseWS
 		}
-		if envws != "" {
-			ws = envws // use gtk3
+		if envws == "gtk3" {
+			ws = "gtk3"
 		} else {
 			ws = "gtk2"
 		}

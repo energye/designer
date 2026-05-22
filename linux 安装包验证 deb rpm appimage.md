@@ -1,7 +1,8 @@
 
 ---
+
 deb: 展开所有文件
-dpkg -x packagename.deb ./packagename
+dpkg-deb -R packagename.deb ./packagename
 
 ---
 

@@ -64,7 +64,7 @@ func (m *Package) dpkg() bool {
 	}
 
 	// 处理使用的 libenergy.so 运行时库, lib.GetDLLName()
-	defer env.Delete("--ws") // 删除环境变量 --ws
+	defer env.Delete("ENERGY_WS") // 删除环境变量 ENERGY_WS
 	choiceLibEnergySOWS()
 
 	goarch := lib.GOARCH()

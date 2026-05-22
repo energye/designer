@@ -324,6 +324,14 @@ func (m *TProject) CheckLinuxWSGTK3() bool {
 	return false
 }
 
+func (m *TProject) LinuxWS() string {
+	if m.CheckLinuxWSGTK3() {
+		return "gtk3"
+	} else {
+		return "gtk2"
+	}
+}
+
 func init() {
 	CompatibilityOSList.Add(winres.WinVistaAndAbove, "Windows Vista")
 	CompatibilityOSList.Add(winres.Win7AndAbove, "Windows 7")

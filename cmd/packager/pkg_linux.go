@@ -123,9 +123,9 @@ func choiceLibEnergySOWS() {
 		wsGtk = api.WtGTK3
 	}
 	if wsGtk == api.WtGTK3 {
-		env.Put("--ws", "gtk3")
+		env.Put("ENERGY_WS", "gtk3")
 	} else {
-		env.Put("--ws", "gtk2")
+		env.Put("ENERGY_WS", "gtk2")
 	}
 }
 

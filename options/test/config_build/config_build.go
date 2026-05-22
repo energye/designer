@@ -5,7 +5,6 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
-	"os"
 )
 
 func main() {
@@ -22,5 +21,5 @@ func main() {
 }
 
 func init() {
-	os.Setenv("--ws", "gtk3") // for linux
+	libname.UseWS = "gtk3" // for linux
 }
