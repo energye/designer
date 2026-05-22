@@ -18,13 +18,13 @@
     "ui_win32": true,
     "ui_cocoa": true,
     "ui_gtk2": true,
-    "ui_gtk3": false,
+    "ui_gtk3": true,
     "output": "./build",
     "build_file_name": "designer",
     "build_mode_debug": false,
     "build_mode_release": true,
     "build_cgo_enabled": false,
-    "build_other_platform": true,
+    "build_other_platform": false,
     "go_args": "",
     "code_obfuscation": false,
     "disable_debug": false,
@@ -77,9 +77,9 @@
       ]
     },
     "mac_common_lib": false,
-    "linux_deb": true,
+    "linux_deb": false,
     "linux_rpm": false,
-    "depends": ""
+    "linux_app_image": true
   },
   "app_option": {
     "title": "ENERGY Designer",
@@ -129,6 +129,12 @@
         "ls_minimum_system_version": 0
       }
     },
-    "linux": {}
+    "linux": {
+      "categories": "",
+      "homepage": "",
+      "maintainer": "",
+      "license": "",
+      "depends": ""
+    }
   }
 }
