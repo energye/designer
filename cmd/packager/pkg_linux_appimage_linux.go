@@ -32,7 +32,7 @@ import (
 )
 
 //go:embed linuxdeploy-plugin-gtk.sh
-var gtkPluginScript []byte
+var gtkPluginScript []byte // for: https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
 
 // downloadLinuxdeploy 下载 linuxdeploy 工具
 func downloadLinuxdeploy(arch, buildDir string) (string, error) {
