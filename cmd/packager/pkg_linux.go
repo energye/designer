@@ -192,43 +192,6 @@ func linuxAutoDeps() (debDeps, rpmDeps string) {
 	return
 }
 
-// linuxAppImageDeps 返回 AppImage 需要打包的 .so 文件名列表
-// 逻辑与 linuxAutoDeps 一致，但返回具体 .so 名称而非依赖声明
-func linuxAppImageDeps() []string {
-	proj := bean.GProject
-	option := proj.BuildOption
-	gtk3 := false
-	webkit := false
-
-	if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_LCL) {
-		if option.UIGtk3 {
-			gtk3 = true
-		}
-	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
-		gtk3 = true
-		webkit = true
-	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_CEF) {
-		gtk3 = true
-	}
-
-	var deps []string
-	if gtk3 {
-		deps = append(deps, "libgtk-3.so.0", "libglib-2.0.so.0")
-		if webkit {
-			if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
-				deps = append(deps, "libwebkit2gtk-4.1.so.0")
-			} else if option.BuildCGOEnabled {
-				deps = append(deps, "libwebkit2gtk-4.0.so.37")
-			} else {
-				deps = append(deps, "libwebkit2gtk-4.1.so.0", "libwebkit2gtk-4.0.so.37")
-			}
-		}
-	} else {
-		deps = append(deps, "libgtk-2.0.so.0")
-	}
-	return deps
-}
-
 // linuxUserOverrideWebKit 检测用户是否指定了 webkit2gtk 4.0，调整依赖顺序
 // 非 CGO 模式下，如果用户在 Depends 里指定了 4.0，将优先级调整为用户的版本
 func linuxUserOverrideWebKit(debDeps, rpmDeps, userDeps string) (string, string) {
