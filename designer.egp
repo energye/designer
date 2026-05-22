@@ -3,7 +3,7 @@
   "egp_name": "designer.egp",
   "package": "designer",
   "main": "main.go",
-  "gui_render_framework": "LCL",
+  "gui_render_framework": "WV",
   "ui_forms": null,
   "active_ui_form": 0,
   "build_option": {
