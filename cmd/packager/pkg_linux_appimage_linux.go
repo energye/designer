@@ -31,8 +31,15 @@ import (
 	"strings"
 )
 
+// https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
+//
+//	fix: im-ibus.so load fail.
+//	 "cat >> "$HOOKFILE" <<EOF
+//	 export LD_LIBRARY_PATH="\$APPDIR//usr/lib:\$LD_LIBRARY_PATH"
+//	 EOF"
+//
 //go:embed linuxdeploy-plugin-gtk.sh
-var gtkPluginScript []byte // for: https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
+var gtkPluginScript []byte
 
 // downloadLinuxdeploy 下载 linuxdeploy 工具
 func downloadLinuxdeploy(arch, buildDir string) (string, error) {
