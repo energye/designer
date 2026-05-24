@@ -24,11 +24,13 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/tool/command"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 // https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
@@ -41,41 +43,135 @@ import (
 //go:embed linuxdeploy-plugin-gtk.sh
 var gtkPluginScript []byte
 
-// downloadLinuxdeploy 下载 linuxdeploy 工具
-func downloadLinuxdeploy(arch, buildDir string) (string, error) {
-	path := filepath.Join(buildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
-	if tool.IsExist(path) {
-		return path, nil
-	}
+// downloadAppImageBuildTool 下载并准备 AppImage 构建工具
+//
+// 该函数负责下载和配置构建 AppImage 包所需的三个关键组件：
+// 1. linuxdeploy AppImage 工具（用于打包）
+// 2. AppRun 运行时文件（AppImage 的启动入口）
+// 3. GTK 插件脚本（用于支持 GTK 应用）
+//
+// 如果文件已存在则跳过下载，避免重复操作。
+//
+// 返回值:
+//   - linuxdeploy: linuxdeploy AppImage 工具的完整路径
+//   - appRun: AppRun 运行时文件的完整路径
+//   - err: 错误信息，如果任何步骤失败则返回错误
+func downloadAppImageBuildTool() (buildDir, linuxdeploy, appRun string, err error) {
+	buildDir = filepath.Join(config.Config.FrameworkDir, "appimage-build")
+	_ = os.MkdirAll(buildDir, 0755)
 
-	url := fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch)
-	event.ConsoleWriteInfo("Package - AppImage: downloading linuxdeploy...")
+	arch := platformArch()
 
-	cmd := exec.Command("curl", "-L", "-o", path, url)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return "", fmt.Errorf("download linuxdeploy failed: %s\n%s", err, string(output))
-	}
-	if err := os.Chmod(path, 0755); err != nil {
-		return "", err
-	}
-	return path, nil
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		path := filepath.Join(buildDir, fmt.Sprintf("linuxdeploy-%s.AppImage", arch))
+		if !tool.IsExist(path) {
+			url := fmt.Sprintf("https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-%s.AppImage", arch)
+			event.ConsoleWriteInfo("Package - AppImage downloading linuxdeploy...")
+			err = tool.Download(url, path)
+			if err != nil {
+				event.ConsoleWriteInfo("Package - AppImage downloading linuxdeploy failed:", err.Error())
+				goto done
+			}
+			err = os.Chmod(path, 0755)
+			if err != nil {
+				event.ConsoleWriteInfo("Package - AppImage downloading linuxdeploy . chmod execution permission failed:", err.Error())
+				goto done
+			}
+		}
+		linuxdeploy = path
+	done:
+		wg.Done()
+	}()
+	go func() {
+		appRunName := fmt.Sprintf("AppRun-%s", arch)
+		path := filepath.Join(buildDir, fmt.Sprintf("AppRun-%s", arch))
+		if !tool.IsExist(path) {
+			url := fmt.Sprintf("https://github.com/AppImage/AppImageKit/releases/download/continuous/%s", appRunName)
+			event.ConsoleWriteInfo("Package - AppImage downloading", appRunName+"...")
+			err = tool.Download(url, path)
+			if err != nil {
+				event.ConsoleWriteInfo("Package - AppImage downloading", appRunName, " failed:", err.Error())
+				goto done
+			}
+			err = os.Chmod(path, 0755)
+			if err != nil {
+				event.ConsoleWriteInfo("Package - AppImage downloading", appRunName, ". chmod execution permission failed:", err.Error())
+				goto done
+			}
+		}
+		appRun = path
+	done:
+		wg.Done()
+	}()
+	pluginPath := filepath.Join(buildDir, "linuxdeploy-plugin-gtk.sh")
+	err = os.WriteFile(pluginPath, gtkPluginScript, 0755)
+	wg.Wait()
+	return
 }
 
-// downloadAppRun 下载 AppRun
-func downloadAppRun(arch, appDir string) error {
-	path := filepath.Join(appDir, "AppRun")
-	if tool.IsExist(path) {
+// appImageWebkit2GtkDeps 获取 AppImage 打包所需的 WebKit2GTK 依赖库列表
+//
+// 该函数用于收集构建 AppImage 包时需要的 WebKit2GTK 相关动态库依赖，
+// 包括 webkit2gtk-4.0 和 webkit2gtk-4.1 两个版本。
+// 通过 findDeps 函数自动查找这些库的实际安装路径。
+//
+// 返回值:
+//   - []*AppImageDepsInstall: 包含依赖库信息的切片，每个元素包含库名称、库文件目录和完整路径
+func appImageWebkit2GtkDeps(version string) []*AppImageDepsInstall {
+	// /usr/lib/x86_64-linux-gnu/webkit2gtk-4.0/
+	// /usr/lib64/webkit2gtk-4.0/
+	// injected-bundle/libwebkit2gtkinjectedbundle.so
+	// WebKitGPUProcess  WebKitNetworkProcess  WebKitWebProcess
+	webkit2gtk4_x := fmt.Sprintf("webkit2gtk-%s", version)
+	deps := []*AppImageDepsInstall{{Name: webkit2gtk4_x}}
+	findDeps(deps)
+	dep := deps[0]
+	if dep.LibDir == "" {
 		return nil
 	}
+	webkit2gtk := filepath.Join(dep.LibDir, webkit2gtk4_x)
 
-	url := fmt.Sprintf("https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-%s", arch)
-	event.ConsoleWriteInfo("Package - AppImage: downloading AppRun...")
+	deps = append([]*AppImageDepsInstall{}, &AppImageDepsInstall{
+		Name:    "WebKitGPUProcess",
+		LibDir:  webkit2gtk,
+		LibPath: filepath.Join(webkit2gtk, "WebKitGPUProcess"),
+	})
+	deps = append(deps, &AppImageDepsInstall{
+		Name:    "WebKitNetworkProcess",
+		LibDir:  webkit2gtk,
+		LibPath: filepath.Join(webkit2gtk, "WebKitNetworkProcess"),
+	})
+	deps = append(deps, &AppImageDepsInstall{
+		Name:    "WebKitWebProcess",
+		LibDir:  webkit2gtk,
+		LibPath: filepath.Join(webkit2gtk, "WebKitWebProcess"),
+	})
+	deps = append(deps, &AppImageDepsInstall{
+		Name:    "libwebkit2gtkinjectedbundle.so",
+		LibDir:  filepath.Join(webkit2gtk, "injected-bundle"),
+		LibPath: filepath.Join(webkit2gtk, "injected-bundle/libwebkit2gtkinjectedbundle.so"),
+	})
+	return deps
+}
 
-	cmd := exec.Command("curl", "-L", "-o", path, url)
-	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("download AppRun failed: %s\n%s", err, string(output))
+// appImageDeps 获取 AppImage 打包所需的基础依赖库列表
+//
+// 该函数用于收集构建 AppImage 包时需要的基础动态库依赖，
+// 通过 findDeps 函数自动查找这些库的实际安装路径。
+//
+// 返回值:
+//   - []*AppImageDepsInstall: 包含依赖库信息的切片，每个元素包含库名称、库文件目录和完整路径
+func appImageDeps() []*AppImageDepsInstall {
+	deps := []*AppImageDepsInstall{
+		{Name: "libGLESv2"},
+		{Name: "libharfbuzz-gobject"},
+		{Name: "libGL"},
 	}
-	return os.Chmod(path, 0755)
+	findDeps(deps)
+	return deps
 }
 
 // appImage 构建 AppImage 包
@@ -85,13 +181,12 @@ func (m *Package) appImage() bool {
 	// AppImage 不支持跨架构构建
 	targetArch := lib.GOARCH()
 	if runtime.GOARCH != targetArch {
-		event.ConsoleWriteWarn("Package - AppImage: skipped, cross-architecture build is not supported. Current:", runtime.GOARCH, ", Target:", targetArch)
+		event.ConsoleWriteWarn("Package - AppImage skipped, cross-architecture build is not supported. Current:", runtime.GOARCH, ", Target:", targetArch)
 		return true
 	}
 
-	// 检查必要工具
-	if !checkToolCMD("curl") {
-		event.ConsoleWriteError("Package - AppImage: curl not found")
+	buildDir, linuxdeployPath, appRunPath, err := downloadAppImageBuildTool()
+	if err != nil {
 		return false
 	}
 
@@ -104,66 +199,63 @@ func (m *Package) appImage() bool {
 	}
 
 	// 处理 libenergy.so 运行时库
-	defer env.Delete("ENERGY_WS")
 	choiceLibEnergySOWS()
+	defer env.Delete("ENERGY_WS")
 
-	// 架构
-	arch := "x86_64"
-	if runtime.GOARCH == "arm64" {
-		arch = "aarch64"
-	}
-
-	// 创建目录
+	// 创建 app dir 目录
 	appDir := filepath.Join(output, option.PackageName+".AppDir")
-	buildDir := filepath.Join(output, ".appimage-build")
-	//defer os.RemoveAll(buildDir)
-
 	for _, dir := range []string{
 		filepath.Join(appDir, "usr", "bin"),
 		filepath.Join(appDir, "usr", "lib"),
-		buildDir,
 	} {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			event.ConsoleWriteError("Package - AppImage: mkdir failed:", err.Error())
+		if err = os.MkdirAll(dir, 0755); err != nil {
+			event.ConsoleWriteError("Package - AppImage mkdir failed:", err.Error())
 			return false
 		}
 	}
 
-	// 复制可执行文件
-	srcBin := filepath.Join(output, option.BuildFileName)
-	dstBin := filepath.Join(appDir, "usr", "bin", option.PackageName)
-	if err := tool.CopyFile(srcBin, dstBin); err != nil {
-		event.ConsoleWriteError("Package - AppImage: copy binary failed:", err.Error())
+	defer os.RemoveAll(appDir)
+
+	// 复制 AppRun
+	if err = tool.CopyFile(appRunPath, filepath.Join(appDir, "AppRun")); err != nil {
+		event.ConsoleWriteError("Package - AppImage copy AppRun failed:", err.Error())
 		return false
 	}
-	if err := os.Chmod(dstBin, 0755); err != nil {
-		event.ConsoleWriteError("Package - AppImage: chmod binary failed:", err.Error())
+
+	// 复制可执行文件
+	srcBin := filepath.Join(output, option.BuildFileName)
+	dstBin := filepath.Join(appDir, "usr", "bin", option.BuildFileName)
+	_ = os.Remove(dstBin)
+	if err = tool.CopyFile(srcBin, dstBin); err != nil {
+		event.ConsoleWriteError("Package - AppImage copy binary failed:", err.Error())
+		return false
+	}
+	if err = os.Chmod(dstBin, 0755); err != nil {
+		event.ConsoleWriteError("Package - AppImage chmod binary failed:", err.Error())
 		return false
 	}
 
 	// 复制图标
 	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
 	if tool.IsExist(srcIcon) {
-		dstIcon := filepath.Join(appDir, ".DirIcon")
-		if err := tool.CopyFile(srcIcon, dstIcon); err != nil {
-			event.ConsoleWriteError("Package - AppImage: copy icon failed:", err.Error())
+		dstIcon := filepath.Join(appDir, "icon.png")
+		if err = tool.CopyFile(srcIcon, dstIcon); err != nil {
+			event.ConsoleWriteError("Package - AppImage copy icon failed:", err.Error())
 			return false
 		}
-		iconLink := filepath.Join(appDir, option.PackageName+".png")
-		_ = os.Remove(iconLink)
-		_ = os.Symlink(".DirIcon", iconLink)
 	}
 
-	// 生成 .desktop 文件
-	desktopData := renderDesktopFile(option.PackageName, option.PackageName, option.PackageName,
+	// 生成 .desktop
+	desktopData := renderDesktopFile(proj.Name, option.BuildFileName, "icon",
 		appOption.Desc, option.PackageName, appOption.Linux.Categories)
 	if desktopData == nil {
-		event.ConsoleWriteError("Package - AppImage: render desktop failed")
+		event.ConsoleWriteError("Package - AppImage render desktop failed")
 		return false
 	}
+	// 复制 .desktop
 	desktopPath := filepath.Join(appDir, option.PackageName+".desktop")
-	if err := os.WriteFile(desktopPath, desktopData, 0644); err != nil {
-		event.ConsoleWriteError("Package - AppImage: write desktop failed:", err.Error())
+	if err = os.WriteFile(desktopPath, desktopData, 0644); err != nil {
+		event.ConsoleWriteError("Package - AppImage write desktop failed:", err.Error())
 		return false
 	}
 
@@ -172,45 +264,44 @@ func (m *Package) appImage() bool {
 	dstLibName := packageLibName()
 	srcLib := filepath.Join(config.Config.FrameworkRuntimePath(), srcLibName)
 	if !tool.IsExist(srcLib) {
-		event.ConsoleWriteError("Package - AppImage: runtime library not found:", srcLib)
+		event.ConsoleWriteError("Package - AppImage runtime library not found:", srcLib)
 		return false
 	}
 	dstLib := filepath.Join(appDir, "usr", "lib", dstLibName)
-	if err := tool.CopyFile(srcLib, dstLib); err != nil {
-		event.ConsoleWriteError("Package - AppImage: copy libenergy failed:", err.Error())
+	if err = tool.CopyFile(srcLib, dstLib); err != nil {
+		event.ConsoleWriteError("Package - AppImage copy libenergy failed:", err.Error())
 		return false
 	}
 
-	// 下载 linuxdeploy
-	linuxdeployPath, err := downloadLinuxdeploy(arch, buildDir)
-	if err != nil {
-		event.ConsoleWriteError("Package - AppImage:", err.Error())
-		return false
-	}
-
-	// 下载 AppRun
-	if err := downloadAppRun(arch, appDir); err != nil {
-		event.ConsoleWriteError("Package - AppImage:", err.Error())
-		return false
-	}
-
-	// 写出 GTK 插件脚本
-	pluginPath := filepath.Join(buildDir, "linuxdeploy-plugin-gtk.sh")
-	if err := os.WriteFile(pluginPath, gtkPluginScript, 0755); err != nil {
-		event.ConsoleWriteError("Package - AppImage: write GTK plugin failed:", err.Error())
-		return false
-	}
-
-	// 自动检测 GTK 版本
+	// 检测版本
 	gtkVersion, webkitVersion := detectedVersion()
 
-	event.ConsoleWriteInfo("Package - AppImage: detected GTK version", gtkVersion, "Webkit2Gtk version", webkitVersion)
-
-	// 检查是否需要禁用 strip
-	needNoStrip := hasRelrDynSections()
-	if needNoStrip {
-		event.ConsoleWriteInfo("Package - AppImage: detected .relr.dyn sections, disabling strip")
+	// 使用 webkit2gtk
+	if webkitVersion != "" {
+		// 复制 webkit2gtk 运行时库
+		wvDeps := appImageWebkit2GtkDeps(webkitVersion)
+		// webkit2gtk 有 4.0 和 4.1, 根据 webkitVersion 选择
+		if wvDeps == nil {
+			event.ConsoleWriteError("Package - AppImage copy webkit2gtk runtime not found", webkitVersion)
+			return false
+		}
+		for _, wvDep := range wvDeps {
+			if err = tool.CopyFile(wvDep.LibPath, filepath.Join(appDir, wvDep.LibPath)); err != nil {
+				event.ConsoleWriteError("Package - AppImage copy webkit2gtk runtime failed:", err.Error())
+				return false
+			}
+		}
 	}
+	// 复制其他依赖库
+	othDeps := appImageDeps()
+	for _, dep := range othDeps {
+		if err = tool.CopyFile(dep.LibPath, filepath.Join(appDir, dep.LibPath)); err != nil {
+			event.ConsoleWriteError("Package - AppImage copy dep runtime failed:", err.Error())
+			return false
+		}
+	}
+
+	event.ConsoleWriteInfo("Package - AppImage detected GTK-v:", gtkVersion, "webkit2gtk-v:", webkitVersion)
 
 	// 构建输出文件名
 	goarch := lib.GOARCH()
@@ -222,49 +313,33 @@ func (m *Package) appImage() bool {
 	appImagePath := filepath.Join(output, appImageName)
 	_ = os.Remove(appImagePath)
 
-	// 准备环境变量（清除插件模式残留，设置 GTK 版本和输出文件名）
-
-	cmdEnv := append(os.Environ(),
-		fmt.Sprintf("DEPLOY_GTK_VERSION=%s", gtkVersion),
-		fmt.Sprintf("OUTPUT=%s", appImageName),
-	)
-	if needNoStrip {
-		cmdEnv = append(cmdEnv, "NO_STRIP=1")
-	}
-
 	// 执行 linuxdeploy（带 GTK 插件，一次性完成依赖部署和打包）
-	event.ConsoleWriteInfo("Package - AppImage: building AppImage with linuxdeploy (GTK plugin)...")
-	cmd := exec.Command(linuxdeployPath, "--appimage-extract-and-run", "--appdir", appDir, "--output", "appimage", "--plugin", "gtk")
+	event.ConsoleWriteInfo("Package - AppImage building AppImage with linuxdeploy...")
+
+	cmd := command.NewCMD()
+	cmd.IsPrint = false
+	cmd.HideWindow = true
 	cmd.Dir = buildDir
-	cmd.Env = cmdEnv
-
-	outputBytes, err := cmd.CombinedOutput()
-	if err != nil {
-		event.ConsoleWriteError("Package - AppImage: linuxdeploy failed:", err.Error())
-		event.ConsoleWriteError("Output:", string(outputBytes))
-		return false
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
 	}
-
-	// 移动生成的 AppImage 到输出目录
-	srcAppImage := filepath.Join(buildDir, appImageName)
-	if !tool.IsExist(srcAppImage) {
-		event.ConsoleWriteError("Package - AppImage: generated AppImage not found:", srcAppImage)
-		return false
+	cmd.BeforeRun = func(cmd *exec.Cmd) {
+		cmdEnv := append(os.Environ(),
+			fmt.Sprintf("DEPLOY_GTK_VERSION=%s", gtkVersion),
+			fmt.Sprintf("OUTPUT=%s", appImagePath),
+		)
+		cmd.Env = cmdEnv
 	}
-	if err := os.Rename(srcAppImage, appImagePath); err != nil {
-		event.ConsoleWriteError("Package - AppImage: move failed:", err.Error())
-		return false
-	}
+	cmd.Command(linuxdeployPath, "--appimage-extract-and-run", "--appdir", appDir, "--output", "appimage", "--plugin", "gtk")
 
-	_ = os.RemoveAll(appDir)
-	event.ConsoleWriteInfo("Package - AppImage:", appImageName, "created successfully")
+	event.ConsoleWriteInfo("Package - AppImage", appImageName, "end")
 	return true
 }
 
 // detectedVersion 根据项目配置获取 GTK 版本和依赖信息
 // 返回: gtkVersion, webkitVersion
 // gtkVersion: "2" 或 "3"
-// webkitVersion: "" (不需要), "4.0", "4.1"
+// webkitVersion: "4.0", "4.1"
 func detectedVersion() (string, string) {
 	proj := bean.GProject
 	option := proj.BuildOption
@@ -277,41 +352,28 @@ func detectedVersion() (string, string) {
 			gtkVersion = "2"
 		}
 	} else if tool.Equal(proj.GUIRenderFramework, bean.GUIRenderFramework_WV) {
-		// WV 框架需要 WebKit
+		// webkit2gtk
 		if option.BuildCGOEnabled && strings.Contains(option.GoArgs, "webkit2_4_1") {
 			webkitVersion = "4.1"
 		} else if option.BuildCGOEnabled {
 			webkitVersion = "4.0"
 		} else {
-			// 非 CGO 默认 4.1
-			webkitVersion = "4.1"
-		}
-	}
-	// CEF 框架只需要 GTK3，不需要 WebKit
-
-	return gtkVersion, webkitVersion
-}
-
-// hasRelrDynSections 检查系统库是否包含 .relr.dyn 段（现代工具链）
-func hasRelrDynSections() bool {
-	testLibs := []string{
-		"/usr/lib/libgtk-4.so.1",
-		"/usr/lib64/libgtk-4.so.1",
-		"/usr/lib/x86_64-linux-gnu/libgtk-4.so.1",
-		"/usr/lib/aarch64-linux-gnu/libgtk-4.so.1",
-		"/usr/lib/libgtk-3.so.0",
-		"/usr/lib64/libgtk-3.so.0",
-		"/usr/lib/x86_64-linux-gnu/libgtk-3.so.0",
-		"/usr/lib/aarch64-linux-gnu/libgtk-3.so.0",
-	}
-	for _, lib := range testLibs {
-		if _, err := os.Stat(lib); err == nil {
-			cmd := exec.Command("readelf", "-S", lib)
-			output, err := cmd.Output()
-			if err == nil && strings.Contains(string(output), ".relr.dyn") {
-				return true
+			// 非 CGO 从系统检测以安装的 webkit2gtk, 优先 4.1 > 4.0
+			deps := []*AppImageDepsInstall{
+				{Name: "webkit2gtk-4.1"},
+				{Name: "webkit2gtk-4.0"},
+			}
+			findDeps(deps)
+			for _, dep := range deps {
+				if strings.Contains(dep.LibPath, "webkit2gtk-4.1") {
+					webkitVersion = "4.1"
+					break // 优先 4.1
+				} else if strings.Contains(dep.LibPath, "webkit2gtk-4.0") {
+					webkitVersion = "4.0"
+				}
 			}
 		}
 	}
-	return false
+	// CEF 框架只需要 GTK3，不需要 WebKit
+	return gtkVersion, webkitVersion
 }

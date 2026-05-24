@@ -23,7 +23,10 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/api"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -206,4 +209,83 @@ func linuxUserOverrideWebKit(debDeps, rpmDeps, userDeps string) (string, string)
 	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-4.0.so.37", "libwebkit2gtk-4.1.so.0")
 	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-__TMP_A__", "libwebkit2gtk-4.0.so.37")
 	return debDeps, rpmDeps
+}
+
+type AppImageDepsInstall struct {
+	Name    string // 库名称
+	LibDir  string // 库文件所在目录，如 /usr/lib/x86_64-linux-gnu
+	LibPath string // 库文件路径
+}
+
+func findDeps(deps []*AppImageDepsInstall) {
+	// 再次尝试从常规目录获取
+	for _, dep := range deps {
+		if dep.LibDir == "" {
+			// 为空时尝试从常规目录获取
+			findByCommonPaths(dep)
+		}
+	}
+}
+
+func findByCommonPaths(dep *AppImageDepsInstall) bool {
+	possiblePaths := []string{
+		"/usr/lib",
+		"/usr/lib64",
+	}
+	// 尝试从 uname -m 构造搜索目录
+	if arch := platformArch(); arch != "" {
+		possiblePaths = append(possiblePaths, "/usr/lib/"+arch+"-linux-gnu")
+	}
+	for _, libDir := range possiblePaths {
+		if libPath := filepath.Join(libDir, dep.Name+".so"); tool.IsExist(libPath) {
+			dep.LibDir = libDir
+			dep.LibPath = libPath
+			return true
+		} else if libPath := filepath.Join(libDir, "lib"+dep.Name+".so"); tool.IsExist(libPath) {
+			dep.LibDir = libDir
+			dep.LibPath = libPath
+			return true
+		}
+	}
+	return false
+}
+
+func findFiles(deps []*AppImageDepsInstall) error {
+	err := filepath.Walk("/usr/", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			if os.IsPermission(err) {
+				return nil
+			}
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		for _, dep := range deps {
+			if strings.Contains(path, dep.Name) {
+				dep.LibPath = path
+				dep.LibDir = filepath.Dir(path)
+				break
+			}
+		}
+		return nil
+	})
+	return err
+}
+
+func platformArch() string {
+	archs := map[string]string{
+		"arm64":   "aarch64",
+		"aarch64": "aarch64",
+		"amd64":   "x86_64",
+		"x86_64":  "x86_64",
+		"386":     "i686",
+		"i386":    "i686",
+		"i686":    "i686",
+		"armhf":   "armhf",
+		"arm":     "armhf",
+		"arm32":   "armhf",
+	}
+	arch := archs[runtime.GOARCH]
+	return arch
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -293,6 +294,24 @@ func ContainsStrings(strs []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func Download(url string, target string) error {
+	resp, e := http.Get(url)
+	if e != nil {
+		return e
+	}
+	defer resp.Body.Close()
+	out, e := os.Create(target)
+	if e != nil {
+		return e
+	}
+	defer out.Close()
+	_, e = io.Copy(out, resp.Body)
+	if e != nil {
+		return e
+	}
+	return nil
 }
 
 //// DirPermissions 结构体用于存储目录权限检查结果
