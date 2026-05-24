@@ -237,7 +237,11 @@ func findByCommonPaths(dep *AppImageDepsInstall) bool {
 		possiblePaths = append(possiblePaths, "/usr/lib/"+arch+"-linux-gnu")
 	}
 	for _, libDir := range possiblePaths {
-		if libPath := filepath.Join(libDir, dep.Name+".so"); tool.IsExist(libPath) {
+		if libPath := filepath.Join(libDir, dep.Name); tool.IsExist(libPath) {
+			dep.LibDir = libDir
+			dep.LibPath = libPath
+			return true
+		} else if libPath := filepath.Join(libDir, dep.Name+".so"); tool.IsExist(libPath) {
 			dep.LibDir = libDir
 			dep.LibPath = libPath
 			return true

@@ -147,7 +147,11 @@ func buildLinux() bool {
 			cmd.Command("strip", output)
 		}
 	}
-
+	if option.BuildCGOEnabled {
+		env.Put("CGO_ENABLED", "1")
+	} else {
+		env.Put("CGO_ENABLED", "0")
+	}
 	outputFilename := filepath.Join(output, buildBinFileName(option))
 	runGoBuild(env.ToEnviron(), outputFilename)
 

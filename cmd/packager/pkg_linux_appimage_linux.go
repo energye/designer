@@ -132,9 +132,11 @@ func appImageWebkit2GtkDeps(version string) []*AppImageDepsInstall {
 	if dep.LibDir == "" {
 		return nil
 	}
+
 	webkit2gtk := filepath.Join(dep.LibDir, webkit2gtk4_x)
 
-	deps = append([]*AppImageDepsInstall{}, &AppImageDepsInstall{
+	deps = []*AppImageDepsInstall{}
+	deps = append(deps, &AppImageDepsInstall{
 		Name:    "WebKitGPUProcess",
 		LibDir:  webkit2gtk,
 		LibPath: filepath.Join(webkit2gtk, "WebKitGPUProcess"),
@@ -166,9 +168,9 @@ func appImageWebkit2GtkDeps(version string) []*AppImageDepsInstall {
 //   - []*AppImageDepsInstall: 包含依赖库信息的切片，每个元素包含库名称、库文件目录和完整路径
 func appImageDeps() []*AppImageDepsInstall {
 	deps := []*AppImageDepsInstall{
-		{Name: "libGLESv2"},
-		{Name: "libharfbuzz-gobject"},
-		{Name: "libGL"},
+		{Name: "libGLESv2.so.2"},
+		{Name: "libharfbuzz-gobject.so.0"},
+		{Name: "libGL.so.1"},
 	}
 	findDeps(deps)
 	return deps
@@ -330,7 +332,12 @@ func (m *Package) appImage() bool {
 		)
 		cmd.Env = cmdEnv
 	}
-	cmd.Command(linuxdeployPath, "--appimage-extract-and-run", "--appdir", appDir, "--output", "appimage", "--plugin", "gtk")
+	cmd.Command(linuxdeployPath, "--appimage-extract-and-run",
+		"--appdir", appDir,
+		"--executable", filepath.Join(appDir, "usr", "bin", option.BuildFileName),
+		"--desktop-file", filepath.Join(appDir, option.PackageName+".desktop"),
+		"--icon-file", filepath.Join(appDir, "icon.png"),
+		"--plugin", "gtk", "--output", "appimage")
 
 	event.ConsoleWriteInfo("Package - AppImage", appImageName, "end")
 	return true

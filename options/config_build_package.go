@@ -35,16 +35,18 @@ func configBuildPackage() {
 		defer env.Clear()
 
 		// 当项目配置为禁用 CGO 且启用了跨平台构建时，执行当前系统其他架构编译
-		isBuildOtherPlatform := !bean.GProject.BuildOption.BuildCGOEnabled && bean.GProject.BuildOption.BuildOtherPlatform
-
+		cgoEnabled := bean.GProject.BuildOption.BuildCGOEnabled
+		//buildOtherPlatform := bean.GProject.BuildOption.BuildOtherPlatform
 		for _, arch := range envs {
 			env.Put("GOARCH", arch)
 			env.Put("GOOS", runtime.GOOS)
-			if isBuildOtherPlatform {
+			if cgoEnabled {
+				env.Put("CGO_ENABLED", "1")
+			} else {
 				env.Put("CGO_ENABLED", "0")
 			}
-			if runtime.GOOS == "linux" && !isBuildOtherPlatform && runtime.GOARCH != arch {
-				// linux 启用 CGO 并且未启用跨平台构建时, 并且架构和打包目标架构不同 忽略其他架构
+			if runtime.GOOS == "linux" && cgoEnabled && runtime.GOARCH != arch {
+				// linux 启用 CGO 并且未启用跨平台构建时, 当前架构和目标架构不同 忽略其他架构
 				event.ConsoleWriteWarn("Build and Package - Linux CGO=ENABLED or Platform=false skip-arch:", arch, "current-arch:", runtime.GOARCH)
 				continue
 			}
