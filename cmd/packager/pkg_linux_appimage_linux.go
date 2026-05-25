@@ -35,28 +35,17 @@ import (
 
 // https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
 //
-//	fix: im-ibus.so load fail.
-//	 "cat >> "$HOOKFILE" <<EOF
-//	 export LD_LIBRARY_PATH="\$APPDIR//usr/lib:\$LD_LIBRARY_PATH"
-//	 EOF"
+//		fix: im-ibus.so load fail.
+//		 "cat >> "$HOOKFILE" <<EOF
+//		 export LD_LIBRARY_PATH="\$APPDIR//usr/lib:\$LD_LIBRARY_PATH"
+//		 EOF"
+//
+//	 fix: webkit2gtk subprocess
 //
 //go:embed linuxdeploy-plugin-gtk.sh
-var gtkPluginScript []byte
+var linuxdeployPluginGtkSh []byte
 
-// downloadAppImageBuildTool 下载并准备 AppImage 构建工具
-//
-// 该函数负责下载和配置构建 AppImage 包所需的三个关键组件：
-// 1. linuxdeploy AppImage 工具（用于打包）
-// 2. AppRun 运行时文件（AppImage 的启动入口）
-// 3. GTK 插件脚本（用于支持 GTK 应用）
-//
-// 如果文件已存在则跳过下载，避免重复操作。
-//
-// 返回值:
-//   - linuxdeploy: linuxdeploy AppImage 工具的完整路径
-//   - appRun: AppRun 运行时文件的完整路径
-//   - err: 错误信息，如果任何步骤失败则返回错误
-func downloadAppImageBuildTool() (buildDir, linuxdeploy, appRun string, err error) {
+func appImageDownloadBuildTool() (buildDir, linuxdeploy, appRun string, err error) {
 	buildDir = filepath.Join(config.Config.FrameworkDir, "appimage-build")
 	_ = os.MkdirAll(buildDir, 0755)
 
@@ -106,56 +95,66 @@ func downloadAppImageBuildTool() (buildDir, linuxdeploy, appRun string, err erro
 	done:
 		wg.Done()
 	}()
-	pluginPath := filepath.Join(buildDir, "linuxdeploy-plugin-gtk.sh")
-	err = os.WriteFile(pluginPath, gtkPluginScript, 0755)
 	wg.Wait()
 	return
 }
 
-// appImageWebkit2GtkDeps 获取 AppImage 打包所需的 WebKit2GTK 依赖库列表
-//
-// 该函数用于收集构建 AppImage 包时需要的 WebKit2GTK 相关动态库依赖，
-// 包括 webkit2gtk-4.0 和 webkit2gtk-4.1 两个版本。
-// 通过 findDeps 函数自动查找这些库的实际安装路径。
-//
-// 返回值:
-//   - []*AppImageDepsInstall: 包含依赖库信息的切片，每个元素包含库名称、库文件目录和完整路径
-func appImageWebkit2GtkDeps(version string) []*AppImageDepsInstall {
+func appImageLinuxdeployPluginGtk(buildDir string, libwebkit2gtkPath string) error {
+	var err error
+	gtkPluginScript := linuxdeployPluginGtkSh
+	data := map[string]string{"HardCodeUpdate": ""}
+	if libwebkit2gtkPath != "" {
+		data["HardCodeUpdate"] = fmt.Sprintf(`sed -i 's|/usr/|././/|g' %s`, libwebkit2gtkPath)
+	}
+	gtkPluginScript, err = RenderTemplate(data, string(gtkPluginScript))
+	if err != nil {
+		return err
+	}
+	pluginPath := filepath.Join(buildDir, "linuxdeploy-plugin-gtk.sh")
+	err = os.WriteFile(pluginPath, gtkPluginScript, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func appImageWebkit2GtkDeps(webkit2gtkDeps []*AppImageDepsInstall) map[string]*AppImageDepsInstall {
 	// /usr/lib/x86_64-linux-gnu/webkit2gtk-4.0/
 	// /usr/lib64/webkit2gtk-4.0/
 	// injected-bundle/libwebkit2gtkinjectedbundle.so
 	// WebKitGPUProcess  WebKitNetworkProcess  WebKitWebProcess
-	webkit2gtk4_x := fmt.Sprintf("webkit2gtk-%s", version)
-	deps := []*AppImageDepsInstall{{Name: webkit2gtk4_x}}
-	findDeps(deps)
-	dep := deps[0]
-	if dep.LibDir == "" {
+	findDeps(webkit2gtkDeps)
+	var dep *AppImageDepsInstall
+	if len(webkit2gtkDeps) > 0 {
+		dep = webkit2gtkDeps[0]
+	}
+	if dep == nil || dep.LibDir == "" {
 		return nil
 	}
 
-	webkit2gtk := filepath.Join(dep.LibDir, webkit2gtk4_x)
+	webkit2gtk := filepath.Join(dep.LibDir, dep.Name)
 
-	deps = []*AppImageDepsInstall{}
-	deps = append(deps, &AppImageDepsInstall{
+	deps := map[string]*AppImageDepsInstall{}
+	deps["WebKitGPUProcess"] = &AppImageDepsInstall{
 		Name:    "WebKitGPUProcess",
 		LibDir:  webkit2gtk,
 		LibPath: filepath.Join(webkit2gtk, "WebKitGPUProcess"),
-	})
-	deps = append(deps, &AppImageDepsInstall{
+	}
+	deps["WebKitNetworkProcess"] = &AppImageDepsInstall{
 		Name:    "WebKitNetworkProcess",
 		LibDir:  webkit2gtk,
 		LibPath: filepath.Join(webkit2gtk, "WebKitNetworkProcess"),
-	})
-	deps = append(deps, &AppImageDepsInstall{
+	}
+	deps["WebKitWebProcess"] = &AppImageDepsInstall{
 		Name:    "WebKitWebProcess",
 		LibDir:  webkit2gtk,
 		LibPath: filepath.Join(webkit2gtk, "WebKitWebProcess"),
-	})
-	deps = append(deps, &AppImageDepsInstall{
+	}
+	deps["libwebkit2gtkinjectedbundle.so"] = &AppImageDepsInstall{
 		Name:    "libwebkit2gtkinjectedbundle.so",
 		LibDir:  filepath.Join(webkit2gtk, "injected-bundle"),
 		LibPath: filepath.Join(webkit2gtk, "injected-bundle/libwebkit2gtkinjectedbundle.so"),
-	})
+	}
 	return deps
 }
 
@@ -187,7 +186,7 @@ func (m *Package) appImage() bool {
 		return true
 	}
 
-	buildDir, linuxdeployPath, appRunPath, err := downloadAppImageBuildTool()
+	buildDir, linuxdeployPath, appRunPath, err := appImageDownloadBuildTool()
 	if err != nil {
 		return false
 	}
@@ -277,23 +276,35 @@ func (m *Package) appImage() bool {
 
 	// 检测版本
 	gtkVersion, webkitVersion := detectedVersion()
-
+	libwebkit2gtkPath := ""
 	// 使用 webkit2gtk
 	if webkitVersion != "" {
 		// 复制 webkit2gtk 运行时库
-		wvDeps := appImageWebkit2GtkDeps(webkitVersion)
+		webkit2gtk4_x := fmt.Sprintf("webkit2gtk-%s", webkitVersion)
+		webkit2gtkDeps := []*AppImageDepsInstall{{Name: webkit2gtk4_x}}
+		wvDepRuntime := appImageWebkit2GtkDeps(webkit2gtkDeps)
 		// webkit2gtk 有 4.0 和 4.1, 根据 webkitVersion 选择
-		if wvDeps == nil {
+		if wvDepRuntime == nil {
 			event.ConsoleWriteError("Package - AppImage copy webkit2gtk runtime not found", webkitVersion)
 			return false
 		}
-		for _, wvDep := range wvDeps {
+		for _, wvDep := range wvDepRuntime {
 			if err = tool.CopyFile(wvDep.LibPath, filepath.Join(appDir, wvDep.LibPath)); err != nil {
 				event.ConsoleWriteError("Package - AppImage copy webkit2gtk runtime failed:", err.Error())
 				return false
 			}
 		}
+		// 处理 LinuxdeployPluginGtk 的脚本
+		libwebkit2gtkinjectedbundleRuntime := wvDepRuntime["libwebkit2gtkinjectedbundle.so"]
+		webkit2gtkList := findLdd(libwebkit2gtkinjectedbundleRuntime.LibPath, webkit2gtk4_x)
+		if webkit2gtkList == nil || len(webkit2gtkList) == 0 {
+			event.ConsoleWriteError("Package - AppImage get webkit2gtk dep list failed:", err.Error())
+			return false
+		}
+		_, libwebkit2gtkName := filepath.Split(webkit2gtkList[0])
+		libwebkit2gtkPath = fmt.Sprintf(`"$APPDIR/usr/lib/%s"`, libwebkit2gtkName)
 	}
+
 	// 复制其他依赖库
 	othDeps := appImageDeps()
 	for _, dep := range othDeps {
@@ -301,6 +312,10 @@ func (m *Package) appImage() bool {
 			event.ConsoleWriteError("Package - AppImage copy dep runtime failed:", err.Error())
 			return false
 		}
+	}
+	if err = appImageLinuxdeployPluginGtk(buildDir, libwebkit2gtkPath); err != nil {
+		event.ConsoleWriteError("Package - AppImage copy LinuxdeployPluginGtk failed:", err.Error())
+		return false
 	}
 
 	event.ConsoleWriteInfo("Package - AppImage detected GTK-v:", gtkVersion, "webkit2gtk-v:", webkitVersion)

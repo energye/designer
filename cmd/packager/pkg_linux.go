@@ -227,6 +227,46 @@ func findDeps(deps []*AppImageDepsInstall) {
 	}
 }
 
+func findLdconfig(name string) []string {
+	cmd := exec.Command("ldconfig", "-p")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+	lines := strings.Split(string(out), "\n")
+	result := make([]string, 0)
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		fields := strings.Fields(line)
+		for _, f := range fields {
+			if strings.HasPrefix(f, "/") && strings.Contains(f, name) {
+				result = append(result, f)
+			}
+		}
+	}
+	return result
+}
+
+func findLdd(libSOPath, name string) []string {
+	cmd := exec.Command("ldd", libSOPath)
+	out, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+	lines := strings.Split(string(out), "\n")
+	result := make([]string, 0)
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		fields := strings.Fields(line)
+		for _, f := range fields {
+			if strings.HasPrefix(f, "/") && strings.Contains(f, name) {
+				result = append(result, f)
+			}
+		}
+	}
+	return result
+}
+
 func findByCommonPaths(dep *AppImageDepsInstall) bool {
 	possiblePaths := []string{
 		"/usr/lib",

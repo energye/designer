@@ -376,3 +376,8 @@ for directory in "${PATCH_ARRAY[@]}"; do
         ln $verbose -sf "${file/$LD_GTK_LIBRARY_PATH\//}" "$APPDIR/usr/lib"
     done < <(find "$directory" -name '*.so' -print0)
 done
+
+# echo "libwebkit2gtk-4.x"
+# strings libwebkit2gtk-4.1.so.0 | grep "/usr/lib"
+{{.HardCodeUpdate}}
+# strings libwebkit2gtk-4.1.so.0 | grep "././/lib"
