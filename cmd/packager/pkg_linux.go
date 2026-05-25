@@ -37,11 +37,6 @@ func (m *Package) platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
-
-	if !build.Run() {
-		return
-	}
-	event.ConsoleWriteInfo("CMD-package-run")
 	if m.packager() {
 		event.ConsoleWriteInfo("Package Successfully")
 	}
@@ -56,16 +51,31 @@ func (m *Package) packager() bool {
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
 	if option.LinuxDEB {
+		if !build.Run() {
+			return false
+		}
 		if !m.dpkg() {
 			return false
 		}
 	}
 	if option.LinuxRPM {
+		if !build.Run() {
+			return false
+		}
 		if !m.rpmbuild() {
 			return false
 		}
 	}
 	if option.LinuxAppImage {
+		// AppImage, must enable CGO
+		oldCGOEnable := option.BuildCGOEnabled
+		defer func() {
+			(&proj.BuildOption).BuildCGOEnabled = oldCGOEnable
+		}()
+		(&proj.BuildOption).BuildCGOEnabled = true
+		if !build.Run() {
+			return false
+		}
 		if !m.appImage() {
 			return false
 		}
