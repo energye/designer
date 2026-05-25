@@ -159,13 +159,6 @@ func appImageWebkit2GtkDeps(webkit2gtkDeps []*AppImageDepsInstall) map[string]*A
 	return deps
 }
 
-// appImageDeps 获取 AppImage 打包所需的基础依赖库列表
-//
-// 该函数用于收集构建 AppImage 包时需要的基础动态库依赖，
-// 通过 findDeps 函数自动查找这些库的实际安装路径。
-//
-// 返回值:
-//   - []*AppImageDepsInstall: 包含依赖库信息的切片，每个元素包含库名称、库文件目录和完整路径
 func appImageDeps() []*AppImageDepsInstall {
 	deps := []*AppImageDepsInstall{
 		{Name: "libGLESv2.so.2"},
