@@ -330,7 +330,6 @@ func (m *Package) appImage() bool {
 	appImagePath := filepath.Join(output, appImageName)
 	_ = os.Remove(appImagePath)
 
-	// 执行 linuxdeploy（带 GTK 插件，一次性完成依赖部署和打包）
 	event.ConsoleWriteInfo("Package - AppImage building AppImage with linuxdeploy...")
 
 	cmd := command.NewCMD()
@@ -338,7 +337,11 @@ func (m *Package) appImage() bool {
 	cmd.HideWindow = true
 	cmd.Dir = buildDir
 	cmd.Console = func(data string, level command.Level) {
-		event.ConsoleWriteInfo(data)
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
 	}
 	cmd.BeforeRun = func(cmd *exec.Cmd) {
 		cmdEnv := append(os.Environ(),
