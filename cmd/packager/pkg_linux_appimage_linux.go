@@ -23,6 +23,7 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/tool/command"
 	"os"
@@ -33,17 +34,17 @@ import (
 	"sync"
 )
 
-// https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
-//
-//		fix: im-ibus.so load fail.
-//		 "cat >> "$HOOKFILE" <<EOF
-//		 export LD_LIBRARY_PATH="\$APPDIR//usr/lib:\$LD_LIBRARY_PATH"
-//		 EOF"
-//
-//	 fix: webkit2gtk subprocess
-//
-//go:embed linuxdeploy-plugin-gtk.sh
-var linuxdeployPluginGtkSh []byte
+func linuxdeployPluginGtk() []byte {
+	// https://github.com/linuxdeploy/linuxdeploy-plugin-gtk
+	//
+	//	1. fix: im-ibus.so load fail.
+	//	 "cat >> "$HOOKFILE" <<EOF
+	//	 export LD_LIBRARY_PATH="\$APPDIR//usr/lib:\$LD_LIBRARY_PATH"
+	//	 EOF"
+	//
+	//	2. fix: webkit2gtk subprocess
+	return app.Packager("linux/linuxdeploy-plugin-gtk.sh")
+}
 
 func appImageDownloadBuildTool() (buildDir, linuxdeploy, appRun string, err error) {
 	buildDir = filepath.Join(config.Config.FrameworkDir, "appimage-build")
@@ -101,7 +102,7 @@ func appImageDownloadBuildTool() (buildDir, linuxdeploy, appRun string, err erro
 
 func appImageLinuxdeployPluginGtk(buildDir string, libwebkit2gtkPath string) error {
 	var err error
-	gtkPluginScript := linuxdeployPluginGtkSh
+	gtkPluginScript := linuxdeployPluginGtk()
 	data := map[string]string{"HardCodeUpdate": ""}
 	if libwebkit2gtkPath != "" {
 		data["HardCodeUpdate"] = fmt.Sprintf(`sed -i 's|/usr/|././/|g' %s`, libwebkit2gtkPath)
