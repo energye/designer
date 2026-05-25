@@ -343,7 +343,6 @@ func (m *Package) appImage() bool {
 	event.ConsoleWriteInfo("Package - AppImage building AppImage with linuxdeploy...")
 
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	cmd.Dir = buildDir
 	cmd.Console = func(data string, level command.Level) {
@@ -360,12 +359,17 @@ func (m *Package) appImage() bool {
 		)
 		cmd.Env = cmdEnv
 	}
-	cmd.Command(linuxdeployPath, "--appimage-extract-and-run",
+	err = cmd.CommandContext(m.Context, linuxdeployPath, "--appimage-extract-and-run",
 		"--appdir", appDir,
 		"--executable", filepath.Join(appDir, "usr", "bin", option.BuildFileName),
 		"--desktop-file", filepath.Join(appDir, option.PackageName+".desktop"),
 		"--icon-file", filepath.Join(appDir, "icon.png"),
 		"--plugin", "gtk", "--output", "appimage")
+
+	if err != nil {
+		event.ConsoleWriteError("Package - AppImage failed:", err.Error())
+		return false
+	}
 
 	event.ConsoleWriteInfo("Package - AppImage", appImageName, "end")
 	return true

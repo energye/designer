@@ -14,12 +14,14 @@
 package options
 
 import (
+	"context"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/types"
@@ -134,9 +136,10 @@ type TBuildForm struct {
 	licenseEdit           lcl.IEdit
 
 	// 操作按钮
-	saveBtn    *wg.TButton
-	packageBtn *wg.TButton
-	packageing bool
+	saveBtn       *wg.TButton
+	packageBtn    *wg.TButton
+	packageing    bool
+	packageCancel func()
 
 	statusBar lcl.IStatusBar
 }
@@ -653,6 +656,10 @@ func (m *TBuildForm) initBuildData() {
 }
 
 func (m *TBuildForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
+	if m.packageing {
+		*canClose = false
+		return
+	}
 	m.closing = true
 }
 
@@ -857,6 +864,11 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 
 func (m *TBuildForm) packageClick(sender lcl.IObject) {
 	if m.packageing {
+		isOK := api.MessageDlg("正在打包中, 是否停止?", types.MtInformation,
+			types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.MrYes
+		if isOK && m.packageCancel != nil {
+			m.packageCancel()
+		}
 		return
 	}
 	m.packageing = true
@@ -867,10 +879,14 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		bean.GProject.BuildOption.MacCommonLib = false
 	}
 	go func() {
-		configBuildPackage()
+		ctx, cancel := context.WithCancel(context.Background())
+		m.packageCancel = cancel
+		configBuildPackage(ctx)
+		m.packageCancel = nil
 		if m.closing {
 			return
 		}
+
 		// 恢复按钮状态
 		m.packageBtn.SetText("开始打包")
 		m.packageBtn.SetDisable(false)

@@ -25,6 +25,7 @@ import (
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/tool/command"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -251,7 +252,17 @@ func (m *Package) packageNSIS() bool {
 	signWindowsBinary(libEnergyCopyPath)  // libenergy.dll
 
 	// 执行 makensis 构建安装包命令
-	err = RunCMD(output, "makensis", "install-nsis.nsi")
+	cmd := command.NewCMD()
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
+	}
+	err = cmd.CommandContext(m.Context, "makensis", "install-nsis.nsi")
 	if err != nil {
 		event.ConsoleWriteError("Package - RunCMD makensis", err.Error())
 		return false

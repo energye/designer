@@ -20,7 +20,6 @@ func Run(runCmd *command.CMD) bool {
 	if runCmd == nil {
 		runCmd = command.NewCMD()
 	}
-	runCmd.IsPrint = false
 	runCmd.HideWindow = true
 	runCmd.Dir = bean.GPath
 	runCmd.Console = func(data string, level command.Level) {

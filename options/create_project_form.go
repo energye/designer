@@ -277,7 +277,6 @@ func (m *TCreateProjectForm) checkGoVersion() {
 	time.Sleep(time.Second / 2)
 	result := false
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	cmd.Console = func(data string, level command.Level) {
 		if !result {
@@ -390,7 +389,6 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 				// go.mod
 				event.ConsoleWriteInfo("go mod tidy")
 				cmd := command.NewCMD()
-				cmd.IsPrint = false
 				cmd.HideWindow = true
 				cmd.Dir = projectDir
 				cmd.Console = func(data string, level command.Level) {

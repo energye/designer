@@ -35,7 +35,7 @@ func runPreview(state chan<- any) {
 	}
 	state <- consts.PsStarting
 	// build app
-	if !build.Run() {
+	if !build.Run(nil) {
 		state <- consts.PsStop
 		return
 	}
@@ -83,7 +83,6 @@ func stopPreview() {
 
 func RunCMD(dir, name string, args ...string) {
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	if dir != "" {
 		cmd.Dir = dir

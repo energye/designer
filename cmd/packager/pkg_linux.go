@@ -51,7 +51,7 @@ func (m *Package) packager() bool {
 	event.ConsoleWriteInfo("Package - project check config options")
 	option := proj.BuildOption
 	if option.LinuxDEB {
-		if !build.Run() {
+		if !build.Run(m.Context) {
 			return false
 		}
 		if !m.dpkg() {
@@ -59,7 +59,7 @@ func (m *Package) packager() bool {
 		}
 	}
 	if option.LinuxRPM {
-		if !build.Run() {
+		if !build.Run(m.Context) {
 			return false
 		}
 		if !m.rpmbuild() {
@@ -73,7 +73,7 @@ func (m *Package) packager() bool {
 			(&proj.BuildOption).BuildCGOEnabled = oldCGOEnable
 		}()
 		(&proj.BuildOption).BuildCGOEnabled = true
-		if !build.Run() {
+		if !build.Run(m.Context) {
 			return false
 		}
 		if !m.appImage() {

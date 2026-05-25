@@ -78,7 +78,7 @@ func (m *Package) platformPackage() {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run", "GOOS:", lib.GOOS(), "GOARCH:", lib.GOARCH())
-	if !build.Run() {
+	if !build.Run(m.Context) {
 		return
 	}
 	event.ConsoleWriteInfo("CMD-package-run")
@@ -177,13 +177,12 @@ func (m *Package) pkg() bool {
 	pkgName += ".pkg"
 
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	cmd.Dir = output
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}
-	cmd.Command("rm", "-rf", pkgName)
+	cmd.CommandContext(m.Context, "rm", "-rf", pkgName)
 	// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
 	args := []string{"--root", app,
 		"--identifier", proj.AppOption.MacOS.PList.CFBundleIdentifier,
@@ -236,13 +235,12 @@ func (m *Package) dmg() bool {
 	dmgName += ".dmg"
 
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	cmd.Dir = output
 	cmd.Console = func(data string, level command.Level) {
 		event.ConsoleWriteInfo(data)
 	}
-	cmd.Command("rm", "-rf", dmgName)
+	_ = cmd.Command("rm", "-rf", dmgName)
 	args := []string{
 		"--volname", option.PackageName,
 		"--window-pos", "200", "120",
@@ -254,7 +252,11 @@ func (m *Package) dmg() bool {
 		dmgName,
 		appName,
 	}
-	cmd.Command("create-dmg", args...)
+	err = cmd.CommandContext(m.Context, "create-dmg", args...)
+	if err != nil {
+		event.ConsoleWriteError("Package - DMG failed:", err.Error())
+		return false
+	}
 	event.ConsoleWriteInfo("Package - DMG END")
 	return true
 }
@@ -285,7 +287,6 @@ func cert() bool {
 			runtimeFile = lib.DarwinUniversalBinaryName
 		}
 		cmd := command.NewCMD()
-		cmd.IsPrint = false
 		cmd.HideWindow = true
 		cmd.Dir = output
 		cmd.Console = func(data string, level command.Level) {

@@ -14,6 +14,7 @@
 package build
 
 import (
+	"context"
 	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -26,7 +27,7 @@ import (
 	"strings"
 )
 
-func buildWindows() bool {
+func buildWindows(ctx context.Context) bool {
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build - project GProject is nil")
@@ -117,7 +118,7 @@ func buildWindows() bool {
 		cmd.Console = func(data string, level command.Level) {
 			event.ConsoleWriteInfo(data)
 		}
-		cmd.Command("go", tempArgs...)
+		cmd.CommandContext(ctx, "go", tempArgs...)
 		//if option.BuildModeRelease {
 		//	event.ConsoleWriteInfo("strip", output)
 		//	cmd.Command("strip", output)

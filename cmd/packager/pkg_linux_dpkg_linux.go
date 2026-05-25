@@ -24,6 +24,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
 	"strings"
@@ -246,13 +247,22 @@ func (m *Package) dpkg() bool {
 	debFilePath := filepath.Join(output, debFileName)
 	_ = os.Remove(debFilePath)
 
-	cmd := RunCMD(output, "dpkg-deb", "--build", debRoot, debFilePath)
-	if cmd != nil {
-		event.ConsoleWriteError("Package - DEB: build failed:", cmd.Error())
+	cmd := command.NewCMD()
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
+	}
+	err = cmd.CommandContext(m.Context, "dpkg-deb", "--build", debRoot, debFilePath)
+	if err != nil {
+		event.ConsoleWriteError("Package - DEB failed:", err.Error())
 		return false
 	}
-
-	event.ConsoleWriteInfo("Package - DEB:", debFileName, "created successfully")
+	event.ConsoleWriteInfo("Package - DEB:", debFileName, "created end.")
 	return true
 }
 

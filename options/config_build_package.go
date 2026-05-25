@@ -14,6 +14,7 @@
 package options
 
 import (
+	"context"
 	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/event"
@@ -25,12 +26,13 @@ import (
 // 执行构建打包流程
 //
 // 只给当前系统和架构构建打包
-func configBuildPackage() {
+func configBuildPackage(ctx context.Context) {
 	logs.Debug("构建配置-打包")
 	if envs, ok := packagePlatformENVs[runtime.GOOS]; ok {
 		pack := packager.Default()
 		pack.AppendPlatform = true
 		pack.AppendArch = true
+		pack.Context = ctx
 
 		defer env.Clear()
 
@@ -46,7 +48,7 @@ func configBuildPackage() {
 				env.Put("CGO_ENABLED", "0")
 			}
 			if runtime.GOOS == "linux" && cgoEnabled && runtime.GOARCH != arch {
-				// linux 启用 CGO 并且未启用跨平台构建时, 当前架构和目标架构不同 忽略其他架构
+				// linux 启用 CGO 当前架构和目标架构不同 忽略其他架构
 				event.ConsoleWriteWarn("Build and Package - Linux CGO=ENABLED or Platform=false skip-arch:", arch, "current-arch:", runtime.GOARCH)
 				continue
 			}

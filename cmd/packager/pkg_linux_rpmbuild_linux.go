@@ -24,6 +24,7 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/lcl/tool/command"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -195,9 +196,21 @@ func (m *Package) rpmbuild() bool {
 		args = append(args, "--define", "__os_install_post %{nil}")
 	}
 	args = append(args, specFile)
-	cmd := RunCMD(output, "rpmbuild", args...)
-	if cmd != nil {
-		event.ConsoleWriteError("Package - RPM: build failed:", cmd.Error())
+
+	cmd := command.NewCMD()
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
+	}
+
+	err = cmd.CommandContext(m.Context, "rpmbuild", args...)
+	if err != nil {
+		event.ConsoleWriteError("Package - rpmbuild failed:", err.Error())
 		return false
 	}
 

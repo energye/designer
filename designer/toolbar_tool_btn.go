@@ -91,7 +91,6 @@ func (m *TToolbarToolBtn) onNewForm(sender lcl.IObject) {
 		// 创建窗体后执行一次 go mod tidy, TODO 先这样
 		//go func() {
 		//	cmd := command.NewCMD()
-		//	cmd.IsPrint = false
 		//	cmd.HideWindow = true
 		//	cmd.Dir = projBean.GPath
 		//	cmd.Console = func(data string, level command.Level) {

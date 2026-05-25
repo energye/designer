@@ -364,7 +364,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 		event.ConsoleWriteInfo("Build Start")
 		SetEnableFuncComponent(false)
 		go func() {
-			build.Run()
+			build.Run(nil)
 			SetEnableFuncComponent(true)
 			event.ConsoleWriteInfo("Build End")
 		}()
@@ -379,7 +379,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 		event.ConsoleWriteInfo("Build Clean Start")
 		SetEnableFuncComponent(false)
 		go func() {
-			build.RunClean()
+			build.RunClean(nil)
 			SetEnableFuncComponent(true)
 			event.ConsoleWriteInfo("Build Clean End")
 		}()
@@ -394,7 +394,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 		event.ConsoleWriteInfo("Build ALL Start")
 		SetEnableFuncComponent(false)
 		go func() {
-			build.RunAll()
+			build.RunAll(nil)
 			SetEnableFuncComponent(true)
 			event.ConsoleWriteInfo("Build ALL End")
 		}()

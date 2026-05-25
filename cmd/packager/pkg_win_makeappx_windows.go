@@ -296,7 +296,18 @@ func (m *Package) packageAppx() bool {
 	// 执行 makeappx 构建安装包命令
 	packageArgs := []string{"pack", "/d", energyMsixAppRootDir, "/p", msixPackageName}
 	event.ConsoleWriteInfo("Package:", strings.Join(packageArgs, " "))
-	err = RunCMD(output, makeappx, packageArgs...)
+
+	cmd := command.NewCMD()
+	cmd.HideWindow = true
+	cmd.Dir = output
+	cmd.Console = func(data string, level command.Level) {
+		if level == command.LError {
+			event.ConsoleWriteError(data)
+		} else {
+			event.ConsoleWriteInfo(data)
+		}
+	}
+	err = cmd.CommandContext(m.Context, makeappx, packageArgs...)
 	if err != nil {
 		event.ConsoleWriteError("Package - RunCMD", makeappx, err.Error())
 		return false

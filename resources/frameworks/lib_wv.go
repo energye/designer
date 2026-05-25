@@ -52,7 +52,6 @@ func extractWV(outputPath string) {
 	e = os.WriteFile(gomod, data, 0644)
 	err.CheckErr(e)
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	cmd.Dir = outputPath
 	cmd.Console = func(data string, level command.Level) {

@@ -43,7 +43,7 @@ func main() {
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
-			if build.Run() {
+			if build.Run(nil) {
 				// 运行
 				run.Run(nil)
 			}
@@ -58,9 +58,9 @@ func main() {
 			project.LoadProject(path)
 			isAll := args.Contains("all")
 			if isAll {
-				build.RunAll()
+				build.RunAll(nil)
 			} else {
-				build.Run()
+				build.Run(nil)
 			}
 		},
 	})

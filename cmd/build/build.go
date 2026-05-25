@@ -14,6 +14,7 @@
 package build
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/energye/designer/cmd/env"
@@ -27,23 +28,23 @@ import (
 )
 
 // Run 执行构建命令的入口函数
-func Run() bool {
+func Run(ctx context.Context) bool {
 	event.ConsoleWriteInfo("CMD-build-run")
 	goos := lib.GOOS()
 	if goos == "windows" {
-		return buildWindows()
+		return buildWindows(ctx)
 	} else if goos == "darwin" {
-		return buildDarwin()
+		return buildDarwin(ctx)
 	} else if goos == "linux" {
-		return buildLinux()
+		return buildLinux(ctx)
 	}
 	return false
 }
 
-func RunClean() {
+func RunClean(ctx context.Context) {
 	event.ConsoleWriteInfo("RunClean")
 	RunGoCleanCacheCMD()
-	Run()
+	Run(ctx)
 	event.ConsoleWriteInfo("RunClean end")
 }
 

@@ -15,7 +15,7 @@ package packager
 
 import (
 	"bytes"
-	"errors"
+	"context"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/resources/frameworks"
@@ -30,6 +30,7 @@ type Package struct {
 	AppendPlatform bool
 	AppendArch     bool
 	CustomSuffix   string
+	Context        context.Context
 }
 
 func Default() *Package {
@@ -46,6 +47,17 @@ func Run(pack *Package) bool {
 	frameworks.ExtractLibrary()
 	if pack == nil {
 		pack = Default()
+	}
+	{
+		buildOpt := &proj.BuildOption
+		oldRelease := buildOpt.BuildModeRelease
+		oldDebug := buildOpt.BuildModeDebug
+		defer func() {
+			buildOpt.BuildModeRelease = oldRelease
+			buildOpt.BuildModeDebug = oldDebug
+		}()
+		buildOpt.BuildModeRelease = true
+		buildOpt.BuildModeDebug = false
 	}
 	// 平台打包
 	pack.platformPackage()
@@ -75,28 +87,18 @@ func RenderTemplate(data any, templateText string) ([]byte, error) {
 
 func RunCMD(dir, name string, args ...string) error {
 	cmd := command.NewCMD()
-	cmd.IsPrint = false
 	cmd.HideWindow = true
 	if dir != "" {
 		cmd.Dir = dir
 	}
-	var lastError string
 	cmd.Console = func(data string, level command.Level) {
 		if level == command.LError {
-			lastError = data
 			event.ConsoleWriteError(data)
 		} else {
 			event.ConsoleWriteInfo(data)
 		}
 	}
-	cmd.Command(name, args...)
-	if cmd.Cmd != nil && cmd.Cmd.ProcessState != nil && !cmd.Cmd.ProcessState.Success() {
-		if lastError != "" {
-			return errors.New(lastError)
-		}
-		return errors.New(name + " exited with non-zero code")
-	}
-	return nil
+	return cmd.Command(name, args...)
 }
 
 func WriteFile(filePath string, data []byte) error {

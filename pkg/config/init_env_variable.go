@@ -57,7 +57,6 @@ func InitGoEnv() {
 		goEnvLines []string
 	)
 	goEnvCMD := command.NewCMD()
-	goEnvCMD.IsPrint = false
 	goEnvCMD.HideWindow = true
 	goEnvCMD.Console = func(data string, level command.Level) {
 		if level == command.LError {
