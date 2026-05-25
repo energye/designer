@@ -172,6 +172,14 @@ func appImageDeps() []*AppImageDepsInstall {
 		//{Name: "libGLdispatch.so.0"},
 		//{Name: "libGLX.so.0"},
 		//{Name: "libexpat.so.1"},
+		// dbus
+		//{Name: "libdbus-1.so.3"},
+		//{Name: "libdbusmenu-glib.so.4"},
+		//{Name: "libdbusmenu-gtk3.so.4"},
+		// libayatana
+		// {Name: "libayatana-appindicator3.so.1"},
+		// {Name: "libayatana-ido3-0.4.so.0"},
+		// {Name: "libayatana-indicator3.so.7"},
 	}
 	findDeps(deps)
 	return deps
