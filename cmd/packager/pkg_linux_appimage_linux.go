@@ -164,6 +164,14 @@ func appImageDeps() []*AppImageDepsInstall {
 		{Name: "libGLESv2.so.2"},
 		{Name: "libharfbuzz-gobject.so.0"},
 		{Name: "libGL.so.1"},
+		//{Name: "libharfbuzz.so.0"},
+		//{Name: "libfontconfig.so.1"},
+		//{Name: "libfreetype.so.6"},
+		//{Name: "libwayland-client.so.0"},
+		//{Name: "libfribidi.so.0"},
+		//{Name: "libGLdispatch.so.0"},
+		//{Name: "libGLX.so.0"},
+		//{Name: "libexpat.so.1"},
 	}
 	findDeps(deps)
 	return deps
