@@ -32,7 +32,9 @@ func (m *T{{$Form.Form.Name}}) FormCreate(sender lcl.IObject) {
 	m.TWindow.InternalBeforeFormCreate()
 	{{$formComp := $Form.Form}}
 	{{- range $propIndex, $prop := $formComp.Properties -}}
-		{{$prop.GoPropertySet $formComp $Form}}
+		{{with $prop.GoPropertySet $formComp $Form -}}
+			{{.}}
+		{{end -}}
 	{{end -}}
 	m.initComponents()
 	window.CallFormCreate(m, sender)
@@ -64,7 +66,9 @@ func (m *T{{$Form.Form.Name}}) initComponents() {
 	{{range $compIndex, $comp := $Form.Form.Children -}}
 		{{$comp.GoNewObject}}
 	{{- range $propIndex, $prop := $comp.Properties -}}
-		{{$prop.GoPropertySet $comp $Form}}
+		{{with $prop.GoPropertySet $comp $Form -}}
+			{{.}}
+		{{end -}}
 	{{end -}}
 		{{$comp.GoSetObjectParent}}
 	{{end -}}

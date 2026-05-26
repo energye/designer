@@ -167,6 +167,9 @@ func (m *TPropertyData) GoPropertySet(comp *TComponentData, form *TFormData) str
 	if m.NoCode {
 		return ""
 	}
+	if tool.Equal(m.Name, "name") { // name 属性不生成
+		return ""
+	}
 	prop := tool.Buffer{}
 	object := ""
 	switch comp.Type {
