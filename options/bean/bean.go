@@ -204,7 +204,7 @@ var (
 // 包括通用的应用信息以及针对不同操作系统的特定默认设置。
 func (m *TProject) InitAppOption() {
 	m.AppOption.Title = "MyEnergyApp"
-	m.AppOption.Id = "CompanyName.productName.AppName"
+	m.AppOption.Id = "companyName.productName.appName"
 	m.AppOption.Desc = "Your Application Description."
 	m.AppOption.Copyright = "Copyright (C) YYYY-YYYY Your Company Name. All rights reserved."
 	m.AppOption.Version = "1.0.0.0"

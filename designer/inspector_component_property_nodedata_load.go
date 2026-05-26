@@ -36,7 +36,7 @@ func (m *TDesigningComponent) loadPropertyList() {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
-		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
+		//logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.propertyTree, 0, nodeData)
 	}
@@ -57,7 +57,7 @@ func (m *TDesigningComponent) loadEventList() {
 			logs.Debug("排除属性:", nodeData.EditNodeData.Metadata.ToJSON())
 			continue
 		}
-		logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
+		//logs.Debug("加载属性:", nodeData.EditNodeData.Metadata.ToJSON())
 		// 属性节点数据添加到树
 		vtedit.AddPropertyNodeData(m.eventTree, 0, nodeData)
 	}
