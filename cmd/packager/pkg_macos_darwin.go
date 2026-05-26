@@ -158,7 +158,7 @@ func (m *Package) pkg() bool {
 	if !filepath.IsAbs(option.Output) {
 		output = filepath.Join(bean.GPath, output)
 	}
-	app := appRootDir()
+	appDir := appRootDir()
 	appName := option.PackageName + ".app"
 	pkgName := option.PackageName
 	if m.AppendPlatform {
@@ -184,7 +184,7 @@ func (m *Package) pkg() bool {
 	}
 	cmd.CommandContext(m.Context, "rm", "-rf", pkgName)
 	// pkgbuild --root demo.app --identifier com.demo.demo --version 1.0.0 --install-location /Applications/demo.app demo.pkg
-	args := []string{"--root", app,
+	args := []string{"--root", appDir,
 		"--identifier", proj.AppOption.MacOS.PList.CFBundleIdentifier,
 		"--version", proj.AppOption.MacOS.PList.CFBundleVersion,
 		"--install-location", fmt.Sprintf("/Applications/%s", appName), pkgName}

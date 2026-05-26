@@ -49,6 +49,7 @@ func Run(pack *Package) bool {
 		pack = Default()
 	}
 	{
+		// package: enable release mode
 		buildOpt := &proj.BuildOption
 		oldRelease := buildOpt.BuildModeRelease
 		oldDebug := buildOpt.BuildModeDebug
