@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 )
 
 // Window 当前用于调试窗口指针
@@ -79,7 +80,7 @@ var Level = LevelInfo // 例如：设置为 INFO，只输出 INFO 及以上级�
 
 func Debug(v ...any) {
 	if Level <= LevelDebug {
-		s := []any{"TID:", GetTID(), windowIsValid()}
+		s := []any{GetTID(), windowIsValid()}
 		s = append(s, v...)
 		myLogger.Debug("-", s...)
 	}
@@ -87,7 +88,7 @@ func Debug(v ...any) {
 
 func Info(v ...any) {
 	if Level <= LevelInfo {
-		s := []any{"TID:", GetTID(), windowIsValid()}
+		s := []any{GetTID(), windowIsValid()}
 		s = append(s, v...)
 		myLogger.Info("-", s...)
 	}
@@ -99,7 +100,7 @@ func Println(v ...any) {
 
 func Warn(v ...any) {
 	if Level <= LevelWarn {
-		s := []any{"TID:", GetTID(), windowIsValid()}
+		s := []any{GetTID(), windowIsValid()}
 		s = append(s, v...)
 		myLogger.Warn("-", s...)
 	}
@@ -107,22 +108,22 @@ func Warn(v ...any) {
 
 func Error(v ...any) {
 	if Level <= LevelError {
-		s := []any{"TID:", GetTID(), windowIsValid()}
+		s := []any{GetTID(), windowIsValid()}
 		s = append(s, v...)
 		myLogger.Error("-", s...)
 	}
 }
 
-func GetTID() uintptr {
+func GetTID() string {
 	if api.LibLoaded() {
-		return api.CurrentThreadId()
+		return "[" + strconv.FormatUint(uint64(api.CurrentThreadId()), 10) + "]"
 	}
-	return 0
+	return "[0]"
 }
 
 func windowIsValid() string {
 	if Window != nil && Window.IsValid() {
-		return "WindowIsValid: true"
+		return "window_valid=true"
 	}
 	return ""
 }
