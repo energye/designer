@@ -246,28 +246,27 @@ func (m *Package) appImage() bool {
 		return false
 	}
 
-	// 复制图标
-	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
-	if tool.IsExist(srcIcon) {
-		dstIcon := filepath.Join(appDir, "icon.png")
-		if err = tool.CopyFile(srcIcon, dstIcon); err != nil {
-			event.ConsoleWriteError("Package - AppImage copy icon failed:", err.Error())
-			return false
-		}
-	}
-
 	// 生成 .desktop
-	desktopData := renderDesktopFile(proj.Name, option.BuildFileName, "icon",
-		appOption.Desc, option.PackageName, appOption.Linux.Categories)
+	desktopData := renderDesktopFile()
 	if desktopData == nil {
 		event.ConsoleWriteError("Package - AppImage render desktop failed")
 		return false
 	}
 	// 复制 .desktop
-	desktopPath := filepath.Join(appDir, option.PackageName+".desktop")
-	if err = os.WriteFile(desktopPath, desktopData, 0644); err != nil {
+	desktopPath := filepath.Join(appDir, desktopData.Filename)
+	if err = os.WriteFile(desktopPath, desktopData.Data, 0644); err != nil {
 		event.ConsoleWriteError("Package - AppImage write desktop failed:", err.Error())
 		return false
+	}
+
+	// 复制图标
+	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
+	if tool.IsExist(srcIcon) {
+		dstIcon := filepath.Join(appDir, desktopData.Icon)
+		if err = tool.CopyFile(srcIcon, dstIcon); err != nil {
+			event.ConsoleWriteError("Package - AppImage copy icon failed:", err.Error())
+			return false
+		}
 	}
 
 	// 复制运行时库 libenergy.so
@@ -362,8 +361,8 @@ func (m *Package) appImage() bool {
 	err = cmd.CommandContext(m.Context, linuxdeployPath, "--appimage-extract-and-run",
 		"--appdir", appDir,
 		"--executable", filepath.Join(appDir, "usr", "bin", option.BuildFileName),
-		"--desktop-file", filepath.Join(appDir, option.PackageName+".desktop"),
-		"--icon-file", filepath.Join(appDir, "icon.png"),
+		"--desktop-file", filepath.Join(appDir, desktopData.Filename),
+		"--icon-file", filepath.Join(appDir, desktopData.Icon),
 		"--plugin", "gtk", "--output", "appimage")
 
 	if err != nil {

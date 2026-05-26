@@ -94,7 +94,7 @@ func (m *Package) dpkg() bool {
 
 	// 复制可执行文件
 	srcBin := filepath.Join(output, option.BuildFileName)
-	dstBin := filepath.Join(debRoot, "usr", "bin", option.PackageName)
+	dstBin := filepath.Join(debRoot, "usr", "bin", option.BuildFileName)
 	if err := tool.CopyFile(srcBin, dstBin); err != nil {
 		event.ConsoleWriteError("Package - DEB: copy binary failed:", err.Error())
 		return false
@@ -104,49 +104,22 @@ func (m *Package) dpkg() bool {
 		return false
 	}
 
-	// 复制 .desktop 文件
-	srcDesktop := filepath.Join(bean.ResourceMetadataPath(), option.PackageName+".desktop")
-	if !tool.IsExist(srcDesktop) {
-		// 使用模板生成
-		desktopTemplate := app.Packager("linux/app.desktop")
-		if desktopTemplate == nil {
-			event.ConsoleWriteError("Package - DEB: desktop template not found")
-			return false
-		}
-		categories := appOption.Linux.Categories
-		if categories == "" {
-			categories = "Utility;"
-		}
-		categories = strings.TrimRight(categories, ";") + ";"
-		data := map[string]string{
-			"Name":       option.PackageName,
-			"Exec":       option.PackageName,
-			"Icon":       option.PackageName,
-			"Comments":   appOption.Desc,
-			"WMClass":    option.PackageName,
-			"Categories": categories,
-		}
-		rendered, err := tool.RenderTemplate(string(desktopTemplate), data)
-		if err != nil {
-			event.ConsoleWriteError("Package - DEB: render desktop failed:", err.Error())
-			return false
-		}
-		srcDesktop = filepath.Join(output, option.PackageName+".desktop")
-		if err := os.WriteFile(srcDesktop, rendered, 0644); err != nil {
-			event.ConsoleWriteError("Package - DEB: write desktop failed:", err.Error())
-			return false
-		}
+	// 生成 .desktop 文件
+	desktopData := renderDesktopFile()
+	if desktopData == nil {
+		event.ConsoleWriteError("Package - RPM: render desktop failed")
+		return false
 	}
-	dstDesktop := filepath.Join(debRoot, "usr", "share", "applications", option.PackageName+".desktop")
-	if err := tool.CopyFile(srcDesktop, dstDesktop); err != nil {
-		event.ConsoleWriteError("Package - DEB: copy desktop failed:", err.Error())
+	dstDesktop := filepath.Join(debRoot, "usr", "share", "applications", desktopData.Filename)
+	if err := os.WriteFile(dstDesktop, desktopData.Data, 0644); err != nil {
+		event.ConsoleWriteError("Package - DEB: write desktop failed:", err.Error())
 		return false
 	}
 
 	// 复制图标
 	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
 	if tool.IsExist(srcIcon) {
-		dstIcon := filepath.Join(debRoot, "usr", "share", "icons", option.PackageName+".png")
+		dstIcon := filepath.Join(debRoot, "usr", "share", "icons", desktopData.Icon)
 		if err := tool.CopyFile(srcIcon, dstIcon); err != nil {
 			event.ConsoleWriteError("Package - DEB: copy icon failed:", err.Error())
 			return false
@@ -227,13 +200,13 @@ func (m *Package) dpkg() bool {
 		"Description":   appOption.Desc,
 	}
 
-	controlData2, err := tool.RenderTemplate(string(controlTemplate), controlData)
+	controlFileData, err := tool.RenderTemplate(string(controlTemplate), controlData)
 	if err != nil {
 		event.ConsoleWriteError("Package - DEB: render control failed:", err.Error())
 		return false
 	}
 	controlPath := filepath.Join(debRoot, "DEBIAN", "control")
-	if err := os.WriteFile(controlPath, controlData2, 0644); err != nil {
+	if err = os.WriteFile(controlPath, controlFileData, 0644); err != nil {
 		event.ConsoleWriteError("Package - DEB: write control failed:", err.Error())
 		return false
 	}

@@ -28,7 +28,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 )
 
 // rpmArchName 将 GOARCH 转换为 RPM 架构名
@@ -96,7 +95,7 @@ func (m *Package) rpmbuild() bool {
 
 	// 复制可执行文件
 	srcBin := filepath.Join(output, option.BuildFileName)
-	dstBin := filepath.Join(stageDir, "bin", option.PackageName)
+	dstBin := filepath.Join(stageDir, "bin", option.BuildFileName)
 	if err := tool.CopyFile(srcBin, dstBin); err != nil {
 		event.ConsoleWriteError("Package - RPM: copy binary failed:", err.Error())
 		return false
@@ -107,14 +106,13 @@ func (m *Package) rpmbuild() bool {
 	}
 
 	// 生成 .desktop 文件
-	desktopData := renderDesktopFile(option.PackageName, option.PackageName, option.PackageName,
-		appOption.Desc, option.PackageName, appOption.Linux.Categories)
+	desktopData := renderDesktopFile()
 	if desktopData == nil {
 		event.ConsoleWriteError("Package - RPM: render desktop failed")
 		return false
 	}
-	dstDesktop := filepath.Join(stageDir, "share", "applications", option.PackageName+".desktop")
-	if err := os.WriteFile(dstDesktop, desktopData, 0644); err != nil {
+	dstDesktop := filepath.Join(stageDir, "share", "applications", desktopData.Filename)
+	if err := os.WriteFile(dstDesktop, desktopData.Data, 0644); err != nil {
 		event.ConsoleWriteError("Package - RPM: write desktop failed:", err.Error())
 		return false
 	}
@@ -122,7 +120,7 @@ func (m *Package) rpmbuild() bool {
 	// 复制图标
 	srcIcon := filepath.Join(bean.ResourceEmbedPath(), "icon.png")
 	if tool.IsExist(srcIcon) {
-		dstIcon := filepath.Join(stageDir, "share", "icons", option.PackageName+".png")
+		dstIcon := filepath.Join(stageDir, "share", "icons", desktopData.Icon)
 		if err := tool.CopyFile(srcIcon, dstIcon); err != nil {
 			event.ConsoleWriteError("Package - RPM: copy icon failed:", err.Error())
 			return false
@@ -245,26 +243,4 @@ func (m *Package) rpmbuild() bool {
 
 	event.ConsoleWriteInfo("Package - RPM:", rpmFileName, "created successfully")
 	return true
-}
-
-// renderDesktopFile 渲染 .desktop 文件
-func renderDesktopFile(name, exec, icon, comment, wmClass, categories string) []byte {
-	desktopTemplate := app.Packager("linux/app.desktop")
-	if desktopTemplate == nil {
-		return nil
-	}
-	if categories == "" {
-		categories = "Utility;"
-	}
-	categories = strings.TrimRight(categories, ";") + ";"
-	data := map[string]string{
-		"Name":       name,
-		"Exec":       exec,
-		"Icon":       icon,
-		"Comments":   comment,
-		"WMClass":    wmClass,
-		"Categories": categories,
-	}
-	rendered, _ := tool.RenderTemplate(string(desktopTemplate), data)
-	return rendered
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/app"
 	"github.com/energye/designer/resources/frameworks/lib"
 	"github.com/energye/lcl/api"
 	"os"
@@ -219,6 +220,45 @@ func linuxUserOverrideWebKit(debDeps, rpmDeps, userDeps string) (string, string)
 	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-4.0.so.37", "libwebkit2gtk-4.1.so.0")
 	rpmDeps = strings.ReplaceAll(rpmDeps, "libwebkit2gtk-__TMP_A__", "libwebkit2gtk-4.0.so.37")
 	return debDeps, rpmDeps
+}
+
+type DesktopFile struct {
+	Data     []byte
+	Filename string
+	Icon     string
+}
+
+// renderDesktopFile 渲染 .desktop 文件
+func renderDesktopFile() *DesktopFile {
+	proj := bean.GProject
+	name := proj.AppOption.Title
+	exec := proj.BuildOption.BuildFileName
+	icon := proj.Name
+	comment := proj.AppOption.Desc
+	wmClass := proj.AppOption.Id
+	categories := proj.AppOption.Linux.Categories
+	desktopTemplate := app.Packager("linux/app.desktop")
+	if desktopTemplate == nil {
+		return nil
+	}
+	if categories == "" {
+		categories = "Utility;"
+	}
+	categories = strings.TrimRight(categories, ";") + ";"
+	data := map[string]string{
+		"Name":       name,
+		"Exec":       exec,
+		"Icon":       icon,
+		"Comments":   comment,
+		"WMClass":    wmClass,
+		"Categories": categories,
+	}
+	rendered, _ := tool.RenderTemplate(string(desktopTemplate), data)
+	return &DesktopFile{
+		Data:     rendered,
+		Filename: proj.BuildOption.PackageName + ".desktop",
+		Icon:     icon + ".png",
+	}
 }
 
 type AppImageDepsInstall struct {
