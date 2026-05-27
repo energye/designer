@@ -127,8 +127,9 @@ m.Webview1.SetOnDragLeave(func() {
 
 ```go
 type TDragData struct {
-    Data     []byte // 拖拽数据
-    DataSize int32  // 数据大小
+    Type      TDragType // 拖拽类型
+    Data      []byte    // 拖拽数据
+    Filenames []string  // 文件名列表
 }
 ```
 

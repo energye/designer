@@ -5,12 +5,10 @@
 ## TMenuEditing 组件
 
 ```go
-import "github.com/energye/lcl/lcl"
+import engLCL "github.com/energye/energy/v3/lcl"
 
-editing := lcl.NewMenuEditing(parent)
+editing := engLCL.NewMenuEditing(parent)
 ```
-
-**注意**：构造函数是 `NewMenuEditing`，不是 `NewTMenuEditing`。
 
 ## 内置 Action
 
@@ -42,26 +40,30 @@ editing := lcl.NewMenuEditing(form)
 
 ```go
 // 创建菜单栏
-menuBar := lcl.NewTMainMenu(form)
+menuBar := lcl.NewMainMenu(form)
 
 // 创建编辑菜单
-editMenu := lcl.NewTMenuItem(menuBar)
+editMenu := lcl.NewMenuItem(form)
 editMenu.SetCaption("编辑(&E)")
+menuBar.Items().Add(editMenu)
 
 // 添加撤销菜单项，绑定到 UndoAction
-undoItem := lcl.NewTMenuItem(editMenu)
+undoItem := lcl.NewMenuItem(form)
 undoItem.SetCaption("撤销")
 undoItem.SetAction(editing.UndoAction)
+editMenu.Add(undoItem)
 
 // 添加剪切菜单项，绑定到 CutAction
-cutItem := lcl.NewTMenuItem(editMenu)
+cutItem := lcl.NewMenuItem(form)
 cutItem.SetCaption("剪切")
 cutItem.SetAction(editing.CutAction)
+editMenu.Add(cutItem)
 
 // 添加复制菜单项，绑定到 CopyAction
-copyItem := lcl.NewTMenuItem(editMenu)
+copyItem := lcl.NewMenuItem(form)
 copyItem.SetCaption("复制")
 copyItem.SetAction(editing.CopyAction)
+editMenu.Add(copyItem)
 ```
 
 ### 使用 ActionList
@@ -84,7 +86,7 @@ actionList := editing.ActionList
 ### 获取平台修饰键
 
 ```go
-control := lcl.PlatformControl()
+control := engLCL.PlatformControl()
 // Windows/Linux: "Ctrl"
 // macOS: "Meta"
 ```
@@ -95,68 +97,87 @@ control := lcl.PlatformControl()
 package main
 
 import (
+    engLCL "github.com/energye/energy/v3/lcl"
     "github.com/energye/lcl/lcl"
+    "github.com/energye/lcl/types"
 )
 
+type TMainForm struct {
+    lcl.TEngForm
+}
+
+var mainForm TMainForm
+
 func main() {
-    lcl.SetOnBeforeRun(func() {
-        form := lcl.Application.CreateForm()
-        form.SetCaption("编辑菜单示例")
+    lcl.Init()
+    lcl.Run(&mainForm)
+}
 
-        // 创建编辑操作管理器
-        editing := lcl.NewMenuEditing(form)
+func (m *TMainForm) FormCreate(sender lcl.IObject) {
+    m.SetCaption("编辑菜单示例")
+    m.SetPosition(types.PoScreenCenter)
 
-        // 创建菜单栏
-        menuBar := lcl.NewTMainMenu(form)
+    // 创建编辑操作管理器
+    editing := engLCL.NewMenuEditing(m)
 
-        // 编辑菜单
-        editMenu := lcl.NewTMenuItem(menuBar)
-        editMenu.SetCaption("编辑(&E)")
+    // 创建菜单栏
+    menuBar := lcl.NewMainMenu(m)
 
-        // 撤销
-        undoItem := lcl.NewTMenuItem(editMenu)
-        undoItem.SetCaption("撤销")
-        undoItem.SetAction(editing.UndoAction)
+    // 编辑菜单
+    editMenu := lcl.NewMenuItem(m)
+    editMenu.SetCaption("编辑(&E)")
+    menuBar.Items().Add(editMenu)
 
-        // 重做
-        redoItem := lcl.NewTMenuItem(editMenu)
-        redoItem.SetCaption("重做")
-        redoItem.SetAction(editing.RedoAction)
+    // 撤销
+    undoItem := lcl.NewMenuItem(m)
+    undoItem.SetCaption("撤销")
+    undoItem.SetAction(editing.UndoAction)
+    editMenu.Add(undoItem)
 
-        // 分隔线
-        sep1 := lcl.NewTMenuItem(editMenu)
-        sep1.SetCaption("-")
+    // 重做
+    redoItem := lcl.NewMenuItem(m)
+    redoItem.SetCaption("重做")
+    redoItem.SetAction(editing.RedoAction)
+    editMenu.Add(redoItem)
 
-        // 剪切
-        cutItem := lcl.NewTMenuItem(editMenu)
-        cutItem.SetCaption("剪切")
-        cutItem.SetAction(editing.CutAction)
+    // 分隔线
+    sep1 := lcl.NewMenuItem(m)
+    sep1.SetCaption("-")
+    editMenu.Add(sep1)
 
-        // 复制
-        copyItem := lcl.NewTMenuItem(editMenu)
-        copyItem.SetCaption("复制")
-        copyItem.SetAction(editing.CopyAction)
+    // 剪切
+    cutItem := lcl.NewMenuItem(m)
+    cutItem.SetCaption("剪切")
+    cutItem.SetAction(editing.CutAction)
+    editMenu.Add(cutItem)
 
-        // 粘贴
-        pasteItem := lcl.NewTMenuItem(editMenu)
-        pasteItem.SetCaption("粘贴")
-        pasteItem.SetAction(editing.PasteAction)
+    // 复制
+    copyItem := lcl.NewMenuItem(m)
+    copyItem.SetCaption("复制")
+    copyItem.SetAction(editing.CopyAction)
+    editMenu.Add(copyItem)
 
-        // 删除
-        deleteItem := lcl.NewTMenuItem(editMenu)
-        deleteItem.SetCaption("删除")
-        deleteItem.SetAction(editing.DeleteAction)
+    // 粘贴
+    pasteItem := lcl.NewMenuItem(m)
+    pasteItem.SetCaption("粘贴")
+    pasteItem.SetAction(editing.PasteAction)
+    editMenu.Add(pasteItem)
 
-        // 分隔线
-        sep2 := lcl.NewTMenuItem(editMenu)
-        sep2.SetCaption("-")
+    // 删除
+    deleteItem := lcl.NewMenuItem(m)
+    deleteItem.SetCaption("删除")
+    deleteItem.SetAction(editing.DeleteAction)
+    editMenu.Add(deleteItem)
 
-        // 全选
-        selectAllItem := lcl.NewTMenuItem(editMenu)
-        selectAllItem.SetCaption("全选")
-        selectAllItem.SetAction(editing.SelectAllAction)
-    })
+    // 分隔线
+    sep2 := lcl.NewMenuItem(m)
+    sep2.SetCaption("-")
+    editMenu.Add(sep2)
 
-    lcl.Run(lcl.Application.Forms()...)
+    // 全选
+    selectAllItem := lcl.NewMenuItem(m)
+    selectAllItem.SetCaption("全选")
+    selectAllItem.SetAction(editing.SelectAllAction)
+    editMenu.Add(selectAllItem)
 }
 ```

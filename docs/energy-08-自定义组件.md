@@ -266,46 +266,57 @@ package main
 import (
     "fmt"
     "github.com/energye/lcl/lcl"
+    "github.com/energye/lcl/types"
     "github.com/energye/lcl/types/colors"
     "github.com/energye/lcl/widget/wg"
 )
 
+type TMainForm struct {
+    lcl.TEngForm
+}
+
+var mainForm TMainForm
+
 func main() {
-    lcl.SetOnBeforeRun(func() {
-        form := lcl.Application.CreateForm()
+    lcl.Init()
+    lcl.Run(&mainForm)
+}
 
-        // 创建自定义按钮
-        btn := wg.NewButton(form)
-        btn.SetCaption("自定义按钮")
-        btn.SetLeft(20)
-        btn.SetTop(20)
-        btn.SetWidth(150)
-        btn.SetHeight(40)
-        btn.SetDefaultColor(colors.TColor(0x3498DB), colors.TColor(0x2980B9))
-        btn.SetEnterColor(colors.TColor(0x2980B9), colors.TColor(0x2471A3))
-        btn.SetRadius(6)
-        btn.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
-            fmt.Println("按钮点击")
-        })
+func (m *TMainForm) FormCreate(sender lcl.IObject) {
+    m.SetCaption("自定义组件示例")
+    m.SetPosition(types.PoScreenCenter)
+    m.SetWidth(600)
+    m.SetHeight(500)
 
-        // 创建标签页
-        tab := wg.NewTab(form)
-        tab.SetLeft(20)
-        tab.SetTop(80)
-        tab.SetWidth(500)
-        tab.SetHeight(350)
-
-        // 添加页面
-        page1 := tab.NewPage()
-        page1.SetCaption("首页")
-
-        page2 := tab.NewPage()
-        page2.SetCaption("设置")
-
-        page3 := tab.NewPage()
-        page3.SetCaption("关于")
+    // 创建自定义按钮
+    btn := wg.NewButton(m)
+    btn.SetCaption("自定义按钮")
+    btn.SetLeft(20)
+    btn.SetTop(20)
+    btn.SetWidth(150)
+    btn.SetHeight(40)
+    btn.SetDefaultColor(colors.TColor(0x3498DB), colors.TColor(0x2980B9))
+    btn.SetEnterColor(colors.TColor(0x2980B9), colors.TColor(0x2471A3))
+    btn.SetRadius(6)
+    btn.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) {
+        fmt.Println("按钮点击")
     })
 
-    lcl.Run(lcl.Application.Forms()...)
+    // 创建标签页
+    tab := wg.NewTab(m)
+    tab.SetLeft(20)
+    tab.SetTop(80)
+    tab.SetWidth(500)
+    tab.SetHeight(350)
+
+    // 添加页面
+    page1 := tab.NewPage()
+    page1.SetCaption("首页")
+
+    page2 := tab.NewPage()
+    page2.SetCaption("设置")
+
+    page3 := tab.NewPage()
+    page3.SetCaption("关于")
 }
 ```

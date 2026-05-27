@@ -138,23 +138,36 @@ package main
 import (
     "github.com/energye/energy/v3/application"
     "github.com/energye/lcl/lcl"
+    "github.com/energye/lcl/types"
 )
 
+type TMainForm struct {
+    lcl.TEngForm
+    tray *application.TTrayIcon
+}
+
+var mainForm TMainForm
+
 func main() {
-    form := lcl.Application.CreateForm()
-    form.SetCaption("托盘示例")
+    lcl.Init()
+    lcl.Run(&mainForm)
+}
+
+func (m *TMainForm) FormCreate(sender lcl.IObject) {
+    m.SetCaption("托盘示例")
+    m.SetPosition(types.PoScreenCenter)
 
     // 创建托盘图标
-    tray := application.NewTrayIcon()
-    tray.SetHint("我的应用")
-    tray.SetIconBytes(iconData)
+    m.tray = application.NewTrayIcon()
+    m.tray.SetHint("我的应用")
+    m.tray.SetIconBytes(iconData)
 
     // 创建菜单
-    menu := tray.Menu()
+    menu := m.tray.Menu()
 
     showItem := menu.AddMenuItem("显示窗口")
     showItem.SetOnClick(func() {
-        form.Show()
+        m.Show()
     })
 
     menu.AddSeparator()
@@ -165,18 +178,16 @@ func main() {
     })
 
     // 双击显示窗口
-    tray.SetOnDblClick(func() {
-        form.Show()
+    m.tray.SetOnDblClick(func() {
+        m.Show()
     })
 
     // 关闭时隐藏到托盘
-    form.SetOnCloseQuery(func(sender lcl.IObject, canClose *bool) {
+    m.SetOnCloseQuery(func(sender lcl.IObject, canClose *bool) {
         *canClose = false
-        form.Hide()
+        m.Hide()
     })
 
-    tray.Show()
-
-    lcl.Run(form)
+    m.tray.Show()
 }
 ```
