@@ -7,46 +7,69 @@
 ```go
 import "github.com/energye/lcl/lcl"
 
-editing := lcl.NewTMenuEditing(parent)
+editing := lcl.NewMenuEditing(parent)
 ```
 
-## 标准编辑操作
+**注意**：构造函数是 `NewMenuEditing`，不是 `NewTMenuEditing`。
 
-TMenuEditing 提供以下标准操作：
+## 内置 Action
 
-| 操作 | 方法 | 快捷键 | 说明 |
-|------|------|--------|------|
-| 撤销 | Undo | Ctrl+Z | 撤销上一步操作 |
-| 重做 | Redo | Ctrl+Y | 重做上一步操作 |
-| 剪切 | Cut | Ctrl+X | 剪切选中内容 |
-| 复制 | Copy | Ctrl+C | 复制选中内容 |
-| 粘贴 | Paste | Ctrl+V | 粘贴剪贴板内容 |
-| 删除 | Delete | Delete | 删除选中内容 |
-| 全选 | SelectAll | Ctrl+A | 选中全部内容 |
+TMenuEditing 包含以下预定义的 Action：
 
-## 可用性检查
+| Action 字段 | 类型 | 说明 |
+|-------------|------|------|
+| ActionList | lcl.IActionList | Action 列表 |
+| UndoAction | lcl.IEditUndo | 撤销 |
+| RedoAction | lcl.IAction | 重做 |
+| CutAction | lcl.IEditCut | 剪切 |
+| CopyAction | lcl.IEditCopy | 复制 |
+| PasteAction | lcl.IEditPaste | 粘贴 |
+| DeleteAction | lcl.IEditDelete | 删除 |
+| SelectAllAction | lcl.IEditSelectAll | 全选 |
 
-每个操作都有对应的 `Can*` 方法检查是否可用：
+## 使用方式
+
+TMenuEditing 通过 Action 模式工作，每个 Action 自带 Execute 和 Update 回调：
 
 ```go
-if editing.CanUndo() {
-    editing.Undo()
-}
+editing := lcl.NewMenuEditing(form)
 
-if editing.CanCopy() {
-    editing.Copy()
-}
+// Action 的 Execute 回调在操作执行时触发
+// Action 的 Update 回调在菜单显示时触发，用于更新可用状态
 ```
 
-| 检查方法 | 说明 |
-|----------|------|
-| CanUndo() | 是否可撤销 |
-| CanRedo() | 是否可重做 |
-| CanCut() | 是否可剪切 |
-| CanCopy() | 是否可复制 |
-| CanPaste() | 是否可粘贴 |
-| CanDelete() | 是否可删除 |
-| CanSelectAll() | 是否可全选 |
+### 在菜单中使用
+
+```go
+// 创建菜单栏
+menuBar := lcl.NewTMainMenu(form)
+
+// 创建编辑菜单
+editMenu := lcl.NewTMenuItem(menuBar)
+editMenu.SetCaption("编辑(&E)")
+
+// 添加撤销菜单项，绑定到 UndoAction
+undoItem := lcl.NewTMenuItem(editMenu)
+undoItem.SetCaption("撤销")
+undoItem.SetAction(editing.UndoAction)
+
+// 添加剪切菜单项，绑定到 CutAction
+cutItem := lcl.NewTMenuItem(editMenu)
+cutItem.SetCaption("剪切")
+cutItem.SetAction(editing.CutAction)
+
+// 添加复制菜单项，绑定到 CopyAction
+copyItem := lcl.NewTMenuItem(editMenu)
+copyItem.SetCaption("复制")
+copyItem.SetAction(editing.CopyAction)
+```
+
+### 使用 ActionList
+
+```go
+// 获取 ActionList，可用于绑定到工具栏
+actionList := editing.ActionList
+```
 
 ## 平台适配
 
@@ -61,51 +84,10 @@ if editing.CanCopy() {
 ### 获取平台修饰键
 
 ```go
-func platformControl() string {
-    if desTool.IsDarwin {
-        return "Meta"
-    }
-return "Ctrl"
-}
+control := lcl.PlatformControl()
+// Windows/Linux: "Ctrl"
+// macOS: "Meta"
 ```
-
-## 在菜单中使用
-
-```go
-// 创建菜单栏
-menuBar := lcl.NewTMainMenu(form)
-
-// 创建编辑菜单
-editMenu := lcl.NewTMenuItem(menuBar)
-editMenu.SetCaption("编辑(&E)")
-
-// 添加编辑操作
-editing := lcl.NewTMenuEditing(form)
-
-undoItem := lcl.NewTMenuItem(editMenu)
-undoItem.SetCaption("撤销")
-undoItem.SetShortcut("Ctrl+Z")
-undoItem.SetOnClick(func(sender lcl.IObject) {
-    editing.Undo()
-})
-
-copyItem := lcl.NewTMenuItem(editMenu)
-copyItem.SetCaption("复制")
-copyItem.SetShortcut("Ctrl+C")
-copyItem.SetOnClick(func(sender lcl.IObject) {
-    editing.Copy()
-})
-```
-
-## ActionList
-
-TMenuEditing 内部使用 ActionList 管理标准操作：
-
-```go
-actionList := editing.ActionList()
-```
-
-ActionList 包含预定义的标准编辑动作，可以绑定到菜单项或工具栏按钮。
 
 ## 完整示例
 
@@ -122,53 +104,57 @@ func main() {
         form.SetCaption("编辑菜单示例")
 
         // 创建编辑操作管理器
-        editing := lcl.NewTMenuEditing(form)
+        editing := lcl.NewMenuEditing(form)
 
         // 创建菜单栏
         menuBar := lcl.NewTMainMenu(form)
-
-        // 文件菜单
-        fileMenu := lcl.NewTMenuItem(menuBar)
-        fileMenu.SetCaption("文件(&F)")
 
         // 编辑菜单
         editMenu := lcl.NewTMenuItem(menuBar)
         editMenu.SetCaption("编辑(&E)")
 
-        // 添加编辑操作到菜单
-        items := []struct {
-            caption  string
-            shortcut string
-            action   func()
-        }{
-            {"撤销", "Ctrl+Z", func() { editing.Undo() }},
-            {"重做", "Ctrl+Y", func() { editing.Redo() }},
-            {"", "", nil}, // 分隔线
-            {"剪切", "Ctrl+X", func() { editing.Cut() }},
-            {"复制", "Ctrl+C", func() { editing.Copy() }},
-            {"粘贴", "Ctrl+V", func() { editing.Paste() }},
-            {"删除", "Delete", func() { editing.Delete() }},
-            {"", "", nil}, // 分隔线
-            {"全选", "Ctrl+A", func() { editing.SelectAll() }},
-        }
+        // 撤销
+        undoItem := lcl.NewTMenuItem(editMenu)
+        undoItem.SetCaption("撤销")
+        undoItem.SetAction(editing.UndoAction)
 
-        for _, item := range items {
-            if item.caption == "" {
-                sep := lcl.NewTMenuItem(editMenu)
-                sep.SetCaption("-")
-                editMenu.Add(sep)
-                continue
-            }
+        // 重做
+        redoItem := lcl.NewTMenuItem(editMenu)
+        redoItem.SetCaption("重做")
+        redoItem.SetAction(editing.RedoAction)
 
-            menuItem := lcl.NewTMenuItem(editMenu)
-            menuItem.SetCaption(item.caption)
-            menuItem.SetShortcut(item.shortcut)
-            action := item.action
-            menuItem.SetOnClick(func(sender lcl.IObject) {
-                action()
-            })
-            editMenu.Add(menuItem)
-        }
+        // 分隔线
+        sep1 := lcl.NewTMenuItem(editMenu)
+        sep1.SetCaption("-")
+
+        // 剪切
+        cutItem := lcl.NewTMenuItem(editMenu)
+        cutItem.SetCaption("剪切")
+        cutItem.SetAction(editing.CutAction)
+
+        // 复制
+        copyItem := lcl.NewTMenuItem(editMenu)
+        copyItem.SetCaption("复制")
+        copyItem.SetAction(editing.CopyAction)
+
+        // 粘贴
+        pasteItem := lcl.NewTMenuItem(editMenu)
+        pasteItem.SetCaption("粘贴")
+        pasteItem.SetAction(editing.PasteAction)
+
+        // 删除
+        deleteItem := lcl.NewTMenuItem(editMenu)
+        deleteItem.SetCaption("删除")
+        deleteItem.SetAction(editing.DeleteAction)
+
+        // 分隔线
+        sep2 := lcl.NewTMenuItem(editMenu)
+        sep2.SetCaption("-")
+
+        // 全选
+        selectAllItem := lcl.NewTMenuItem(editMenu)
+        selectAllItem.SetCaption("全选")
+        selectAllItem.SetAction(editing.SelectAllAction)
     })
 
     lcl.Run(lcl.Application.Forms()...)

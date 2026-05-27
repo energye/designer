@@ -5,14 +5,6 @@ ENERGY 是基于 Go 语言的跨平台桌面 GUI 框架，整合原生控件（L
 ## 包结构
 
 ```
-github.com/energye/energy/v3      # ENERGY 框架高层封装
-├── application/                   # 应用配置、本地资源加载、系统托盘、通知
-├── window/                        # 窗口基类 TWindow
-├── wv/                            # 跨平台 WebView 抽象层
-├── ipc/                           # Go ↔ JavaScript 进程间通信
-├── logger/                        # 异步日志
-└── platform/                      # 平台特定功能（通知等）
-
 github.com/energye/lcl            # LCL 原生控件库（底层）
 github.com/energye/wv             # 平台 WebView 绑定（底层）
 ```
@@ -109,7 +101,7 @@ package main
 import (
     "github.com/energye/lcl/lcl"
     "github.com/energye/lcl/api/libname"
-    "github.com/energye/wv"
+    wv "github.com/energye/wv/windows" // 平台特定：windows/linux/darwin
 )
 
 func main() {

@@ -1,6 +1,6 @@
 # 系统托盘
 
-系统托盘模块提供跨平台的系统托盘图标和菜单功能。
+系统托盘模块提供跨平台的系统托盘图标和菜单功能（Windows 和 macOS，Linux 使用系统通知）。
 
 ## 创建托盘图标
 
@@ -18,13 +18,14 @@ tray := application.NewTrayIcon()
 tray.Show()     // 显示托盘图标
 tray.Hide()     // 隐藏托盘图标
 tray.Visible()  // 查询是否可见
+tray.Close()    // 关闭托盘图标
 ```
 
 ### 设置图标
 
 ```go
-tray.SetIcon(icon)             // 设置图标对象
-tray.SetIconBytes(data []byte) // 从字节数据设置图标
+tray.SetIcon("path/to/icon.png")  // 从文件设置图标
+tray.SetIconBytes(data []byte)    // 从字节数据设置图标
 ```
 
 ### 设置提示文本
@@ -37,18 +38,28 @@ tray.SetHint("我的应用 - 运行中")
 
 ```go
 // 左键单击
-tray.SetOnClick(func(sender lcl.IObject) {
+tray.SetOnClick(func() {
     // 显示主窗口
 })
 
 // 左键双击
-tray.SetOnDblClick(func(sender lcl.IObject) {
+tray.SetOnDblClick(func() {
     // 显示/隐藏窗口
 })
 
-// 右键单击
-tray.SetOnRightClick(func(sender lcl.IObject) {
-    // 显示菜单
+// 鼠标按下
+tray.SetOnMouseDown(func(button types.TMouseButton, shift types.TShiftState, x, y int32) {
+    // 鼠标按下事件
+})
+
+// 鼠标抬起
+tray.SetOnMouseUp(func(button types.TMouseButton, shift types.TShiftState, x, y int32) {
+    // 鼠标抬起事件
+})
+
+// 鼠标移动
+tray.SetOnMouseMove(func(shift types.TShiftState, x, y int32) {
+    // 鼠标移动事件
 })
 ```
 
@@ -64,7 +75,7 @@ menu := tray.Menu()
 
 ```go
 item := menu.AddMenuItem("显示主窗口")
-item.SetOnClick(func(sender lcl.IObject) {
+item.SetOnClick(func() {
     form.Show()
 })
 ```
@@ -80,7 +91,7 @@ menu.AddSeparator()
 ```go
 item := menu.AddMenuItem("选项")
 subItem := item.AddSubMenuItem("子选项")
-subItem.SetOnClick(func(sender lcl.IObject) {
+subItem.SetOnClick(func() {
     // 子菜单点击
 })
 ```
@@ -91,14 +102,32 @@ subItem.SetOnClick(func(sender lcl.IObject) {
 item.SetChecked(true)      // 设置选中状态
 item.SetRadio(true)        // 设置为单选样式
 item.SetEnabled(false)     // 设置为禁用
-item.SetImage(image)       // 设置图标
-item.SetBitmap(bitmap)     // 设置位图
+item.SetImage(imageName)   // 设置图标（通过图片名）
+item.SetBitmap(imageData)  // 设置位图（字节数据）
+item.SetImageIndex(index)  // 设置图片索引
+item.Enabled() bool        // 查询是否启用
+item.Checked() bool        // 查询是否选中
+item.Clear()               // 清空子菜单
 ```
 
 ### 图片列表
 
 ```go
-menu.SetImageListEmbed(embedFS, []string{"resources/icon.png"})
+// 从文件路径设置图片列表
+menu.SetImageList([]string{"path/to/icon1.png", "path/to/icon2.png"})
+
+// 从嵌入 FS 设置图片列表
+menu.SetImageListEmbed(embedFS, []string{"resources/icon1.png", "resources/icon2.png"})
+
+// 从字节数据设置图片列表
+menu.SetImageListDataBytes([][]byte{icon1Data, icon2Data})
+```
+
+### 菜单项绘制事件
+
+```go
+item.SetOnMeasureItem(fn lcl.TMenuMeasureItemEvent) // 自定义测量
+item.SetOnDrawItem(fn lcl.TMenuDrawItemEvent)       // 自定义绘制
 ```
 
 ## 完整示例
@@ -124,19 +153,19 @@ func main() {
     menu := tray.Menu()
 
     showItem := menu.AddMenuItem("显示窗口")
-    showItem.SetOnClick(func(sender lcl.IObject) {
+    showItem.SetOnClick(func() {
         form.Show()
     })
 
     menu.AddSeparator()
 
     exitItem := menu.AddMenuItem("退出")
-    exitItem.SetOnClick(func(sender lcl.IObject) {
+    exitItem.SetOnClick(func() {
         lcl.Application.Terminate()
     })
 
     // 双击显示窗口
-    tray.SetOnDblClick(func(sender lcl.IObject) {
+    tray.SetOnDblClick(func() {
         form.Show()
     })
 

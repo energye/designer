@@ -18,14 +18,14 @@ wvApp.SetLocalLoad(application.LocalLoad{
 
 ### 字段说明
 
-| 字段         | 类型        | 说明                        |
-|------------|-----------|---------------------------|
-| Scheme     | string    | URL Scheme 名称（如 "app"、"fs"） |
-| Domain     | string    | 域名（如 "custom"、"energy"）   |
-| ResRootDir | string    | 资源根目录（资源读取目录）             |
-| FS         | embed.FS  | 嵌入的文件系统（可选，不设置则从本地目录读取）   |
-| Home       | string    | 默认首页（默认 "/index.html"）    |
-| Proxy      | IXHRProxy | XHR 代理配置（可选）              |
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| Scheme | string | URL Scheme 名称（如 "app"、"fs"），默认 "fs" |
+| Domain | string | 域名（如 "custom"、"energy"），默认 "energy" |
+| ResRootDir | string | 资源根目录（资源读取目录） |
+| FS | emfs.IEmbedFS | 嵌入的文件系统（可选，不设置则从本地目录读取） |
+| Home | string | 默认首页，默认 "/index.html" |
+| Proxy | IXHRProxy | XHR 代理配置（可选） |
 
 ### URL 格式
 
@@ -122,7 +122,7 @@ webview.SetOnURISchemeRequest(func(sender lcl.IObject, wkURISchemeRequest wvType
 webview := wvDarwin.NewWebview(m)
 
 configuration := wvDarwin.WebViewConfiguration.New()
-URLSchemeHandler := vDarwin.NewURLSchemeHandler(webview.AsWKURLSchemeHandlerDelegate())
+URLSchemeHandler := wvDarwin.NewURLSchemeHandler(webview.AsWKURLSchemeHandlerDelegate())
 configuration.SetURLSchemeHandlerForURLScheme(URLSchemeHandler.Data(), "energy")
 
 webview.SetOnStartURLSchemeTask(func(sender lcl.IObject, webView wvTypes.WKWebView, urlSchemeTask wvTypes.WKURLSchemeTask) {
@@ -154,6 +154,16 @@ wvApp.SetLocalLoad(application.LocalLoad{
 })
 ```
 
+### XHRProxy 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| Scheme | LocalProxyScheme | 代理协议（LpsHttp / LpsHttps） |
+| IP | string | 代理 IP 地址，默认 "localhost" |
+| Port | int | 代理端口，默认 80 |
+| SSL | XHRProxySSL | HTTPS 证书配置 |
+| HttpClient | *HttpClient | 自定义 HTTP 客户端 |
+
 ### HTTPS 代理
 
 ```go
@@ -161,13 +171,34 @@ Proxy: &application.XHRProxy{
     Scheme: application.LpsHttps,
     IP:     "127.0.0.1",
     Port:   8443,
-    SSL: &application.XHRProxySSL{
-        Cert:    certData,
-        Key:     keyData,
-        CARoots: caData,
+    SSL: application.XHRProxySSL{
+        RootDir: "certs",           // 证书文件目录
+        Cert:    "server.crt",      // 证书文件路径
+        Key:     "server.key",      // 私钥文件路径
+        CARoots: []string{"ca.crt"}, // CA 根证书文件路径列表
     },
 }
 ```
+
+### XHRProxySSL 字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| FS | emfs.IEmbedFS | 证书文件嵌入 FS（可选） |
+| RootDir | string | 证书文件根目录 |
+| Cert | string | 证书文件路径 |
+| Key | string | 私钥文件路径 |
+| CARoots | []string | CA 根证书文件路径列表 |
+
+### XHRProxyResponse 响应
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| Data | []byte | 响应数据 |
+| DataSize | int | 数据大小 |
+| StatusCode | int32 | HTTP 状态码 |
+| Status | string | 状态文本 |
+| Header | map[string][]string | 响应头 |
 
 ## JavaScript 端使用
 

@@ -8,9 +8,9 @@ IPC（Inter-Process Communication）模块提供 Go 与 JavaScript 之间的双�
 
 ```go
 ipc.On("eventName", func(context ipc.IContext) {
-    data := context.Data()       // 获取参数（interface{}）
-    browserId := context.BrowserId() // 获取浏览器 ID
-    context.Result(result)       // 返回结果给 JS
+    data := context.Data()          // 获取参数（any）
+    browserId := context.BrowserId() // 获取浏览器 ID（uint32）
+    context.Result(result)           // 返回结果给 JS（支持多个参数）
 })
 ```
 
@@ -24,9 +24,10 @@ ipc.Emit("eventName", arg1, arg2, ...)
 
 ```go
 ipc.EmitOptions(&ipc.OptionsEvent{
-    BrowserId: browserId,
+    BrowserId: browserId, // uint32
     Name:      "eventName",
-    Data:      "data",
+    Data:      "data",    // any
+    Callback:  nil,       // EventCallback
 })
 ```
 
@@ -38,7 +39,7 @@ ipc.RemoveOn("eventName")
 
 ### BindEvent - 自动绑定结构体方法
 
-将结构体的所有导出方法自动绑定到 IPC 事件：
+将结构体的所有导出方法自动绑定到 IPC 事件，事件名为 `{类型名}.{方法名}`：
 
 ```go
 type DemoBind struct {
@@ -59,7 +60,7 @@ func (m *DemoBind) TestResult() *DemoBind {
     return &DemoBind{Field1: "a", Field2: "b", Field3: 1}
 }
 
-// 绑定
+// 绑定，事件名为 DemoBind.Test1、DemoBind.Test2、DemoBind.TestResult
 ipc.BindEvent(&DemoBind{})
 ```
 
@@ -76,15 +77,17 @@ ipc.emit('DemoBind.Test1', ['datastr', 1009, energy.getEnv("browser").id], funct
 ipc.BindEventPrefix("demo", &DemoBind{})
 ```
 
-绑定后事件名为 `demo.Test1`、`demo.Test2` 等。
+绑定后事件名为 `demo.Test1`、`demo.Test2`、`demo.TestResult`。
 
 ## IContext 接口
 
-| 方法 | 返回值 | 说明 |
-|------|--------|------|
-| Data() | interface{} | 事件参数 |
-| Result(values ...interface{}) | - | 返回结果给 JS |
-| BrowserId() | uint32 | 触发事件的浏览器 ID |
+```go
+type IContext interface {
+    Data() any               // 获取事件参数
+    Result(data ...any)      // 返回结果给 JS（支持多个返回值）
+    BrowserId() uint32       // 触发事件的浏览器 ID
+}
+```
 
 ### 参数类型
 
@@ -124,8 +127,8 @@ ipc.On("test", func(context ipc.IContext) {
 
 ### 发送事件到 Go
 
-```go
-// 基本发送
+```javascript
+// 基本发送，参数为数组，最后一个参数为回调函数
 ipc.emit('eventName', [arg1, arg2], function(result) {
     console.log(result);
 });
@@ -192,6 +195,8 @@ package main
 
 import (
     "fmt"
+    "runtime"
+    "github.com/energye/energy/v3/application"
     "github.com/energye/energy/v3/ipc"
     "github.com/energye/energy/v3/wv"
     "github.com/energye/energy/v3/window"

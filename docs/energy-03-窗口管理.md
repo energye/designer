@@ -106,7 +106,7 @@ m.SetHeight(600)                  // 设置高度
 m.SetLeft(100)                    // 设置左边距
 m.SetTop(100)                     // 设置上边距
 m.SetPosition(types.PoScreenCenter) // 居中显示
-m.SetBorderStyle(types.BsSingle)  // 边框样式
+m.SetBorderStyleToFormBorderStyle(types.BsSingle)  // 边框样式
 m.SetVisible(true)                // 可见性
 m.SetEnabled(true)                // 启用状态
 ```
@@ -118,8 +118,8 @@ m.SetOnClick(func(sender lcl.IObject) { /* 点击 */ })
 m.SetOnResize(func(sender lcl.IObject) { /* 大小改变 */ })
 m.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, x, y int32) { /* 鼠标按下 */ })
 m.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, x, y int32) { /* 鼠标移动 */ })
-m.SetOnKeyUp(func(sender lcl.IObject, key *types.Char, shift types.TShiftState) { /* 键盘抬起 */ })
-m.SetOnKeyDown(func(sender lcl.IObject, key *types.Char, shift types.TShiftState) { /* 键盘按下 */ })
+m.SetOnKeyUp(func(sender lcl.IObject, key *uint16, shift types.TShiftState) { /* 键盘抬起 */ })
+m.SetOnKeyDown(func(sender lcl.IObject, key *uint16, shift types.TShiftState) { /* 键盘按下 */ })
 ```
 
 ## 线程安全
@@ -159,6 +159,7 @@ getWindow := func(browserId uint32) *TMainForm {
 package main
 
 import (
+    "github.com/energye/energy/v3/application"
     "github.com/energye/energy/v3/window"
     "github.com/energye/energy/v3/wv"
     "github.com/energye/lcl/lcl"

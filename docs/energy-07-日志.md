@@ -23,17 +23,17 @@ log := logger.New(logger.Config{
 | Level | Level | InfoLevel | 最低日志级别 |
 | Output | io.Writer | os.Stdout | 日志输出目标 |
 | Caller | bool | false | 是否显示调用位置 |
-| BufferSize | int | 1024 | 日志通道缓冲大小 |
-| BatchSize | int | 100 | 批量写入大小 |
+| BufferSize | int | 65536 | 日志通道缓冲大小 |
+| BatchSize | int | 256 | 批量写入大小 |
 
 ## 日志级别
 
-| 级别 | 方法 | 说明 |
+| 级别 | 常量 | 说明 |
 |------|------|------|
-| Debug | Debug/Debugf | 调试信息 |
-| Info | Info/Infof | 普通信息 |
-| Warn | Warn/Warnf | 警告信息 |
-| Error | Error/Errorf | 错误信息 |
+| Debug | logger.DebugLevel | 调试信息 |
+| Info | logger.InfoLevel | 普通信息 |
+| Warn | logger.WarnLevel | 警告信息 |
+| Error | logger.ErrorLevel | 错误信息 |
 
 ## 使用方式
 
@@ -42,16 +42,10 @@ log := logger.New(logger.Config{
 ```go
 log := logger.New(logger.Config{Level: logger.DebugLevel})
 
-log.Debug("调试信息")
-log.Info("普通信息")
-log.Warn("警告信息")
-log.Error("错误信息")
-
-// 格式化输出
-log.Debugf("用户 %s 登录，ID: %d", name, id)
-log.Infof("处理了 %d 条记录", count)
-log.Warnf("内存使用率: %.2f%%", usage)
-log.Errorf("请求失败: %v", err)
+log.Debug("调试信息", "key", value)
+log.Info("普通信息", "key", value)
+log.Warn("警告信息", "key", value)
+log.Error("错误信息", "key", value)
 ```
 
 ### 全局日志
@@ -63,16 +57,10 @@ logger.SetDefault(logger.New(logger.Config{
 }))
 
 // 使用全局日志
-logger.Debug("调试信息")
-logger.Info("普通信息")
-logger.Warn("警告信息")
-logger.Error("错误信息")
-
-// 格式化输出
-logger.Debugf("调试: %v", data)
-logger.Infof("信息: %v", data)
-logger.Warnf("警告: %v", data)
-logger.Errorf("错误: %v", data)
+logger.Debug("调试信息", "key", value)
+logger.Info("普通信息", "key", value)
+logger.Warn("警告信息", "key", value)
+logger.Error("错误信息", "key", value)
 ```
 
 ### 获取全局日志实例
@@ -80,6 +68,18 @@ logger.Errorf("错误: %v", data)
 ```go
 log := logger.L()
 log.Info("通过 L() 获取的实例")
+```
+
+### 设置日志级别
+
+```go
+log.SetLevel(logger.DebugLevel)
+```
+
+### 关闭日志
+
+```go
+log.Close() // 关闭日志，等待缓冲区写入完成
 ```
 
 ## 异步写入
@@ -100,9 +100,9 @@ log.Info("通过 L() 获取的实例")
 
 | 场景 | BufferSize | BatchSize |
 |------|------------|-----------|
-| 开发调试 | 256 | 10 |
-| 生产环境 | 4096 | 200 |
-| 高并发 | 8192 | 500 |
+| 开发调试 | 1024 | 32 |
+| 生产环境 | 65536 | 256 |
+| 高并发 | 131072 | 512 |
 
 ## 调用位置
 
@@ -172,19 +172,17 @@ func main() {
 
     // 初始化全局日志
     logger.SetDefault(logger.New(logger.Config{
-        Level:      logger.DebugLevel,
-        Output:     io.MultiWriter(os.Stdout, file),
-        Caller:     true,
-        BufferSize: 1024,
-        BatchSize:  50,
+        Level:  logger.DebugLevel,
+        Output: io.MultiWriter(os.Stdout, file),
+        Caller: true,
     }))
 
     logger.Info("应用启动")
-    logger.Debugf("配置加载完成，共 %d 项", configCount)
+    logger.Debug("配置加载完成", "count", 10)
 
     // 业务逻辑
     if err := doSomething(); err != nil {
-        logger.Errorf("操作失败: %v", err)
+        logger.Error("操作失败", "error", err)
     }
 
     logger.Info("应用退出")

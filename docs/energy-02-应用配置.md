@@ -22,15 +22,15 @@ wvApp.SetOptions(application.Options{
 |------|------|------|
 | Caption | string | 窗口标题 |
 | DefaultURL | string | 默认加载的 URL |
-| X | int | 窗口 X 坐标 |
-| Y | int | 窗口 Y 坐标 |
-| Width | int | 窗口宽度 |
-| Height | int | 窗口高度 |
-| MinWidth | int | 最小宽度（0 = 无限制） |
-| MinHeight | int | 最小高度（0 = 无限制） |
-| MaxWidth | int | 最大宽度（0 = 无限制） |
-| MaxHeight | int | 最大高度（0 = 无限制） |
-| DefaultWindowStatus | int | 默认窗口状态 |
+| X | int32 | 窗口 X 坐标 |
+| Y | int32 | 窗口 Y 坐标 |
+| Width | int32 | 窗口宽度 |
+| Height | int32 | 窗口高度 |
+| MinWidth | int32 | 最小宽度（0 = 无限制） |
+| MinHeight | int32 | 最小高度（0 = 无限制） |
+| MaxWidth | int32 | 最大宽度（0 = 无限制） |
+| MaxHeight | int32 | 最大高度（0 = 无限制） |
+| DefaultWindowStatus | types.TWindowState | 默认窗口状态 |
 
 ### 功能开关
 
@@ -51,7 +51,7 @@ wvApp.SetOptions(application.Options{
 | Frameless | bool | 无边框窗口 |
 | WindowTransparent | bool | 窗口透明 |
 | WebviewTransparent | bool | WebView 背景透明 |
-| BackgroundColor | int | 背景颜色（使用 `colors.NewARGB()` 创建） |
+| BackgroundColor | *colors.TARGB | 背景颜色（使用 `colors.NewARGB()` 创建） |
 
 ### 平台配置
 
@@ -93,14 +93,39 @@ Windows: application.Windows{
 
 ```go
 Windows: application.Windows{
-    ThemeSetting: application.ThemeSetting{
-        BkColor:           0xFFFFFF,
-        TextColor:         0x000000,
-        BkColorDisabled:   0xCCCCCC,
-        TextColorDisabled: 0x888888,
+    ThemeSetting: &application.ThemeSetting{
+        DarkTitleBar:           0x000000,
+        DarkTitleBarInactive:   0x2B2B2B,
+        DarkTitleText:          0xFFFFFF,
+        DarkTitleTextInactive:  0x999999,
+        DarkBorder:             0x333333,
+        DarkBorderInactive:     0x222222,
+        LightTitleBar:          0xFFFFFF,
+        LightTitleBarInactive:  0xF0F0F0,
+        LightTitleText:         0x000000,
+        LightTitleTextInactive: 0x999999,
+        LightBorder:            0xCCCCCC,
+        LightBorderInactive:    0xE0E0E0,
     },
 }
 ```
+
+ThemeSetting 字段（均为 int32 颜色值）：
+
+| 字段 | 说明 |
+|------|------|
+| DarkTitleBar | 深色主题标题栏颜色 |
+| DarkTitleBarInactive | 深色主题非活动标题栏颜色 |
+| DarkTitleText | 深色主题标题文字颜色 |
+| DarkTitleTextInactive | 深色主题非活动标题文字颜色 |
+| DarkBorder | 深色主题边框颜色 |
+| DarkBorderInactive | 深色主题非活动边框颜色 |
+| LightTitleBar | 浅色主题标题栏颜色 |
+| LightTitleBarInactive | 浅色主题非活动标题栏颜色 |
+| LightTitleText | 浅色主题标题文字颜色 |
+| LightTitleTextInactive | 浅色主题非活动标题文字颜色 |
+| LightBorder | 浅色主题边框颜色 |
+| LightBorderInactive | 浅色主题非活动边框颜色 |
 
 ### WindowProtected 窗口保护
 
@@ -124,17 +149,19 @@ MacOS: application.MacOS{
 
 | 值 | 说明 |
 |-----|------|
-| ANAquaAppearance | Aqua 外观 |
-| ANDarkAquaAppearance | 深色 Aqua |
-| NSAppearanceNameDarkAqua | 深色 Aqua（系统名称） |
-| ANAccessibilityHighContrastAquaAppearance | 高对比度 Aqua |
-| ANAccessibilityHighContrastDarkAquaAppearance | 高对比度深色 Aqua |
+| NSAppearanceNameAqua | 标准浅色系统外观 |
+| NSAppearanceNameDarkAqua | 标准深色系统外观 |
+| NSAppearanceNameVibrantLight | 浅色生动外观 |
+| NSAppearanceNameAccessibilityHighContrastAqua | 高对比度浅色外观 |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua | 高对比度深色外观 |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | 高对比度浅色生动外观 |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark | 高对比度深色生动外观 |
 
 ### 其他 macOS 选项
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| WindowRadius | int | 窗口圆角半径 |
+| WindowRadius | float32 | 窗口圆角半径（Frameless=true 时有效） |
 | FullSizeContent | bool | 全尺寸内容（延伸到标题栏） |
 | TitleTransparent | bool | 标题栏透明 |
 | TitleHideText | bool | 隐藏标题文字 |
