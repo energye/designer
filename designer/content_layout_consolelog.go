@@ -49,7 +49,7 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 	m.designer.SetOnSpecialLineMarkup(func(sender lcl.IObject, line int32, special *bool,
 		markup lcl.ISynSelectedColor) {
 		lines := m.designer.Lines()
-		lineText := lines.Strings(line)
+		lineText := lines.Strings(line - 1)
 		markup.SetBackground(0xFFFFFF)
 		*special = true
 		//markup.SetForeground(0x1E1F22)
@@ -62,7 +62,7 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 		} else if strings.Contains(lineText, "[DEBUG]") {
 			markup.SetForeground(0x666666)
 		} else {
-			//markup.SetForeground(0x1E1F22)
+			//markup.SetForeground(0x008800)
 		}
 	})
 
