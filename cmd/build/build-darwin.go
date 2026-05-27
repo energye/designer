@@ -136,7 +136,11 @@ func buildDarwin(ctx context.Context) bool {
 			cmd.Env = append(os.Environ(), env...)
 		}
 		cmd.Console = func(data string, level command.Level) {
-			event.ConsoleWriteInfo(data)
+			if level == command.LError {
+				event.ConsoleWriteError(data)
+			} else {
+				event.ConsoleWriteInfo(data)
+			}
 		}
 		cmd.CommandContext(ctx, "go", tempArgs...)
 		if option.BuildModeRelease && tool.IsDarwin {
