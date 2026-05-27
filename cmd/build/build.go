@@ -134,3 +134,13 @@ func ExtractLdflags(input string) string {
 	val = strings.ReplaceAll(val, `\"`, `"`)
 	return val
 }
+
+func isErrorLine(line string) bool {
+	if matched, _ := regexp.MatchString(`\.go:\d+:\d+:`, line); matched {
+		return true
+	}
+	if strings.HasPrefix(line, "# ") {
+		return true
+	}
+	return false
+}

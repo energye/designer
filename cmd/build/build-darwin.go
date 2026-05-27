@@ -136,8 +136,11 @@ func buildDarwin(ctx context.Context) bool {
 			cmd.Env = append(os.Environ(), env...)
 		}
 		cmd.Console = func(data string, level command.Level) {
-			if level == command.LError {
+			err := isErrorLine(data)
+			if err {
 				event.ConsoleWriteError(data)
+			} else if level == command.LError {
+				event.ConsoleWriteDebug(data)
 			} else {
 				event.ConsoleWriteInfo(data)
 			}
