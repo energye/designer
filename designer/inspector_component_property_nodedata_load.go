@@ -74,8 +74,12 @@ func (m *TDesigningComponent) SwitchDefaultTreeTabPage() {
 }
 
 func (m *TDesigningComponent) UpdatePropertyTreeWidth() {
+	propertyTreeWidth := config.Config.WindowLayout.ContentLayout.InspectorLayout.PropertyTreeWidth
+	if propertyTreeWidth <= 50 {
+		propertyTreeWidth = 50
+	}
 	if gDefaultPropertyNameColumnTreeWidth == -1 {
-		gDefaultPropertyNameColumnTreeWidth = config.Config.WindowLayout.ContentLayout.InspectorLayout.PropertyTreeWidth
+		gDefaultPropertyNameColumnTreeWidth = propertyTreeWidth
 	}
 	columns := m.propertyTree.Header().Columns()
 	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
@@ -87,8 +91,12 @@ func (m *TDesigningComponent) UpdatePropertyTreeWidth() {
 }
 
 func (m *TDesigningComponent) UpdateEventTreeWidth() {
+	eventTreeWidth := config.Config.WindowLayout.ContentLayout.InspectorLayout.EventTreeWidth
+	if eventTreeWidth <= 50 {
+		eventTreeWidth = 50
+	}
 	if gDefaultEventNameColumnTreeWidth == -1 {
-		gDefaultEventNameColumnTreeWidth = config.Config.WindowLayout.ContentLayout.InspectorLayout.EventTreeWidth
+		gDefaultEventNameColumnTreeWidth = eventTreeWidth
 	}
 	columns := m.eventTree.Header().Columns()
 	nameColumn := columns.ItemsWithColumnIndexToVirtualTreeColumn(0)
