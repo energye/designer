@@ -34,14 +34,6 @@ import (
 	"time"
 )
 
-// 在设计器中创建项目
-// 功能
-// 主要: 在指定目录创建一个 energy 应用, 应用有默认模板
-// 1. 应用名
-// 2. 应用目录
-// 3. 所需依赖模块(lcl, cef, webview), 从网络下载, 或设计器内绑定(✔️)
-// 4. 模块模式： go.mod (✔️), go.work
-
 var (
 	createProjectFormWidth  = int32(500)
 	createProjectFormHeight = int32(210)
@@ -350,20 +342,15 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		return
 	}
 	// 禁用按钮
-	m.cancelBtn.SetDisable(true)
-	m.createBtn.SetDisable(true)
-	recoverBtn := func() {
-		if !m.closing {
-			// 恢复按钮
-			m.cancelBtn.SetDisable(false)
-			m.createBtn.SetDisable(false)
-		}
-	}
-	// 框架安装目录
-	//frameworkDir := m.modLocalDirEdit.Text()
-	//enableLCL := m.modLCLCheckBox.Checked()
-	//enableCEF := m.modCEFCheckBox.Checked()
-	//enableWV := m.modWebviewCheckBox.Checked()
+	//m.cancelBtn.SetDisable(true)
+	//m.createBtn.SetDisable(true)
+	//recoverBtn := func() {
+	//	if !m.closing {
+	//		// 恢复按钮
+	//		m.cancelBtn.SetDisable(false)
+	//		m.createBtn.SetDisable(false)
+	//	}
+	//}
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 	guiRenderFramework := m.guiRenderFrameworkBox.Text()
@@ -377,32 +364,26 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	})
 	// 检查创建项目
 	if checkCreate(projectDir) {
+		m.Close()
 		// 触发文件修改监听事件
 		event.Emit(event.TTrigger{Name: event.ListenFileChange})
-		// 允许创建
 		// 重置设计器
 		designer.ResetDesigner()
 		go func() {
 			// 运行创建项目
 			if doRunCreate(projectName, projectDir, guiRenderFrameworkGUI) {
-				event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
-				// go.mod
-				event.ConsoleWriteInfo("go mod tidy")
-				cmd := command.NewCMD()
-				cmd.HideWindow = true
-				cmd.Dir = projectDir
-				cmd.Console = func(data string, level command.Level) {
-					event.ConsoleWriteInfo(data)
-				}
-				cmd.Command("go", "mod", "tidy")
-				// 恢复按钮
-				recoverBtn()
+				lcl.RunOnMainThreadAsync(func(id uint32) {
+					designer.ProjectTreeClear()
+					event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
+				})
+				designer.CMDGoModDepsUpdate()
 				designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", bean.GProject.Name, bean.GPath))
+				designer.SetEnableFuncComponent(true)
+				//recoverBtn()
 			}
-
 		}()
 	} else {
-		recoverBtn()
+		//recoverBtn()
 	}
 }
 

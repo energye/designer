@@ -229,8 +229,7 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 		item.SetCaption(egpFilePath)
 		item.SetOnClick(func(sender lcl.IObject) {
 			logs.Debug("打开历史项目:", egpFilePath)
-			ProjectTreeClearComponentTreeNode()
-			ProjectTreeClearSrcTreeNode()
+			ProjectTreeClear()
 			event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: egpFilePath}})
 		})
 		m.history.Add(item)

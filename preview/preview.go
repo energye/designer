@@ -73,7 +73,7 @@ func runPreview(state chan<- any) {
 // 停止预览
 func stopPreview() {
 	// 停止运行
-	if runCmd != nil {
+	if runCmd != nil && runCmd.Cmd != nil && runCmd.Cmd.Process != nil {
 		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid)
 		err := runCmd.Cmd.Process.Kill()
 		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)

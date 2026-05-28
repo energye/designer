@@ -16,10 +16,12 @@ package designer
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool/command"
 )
 
 // 工具按钮功能
@@ -34,8 +36,9 @@ type TToolbarToolBtn struct {
 	redoBtn lcl.IToolButton
 
 	runPreviewBtn lcl.IToolButton
+	previewState  consts.PreviewState
 
-	previewState consts.PreviewState // 预览状态
+	cmdGoModBtn lcl.IToolButton
 }
 
 // SetEnableToolButtons 设置工具栏按钮的启用状态
@@ -111,8 +114,7 @@ func (m *TToolbarToolBtn) onOpenForm(sender lcl.IObject) {
 	MainWindow.openDialog.SetFilter(config.DialogFilter.UIFilter())
 	MainWindow.openDialog.SetFilterIndex(1)
 	if MainWindow.openDialog.Execute() {
-		ProjectTreeClearComponentTreeNode()
-		ProjectTreeClearSrcTreeNode()
+		ProjectTreeClear()
 		filePath := MainWindow.openDialog.FileName()
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectLoad, Data: filePath}})
 	}
@@ -152,6 +154,36 @@ func (m *TToolbarToolBtn) onRunPreviewForm(sender lcl.IObject) {
 		// 启动运行预览
 		event.Emit(event.TTrigger{Name: event.Preview, Payload: consts.PsStarted, Result: result})
 	}
+}
+
+func (m *TToolbarToolBtn) onCmdGoModBtn(sender lcl.IObject) {
+	m.cmdGoModBtn.SetEnabled(false)
+	go func() {
+		CMDGoModDepsUpdate()
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			m.cmdGoModBtn.SetEnabled(true)
+		})
+	}()
+}
+
+func CMDGoModDepsUpdate() {
+	if bean.GPath == "" {
+		return
+	}
+	cmd := command.NewCMD()
+	cmd.HideWindow = true
+	cmd.Dir = bean.GPath
+	cmd.Console = func(data string, level command.Level) {
+		event.ConsoleWriteInfo(data)
+	}
+	for modName, modVersion := range config.DesignerConfig.Dependencies {
+		cmdStr := modName + "@" + modVersion
+		event.ConsoleWriteInfo("go", "get", cmdStr)
+		cmd.Command("go", "get", cmdStr)
+	}
+	event.ConsoleWriteInfo("go", "mod", "tidy")
+	cmd.Command("go", "mod", "tidy")
+	event.ConsoleWriteInfo("end")
 }
 
 // 切换预览按钮状态, 在运行和结束运行之间切换

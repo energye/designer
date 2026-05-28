@@ -142,6 +142,11 @@ func ProjectTreeClearSrcTreeNode() {
 	gProjectSrcTree.reset()
 }
 
+func ProjectTreeClear() {
+	ProjectTreeClearComponentTreeNode()
+	ProjectTreeClearSrcTreeNode()
+}
+
 func ProjectTreeSrcTreeNode() lcl.ITreeNode {
 	if MainWindow.contentLayout == nil {
 		return nil

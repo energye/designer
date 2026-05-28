@@ -90,5 +90,10 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行预览(F9)", 3, "运行预览(F9)")
 	m.toolbarBtn.runPreviewBtn.SetOnClick(m.toolbarBtn.onRunPreviewForm)
 
+	newSep()
+
+	m.toolbarBtn.cmdGoModBtn = newBtn(-1, "更新go.mod", 3, "更新go.mod")
+	m.toolbarBtn.cmdGoModBtn.SetOnClick(m.toolbarBtn.onCmdGoModBtn)
+
 	// 对齐功能按钮
 }

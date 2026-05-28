@@ -47,14 +47,14 @@ func runCreate() {
 
 // 检查创建条件
 func checkCreate(dir string) bool {
-	logs.Debug("运行创建项目 目录:", dir)
+	logs.Debug("Run to create project - directory:", dir)
 	if !tool.IsExist(dir) {
-		event.ConsoleWriteError("目录不存在:", dir)
+		event.ConsoleWriteError("Directory does not exist:", dir)
 		return false
 	}
 	de, err := os.ReadDir(dir)
 	if err != nil {
-		event.ConsoleWriteError("读取目录失败:", err.Error())
+		event.ConsoleWriteError("Failed to read directory:", err.Error())
 		return false
 	}
 	var (
@@ -75,27 +75,27 @@ func checkCreate(dir string) bool {
 	}
 	// 已存在项目 egp 文件, 提示覆盖
 	if existEgp != "" {
-		msg := fmt.Sprintf("当前目录已存在项目配置 %s\n是否覆盖？", existEgp)
-		event.ConsoleWriteWarn("当前目录已存在项目配置", existEgp, "是否覆盖？")
+		msg := fmt.Sprintf("Project configuration already exists %s\nOverwrite？", existEgp)
+		event.ConsoleWriteWarn("Project config exists in current directory.", existEgp, "Overwrite?")
 		isCreate = api.MessageDlg(msg, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 		if !isCreate {
-			event.ConsoleWriteInfo("取消创建项目")
+			event.ConsoleWriteInfo("Cancel project creation")
 			return false
 		}
 		// 覆盖并创建项目, 删除已存在的 xx.egp 文件
 		existEGPPath := filepath.Join(dir, existEgp)
-		event.ConsoleWriteWarn("创建并覆盖项目配置文件:", existEGPPath)
+		event.ConsoleWriteWarn("Create and overwrite project configuration:", existEGPPath)
 		err = os.Remove(existEGPPath)
 		if err != nil {
-			event.ConsoleWriteError("删除项目配置文件错误件:", err.Error())
+			event.ConsoleWriteError("Failed to delete project configuration file:", err.Error())
 			return false
 		}
 	} else if isNotEmpty {
 		// 目录非空并且没有项目配置文件 egp, 提示是否在当前目录创建项目
-		event.ConsoleWriteWarn("当前目录非空是否创建？")
-		isCreate = api.MessageDlg("当前目录非空是否创建？", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
+		event.ConsoleWriteWarn("Directory not empty. Create anyway?")
+		isCreate = api.MessageDlg("Directory is not empty. Create?", types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 		if !isCreate {
-			event.ConsoleWriteInfo("取消创建项目")
+			event.ConsoleWriteInfo("Cancel Project Creation")
 			return false
 		}
 	}
@@ -105,7 +105,7 @@ func checkCreate(dir string) bool {
 // 运行创建项目
 func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
 	// 开始创建项目
-	event.ConsoleWriteInfo("开始创建项目", name)
+	event.ConsoleWriteInfo("Start creating project", name)
 	newProject := new(bean.TProject)
 	newProject.Name = name
 	newProject.EGPName = name + consts.EGPExt
@@ -116,7 +116,7 @@ func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
 	newProject.InitBuildOption() // 初始化构建配置
 	// 创建并写入项目配置文件
 	if err := WriteEGPConfig(dir, newProject); err != nil {
-		event.ConsoleWriteError("创建项目, 写入项目配置失败:", err.Error())
+		event.ConsoleWriteError("Failed to create project and write configuration:", err.Error())
 		SetGlobalProject("", nil)
 		return false
 	} else {
@@ -131,7 +131,7 @@ func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功
-		event.ConsoleWriteInfo("创建项目成功", newProject.Name, dir)
+		event.ConsoleWriteInfo("Project created successfully", newProject.Name, dir)
 		return true
 	}
 }
