@@ -49,7 +49,7 @@ func Load(filePath string) {
 		} else if isUI {
 			LoadUI(filePath)
 		} else {
-			event.ConsoleWriteError("文件非项目配置文件(.egp)或UI布局文件(.ui)")
+			event.ConsoleWriteError("The file is not a project configuration file (.egp)")
 			SetGlobalProject("", nil)
 			return
 		}
@@ -60,21 +60,21 @@ func Load(filePath string) {
 // path: 项目路径
 // egpFilePath: 项目配置文件路径
 func LoadProject(path, egpFilePath string) {
-	event.ConsoleWriteInfo("开始加载项目配置文件:", egpFilePath)
+	event.ConsoleWriteInfo("Loading project configuration:", egpFilePath)
 	data, err := os.ReadFile(egpFilePath)
 	if err != nil {
-		event.ConsoleWriteError("读取项目配置文件失败:", err.Error())
+		event.ConsoleWriteError("Failed to load project configuration:", err.Error())
 		SetGlobalProject("", nil)
 		return
 	}
 	loadProject := &bean.TProject{}
 	err = json.Unmarshal(data, loadProject)
 	if err != nil {
-		event.ConsoleWriteError("解析项目配置文件失败:", err.Error())
+		event.ConsoleWriteError("Failed to parse project configuration:", err.Error())
 		SetGlobalProject("", nil)
 		return
 	}
-	event.ConsoleWriteInfo("加载项目成功", loadProject.Name)
+	event.ConsoleWriteInfo("Project loaded successfully", loadProject.Name)
 	SetGlobalProject(path, loadProject)
 	// 触发文件修改监听事件
 	event.Emit(event.TTrigger{Name: event.ListenFileChange})
@@ -94,15 +94,15 @@ func LoadProject(path, egpFilePath string) {
 // LoadUI 加载UI布局文件
 // uiFilePath: UI布局文件的完整路径
 func LoadUI(uiFilePath string) {
-	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
+	event.ConsoleWriteInfo("Loading UI layout files...:", uiFilePath)
 	if bean.GPath == "" || bean.GProject == nil {
-		event.ConsoleWriteError("不允许加载的UI布局, 当前项目未创建")
+		event.ConsoleWriteError("UI layout loading is not allowed. The current project has not been created.")
 		return
 	}
 	path, uiFileName := filepath.Split(uiFilePath)
 	// 匹配 ui 文件是否属于当前项目
 	if !strings.HasPrefix(path, bean.GPath) {
-		event.ConsoleWriteError("不允许加载的UI布局, 不属于当前项目:", uiFilePath)
+		event.ConsoleWriteError("UI layout cannot be loaded. It does not belong to the current project:", uiFilePath)
 		return
 	}
 	var loadUIForm *bean.TUIForm
@@ -113,10 +113,10 @@ func LoadUI(uiFilePath string) {
 		}
 	}
 	if loadUIForm == nil {
-		event.ConsoleWriteError("UI布局, 在当前项目未匹配到, 无法加载:", uiFilePath)
+		event.ConsoleWriteError("No matching UI layout found in the current project. Cannot load:", uiFilePath)
 		return
 	}
-	event.ConsoleWriteInfo("开始加载UI布局文件:", uiFilePath)
+	event.ConsoleWriteInfo("Loading UI layout files:", uiFilePath)
 	// 恢复设计器窗体
 	designer.RecoverDesignerFormTab(bean.GPath, bean.GProject, loadUIForm)
 }

@@ -88,7 +88,7 @@ func (m *TConfigProjectForm) saveProjectConfig() {
 	go func() {
 		// 更新项目配置文件
 		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
-			event.ConsoleWriteError("保存-写入项目配置文件失败", err.Error())
+			event.ConsoleWriteError("WriteEGPConfig Error writing project configuration file", err.Error())
 			return
 		}
 	}()
@@ -120,7 +120,7 @@ func updateWindowICON() {
 		}
 	}
 	if icon.Data == nil || icon.W <= 0 || icon.H <= 0 {
-		event.ConsoleWriteError("updateWindowICON, 图标数据不能为空/大小不正确")
+		event.ConsoleWriteError("updateWindowICON Icon data cannot be empty or the size is incorrect.")
 		return
 	}
 	iconData := icon.Data // png
@@ -138,13 +138,13 @@ func updateWindowICON() {
 	pngBuf.Write(iconData)
 	pngImage, err := png.Decode(pngBuf)
 	if err != nil {
-		event.ConsoleWriteError("updateWindowICON, 图标转为 png 对象失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON Failed to convert icon to PNG object:", err.Error())
 		return
 	}
 	icoBuf := new(bytes.Buffer)
 	err = tool.Encode(icoBuf, pngImage)
 	if err != nil {
-		event.ConsoleWriteError("updateWindowICON, png 转为 ico 对象失败:", err.Error())
+		event.ConsoleWriteError("updateWindowICON, Failed to convert PNG to ICO object:", err.Error())
 		return
 	}
 	// 保存图标

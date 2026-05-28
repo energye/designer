@@ -680,7 +680,7 @@ func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) saveClick(sender lcl.IObject) {
-	event.ConsoleWriteInfo("构建配置-保存")
+	event.ConsoleWriteInfo("Build Configuration - Save")
 	// 基础配置
 	bean.GProject.BuildOption.PlatformWindows = m.windowsCheckBox.Checked()
 	bean.GProject.BuildOption.PlatformMacOS = m.macOSCheckBox.Checked()
@@ -844,21 +844,18 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 	go func() {
 		// 更新项目配置文件
 		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
-			event.ConsoleWriteError("保存-写入项目配置文件失败", err.Error())
+			event.ConsoleWriteError("Save failed: Error writing project configuration file", err.Error())
 			return
 		}
 		if err := updateAppGoFile(); err != nil {
-			event.ConsoleWriteError("创建/更新 app.go 文件失败:", err.Error())
+			event.ConsoleWriteError("Failed to create/update app.go file:", err.Error())
 			return
 		}
 		if err := m.mergeMacOSUniversalBinary(); err != nil {
-			event.ConsoleWriteError("合并通用二进制文件失败:", err.Error())
+			event.ConsoleWriteError("Failed to merge Universal Binary files:", err.Error())
 			return
 		}
-		event.ConsoleWriteInfo("构建配置-保存-完成")
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.statusBar.SetSimpleText("构建配置-保存-完成")
-		})
+		event.ConsoleWriteInfo("Build Configuration - Save Completed")
 	}()
 }
 

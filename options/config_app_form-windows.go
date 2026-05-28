@@ -232,7 +232,7 @@ func saveOrUpdateWindowsManifest() {
 	icoSetBuf := tool.Buffer{}
 	err = winicon.GenerateIcon(bytes.NewBuffer(iconData.Data), &icoSetBuf, []int{256, 128, 64, 48, 32, 16})
 	if err != nil {
-		event.ConsoleWriteError("windows 应用配置-保存配置-GenerateIcon: ", err.Error())
+		event.ConsoleWriteError("windows Application Configuration - Save Configuration GenerateIcon: ", err.Error())
 		return
 	}
 
@@ -240,12 +240,12 @@ func saveOrUpdateWindowsManifest() {
 
 	ico, err := winres.LoadICO(bytes.NewReader(icoSetBuf.Bytes()))
 	if err != nil {
-		event.ConsoleWriteError("windows 应用配置-保存配置-LoadICO: ", err.Error())
+		event.ConsoleWriteError("windows Application Configuration - Save Configuration LoadICO: ", err.Error())
 		return
 	}
 	err = rs.SetIcon(winres.RT_ICON, ico)
 	if err != nil {
-		event.ConsoleWriteError("windows 应用配置-保存配置-SetIcon: ", err.Error())
+		event.ConsoleWriteError("windows Application Configuration - Save Configuration SetIcon: ", err.Error())
 		return
 	}
 	rs.SetManifest(NewManifest())
@@ -272,14 +272,14 @@ func saveOrUpdateWindowsManifest() {
 		sysoOutBuf := tool.Buffer{}
 		err = rs.WriteObject(&sysoOutBuf, arch)
 		if err != nil {
-			event.ConsoleWriteError("windows 应用配置-保存配置-WriteObject: ", err.Error())
+			event.ConsoleWriteError("windows Application Configuration - Save Configuration WriteObject: ", err.Error())
 			return
 		}
 		sysoOutFile := fmt.Sprintf("%s-windows_%v.syso", bean.GProject.Name, arch)
 		// 保存到项目的 resources 目录
 		err = os.WriteFile(filepath.Join(resourcesPath, sysoOutFile), sysoOutBuf.Bytes(), 0644)
 		if err != nil {
-			event.ConsoleWriteError("windows 应用配置-保存配置-WriteFile: ", err.Error())
+			event.ConsoleWriteError("windows Application Configuration - Save Configuration WriteFile: ", err.Error())
 		}
 	}
 }

@@ -31,7 +31,7 @@ import (
 func (m *TAppWindow) checkInstallFrameworks() {
 	frameworksDir := config.Config.FrameworkDir
 	if config.Config.FrameworkDir == "" || !tool.IsExist(frameworksDir) {
-		event.ConsoleWriteError("未设置 framework 框架安装目录")
+		event.ConsoleWriteError("Framework installation directory not set")
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			// 禁用所有功能组件
 			SetEnableFuncComponent(false)

@@ -46,7 +46,7 @@ func runPreview(state chan<- any) {
 	}
 	// macOS > xxx.app, windows > xxx.exe, linux > xxx
 	output := run.AppExecutable()
-	event.ConsoleWriteInfo("运行预览:", output)
+	event.ConsoleWriteInfo("Run Preview:", output)
 
 	if tool.IsDarwin {
 		// /Users/xxx/xxx/build/myapp.app/Contents/MacOS/myapp
@@ -67,16 +67,16 @@ func runPreview(state chan<- any) {
 	close(state)
 	logs.Debug("run preview end")
 	runCmd = nil
-	event.ConsoleWriteInfo("结束预览")
+	event.ConsoleWriteInfo("Stop Preview")
 }
 
 // 停止预览
 func stopPreview() {
 	// 停止运行
 	if runCmd != nil && runCmd.Cmd != nil && runCmd.Cmd.Process != nil {
-		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid)
+		logs.Debug("Stop Preview, Pid:", runCmd.Cmd.Process.Pid)
 		err := runCmd.Cmd.Process.Kill()
-		logs.Debug("停止预览, 进程ID:", runCmd.Cmd.Process.Pid, "结果:", err)
+		logs.Debug("Stop Preview, Pid:", runCmd.Cmd.Process.Pid, "error:", err)
 	}
 	runCmd = nil
 }

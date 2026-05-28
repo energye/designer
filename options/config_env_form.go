@@ -190,16 +190,16 @@ func (m *TEnvForm) closeClick(sender lcl.IObject) {
 
 func (m *TEnvForm) saveClick(sender lcl.IObject) {
 	goRoot := strings.TrimSpace(m.goRootBox.Text())
-	event.ConsoleWriteInfo("环境配置-保存", goRoot)
+	event.ConsoleWriteInfo("Environment Configuration - Save", goRoot)
 	if goRoot != "" {
 		err := SetGoRootPath(goRoot)
 		if err == nil {
 			// 更新到 .energy 配置文件
 			config.UpdateEnvGoRoot(bean.GProject.Name, goRoot)
 			config.UpdateConfig()
-			event.ConsoleWriteInfo("环境配置-保存-完成", goRoot)
+			event.ConsoleWriteInfo("Environment Configuration - Save-Completed", goRoot)
 		} else {
-			event.ConsoleWriteError("环境配置-保存失败", err.Error(), goRoot)
+			event.ConsoleWriteError("Environment Configuration - Save failed:", err.Error(), goRoot)
 		}
 	}
 }

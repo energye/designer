@@ -225,7 +225,7 @@ func UpdateConfig() bool {
 
 // UpdateEnvGoRoot 更新环境配置
 func UpdateEnvGoRoot(envName string, goRoot string) {
-	event.ConsoleWriteInfo("项目环境配置, name:", envName, "Go SDK:", goRoot)
+	event.ConsoleWriteInfo("Project Environment Configuration, name:", envName, "Go SDK:", goRoot)
 	if Config.Env == nil {
 		Config.Env = make(map[string]*TEnv)
 	}

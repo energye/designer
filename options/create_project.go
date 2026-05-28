@@ -89,7 +89,7 @@ func createProjectDir() {
 	}
 	for _, file := range files {
 		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0644); err != nil {
-			event.ConsoleWriteError("创建项目文件失败:", err.Error())
+			event.ConsoleWriteError("Failed to create project file:", err.Error())
 		}
 	}
 }

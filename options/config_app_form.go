@@ -414,9 +414,9 @@ func (m *TConfigProjectForm) validateInputs() bool {
 }
 
 func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
-	event.ConsoleWriteInfo("项目配置-保存")
+	event.ConsoleWriteInfo("Project Configuration - Save")
 	if m.validateInputs() {
-		event.ConsoleWriteError("保存-验证输入失败")
+		event.ConsoleWriteError("Input validation failed on save")
 		return
 	}
 	m.cancelBtn.SetDisable(true)
@@ -437,10 +437,7 @@ func (m *TConfigProjectForm) saveClick(sender lcl.IObject) {
 		createAppLocalizations()
 		// 更新图标
 		updateWindowICON()
-		event.ConsoleWriteInfo("项目配置-保存-完成")
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.statusBar.SetSimpleText("项目配置-保存-完成")
-		})
+		event.ConsoleWriteInfo("Project Configuration - Save Completed")
 	}()
 }
 
