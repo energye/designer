@@ -106,11 +106,16 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
 	cfg := config.DesignerConfig
-	if cfg.WindowLayout.WindowBoundsRect.Width() <= 400 {
-		cfg.WindowLayout.WindowBoundsRect.SetWidth(400)
-	}
-	if cfg.WindowLayout.WindowBoundsRect.Height() <= 200 {
-		cfg.WindowLayout.WindowBoundsRect.SetHeight(200)
+	if cfgWindowRect := cfg.WindowLayout.WindowBoundsRect; cfgWindowRect.Top == 0 && cfgWindowRect.Left == 0 &&
+		cfgWindowRect.Right == 0 && cfgWindowRect.Bottom == 0 {
+		cfg.WindowLayout.WindowState = types.WsMaximized
+	} else {
+		if cfg.WindowLayout.WindowBoundsRect.Width() <= 400 {
+			cfg.WindowLayout.WindowBoundsRect.SetWidth(400)
+		}
+		if cfg.WindowLayout.WindowBoundsRect.Height() <= 200 {
+			cfg.WindowLayout.WindowBoundsRect.SetHeight(200)
+		}
 	}
 	// 属性
 	m.SetCaption(cfg.Title + " " + cfg.Version)
