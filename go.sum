@@ -1,7 +1,7 @@
 github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/ISU=
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
-github.com/energye/energy/v3 v3.0.14 h1:i33iN2lrI9+dE42oBo1n9zTeXDWw1L6gfQv2/tRLrd4=
-github.com/energye/energy/v3 v3.0.14/go.mod h1:/RjXifbbGIwKRM3ZyyNcYcj6C0SBlwP2gGs2OhqaDDE=
+github.com/energye/energy/v3 v3.0.15 h1:MRvHmP2mklNnDwgvp3msJbE0QP4F4jQn3hC7NibEtd0=
+github.com/energye/energy/v3 v3.0.15/go.mod h1:/RjXifbbGIwKRM3ZyyNcYcj6C0SBlwP2gGs2OhqaDDE=
 github.com/energye/lcl v1.0.8 h1:HHNg5KkJfQ8rhSL9eID9YyyEYFkBdD6bN8XzUN+eDrY=
 github.com/energye/lcl v1.0.8/go.mod h1:k9apUIp1r1FMg1e+S3psbS4rQigEiyOmqxMsIOOz+Rs=
 github.com/energye/wv v1.0.9 h1:QBzFskoXlp17HB5ShuuHZauLY/vLHngpFHZPISHcsW0=
