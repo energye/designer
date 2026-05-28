@@ -97,7 +97,14 @@
 - ✅ 【bug】 设计 UI锁死: TFrom 设置属性设置不当出现UI锁死(可能和 Align 有关)
 
 - ❌ win尝试内存加载 libenergy dll: https://github.com/jchv/go-winloader
-- ❌ 系统主题感应, 联动 energy
+-  系统主题回调事件, 联动 energy
+  - ✅ linux
+  - ✅ windows
+  - ❌ macos
+-  外接设备回调事件, 联动 energy
+  - ❌ linux
+  - ❌ windows
+  - ❌ macos
 ---------------------------------------------------------------------------------------
 
 ## 已完成功能
