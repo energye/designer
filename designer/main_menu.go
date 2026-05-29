@@ -184,16 +184,17 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	create.Add(sep)
 
 	m.createWindow = lcl.NewMenuItem(owner)
+	m.createWindow.SetName("MenuFileCreateWindow")
 	m.createWindow.SetCaption("新建窗体")
 	m.createWindow.SetShortCut(api.TextToShortCut(platformControl() + "+N"))
 	m.createWindow.SetImageIndex(imageMenu.ImageIndex("menu_new_form.png"))
 	m.createWindow.SetOnClick(func(sender lcl.IObject) {
-		logs.Debug("新建窗体")
 		MainWindow.toolBtnLayout.toolbarBtn.onNewForm(sender)
 	})
 	create.Add(m.createWindow)
 
 	m.open = lcl.NewMenuItem(owner)
+	m.open.SetName("MenuFileOpen")
 	m.open.SetCaption("打开(&O)")
 	m.open.SetShortCut(api.TextToShortCut(platformControl() + "+O"))
 	m.open.SetImageIndex(imageMenu.ImageIndex("menu_project_open.png"))
@@ -203,6 +204,7 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.file.Add(m.open)
 
 	m.save = lcl.NewMenuItem(owner)
+	m.save.SetName("MenuFileSave")
 	m.save.SetCaption("保存(&S)")
 	m.save.SetShortCut(api.TextToShortCut(platformControl() + "+S"))
 	m.save.SetImageIndex(imageMenu.ImageIndex("menu_save.png"))
@@ -213,17 +215,18 @@ func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	m.file.Add(m.save)
 
 	m.history = lcl.NewMenuItem(owner)
+	m.history.SetName("MenuFileHistory")
 	m.history.SetCaption("历史项目")
 	m.history.SetImageIndex(imageMenu.ImageIndex("menu_project_history.png"))
 	m.file.Add(m.history)
 	m.fileHistoryProjectMenu()
 
 	exitWindow := lcl.NewMenuItem(owner)
+	exitWindow.SetName("MenuFileExit")
 	exitWindow.SetCaption("退出(&Q)")
 	exitWindow.SetShortCut(api.TextToShortCut(platformControl() + "+Q"))
 	exitWindow.SetImageIndex(imageMenu.ImageIndex("menu_exit.png"))
 	exitWindow.SetOnClick(func(sender lcl.IObject) {
-		logs.Debug("退出")
 		MainWindow.Close()
 	})
 	m.file.Add(exitWindow)
@@ -246,8 +249,6 @@ func (m *TMainMenu) fileHistoryProjectMenu() {
 
 func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.editing = engLCL.NewMenuEditing(owner)
-
-	// ====
 
 	m.editUndo = lcl.NewMenuItem(owner)
 	m.editUndo.SetAction(m.editing.UndoAction)
@@ -289,6 +290,7 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	windowLayout := config.Config.WindowLayout
 	m.viewWidgets = lcl.NewMenuItem(owner)
+	m.viewWidgets.SetName("MenuViewWidgets")
 	m.viewWidgets.SetCaption("组件库")
 	m.viewWidgets.SetChecked(windowLayout.MenuView.WidgetsChecked) // 动态控制
 	m.viewWidgets.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+C"))
@@ -303,6 +305,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewWidgets)
 
 	m.viewProject = lcl.NewMenuItem(owner)
+	m.viewProject.SetName("MenuViewProject")
 	m.viewProject.SetCaption("项目管理器")
 	m.viewProject.SetChecked(windowLayout.MenuView.ProjectChecked) // 动态控制
 	m.viewProject.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+P"))
@@ -317,6 +320,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewProject)
 
 	m.viewInspector = lcl.NewMenuItem(owner)
+	m.viewInspector.SetName("MenuViewInspector")
 	m.viewInspector.SetCaption("对象检查器")
 	m.viewInspector.SetChecked(windowLayout.MenuView.InspectorChecked) // 动态控制
 	m.viewInspector.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+O"))
@@ -334,6 +338,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewInspector)
 
 	m.viewConsole = lcl.NewMenuItem(owner)
+	m.viewConsole.SetName("MenuViewConsole")
 	m.viewConsole.SetCaption("日志")
 	m.viewConsole.SetChecked(windowLayout.MenuView.ConsoleChecked) // 动态控制
 	m.viewConsole.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+L"))
@@ -348,6 +353,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.view.Add(m.viewConsole)
 
 	m.viewStatusbar = lcl.NewMenuItem(owner)
+	m.viewStatusbar.SetName("MenuViewStatusbar")
 	m.viewStatusbar.SetCaption("状态栏")
 	m.viewStatusbar.SetChecked(windowLayout.MenuView.StatusbarChecked) // 动态控制
 	m.viewStatusbar.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+S"))
@@ -364,6 +370,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 
 func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.build = lcl.NewMenuItem(owner)
+	m.build.SetName("MenuRunBuild")
 	m.build.SetCaption("构建")
 	m.build.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
 	m.build.SetShortCut(api.TextToShortCut(platformControl() + "+F8"))
@@ -379,6 +386,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.run.Add(m.build)
 
 	m.buildClean = lcl.NewMenuItem(owner)
+	m.buildClean.SetName("MenuRunBuildClean")
 	m.buildClean.SetCaption("清理构建")
 	m.buildClean.SetImageIndex(imageMenu.ImageIndex("menu_build_clean.png"))
 	m.buildClean.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+F8"))
@@ -394,6 +402,7 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.run.Add(m.buildClean)
 
 	m.buildAll = lcl.NewMenuItem(owner)
+	m.buildAll.SetName("MenuRunBuildAll")
 	m.buildAll.SetCaption("构建所有")
 	m.buildAll.SetImageIndex(imageMenu.ImageIndex("menu_build.png"))
 	m.buildAll.SetShortCut(api.TextToShortCut(platformControl() + "+Shift+F9"))
@@ -413,11 +422,11 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 	m.run.Add(sep)
 
 	m.runApp = lcl.NewMenuItem(owner)
+	m.runApp.SetName("MenuRunPreview")
 	m.runApp.SetCaption("运行预览")
 	m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	m.runApp.SetShortCut(api.TextToShortCut("F9"))
 	m.runApp.SetOnClick(func(lcl.IObject) {
-		logs.Debug("运行")
 		MainWindow.toolBtnLayout.toolbarBtn.onRunPreviewForm(m.runApp)
 	})
 	m.run.Add(m.runApp)
@@ -426,20 +435,24 @@ func (m *TMainMenu) runMenu(owner lcl.IComponent) {
 func (m *TMainMenu) switchRunMenuItem(status consts.PreviewState) {
 	m.runApp.SetEnabled(true)
 	if status == consts.PsStarted {
+		m.runApp.SetName("MenuRunPreviewStop")
 		m.runApp.SetCaption("停止")
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else if status == consts.PsStarting {
+		m.runApp.SetName("MenuRunPreviewStop")
 		m.runApp.SetEnabled(false)
 		m.runApp.SetCaption("停止")
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else {
-		m.runApp.SetCaption("运行")
+		m.runApp.SetName("MenuRunPreview")
+		m.runApp.SetCaption("运行预览")
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	}
 }
 
 func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.buildOption = lcl.NewMenuItem(owner)
+	m.buildOption.SetName("MenuSettingBuildOption")
 	m.buildOption.SetCaption("构建选项")
 	m.buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
 	m.buildOption.SetShortCut(api.TextToShortCut(platformControl() + "+F9"))
@@ -450,6 +463,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.setting.Add(m.buildOption)
 
 	m.environmentOption = lcl.NewMenuItem(owner)
+	m.environmentOption.SetName("MenuSettingEnvironmentOption")
 	m.environmentOption.SetCaption("环境配置")
 	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
 	m.environmentOption.SetShortCut(api.TextToShortCut(platformControl() + "+F10"))
@@ -470,6 +484,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	//m.setting.Add(m.frameworkOption)
 
 	m.projectOption = lcl.NewMenuItem(owner)
+	m.projectOption.SetName("MenuSettingProjectOption")
 	m.projectOption.SetCaption("应用配置")
 	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_app_config.png"))
 	m.projectOption.SetShortCut(api.TextToShortCut(platformControl() + "+F11"))
@@ -483,6 +498,7 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 func (m *TMainMenu) helperMenu(owner lcl.IComponent) {
 	_, _, _, _, _, v := api.LCLVersion()
 	about := lcl.NewMenuItem(owner)
+	about.SetName("MenuHelperAbout")
 	about.SetCaption("关于")
 	about.SetImageIndex(imageMenu.ImageIndex("menu_project_about.png"))
 	about.SetOnClick(func(sender lcl.IObject) {
