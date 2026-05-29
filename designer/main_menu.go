@@ -457,7 +457,6 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.buildOption.SetImageIndex(imageMenu.ImageIndex("menu_compile.png"))
 	m.buildOption.SetShortCut(api.TextToShortCut(platformControl() + "+F9"))
 	m.buildOption.SetOnClick(func(lcl.IObject) {
-		logs.Debug("构建选项")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.BuildConfig}})
 	})
 	m.setting.Add(m.buildOption)
@@ -468,7 +467,6 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.environmentOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
 	m.environmentOption.SetShortCut(api.TextToShortCut(platformControl() + "+F10"))
 	m.environmentOption.SetOnClick(func(lcl.IObject) {
-		logs.Debug("环境配置")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.EnvConfig}})
 	})
 	m.setting.Add(m.environmentOption)
@@ -489,7 +487,6 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	m.projectOption.SetImageIndex(imageMenu.ImageIndex("menu_app_config.png"))
 	m.projectOption.SetShortCut(api.TextToShortCut(platformControl() + "+F11"))
 	m.projectOption.SetOnClick(func(lcl.IObject) {
-		logs.Debug("应用配置")
 		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ProjectConfig}})
 	})
 	m.setting.Add(m.projectOption)

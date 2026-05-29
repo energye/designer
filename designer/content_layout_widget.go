@@ -60,7 +60,7 @@ func ResetSelectedComponent() {
 }
 
 func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
-	logs.Debug("创建组件选项卡面板")
+	logs.Debug("init content layout widget panel")
 	forceUpdate := func() {
 		if tool.IsDarwin {
 			// 强制刷新, 滚动条出现再隐藏后渲染有问题, 先这样解决
@@ -76,10 +76,12 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 
 	m := &ContentLayoutWidget{components: make(map[uintptr]*TWidgetTreeItem)}
 	m.searchEdit = lcl.NewTreeFilterEdit(owner.widgetPanel)
+	m.searchEdit.SetName("WidgetSearchEdit")
 	m.searchEdit.SetTextHint("搜索组件")
 	m.searchEdit.SetAlign(types.AlTop)
 	m.searchEdit.SetAutoSelect(false)
 	m.searchEdit.SetTabStop(false)
+	m.searchEdit.SetText("")
 	borderSpacing := m.searchEdit.BorderSpacing()
 	borderSpacing.SetLeft(3)
 	borderSpacing.SetRight(3)
@@ -98,6 +100,7 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	m.topBox.SetParent(owner.widgetPanel)
 
 	title := lcl.NewLabel(m.topBox)
+	title.SetName("WidgetTitle")
 	title.SetCaption("组件库")
 	title.SetLeft(5)
 	title.SetTop(5)

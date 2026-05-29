@@ -30,10 +30,12 @@ type ContentLayoutInspector struct {
 func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m := &ContentLayoutInspector{}
 	m.searchEdit = lcl.NewTreeFilterEdit(owner.inspectorPanel)
+	m.searchEdit.SetName("InspectorSearchEdit")
 	m.searchEdit.SetTextHint("搜索属性")
 	m.searchEdit.SetAlign(types.AlTop)
 	m.searchEdit.SetAutoSelect(false)
 	m.searchEdit.SetTabStop(false)
+	m.searchEdit.SetText("")
 	borderSpacing := m.searchEdit.BorderSpacing()
 	borderSpacing.SetLeft(3)
 	borderSpacing.SetRight(3)
@@ -49,6 +51,7 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.topBox.SetParent(owner.inspectorPanel)
 
 	title := lcl.NewLabel(m.topBox)
+	title.SetName("InspectorTitle")
 	title.SetCaption("对象检查器")
 	title.SetLeft(5)
 	title.SetTop(5)
