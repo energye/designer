@@ -56,43 +56,44 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 		sep.SetStyle(types.TbsSeparator)
 	}
 
-	newBtn := func(imageIndex int32, hint string, margin int32, text string) lcl.IToolButton {
+	newBtn := func(name string, imageIndex int32, hint string, margin int32, text string) lcl.IToolButton {
 		btn := lcl.NewToolButton(toolBtnBar)
-		btn.SetParent(toolBtnBar)
-		btn.SetHint(hint)
+		btn.SetName(name)
 		btn.SetImageIndex(imageIndex)
 		btn.SetShowHint(true)
+		btn.SetHint(hint)
 		btn.SetCaption(text)
+		btn.SetParent(toolBtnBar)
 		return btn
 	}
 
-	m.toolbarBtn.newWindowBtn = newBtn(imageMenu.ImageIndex("menu_new_form.png"), "新建窗体(Ctrl+N)", 0, "新建")
+	m.toolbarBtn.newWindowBtn = newBtn("NewFormToolBtn", imageMenu.ImageIndex("menu_new_form.png"), "新建窗体(Ctrl+N)", 0, "新建")
 	m.toolbarBtn.newWindowBtn.SetOnClick(m.toolbarBtn.onNewForm)
 
-	m.toolbarBtn.openBtn = newBtn(imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
+	m.toolbarBtn.openBtn = newBtn("OpenProjectToolBtn", imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
 	m.toolbarBtn.openBtn.SetOnClick(m.toolbarBtn.onOpenForm)
 
-	m.toolbarBtn.saveBtn = newBtn(imageMenu.ImageIndex("menu_save.png"), "保存(Ctrl+S)", 1, "保存")
+	m.toolbarBtn.saveBtn = newBtn("SaveProjectToolBtn", imageMenu.ImageIndex("menu_save.png"), "保存(Ctrl+S)", 1, "保存")
 	m.toolbarBtn.saveBtn.SetOnClick(m.toolbarBtn.onSave)
 	m.toolbarBtn.saveBtn.SetEnabled(false) // 还未实现 先禁用
 
 	newSep()
 
-	m.toolbarBtn.undoBtn = newBtn(imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+Z)", 1, "撤销")
+	m.toolbarBtn.undoBtn = newBtn("UndoToolBtn", imageMenu.ImageIndex("menu_undo.png"), "撤销(Ctrl+Z)", 1, "撤销")
 	m.toolbarBtn.undoBtn.SetOnClick(m.toolbarBtn.onUndo)
 	m.toolbarBtn.undoBtn.SetEnabled(false) // 还未实现 先禁用
-	m.toolbarBtn.redoBtn = newBtn(imageMenu.ImageIndex("menu_redo.png"), "恢复(Ctrl+Shift+Z)", 1, "恢复")
+	m.toolbarBtn.redoBtn = newBtn("RedoToolBtn", imageMenu.ImageIndex("menu_redo.png"), "恢复(Ctrl+Shift+Z)", 1, "恢复")
 	m.toolbarBtn.redoBtn.SetOnClick(m.toolbarBtn.onRedo)
 	m.toolbarBtn.redoBtn.SetEnabled(false) // 还未实现 先禁用
 
 	newSep()
 
-	m.toolbarBtn.runPreviewBtn = newBtn(imageMenu.ImageIndex("menu_run.png"), "运行预览(F9)", 3, "运行预览(F9)")
+	m.toolbarBtn.runPreviewBtn = newBtn("RunPreviewToolBtn", imageMenu.ImageIndex("menu_run.png"), "运行预览(F9)", 3, "运行预览(F9)")
 	m.toolbarBtn.runPreviewBtn.SetOnClick(m.toolbarBtn.onRunPreviewForm)
 
 	newSep()
 
-	m.toolbarBtn.cmdGoModBtn = newBtn(-1, "更新go.mod", 3, "更新go.mod")
+	m.toolbarBtn.cmdGoModBtn = newBtn("UpdateGoModToolBtn", -1, "更新go.mod", 3, "更新go.mod")
 	m.toolbarBtn.cmdGoModBtn.SetOnClick(m.toolbarBtn.onCmdGoModBtn)
 
 	// 对齐功能按钮

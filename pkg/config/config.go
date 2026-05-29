@@ -91,6 +91,7 @@ type TConfig struct {
 	LastProject    string              `json:"last_project"`    // 最后打开项目
 	HistoryProject []string            `json:"history_project"` // 历史项目列表
 	Env            map[string]*TEnv    `json:"env"`             // 环境配置
+	EnvLang        string              `json:"env_lang"`        // 环境配置-语言
 }
 
 // TEnv 环境配置

@@ -21,9 +21,11 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/locales"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
@@ -32,8 +34,17 @@ import (
 )
 
 var (
-	envFormWidth  = int32(555)
-	envFormHeight = int32(90)
+	envFormWidth   = int32(555)
+	envFormHeight  = int32(120)
+	supportedLangs = []struct {
+		code string
+		name string
+	}{
+		{"zh-CN", "简体中文"},
+		{"en-US", "English (US)"},
+		//{"ja", "日本語"},
+		//{"ko", "한국어"},
+	}
 )
 
 // 运行项目(环境)配置窗口
@@ -58,12 +69,14 @@ func NewEnvForm() *TEnvForm {
 type TEnvForm struct {
 	lcl.TEngForm
 	closing   bool
-	font      lcl.IFont
 	selectDir lcl.ISelectDirectoryDialog
 
 	goRootText lcl.ILabel
 	goRootBox  lcl.IComboBox
 	goRootBtn  *wg.TButton
+
+	currentLang  string
+	langComboBox lcl.IComboBox
 
 	// 操作按钮
 	cancelBtn *wg.TButton
@@ -72,10 +85,7 @@ type TEnvForm struct {
 
 func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TEnvForm FormCreate")
-	fontSize := int32(12)
-	if tool.IsLinux {
-		fontSize = 10
-	}
+
 	m.SetCaption("环境配置")
 	m.SetWidth(envFormWidth)
 	m.SetHeight(envFormHeight)
@@ -89,11 +99,14 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	m.SetBorderIcons(types.NewSet(types.BiSystemMenu))
 	SetWindowCenterByMainWindow(m)
 	m.SetColor(colors.ClWhite)
-	m.font = lcl.NewFont()
-	m.font.SetName("微软雅黑")
-	m.font.SetSize(fontSize)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+
+	gTop := int32(0)
+	nextTop := func(top int32) int32 {
+		gTop += top
+		return gTop
+	}
 	{
 		m.goRootText = lcl.NewLabel(m)
 		m.goRootText.SetLeft(10)
@@ -102,9 +115,8 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.goRootText.SetParent(m)
 		m.goRootBox = lcl.NewComboBox(m)
 		m.goRootBox.SetLeft(10 + 55)
-		m.goRootBox.SetTop(10)
+		m.goRootBox.SetTop(nextTop(10))
 		m.goRootBox.SetWidth(440)
-		m.goRootBox.SetFont(m.font)
 		m.goRootBox.SetDoubleBuffered(true)
 		//m.goRootBox.SetStyle(types.CsDropDownList)
 		m.goRootBox.SetBorderStyle(types.BsSingle)
@@ -144,9 +156,24 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.goRootBtn.SetParent(m)
 		m.goRootBtn.SetOnClick(m.goRootClick)
 	}
+	{
+
+		m.langComboBox = lcl.NewComboBox(m)
+		m.langComboBox.SetName("LangComboBox")
+		m.langComboBox.SetLeft(m.goRootBox.Left())
+		m.langComboBox.SetTop(nextTop(30))
+		m.langComboBox.SetWidth(m.goRootBox.Width())
+		m.langComboBox.SetStyle(types.CsDropDownList)
+		for _, lang := range supportedLangs {
+			m.langComboBox.Items().Add(lang.name)
+		}
+		m.langComboBox.SetItemIndex(0)
+		m.langComboBox.SetParent(m)
+		m.langComboBox.SetOnChange(m.onLangChange)
+	}
 
 	{
-		cancelBtnRect := types.TRect{Left: 400, Top: 50}
+		cancelBtnRect := types.TRect{Left: 400, Top: nextTop(35)}
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
@@ -196,12 +223,13 @@ func (m *TEnvForm) saveClick(sender lcl.IObject) {
 		if err == nil {
 			// 更新到 .energy 配置文件
 			config.UpdateEnvGoRoot(bean.GProject.Name, goRoot)
-			config.UpdateConfig()
-			event.ConsoleWriteInfo("Environment Configuration - Save-Completed", goRoot)
 		} else {
 			event.ConsoleWriteError("Environment Configuration - Save failed:", err.Error(), goRoot)
+			return
 		}
 	}
+	config.UpdateConfig()
+	event.ConsoleWriteInfo("Environment Configuration - Save-Completed")
 }
 
 func (m *TEnvForm) goRootClick(sender lcl.IObject) {
@@ -282,4 +310,31 @@ func SetGoRootPath(goSDKHome string) error {
 		return errors.New("设置 PATH 环境变量失败：" + err.Error())
 	}
 	return nil
+}
+
+func (m *TEnvForm) onLangChange(sender lcl.IObject) {
+	idx := m.langComboBox.ItemIndex()
+	if idx < 0 || int(idx) >= len(supportedLangs) {
+		return
+	}
+	lang := supportedLangs[idx].code
+	if lang == m.currentLang {
+		return
+	}
+	m.currentLang = lang
+	if m.currentLang != "" {
+		data, err := metadata.I18n(m.currentLang)
+		if err != nil {
+			event.ConsoleWriteError("Environment Configuration - i18n:", err.Error())
+			return
+		}
+		if locales.SwitchI18nLang(string(data)) {
+			config.Config.EnvLang = m.currentLang
+		} else {
+			event.ConsoleWriteError("Environment Configuration - switch i18n failed")
+			return
+		}
+		config.UpdateConfig()
+		event.ConsoleWriteInfo("Environment Configuration - Switch i18n-Completed")
+	}
 }

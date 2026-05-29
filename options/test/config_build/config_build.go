@@ -4,6 +4,7 @@ import (
 	"github.com/energye/designer/options"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/lcl/api"
+	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
 )
 
