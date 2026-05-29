@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/vtedit"
+	"github.com/energye/designer/resources/metadata"
 	uiBean "github.com/energye/designer/uigen/bean"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -137,7 +138,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 
 	m.pageProperty = lcl.NewTabSheet(m.page)
 	m.pageProperty.SetName("InspectorPageProperty")
-	m.pageProperty.SetCaption("　属性　")
+	m.pageProperty.SetCaption(metadata.GI18n.Dict("InspectorPageProperty.Caption"))
 	m.pageProperty.SetAlign(types.AlClient)
 	m.pageProperty.SetWidth(m.page.Width())
 	SetComponentDefaultColor(m.pageProperty)
@@ -146,7 +147,7 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 
 	m.pageEvent = lcl.NewTabSheet(m.page)
 	m.pageEvent.SetName("InspectorPageEvent")
-	m.pageEvent.SetCaption("　事件　")
+	m.pageEvent.SetCaption(metadata.GI18n.Dict("InspectorPageEvent.Caption"))
 	m.pageEvent.SetAlign(types.AlClient)
 	m.pageEvent.SetWidth(m.page.Width())
 	SetComponentDefaultColor(m.pageEvent)

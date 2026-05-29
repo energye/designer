@@ -15,17 +15,16 @@ package options
 
 import (
 	"errors"
+	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
-	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/locales"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
@@ -164,10 +163,14 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.langComboBox.SetTop(nextTop(30))
 		m.langComboBox.SetWidth(m.goRootBox.Width())
 		m.langComboBox.SetStyle(types.CsDropDownList)
-		for _, lang := range supportedLangs {
+		selectIndex := 0
+		for idx, lang := range supportedLangs {
 			m.langComboBox.Items().Add(lang.name)
+			if lang.code == config.Config.EnvLang {
+				selectIndex = idx
+			}
 		}
-		m.langComboBox.SetItemIndex(0)
+		m.langComboBox.SetItemIndex(int32(selectIndex))
 		m.langComboBox.SetParent(m)
 		m.langComboBox.SetOnChange(m.onLangChange)
 	}
@@ -323,17 +326,12 @@ func (m *TEnvForm) onLangChange(sender lcl.IObject) {
 	}
 	m.currentLang = lang
 	if m.currentLang != "" {
-		data, err := metadata.I18n(m.currentLang)
+		err := designer.SwitchLocalesI18n(m.currentLang)
 		if err != nil {
 			event.ConsoleWriteError("Environment Configuration - i18n:", err.Error())
 			return
 		}
-		if locales.SwitchI18nLang(string(data)) {
-			config.Config.EnvLang = m.currentLang
-		} else {
-			event.ConsoleWriteError("Environment Configuration - switch i18n failed")
-			return
-		}
+		config.Config.EnvLang = m.currentLang
 		config.UpdateConfig()
 		event.ConsoleWriteInfo("Environment Configuration - Switch i18n-Completed")
 	}

@@ -19,6 +19,7 @@ import (
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	toolExec "github.com/energye/lcl/tool/exec"
 	"os"
 	"path/filepath"
@@ -273,6 +274,9 @@ func init() {
 
 	// config.json
 	Config = &TConfig{WindowLayout: DesignerConfig.WindowLayout}
+	defer func() {
+		_, _ = metadata.GI18n.Get(Config.EnvLang)
+	}()
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.WindowLayout = DesignerConfig.WindowLayout

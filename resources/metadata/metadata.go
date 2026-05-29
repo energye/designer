@@ -13,14 +13,53 @@
 
 package metadata
 
-import "embed"
+import (
+	"embed"
+	"strings"
+)
 
 var (
 	//go:embed i18n
-	i18n embed.FS
+	i18n  embed.FS
+	GI18n = &TI18n{}
 )
 
-func I18n(lang string) ([]byte, error) {
+type TI18n struct {
+	Lang string
+	dict map[string]string
+}
+
+func (m *TI18n) Get(lang string) ([]byte, error) {
+	if lang == "" {
+		lang = "zh-CN"
+	}
 	data, err := i18n.ReadFile("i18n/" + lang + ".ini")
+	if err == nil && m.Lang != lang {
+		m.Lang = lang
+		m.dict = make(map[string]string)
+		lines := strings.Split(string(data), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" || line[0] == '#' {
+				continue
+			}
+			kv := strings.Split(line, "=")
+			if len(kv) != 2 {
+				continue
+			}
+			name := strings.TrimSpace(strings.ToLower(kv[0]))
+			value := strings.TrimSpace(kv[1])
+			m.dict[name] = value
+		}
+	}
 	return data, err
+}
+
+func (m *TI18n) Dict(name string) string {
+	name = strings.TrimSpace(name)
+	if m.dict == nil || name == "" {
+		return ""
+	}
+	name = strings.ToLower(name)
+	return m.dict[name]
 }

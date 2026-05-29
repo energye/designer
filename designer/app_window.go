@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/energye/designer/designer/dependmod"
 	"github.com/energye/designer/event"
@@ -21,8 +22,10 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/locales"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"sync"
@@ -144,6 +147,8 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 
 	m.initTray()
 	notification.Init()
+
+	_ = SwitchLocalesI18n(config.Config.EnvLang)
 }
 
 func (m *TAppWindow) initAllImageList() {
@@ -190,6 +195,17 @@ func (m *TAppWindow) OnShow(sender lcl.IObject) {
 			}
 		})
 	})
+}
+
+func SwitchLocalesI18n(lang string) error {
+	data, err := metadata.GI18n.Get(lang)
+	if err != nil {
+		return err
+	}
+	if !locales.SwitchI18nLang(string(data)) {
+		return errors.New("switch i18n failed")
+	}
+	return nil
 }
 
 func (m *TAppWindow) OnCloseQuery(sender lcl.IObject, canClose *bool) {
