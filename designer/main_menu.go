@@ -88,26 +88,32 @@ func (m *TAppWindow) initMainMenu() {
 	menuItems := mainMenu.main.Items()
 
 	mainMenu.file = lcl.NewMenuItem(m)
+	mainMenu.file.SetName("MenuFile")
 	mainMenu.file.SetCaption("文件(&F)")
 	menuItems.Add(mainMenu.file)
 
 	mainMenu.edit = lcl.NewMenuItem(m)
+	mainMenu.edit.SetName("MenuEdit")
 	mainMenu.edit.SetCaption("编辑(&E)")
 	menuItems.Add(mainMenu.edit)
 
 	mainMenu.view = lcl.NewMenuItem(m)
+	mainMenu.view.SetName("MenuView")
 	mainMenu.view.SetCaption("视图(&V)")
 	menuItems.Add(mainMenu.view)
 
 	mainMenu.run = lcl.NewMenuItem(m)
+	mainMenu.run.SetName("MenuRun")
 	mainMenu.run.SetCaption("运行(&R)")
 	menuItems.Add(mainMenu.run)
 
 	mainMenu.setting = lcl.NewMenuItem(m)
+	mainMenu.setting.SetName("MenuSetting")
 	mainMenu.setting.SetCaption("设置(&S)")
 	menuItems.Add(mainMenu.setting)
 
 	mainMenu.helper = lcl.NewMenuItem(m)
+	mainMenu.helper.SetName("MenuHelper")
 	mainMenu.helper.SetCaption("帮助(&H)")
 	menuItems.Add(mainMenu.helper)
 
@@ -158,11 +164,13 @@ func (m *TMainMenu) macOS() {
 
 func (m *TMainMenu) fileMenu(owner lcl.IComponent) {
 	create := lcl.NewMenuItem(owner)
+	create.SetName("MenuFileCreate")
 	create.SetCaption("新建(&N)")
 	create.SetImageIndex(imageMenu.ImageIndex("menu_project_create.png"))
 	m.file.Add(create)
 
 	m.createProject = lcl.NewMenuItem(owner)
+	m.createProject.SetName("MenuFileCreateProject")
 	m.createProject.SetCaption("新建项目")
 	m.createProject.SetShortCut(api.TextToShortCut(platformControl() + "+P"))
 	m.createProject.SetImageIndex(imageMenu.ImageIndex("menu_project_add.png"))
