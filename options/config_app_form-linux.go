@@ -24,5 +24,5 @@ func (m *TConfigProjectForm) initLinuxOptions() {
 	test.SetLeft(m.platformTabPageLinux.Width()/2 - 20)
 	test.SetTop(m.platformTabPageLinux.Height()/2 - 20)
 	test.SetParent(m.platformTabPageLinux)
-	test.SetCaption("无")
+	test.SetCaption("Empty")
 }
