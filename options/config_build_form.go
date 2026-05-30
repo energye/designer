@@ -201,17 +201,20 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		m.buildTabPageConfig.SetName("BuildFormConfig")
 		m.buildTabPageConfig.ICustomPanel.SetCaption("")
 		m.buildTabPageConfig.SetCaption(metadata.GI18n.Dict("BuildFormConfig.Caption"))
-		m.buildTabPageConfig.Button().SetWidth(80)
+		//m.buildTabPageConfig.Button().SetAutoSize(true)
+		m.buildTabPageConfig.Button().SetWidth(150)
 		m.buildTabPageConfig.Button().SetCursor(types.CrHandPoint)
 
 		m.buildTabPagePackage = m.buildTab.NewPage()
 		m.buildTabPagePackage.SetName("BuildFormPackage")
 		m.buildTabPagePackage.ICustomPanel.SetCaption("")
 		m.buildTabPagePackage.SetCaption(metadata.GI18n.Dict("BuildFormPackage.Caption"))
-		m.buildTabPagePackage.Button().SetWidth(80)
+		//m.buildTabPagePackage.Button().SetAutoSize(true)
+		m.buildTabPagePackage.Button().SetWidth(150)
 		m.buildTabPagePackage.Button().SetCursor(types.CrHandPoint)
 
 		m.buildTabPageConfig.SetActive(true)
+
 	}
 	// 初始化创建配置组件
 	m.initConfigComponent()
@@ -226,7 +229,8 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		saveBtnRect.SetWidth(75)
 		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
-		m.saveBtn.SetText("保存配置")
+		m.saveBtn.SetName("BuildFormSaveBtn")
+		m.saveBtn.SetText(metadata.GI18n.Dict("BuildFormSaveBtn.Caption"))
 		m.saveBtn.SetFont(btnFont)
 		m.saveBtn.SetRadius(3)
 		m.saveBtn.SetCursor(types.CrHandPoint)
@@ -241,7 +245,8 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 		buildBtnRect.SetWidth(75)
 		buildBtnRect.SetHeight(25)
 		m.packageBtn = wg.NewButton(m)
-		m.packageBtn.SetText("开始打包")
+		m.packageBtn.SetName("BuildFormPackageBtn")
+		m.packageBtn.SetText(metadata.GI18n.Dict("BuildFormPackageBtn.Caption"))
 		m.packageBtn.SetFont(btnFont)
 		m.packageBtn.SetCursor(types.CrHandPoint)
 		m.packageBtn.Font().SetColor(colors.ClWhite)
