@@ -86,10 +86,12 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formPageControl.SetParent(formTab.mainPage)
 
 	m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
+	m.formDesignPage.SetName("FormDesignPage")
 	m.formDesignPage.SetPageControl(m.formPageControl)
 	m.formDesignPage.SetCaption("窗体")
 
 	m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
+	m.formUserEditorPage.SetName("FormUserEditorPage")
 	m.formUserEditorPage.SetPageControl(m.formPageControl)
 	m.formUserEditorPage.SetCaption("代码")
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
