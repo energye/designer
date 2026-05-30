@@ -325,7 +325,7 @@ func nsisIconFMT(imagePath string, isConvertIco *bool) string {
 		imagePath = filepath.Join(bean.ResourceAssetsPath(), imagePath)
 	}
 	if !tool.IsExist(imagePath) {
-		event.ConsoleWriteError("Package - image not exist:", imagePath)
+		event.ConsoleWriteWarn("Package - nsisIconFMT image not exist:", imagePath)
 		return ""
 	}
 	_, file := filepath.Split(imagePath)
@@ -376,7 +376,7 @@ func nsisBannerFMT(imagePath string, isConvertBmp *bool) string {
 		imagePath = filepath.Join(bean.ResourceAssetsPath(), imagePath)
 	}
 	if !tool.IsExist(imagePath) {
-		event.ConsoleWriteError("Package - image not exist:", imagePath)
+		event.ConsoleWriteWarn("Package - nsisBannerFMT image not exist:", imagePath)
 		return ""
 	}
 	_, file := filepath.Split(imagePath)

@@ -49,7 +49,7 @@ func buildWindows(ctx context.Context) bool {
 	}
 	if is386 {
 		if !option.Arch386 {
-			event.ConsoleWriteWarn("Build - arm64 architecture not enabled for Project Settings > Build Configurations")
+			event.ConsoleWriteWarn("Build - 386 architecture not enabled for Project Settings > Build Configurations")
 			return false
 		}
 	}
