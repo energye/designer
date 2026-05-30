@@ -176,7 +176,7 @@ func (m *TBuildForm) createWinSignCommandList() {
 		m.winPackConfigTabPageBinSignMemoBox.SetDemoText(`Use Example: signtool.exe tool sign. auto(auto=cmd) or specified cert(file=cmd)
 remark: cert relative path resources/assets
 auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
-file=signtool sign /f cert.pfx /p 密码 /fd SHA256`)
+file=signtool sign /f cert.pfx /p password /fd SHA256`)
 		m.winPackConfigTabPageBinSignMemoBox.Show()
 	}
 }

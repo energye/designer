@@ -610,7 +610,6 @@ func (m *TBuildForm) initBuildComponent() {
 	editLabel := m.packageNameEdit.EditLabel()
 	editLabel.SetName("BuildFormPackageNameEdit")
 	editLabel.SetCaption(metadata.GI18n.Dict("BuildFormPackageNameEdit.EditLabel.Caption"))
-	editLabel.SetFont(m.titleFontTwo)
 	m.packageNameEdit.SetLabelPosition(types.LpLeft)
 	m.packageNameEdit.SetParent(m.buildTabPagePackage)
 
