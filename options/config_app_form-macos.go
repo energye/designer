@@ -23,6 +23,7 @@ import (
 	"github.com/energye/lcl/types"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -107,12 +108,30 @@ func (m *TConfigProjectForm) initMacOSOptions() {
 }
 
 func (m *TConfigProjectForm) pListDataInit() {
-	LSUIElementBoxItems := m.LSUIElementBox.Items()
-	bean.LSUIElementList.Iterate(func(key bean.MacOSUIElementList, value string) bool {
-		LSUIElementBoxItems.Add(value)
+	uiElementNamePrefix := strings.ToLower(m.LSUIElementBox.Name() + ".Items[")
+	uiElementNameList := make(map[bean.MacOSUIElementList]string)
+	metadata.GI18n.Iterate(func(name, value string) bool {
+		name = strings.ToLower(name)
+		if strings.Contains(name, uiElementNamePrefix) {
+			index := name[len(uiElementNamePrefix) : len(uiElementNamePrefix)+1]
+			i, _ := strconv.Atoi(index)
+			uiElementNameList[bean.MacOSUIElementList(i)] = value
+		}
 		return false
 	})
-	m.LSUIElementBox.SetItemIndex(bean.GProject.AppOption.MacOS.PList.LSUIElementIndex)
+	// LSUIElement
+	{
+		LSUIElementBoxItems := m.LSUIElementBox.Items()
+		macOSUIElementList := []bean.MacOSUIElementList{bean.MacOSUIElementListNo, bean.MacOSUIElementListYes}
+		if len(uiElementNameList) == len(macOSUIElementList) {
+			for _, v := range macOSUIElementList {
+				LSUIElementBoxItems.Add(uiElementNameList[v])
+			}
+		} else {
+			event.ConsoleWriteError("MacOSUIElementList i18n Configuration error: Items element invalid for bean.MacOSUIElementList")
+		}
+		m.LSUIElementBox.SetItemIndex(bean.GProject.AppOption.MacOS.PList.LSUIElementIndex)
+	}
 
 	LSMinimumSystemVersionItems := m.LSMinimumSystemVersionBox.Items()
 	bean.LSMinimumSystemVersionList.Iterate(func(key bean.LSMinimumSystemVersion, value string) bool {
