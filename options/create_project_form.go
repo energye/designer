@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
@@ -84,6 +85,7 @@ type TCreateProjectForm struct {
 
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TCreateProjectForm FormCreate")
+	m.SetName("CreateProjectForm")
 	m.SetCaption("新建项目")
 	m.SetWidth(createProjectFormWidth)
 	m.SetHeight(createProjectFormHeight)
@@ -111,7 +113,7 @@ func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TClo
 }
 
 func (m *TCreateProjectForm) initComponents() {
-	left := int32(45)
+	//left := int32(45)
 	textWidth := int32(355)
 	gTop := int32(0)
 	nextTop := func(top int32) int32 {
@@ -122,6 +124,7 @@ func (m *TCreateProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	{
 		m.projNameEdit = lcl.NewLabeledEdit(m)
+		m.projNameEdit.SetName("CreateProjectFormProjectName")
 		m.projNameEdit.SetLeft(100)
 		if tool.IsLinux {
 			m.projNameEdit.SetTop(nextTop(10))
@@ -134,12 +137,14 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projNameEdit.SetParent(m.box)
 		m.projNameEdit.SetTextHint("your project name, e.g: myapp")
 		m.projNameEdit.SetLabelPosition(types.LpLeft)
+		m.projNameEdit.SetText("")
 		projNameText := m.projNameEdit.EditLabel()
-		projNameText.SetCaption("项目名称")
+		projNameText.SetCaption(metadata.GI18n.Dict("CreateProjectFormProjectName.EditLabel.Caption"))
 	}
 	{
 
 		m.projPathEdit = lcl.NewLabeledEdit(m)
+		m.projPathEdit.SetName("CreateProjectFormProjectPath")
 		m.projPathEdit.SetLeft(100)
 		if tool.IsLinux {
 			m.projPathEdit.SetTop(nextTop(40))
@@ -151,8 +156,9 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathEdit.SetTextHint("/your/app/path/name")
 		m.projPathEdit.SetParent(m.box)
 		m.projPathEdit.SetLabelPosition(types.LpLeft)
+		m.projPathEdit.SetText("")
 		projPathText := m.projPathEdit.EditLabel()
-		projPathText.SetCaption("项目路径")
+		projPathText.SetCaption(metadata.GI18n.Dict("CreateProjectFormProjectPath.EditLabel.Caption"))
 
 		m.projPathBtn = wg.NewButton(m)
 		m.projPathBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
@@ -173,9 +179,13 @@ func (m *TCreateProjectForm) initComponents() {
 	}
 	{
 		goVersionText := lcl.NewLabel(m)
-		goVersionText.SetLeft(left)
+		goVersionText.SetName("CreateProjectFormGoVersionLabel")
+		goVersionText.SetAutoSize(false)
+		goVersionText.SetLeft(0)
+		goVersionText.SetWidth(96)
+		goVersionText.SetAlignment(types.TaRightJustify)
 		goVersionText.SetTop(nextTop(40))
-		goVersionText.SetCaption(" Go 版本")
+		goVersionText.SetCaption(metadata.GI18n.Dict("CreateProjectFormGoVersionLabel.Caption"))
 		goVersionText.SetParent(m.box)
 
 		m.goVersionStatus = wg.NewButton(m)
@@ -193,18 +203,27 @@ func (m *TCreateProjectForm) initComponents() {
 		m.goVersionStatus.SetBorderColor(wg.BbdNone, wg.DarkenColor(color, 0.2))
 		m.goVersionStatus.SetEnterColor(color, color)
 		m.goVersionStatus.SetDownColor(color, color)
+		m.goVersionStatus.AnchorSideTop().SetControl(goVersionText)
+		m.goVersionStatus.AnchorSideTop().SetSide(types.AsrCenter)
 		m.goVersionStatus.SetParent(m.box)
 	}
 
 	{
 		m.guiRenderFrameworkText = lcl.NewLabel(m)
-		m.guiRenderFrameworkText.SetLeft(left)
+		m.guiRenderFrameworkText.SetName("CreateProjectFormGuiRenderFrameworkLabel")
+		m.guiRenderFrameworkText.SetAutoSize(false)
+		m.guiRenderFrameworkText.SetWidth(96)
+		m.guiRenderFrameworkText.SetAlignment(types.TaRightJustify)
+		m.guiRenderFrameworkText.SetLeft(0)
 		m.guiRenderFrameworkText.SetTop(nextTop(35))
-		m.guiRenderFrameworkText.SetCaption("  UI 模板")
+		m.guiRenderFrameworkText.SetCaption(metadata.GI18n.Dict("CreateProjectFormGuiRenderFrameworkLabel.Caption"))
 		m.guiRenderFrameworkText.SetParent(m.box)
 
 		m.guiRenderFrameworkBox = lcl.NewComboBox(m)
 		m.guiRenderFrameworkBox.SetBounds(100, m.guiRenderFrameworkText.Top(), textWidth, 36)
+		m.guiRenderFrameworkBox.AnchorSideTop().SetControl(m.guiRenderFrameworkText)
+		m.guiRenderFrameworkBox.AnchorSideTop().SetSide(types.AsrCenter)
+
 		m.guiRenderFrameworkBox.SetReadOnly(true)
 		m.guiRenderFrameworkBox.SetStyle(types.CsDropDownList)
 		m.guiRenderFrameworkBox.SetBorderStyle(types.BsSingle)
@@ -220,7 +239,8 @@ func (m *TCreateProjectForm) initComponents() {
 		cancelBtnRect.SetWidth(50)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetText("关 闭")
+		m.cancelBtn.SetName("CreateProjectFormCloseBtn")
+		m.cancelBtn.SetText(metadata.GI18n.Dict("CreateProjectFormCloseBtn.Caption"))
 		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -233,7 +253,8 @@ func (m *TCreateProjectForm) initComponents() {
 		createBtnRect.SetWidth(60)
 		createBtnRect.SetHeight(25)
 		m.createBtn = wg.NewButton(m)
-		m.createBtn.SetText("创 建")
+		m.createBtn.SetName("CreateProjectFormCreateBtn")
+		m.createBtn.SetText(metadata.GI18n.Dict("CreateProjectFormCreateBtn.Caption"))
 		m.createBtn.Font().SetColor(colors.ClWhite)
 		m.createBtn.Font().SetSize(8)
 		m.createBtn.SetRadius(3)

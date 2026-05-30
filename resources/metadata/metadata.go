@@ -48,7 +48,7 @@ func (m *TI18n) Get(lang string) ([]byte, error) {
 				continue
 			}
 			name := strings.TrimSpace(strings.ToLower(kv[0]))
-			value := strings.TrimSpace(kv[1])
+			value := kv[1]
 			m.dict[name] = value
 		}
 	}
