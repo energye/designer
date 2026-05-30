@@ -890,7 +890,7 @@ func (m *TBuildForm) saveClick(sender lcl.IObject) {
 
 func (m *TBuildForm) packageClick(sender lcl.IObject) {
 	if m.packageing {
-		isOK := api.MessageDlg("正在打包中, 是否停止?", types.MtInformation,
+		isOK := api.MessageDlg(metadata.GI18n.Dict("BuildFormPackageBtn.PackageStopMsg"), types.MtInformation,
 			types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.MrYes
 		if isOK && m.packageCancel != nil {
 			m.packageCancel()
@@ -898,7 +898,7 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		return
 	}
 	m.packageing = true
-	m.packageBtn.SetText("打包中...")
+	m.packageBtn.SetText(metadata.GI18n.Dict("BuildFormPackageBtn.Packaging"))
 	m.packageBtn.SetDisable(true)
 	if version.OSVersion.Major <= 10 {
 		// 非 macOS ≥ 11.0 Xcode ≥ 12.2 禁用通用二进制生成
@@ -914,11 +914,8 @@ func (m *TBuildForm) packageClick(sender lcl.IObject) {
 		}
 
 		// 恢复按钮状态
-		m.packageBtn.SetText("开始打包")
+		m.packageBtn.SetText(metadata.GI18n.Dict("BuildFormPackageBtn.Caption"))
 		m.packageBtn.SetDisable(false)
 		m.packageing = false
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.statusBar.SetSimpleText("打包完成")
-		})
 	}()
 }
