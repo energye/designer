@@ -15,6 +15,7 @@ package options
 
 import (
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -32,41 +33,47 @@ func (m *TBuildForm) initWindowsOptions() {
 	}
 
 	windowsPackageFmtTitle := lcl.NewLabel(m)
-	windowsPackageFmtTitle.SetCaption("打包格式")
+	windowsPackageFmtTitle.SetName("BuildFormWindowsPackageFmtTitle")
+	windowsPackageFmtTitle.SetCaption(metadata.GI18n.Dict("BuildFormWindowsPackageFmtTitle.Caption"))
 	windowsPackageFmtTitle.SetLeft(10)
 	windowsPackageFmtTitle.SetTop(nextTop(5))
 	windowsPackageFmtTitle.SetFont(m.titleFontTwo)
 	windowsPackageFmtTitle.SetParent(m.platformTabPageWindows)
 
 	m.winMsiCheckBox = lcl.NewCheckBox(m)
-	m.winMsiCheckBox.SetCaption("MSIX 安装包(MakeAppx)")
+	m.winMsiCheckBox.SetName("BuildFormWinMsiCheckBox")
+	m.winMsiCheckBox.SetCaption(metadata.GI18n.Dict("BuildFormWinMsiCheckBox.Caption"))
 	m.winMsiCheckBox.SetLeft(20)
 	m.winMsiCheckBox.SetTop(nextTop(25))
 	m.winMsiCheckBox.SetFont(m.font)
 	m.winMsiCheckBox.SetChecked(bean.GProject.BuildOption.WinMsi)
 	m.winMsiCheckBox.SetParent(m.platformTabPageWindows)
+
 	m.winExeCheckBox = lcl.NewCheckBox(m)
-	m.winExeCheckBox.SetCaption("EXE 安装包(MakeNsis)")
+	m.winExeCheckBox.SetName("BuildFormWinExeCheckBox")
+	m.winExeCheckBox.SetCaption(metadata.GI18n.Dict("BuildFormWinExeCheckBox.Caption"))
 	m.winExeCheckBox.SetLeft(210)
 	m.winExeCheckBox.SetTop(m.winMsiCheckBox.Top())
 	m.winExeCheckBox.SetFont(m.font)
 	m.winExeCheckBox.SetChecked(bean.GProject.BuildOption.WinExe)
 	m.winExeCheckBox.SetParent(m.platformTabPageWindows)
 	m.winExeCheckBox.SetShowHint(true)
-	m.winExeCheckBox.SetHint(`Enable the makensis command to create an installation package program`)
+	m.winExeCheckBox.SetHint(metadata.GI18n.Dict("BuildFormWinExeCheckBox.Hint"))
 
 	m.winDefaultInstallEdit = lcl.NewLabeledEdit(m)
+	m.winDefaultInstallEdit.SetName("BuildFormWinDefaultInstallEdit")
 	m.winDefaultInstallEdit.SetBounds(90, nextTop(30), buildFormWidth-110, 30)
 	m.winDefaultInstallEdit.SetFont(m.font)
-	m.winDefaultInstallEdit.SetTextHint("Default installation path of the application, e.g: C:\\Program Files")
+	m.winDefaultInstallEdit.SetTextHint(metadata.GI18n.Dict("BuildFormWinDefaultInstallEdit.TextHint"))
 	m.winDefaultInstallEdit.SetText(bean.GProject.BuildOption.WinDefaultInstall)
 	m.winDefaultInstallEdit.SetAnchors(types.NewSet(types.AkLeft, types.AkRight, types.AkTop))
-	m.winDefaultInstallEdit.EditLabel().SetCaption("默认安装路径")
+	m.winDefaultInstallEdit.EditLabel().SetCaption(metadata.GI18n.Dict("BuildFormWinDefaultInstallEdit.EditLabel.Caption"))
 	m.winDefaultInstallEdit.SetLabelPosition(types.LpLeft)
 	m.winDefaultInstallEdit.SetParent(m.platformTabPageWindows)
 
 	winConfigTitle := lcl.NewLabel(m)
-	winConfigTitle.SetCaption("配置选项")
+	winConfigTitle.SetName("BuildFormWinConfigTitle")
+	winConfigTitle.SetCaption(metadata.GI18n.Dict("BuildFormWinConfigTitle.Caption"))
 	winConfigTitle.SetLeft(10)
 	winConfigTitle.SetTop(nextTop(35))
 	winConfigTitle.SetFont(m.titleFontTwo)
@@ -119,22 +126,25 @@ func (m *TBuildForm) initWindowsOptions() {
 	})
 	{
 		m.winPackConfigTabPageBinSign = m.winPackConfigTab.NewPage()
-		m.winPackConfigTabPageBinSign.SetCaption("签 名")
+		m.winPackConfigTabPageBinSign.SetName("BuildFormWinPackConfigTabPageBinSign")
+		m.winPackConfigTabPageBinSign.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageBinSign.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageBinSign)
 		m.winPackConfigTabPageBinSign.SetActive(true)
 		m.winSignEnable = NewEnableButton(m.winPackConfigTabPageBinSign)
-		m.winSignEnable.DisableText = "已启用"
-		m.winSignEnable.EnableText = "已禁用"
+		m.winSignEnable.DisableText = metadata.GI18n.Dict("BuildFormWinSignEnable.DisableText")
+		m.winSignEnable.EnableText = metadata.GI18n.Dict("BuildFormWinSignEnable.EnableText")
 		m.winSignEnable.SetDisable(!bean.GProject.BuildOption.WinSign.Enable)
 	}
 	{
 		m.winPackConfigTabPageAssociateFiles = m.winPackConfigTab.NewPage()
-		m.winPackConfigTabPageAssociateFiles.SetCaption("关联文件")
+		m.winPackConfigTabPageAssociateFiles.SetName("BuildFormWinPackConfigTabPageAssociateFiles")
+		m.winPackConfigTabPageAssociateFiles.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageAssociateFiles.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateFiles)
 	}
 	{
 		m.winPackConfigTabPageAssociateProtocols = m.winPackConfigTab.NewPage()
-		m.winPackConfigTabPageAssociateProtocols.SetCaption("关联协议")
+		m.winPackConfigTabPageAssociateProtocols.SetName("BuildFormWinPackConfigTabPageAssociateProtocols")
+		m.winPackConfigTabPageAssociateProtocols.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageAssociateProtocols.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateProtocols)
 	}
 	{
@@ -159,12 +169,12 @@ func (m *TBuildForm) createWinSignCommandList() {
 		rect := types.TRect{Top: 40, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageBinSign.Width())
 		rect.SetHeight(m.winPackConfigTabPageBinSign.Height())
-		m.winPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, "配置 Windows SDK signtool 签名命令", m.winPackConfigTabPageBinSign)
+		m.winPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinSignCommandList.Title"), m.winPackConfigTabPageBinSign)
 		m.winPackConfigTabPageBinSignMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageBinSignMemoBox.SetMultipleLine(false)
 		m.winPackConfigTabPageBinSignMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinSign.Cert, "\n"))
-		m.winPackConfigTabPageBinSignMemoBox.SetDemoText(`使用说明: signtool.exe 工具签名. 自动(auto=cmd)或指定证书签名(file=cmd)
-备注: 证书相对路径需放在 resources/assets 目录
+		m.winPackConfigTabPageBinSignMemoBox.SetDemoText(`Use Example: signtool.exe tool sign. auto(auto=cmd) or specified cert(file=cmd)
+remark: cert relative path resources/assets
 auto=signtool sign /a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256
 file=signtool sign /f cert.pfx /p 密码 /fd SHA256`)
 		m.winPackConfigTabPageBinSignMemoBox.Show()
@@ -176,11 +186,11 @@ func (m *TBuildForm) createWinAssociateFiles() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageAssociateFiles.Width())
 		rect.SetHeight(m.winPackConfigTabPageAssociateFiles.Height())
-		m.winPackConfigTabPageAssociateFilesMemoBox = NewCommonMemoBox(rect, "配置应用关联文件", m.winPackConfigTabPageAssociateFiles)
+		m.winPackConfigTabPageAssociateFilesMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinAssociateFiles.Title"), m.winPackConfigTabPageAssociateFiles)
 		m.winPackConfigTabPageAssociateFilesMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageAssociateFilesMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateFileList, "\n"))
-		m.winPackConfigTabPageAssociateFilesMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 扩展名 | 唯一类名 | 类型描述 | 图标 | 右键菜单显示文字
+		m.winPackConfigTabPageAssociateFilesMemoBox.SetDemoText(`Use Example: Multiple lines, Separate fields with |
+Field Desc: Extension | Unique Class Name | Type Description | Icon | Right-Click Menu Text
 txt | AppTxtFile | My Project File | MyFile.ico | Open with Your App
 eng | MyProductEngFile | Custom Config File | YourFile.ico | Open with energy project`)
 		m.winPackConfigTabPageAssociateFilesMemoBox.Show()
@@ -192,11 +202,11 @@ func (m *TBuildForm) createWinAssociateProtocols() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageAssociateProtocols.Width())
 		rect.SetHeight(m.winPackConfigTabPageAssociateProtocols.Height())
-		m.winPackConfigTabPageAssociateProtocolsMemoBox = NewCommonMemoBox(rect, "配置应用关联协议", m.winPackConfigTabPageAssociateProtocols)
+		m.winPackConfigTabPageAssociateProtocolsMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinAssociateProtocols.Title"), m.winPackConfigTabPageAssociateProtocols)
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.WinAssociateProtocolList, "\n"))
-		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 协议名称 | 协议描述
+		m.winPackConfigTabPageAssociateProtocolsMemoBox.SetDemoText(`Use Example: Multiple lines, Separate fields with |
+Field Desc: Protocol Name | Protocol Description
 myapp | Open My App
 fs | fs soft scheme`)
 		m.winPackConfigTabPageAssociateProtocolsMemoBox.Show()
@@ -216,10 +226,10 @@ func (m *TBuildForm) createWinAppxAssets() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageAppxAssets.Width())
 		rect.SetHeight(m.winPackConfigTabPageAppxAssets.Height())
-		m.winPackConfigTabPageAppxAssetsMemoBox = NewCommonMemoBox(rect, "配置 Appx Assets 图片资源", m.winPackConfigTabPageAppxAssets)
+		m.winPackConfigTabPageAppxAssetsMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinAppxAssets.Title"), m.winPackConfigTabPageAppxAssets)
 		m.winPackConfigTabPageAppxAssetsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageAppxAssetsMemoBox.SetDefaultText(strings.Join(winAppxAssets, "\n"))
-		m.winPackConfigTabPageAppxAssetsMemoBox.SetDemoText(`使用说明: 自定义 Assets 图片, 需放在 resources/assets 目录
+		m.winPackConfigTabPageAppxAssetsMemoBox.SetDemoText(`Instructions: Custom Assets images | resources/assets directory
 propertiesLogo=PropertiesLogo.png
 square44x44Logo=Square44x44Logo.png
 square150x150Logo=Square150x150Logo.png
@@ -241,10 +251,10 @@ func (m *TBuildForm) createWinNSISAssets() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageNSISAssets.Width())
 		rect.SetHeight(m.winPackConfigTabPageNSISAssets.Height())
-		m.winPackConfigTabPageNSISAssetsMemoBox = NewCommonMemoBox(rect, "配置 NSIS Banner/ICON 图片资源", m.winPackConfigTabPageNSISAssets)
+		m.winPackConfigTabPageNSISAssetsMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinNSISAssets.Title"), m.winPackConfigTabPageNSISAssets)
 		m.winPackConfigTabPageNSISAssetsMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageNSISAssetsMemoBox.SetDefaultText(strings.Join(winNsisBanner, "\n"))
-		m.winPackConfigTabPageNSISAssetsMemoBox.SetDemoText(`使用说明: welcome 和 header (.png .bmp), icon(.png .ico) 需放在 resources/assets 目录
+		m.winPackConfigTabPageNSISAssetsMemoBox.SetDemoText(`Use Example: welcome and header (.png .bmp), icon(.png .ico) in resources/assets directory
 welcome=welcome.png
 header=header.png
 icon=nsis_icon.ico
@@ -268,7 +278,7 @@ func (m *TBuildForm) createWinNSISLicense() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.winPackConfigTabPageNSISLicense.Width())
 		rect.SetHeight(m.winPackConfigTabPageNSISLicense.Height())
-		m.winPackConfigTabPageNSISLicenseMemoBox = NewCommonMemoBox(rect, "配置 NSIS 许可证内容", m.winPackConfigTabPageNSISLicense)
+		m.winPackConfigTabPageNSISLicenseMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormWinNSISLicense.Title"), m.winPackConfigTabPageNSISLicense)
 		m.winPackConfigTabPageNSISLicenseMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.winPackConfigTabPageNSISLicenseMemoBox.SetDefaultText(licenseText)
 		m.winPackConfigTabPageNSISLicenseMemoBox.Show()
