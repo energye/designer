@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -55,6 +56,12 @@ func ResetSelectedComponent() {
 	if MainWindow.contentLayout != nil && MainWindow.contentLayout.layoutWidget != nil {
 		MainWindow.contentLayout.layoutWidget.resetAllNoSelected()
 		MainWindow.contentLayout.layoutWidget.selectedComponent = nil
+		MainWindow.contentLayout.layoutWidget.tree.Invalidate()
+	}
+}
+
+func WidgetTreeInvalidate() {
+	if MainWindow.contentLayout != nil && MainWindow.contentLayout.layoutWidget != nil {
 		MainWindow.contentLayout.layoutWidget.tree.Invalidate()
 	}
 }
@@ -235,9 +242,10 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			}
 
 			// 文本
-			titleX := 2 + iconXOffset
+			titleX := 6 + iconXOffset
 			titleY := r.Top + (rowH-14)/2
-			canvas.TextOutWithIntX2Str(titleX, titleY, node.Text())
+			text := metadata.GI18n.Dict("WidgetTreeList." + node.Text())
+			canvas.TextOutWithIntX2Str(titleX, titleY, text)
 			return
 		} else {
 			iconSize := int32(24)
@@ -301,7 +309,11 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			if isPress {
 				font.SetColor(0x00333333)
 			}
-			canvas.TextOutWithIntX2Str(textX, textY, node.Text())
+			text := node.Text()
+			if dictText := metadata.GI18n.Dict("WidgetTreeList." + text); dictText != "" {
+				text = dictText
+			}
+			canvas.TextOutWithIntX2Str(textX, textY, text)
 			brush.SetStyle(types.BsSolid)
 		}
 	})
@@ -320,7 +332,6 @@ func (m *ContentLayoutWidget) findComponentTreeItem(node lcl.ITreeNode) *TWidget
 }
 
 func (m *ContentLayoutWidget) resetAllNoSelected() {
-	// 先重置所有
 	for _, item := range m.components {
 		item.selected = false
 		if item.IsSelectTool() {
@@ -332,7 +343,6 @@ func (m *ContentLayoutWidget) resetAllNoSelected() {
 // 更新所有节点状态未选中
 // 只工具选项默认选中
 func (m *ContentLayoutWidget) updateAllNoSelected(node lcl.ITreeNode) {
-	// 先重置所有
 	m.resetAllNoSelected()
 	// 重置当前节点所属组的所有节点为未选中
 	if item := m.findComponentTreeItem(node); item != nil {
@@ -355,7 +365,7 @@ func (m *ContentLayoutWidget) initComponentTreeData() {
 	newComponentData := func(tab config.Tab) *TWidgetTreeItem {
 		logs.Debug("创建组件选项卡:", tab.Cn)
 		// 一级
-		root := items.AddChild(nil, tab.Cn)
+		root := items.AddChild(nil, tab.En)
 		rootTab := &TWidgetTreeItem{child: make(map[uintptr]*TWidgetTreeItem), node: root, name: tab.En}
 		m.components[root.Instance()] = rootTab
 		//root.SetImageIndex(6)
@@ -369,7 +379,7 @@ func (m *ContentLayoutWidget) initComponentTreeData() {
 
 		// 二级
 		// 选择工具 鼠标
-		child = items.AddChild(root, "选择指针")
+		child = items.AddChild(root, "SelectCursor")
 		imageIndex = imageComponents.ImageIndex("cursortool.png")
 		child.SetImageIndex(imageIndex)
 		child.SetSelectedIndex(imageIndex)

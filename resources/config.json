@@ -13,7 +13,7 @@
   },
   "componentTabs": {
     "standard": {
-      "cn": "  标准  ",
+      "cn": "标准",
       "en": "Standard",
       "component": [
         "TMainMenu",
@@ -37,7 +37,7 @@
       ]
     },
     "additional": {
-      "cn": "  附加  ",
+      "cn": "附加",
       "en": "Additional",
       "component": [
         "TBitBtn",
@@ -65,7 +65,7 @@
       ]
     },
     "common": {
-      "cn": "  通用  ",
+      "cn": "通用",
       "en": "Common",
       "component": [
         "TTrackBar",
@@ -84,7 +84,7 @@
       ]
     },
     "dialogs": {
-      "cn": "  对话框  ",
+      "cn": "对话框",
       "en": "Dialogs",
       "component": [
         "TOpenDialog",
@@ -105,7 +105,7 @@
       ]
     },
     "misc": {
-      "cn": "  杂项  ",
+      "cn": "杂项",
       "en": "Misc",
       "component": [
         "TColorButton",
@@ -127,14 +127,14 @@
       ]
     },
     "system": {
-      "cn": "  系统  ",
+      "cn": "系统",
       "en": "System",
       "component": [
         "TTimer"
       ]
     },
     "lazcontrol": {
-      "cn": "  Laz控件  ",
+      "cn": "Laz控件",
       "en": "LazControl",
       "component": [
         "TLazVirtualDrawTree",
@@ -148,7 +148,7 @@
       ]
     },
     "synedit": {
-      "cn": "  SynEdit  ",
+      "cn": "SynEdit",
       "en": "SynEdit",
       "component": [
         "TSynEdit",
@@ -167,7 +167,7 @@
       ]
     },
     "webview": {
-      "cn": "  Web  ",
+      "cn": "Web",
       "en": "Web",
       "component": [
         "TChromium",

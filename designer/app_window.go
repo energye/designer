@@ -205,6 +205,7 @@ func SwitchLocalesI18n(lang string) error {
 	if !locales.SwitchI18nLang(string(data)) {
 		return errors.New("switch i18n failed")
 	}
+	WidgetTreeInvalidate()
 	return nil
 }
 
