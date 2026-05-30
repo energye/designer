@@ -15,6 +15,7 @@ package options
 
 import (
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -27,7 +28,8 @@ func (m *TBuildForm) initLinuxOptions() {
 	}
 
 	linuxPackageFmtTitle := lcl.NewLabel(m)
-	linuxPackageFmtTitle.SetCaption("打包格式")
+	linuxPackageFmtTitle.SetName("BuildFormLinuxPackageFmtTitle")
+	linuxPackageFmtTitle.SetCaption(metadata.GI18n.Dict("BuildFormLinuxPackageFmtTitle.Caption"))
 	linuxPackageFmtTitle.SetLeft(10)
 	linuxPackageFmtTitle.SetTop(nextTop(5))
 	linuxPackageFmtTitle.SetFont(m.titleFontTwo)
@@ -58,7 +60,8 @@ func (m *TBuildForm) initLinuxOptions() {
 	m.linuxAppImageCheckBox.SetParent(m.platformTabPageLinux)
 
 	configTitle := lcl.NewLabel(m)
-	configTitle.SetCaption("配置选项")
+	configTitle.SetName("BuildFormLinuxConfigTitle")
+	configTitle.SetCaption(metadata.GI18n.Dict("BuildFormLinuxConfigTitle.Caption"))
 	configTitle.SetLeft(10)
 	configTitle.SetTop(nextTop(35))
 	configTitle.SetFont(m.titleFontTwo)
