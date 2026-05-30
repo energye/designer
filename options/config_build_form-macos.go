@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/frameworks/lib"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/lcl"
@@ -40,14 +41,16 @@ func (m *TBuildForm) initMacOSOptions() {
 	}
 
 	macOSPackageFmtTitle := lcl.NewLabel(m)
-	macOSPackageFmtTitle.SetCaption("打包格式")
+	macOSPackageFmtTitle.SetName("BuildFormMacOSPackageFmtTitle")
+	macOSPackageFmtTitle.SetCaption(metadata.GI18n.Dict("BuildFormMacOSPackageFmtTitle.Caption"))
 	macOSPackageFmtTitle.SetLeft(10)
 	macOSPackageFmtTitle.SetTop(nextTop(5))
 	macOSPackageFmtTitle.SetFont(m.titleFontTwo)
 	macOSPackageFmtTitle.SetParent(m.platformTabPageMacOS)
 
 	m.macDMGCheckBox = lcl.NewCheckBox(m)
-	m.macDMGCheckBox.SetCaption("DMG 镜像")
+	m.macDMGCheckBox.SetName("BuildFormMacOSDMGCheckBox")
+	m.macDMGCheckBox.SetCaption(metadata.GI18n.Dict("BuildFormMacOSDMGCheckBox.Caption"))
 	m.macDMGCheckBox.SetLeft(20)
 	m.macDMGCheckBox.SetTop(nextTop(25))
 	m.macDMGCheckBox.SetFont(m.font)
@@ -55,7 +58,8 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macDMGCheckBox.SetParent(m.platformTabPageMacOS)
 
 	m.macPKGCheckBox = lcl.NewCheckBox(m)
-	m.macPKGCheckBox.SetCaption("PKG 安装包")
+	m.macPKGCheckBox.SetName("BuildFormMacOSPKGCheckBox")
+	m.macPKGCheckBox.SetCaption(metadata.GI18n.Dict("BuildFormMacOSPKGCheckBox.Caption"))
 	m.macPKGCheckBox.SetLeft(210)
 	m.macPKGCheckBox.SetTop(m.macDMGCheckBox.Top())
 	m.macPKGCheckBox.SetFont(m.font)
@@ -63,7 +67,8 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macPKGCheckBox.SetParent(m.platformTabPageMacOS)
 
 	m.macCommonLibCheckBox = lcl.NewCheckBox(m)
-	m.macCommonLibCheckBox.SetCaption("‌通用二进制(Universal Binary)")
+	m.macCommonLibCheckBox.SetName("BuildFormMacOSCommonLibCheckBox")
+	m.macCommonLibCheckBox.SetCaption(metadata.GI18n.Dict("BuildFormMacOSCommonLibCheckBox.Caption"))
 	m.macCommonLibCheckBox.SetLeft(20)
 	m.macCommonLibCheckBox.SetTop(nextTop(30))
 	m.macCommonLibCheckBox.SetFont(m.font)
@@ -71,7 +76,8 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macCommonLibCheckBox.SetParent(m.platformTabPageMacOS)
 
 	macConfigTitle := lcl.NewLabel(m)
-	macConfigTitle.SetCaption("配置选项")
+	macConfigTitle.SetName("BuildFormMacOSConfigTitle")
+	macConfigTitle.SetCaption(metadata.GI18n.Dict("BuildFormMacOSConfigTitle.Caption"))
 	macConfigTitle.SetLeft(10)
 	macConfigTitle.SetTop(nextTop(35))
 	macConfigTitle.SetFont(m.titleFontTwo)
@@ -121,22 +127,25 @@ func (m *TBuildForm) initMacOSOptions() {
 
 	{
 		m.macPackConfigTabPageBinSign = m.macPackConfigTab.NewPage()
-		m.macPackConfigTabPageBinSign.SetCaption("签 名")
+		m.macPackConfigTabPageBinSign.SetName("BuildFormMacOSPackConfigTabPageBinSign")
+		m.macPackConfigTabPageBinSign.SetCaption(metadata.GI18n.Dict("BuildFormMacOSPackConfigTabPageBinSign.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageBinSign)
 		m.macPackConfigTabPageBinSign.SetActive(true)
 		m.macSignEnable = NewEnableButton(m.macPackConfigTabPageBinSign)
-		m.macSignEnable.DisableText = "已启用"
-		m.macSignEnable.EnableText = "已禁用"
+		m.macSignEnable.DisableText = metadata.GI18n.Dict("BuildFormMacOSSignEnable.DisableText")
+		m.macSignEnable.EnableText = metadata.GI18n.Dict("BuildFormMacOSSignEnable.EnableText")
 		m.macSignEnable.SetDisable(!bean.GProject.BuildOption.MacSign.Enable)
 	}
 	{
 		m.macPackConfigTabPageAssociateFiles = m.macPackConfigTab.NewPage()
-		m.macPackConfigTabPageAssociateFiles.SetCaption("关联文件")
+		m.macPackConfigTabPageAssociateFiles.SetName("BuildFormMacOSAssociateFiles")
+		m.macPackConfigTabPageAssociateFiles.SetCaption(metadata.GI18n.Dict("BuildFormMacOSAssociateFiles.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateFiles)
 	}
 	{
 		m.macPackConfigTabPageAssociateProtocols = m.macPackConfigTab.NewPage()
-		m.macPackConfigTabPageAssociateProtocols.SetCaption("关联协议")
+		m.macPackConfigTabPageAssociateProtocols.SetName("BuildFormMacOSAssociateProtocols")
+		m.macPackConfigTabPageAssociateProtocols.SetCaption(metadata.GI18n.Dict("BuildFormMacOSAssociateProtocols.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateProtocols)
 	}
 	{
@@ -152,11 +161,11 @@ func (m *TBuildForm) createMacAssociateUniversalLink() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.macPackConfigTabPageAssociateProtocols.Width())
 		rect.SetHeight(m.macPackConfigTabPageAssociateProtocols.Height())
-		m.macPackConfigTabPageUniversalLinkBox = NewCommonMemoBox(rect, "配置通用链接", m.macPackConfigTabPageUniversalLink)
+		m.macPackConfigTabPageUniversalLinkBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormMacOSAssociateUniversalLink.Title"), m.macPackConfigTabPageUniversalLink)
 		m.macPackConfigTabPageUniversalLinkBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageUniversalLinkBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacUniversalLink, "\n"))
-		m.macPackConfigTabPageUniversalLinkBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 还没写 | 还没写
+		m.macPackConfigTabPageUniversalLinkBox.SetDemoText(`Use Example: Multiple lines, Separate fields with |
+Field Desc: To Be Written | To Be Written
 `)
 		m.macPackConfigTabPageUniversalLinkBox.Show()
 	}
@@ -167,11 +176,11 @@ func (m *TBuildForm) createMacAssociateProtocols() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.macPackConfigTabPageAssociateProtocols.Width())
 		rect.SetHeight(m.macPackConfigTabPageAssociateProtocols.Height())
-		m.macPackConfigTabPageAssociateProtocolsBox = NewCommonMemoBox(rect, "配置应用关联协议", m.macPackConfigTabPageAssociateProtocols)
+		m.macPackConfigTabPageAssociateProtocolsBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormMacOSAssociateProtocols.Title"), m.macPackConfigTabPageAssociateProtocols)
 		m.macPackConfigTabPageAssociateProtocolsBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageAssociateProtocolsBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateProtocolList, "\n"))
-		m.macPackConfigTabPageAssociateProtocolsBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 协议名称 | 协议描述
+		m.macPackConfigTabPageAssociateProtocolsBox.SetDemoText(`Use Example: Multiple lines, Separate fields with |
+Field Desc: Protocol Name | Protocol Description
 myapp | Open My App
 fs | fs soft scheme`)
 		m.macPackConfigTabPageAssociateProtocolsBox.Show()
@@ -183,11 +192,11 @@ func (m *TBuildForm) createMacAssociateFiles() {
 		rect := types.TRect{Top: 0, Left: 0}
 		rect.SetWidth(m.macPackConfigTabPageAssociateFiles.Width())
 		rect.SetHeight(m.macPackConfigTabPageAssociateFiles.Height())
-		m.macPackConfigTabPageAssociateFilesBox = NewCommonMemoBox(rect, "配置应用关联文件", m.macPackConfigTabPageAssociateFiles)
+		m.macPackConfigTabPageAssociateFilesBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormMacOSAssociatFiles.Title"), m.macPackConfigTabPageAssociateFiles)
 		m.macPackConfigTabPageAssociateFilesBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageAssociateFilesBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacAssociateFileList, "\n"))
-		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(`使用说明: 多个换行, 字段使用 | 分割
-字段说明: 扩展名 | 名称 | 角色(Editor/Viewer) | 优先级(Owner/Default) | 图标(png/.icns)｜ MIME(允许空)
+		m.macPackConfigTabPageAssociateFilesBox.SetDemoText(`Use Example: Multiple lines, Separate fields with |
+Field Description: Extension | Name | Role(Editor/Viewer) | Priority(Owner/Default) | Icon(png/.icns) | MIME(Optional)
 txt | AppTxtFile | Editor | Owner | MyIcon.icns | application/x-gproj
 eng | MyProductEngFile | Editor | Owner | MyIcon.png | application/x-gproj`)
 		m.macPackConfigTabPageAssociateFilesBox.Show()
@@ -199,12 +208,12 @@ func (m *TBuildForm) createMacSignCommandList() {
 		rect := types.TRect{Top: 40, Left: 0}
 		rect.SetWidth(m.macPackConfigTabPageBinSign.Width())
 		rect.SetHeight(m.macPackConfigTabPageBinSign.Height())
-		m.macPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, "配置 MacOS codesign 签名命令列表", m.macPackConfigTabPageBinSign)
+		m.macPackConfigTabPageBinSignMemoBox = NewCommonMemoBox(rect, metadata.GI18n.Dict("BuildFormMacOSSignCommandList.Title"), m.macPackConfigTabPageBinSign)
 		m.macPackConfigTabPageBinSignMemoBox.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 		m.macPackConfigTabPageBinSignMemoBox.SetDefaultText(strings.Join(bean.GProject.BuildOption.MacSign.Cert, "\n"))
-		m.macPackConfigTabPageBinSignMemoBox.SetDemoText(`签名文件命令列表, 多个换行. 按深度顺序添加
-codesign -f -s "Developer ID Application: 你的名字 (团队ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
-codesign -f -s "Developer ID Application: 你的名字 (团队ID)" --options runtime "$APP_NAME"`)
+		m.macPackConfigTabPageBinSignMemoBox.SetDemoText(`Signature Commands | Multiple lines | Add by depth order
+codesign -f -s "Developer ID Application: Name (Team ID)" "$APP_NAME/Contents/Frameworks/your.dylib"
+codesign -f -s "Developer ID Application: Name (Team ID)" --options runtime "$APP_NAME"`)
 		m.macPackConfigTabPageBinSignMemoBox.Show()
 	}
 }
