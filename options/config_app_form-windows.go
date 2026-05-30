@@ -24,12 +24,15 @@ import (
 	"github.com/energye/designer/pkg/winres"
 	"github.com/energye/designer/pkg/winres/version"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,36 +48,60 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	windowsBaseTop := int32(10)
 
 	m.compatibilityOSText = lcl.NewLabel(m)
-	m.compatibilityOSText.SetLeft(10)
+	m.compatibilityOSText.SetName("ConfigProjectFormCompatibilityOSText")
+	m.compatibilityOSText.SetLeft(0)
 	m.compatibilityOSText.SetTop(windowsBaseTop)
-	m.compatibilityOSText.SetCaption("　　兼容")
+	m.compatibilityOSText.SetCaption(metadata.GI18n.Dict("ConfigProjectFormCompatibilityOSText.Caption"))
+	m.compatibilityOSText.SetWidth(75)
+	m.compatibilityOSText.SetAutoSize(false)
+	m.compatibilityOSText.SetAlignment(types.TaRightJustify)
 	m.compatibilityOSText.SetParent(m.platformTabPageWindows)
+
 	m.compatibilityOSBox = lcl.NewComboBox(m)
-	m.compatibilityOSBox.SetBounds(m.compatibilityOSText.Left()+60, windowsBaseTop-3, 475, 30)
+	m.compatibilityOSBox.SetName("ConfigProjectFormCompatibilityOSBox")
+	m.compatibilityOSBox.SetBounds(m.compatibilityOSText.Left()+80, windowsBaseTop-3, 460, 30)
 	m.compatibilityOSBox.SetReadOnly(true)
 	m.compatibilityOSBox.SetStyle(types.CsDropDownList)
+	m.compatibilityOSBox.AnchorSideTop().SetControl(m.compatibilityOSText)
+	m.compatibilityOSBox.AnchorSideTop().SetSide(types.AsrCenter)
 	m.compatibilityOSBox.SetParent(m.platformTabPageWindows)
 
 	m.dpiText = lcl.NewLabel(m)
-	m.dpiText.SetLeft(10)
+	m.dpiText.SetName("ConfigProjectFormDpiText")
+	m.dpiText.SetLeft(0)
 	m.dpiText.SetTop(windowsBaseTop + 40)
-	m.dpiText.SetCaption("　　 DPI")
+	m.dpiText.SetCaption(metadata.GI18n.Dict("ConfigProjectFormDpiText.Caption"))
+	m.dpiText.SetWidth(75)
+	m.dpiText.SetAutoSize(false)
+	m.dpiText.SetAlignment(types.TaRightJustify)
 	m.dpiText.SetParent(m.platformTabPageWindows)
+
 	m.dpiBox = lcl.NewComboBox(m)
-	m.dpiBox.SetBounds(m.dpiText.Left()+60, windowsBaseTop+37, 475, 30)
+	m.dpiBox.SetName("ConfigProjectFormDpiBox")
+	m.dpiBox.SetBounds(m.dpiText.Left()+80, windowsBaseTop+40, 460, 30)
 	m.dpiBox.SetReadOnly(true)
 	m.dpiBox.SetStyle(types.CsDropDownList)
+	m.dpiBox.AnchorSideTop().SetControl(m.dpiText)
+	m.dpiBox.AnchorSideTop().SetSide(types.AsrCenter)
 	m.dpiBox.SetParent(m.platformTabPageWindows)
 
 	m.runLevelText = lcl.NewLabel(m)
-	m.runLevelText.SetLeft(10)
+	m.runLevelText.SetName("ConfigProjectFormRunLevelText")
+	m.runLevelText.SetLeft(0)
 	m.runLevelText.SetTop(windowsBaseTop + 80)
-	m.runLevelText.SetCaption(" 执行等级")
+	m.runLevelText.SetWidth(75)
+	m.runLevelText.SetAutoSize(false)
+	m.runLevelText.SetAlignment(types.TaRightJustify)
+	m.runLevelText.SetCaption(metadata.GI18n.Dict("ConfigProjectFormRunLevelText.Caption"))
 	m.runLevelText.SetParent(m.platformTabPageWindows)
+
 	m.runLevelBox = lcl.NewComboBox(m)
-	m.runLevelBox.SetBounds(m.runLevelText.Left()+60, windowsBaseTop+77, 475, 30)
+	m.runLevelBox.SetName("ConfigProjectFormRunLevelBox")
+	m.runLevelBox.SetBounds(m.runLevelText.Left()+80, windowsBaseTop+80, 460, 30)
 	m.runLevelBox.SetReadOnly(true)
 	m.runLevelBox.SetStyle(types.CsDropDownList)
+	m.runLevelBox.AnchorSideTop().SetControl(m.runLevelText)
+	m.runLevelBox.AnchorSideTop().SetSide(types.AsrCenter)
 	m.runLevelBox.SetParent(m.platformTabPageWindows)
 
 	bg := wg.NewButton(m)
@@ -87,8 +114,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.uiAccessCheckBox = lcl.NewCheckBox(m)
 	m.uiAccessCheckBox.SetLeft(10)
 	m.uiAccessCheckBox.SetTop(windowsBaseTop + 125)
-	m.uiAccessCheckBox.SetCaption("uiAccess (用户界面访问)")
-	m.uiAccessCheckBox.SetHint("uiAccess (用户界面访问)")
+	m.uiAccessCheckBox.SetCaption("uiAccess")
+	m.uiAccessCheckBox.SetHint("uiAccess")
 	m.uiAccessCheckBox.SetShowHint(true)
 	m.uiAccessCheckBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.UIAccess)
 	m.uiAccessCheckBox.SetParent(m.platformTabPageWindows)
@@ -96,8 +123,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.autoElevateBox = lcl.NewCheckBox(m)
 	m.autoElevateBox.SetLeft(160 + 15)
 	m.autoElevateBox.SetTop(windowsBaseTop + 125)
-	m.autoElevateBox.SetCaption("autoElevate (自动提权)")
-	m.autoElevateBox.SetHint("autoElevate (自动提权)")
+	m.autoElevateBox.SetCaption("autoElevate")
+	m.autoElevateBox.SetHint("autoElevate")
 	m.autoElevateBox.SetShowHint(true)
 	m.autoElevateBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.AutoElevate)
 	m.autoElevateBox.SetParent(m.platformTabPageWindows)
@@ -105,8 +132,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableThemingBox = lcl.NewCheckBox(m)
 	m.disableThemingBox.SetLeft(160*2 + 10)
 	m.disableThemingBox.SetTop(windowsBaseTop + 125)
-	m.disableThemingBox.SetCaption("DisableTheming (禁用主题)")
-	m.disableThemingBox.SetHint("disableTheming (禁用主题)")
+	m.disableThemingBox.SetCaption("DisableTheming")
+	m.disableThemingBox.SetHint("disableTheming")
 	m.disableThemingBox.SetShowHint(true)
 	m.disableThemingBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.DisableTheming)
 	m.disableThemingBox.SetParent(m.platformTabPageWindows)
@@ -114,8 +141,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.disableWindowFilteringBox = lcl.NewCheckBox(m)
 	m.disableWindowFilteringBox.SetLeft(10)
 	m.disableWindowFilteringBox.SetTop(windowsBaseTop + 150)
-	m.disableWindowFilteringBox.SetCaption("disableWindowFiltering (禁用窗口过滤)")
-	m.disableWindowFilteringBox.SetHint("disableWindowFiltering (禁用窗口过滤仅在 DPI 虚拟化启用时生效)")
+	m.disableWindowFilteringBox.SetCaption("disableWindowFiltering")
+	m.disableWindowFilteringBox.SetHint("disableWindowFiltering (Disable window filtering, takes effect only when DPI virtualization is enabled.)")
 	m.disableWindowFilteringBox.SetShowHint(true)
 	m.disableWindowFilteringBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.DisableWindowFiltering)
 	m.disableWindowFilteringBox.SetParent(m.platformTabPageWindows)
@@ -123,8 +150,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.highResolutionScrollingAwareBox = lcl.NewCheckBox(m)
 	m.highResolutionScrollingAwareBox.SetLeft(10)
 	m.highResolutionScrollingAwareBox.SetTop(windowsBaseTop + 175)
-	m.highResolutionScrollingAwareBox.SetCaption("highResolutionScrollingAware (高分辨率滚动)")
-	m.highResolutionScrollingAwareBox.SetHint("highResolutionScrollingAware (高分辨率滚动)")
+	m.highResolutionScrollingAwareBox.SetCaption("highResolutionScrollingAware")
+	m.highResolutionScrollingAwareBox.SetHint("highResolutionScrollingAware (High-resolution scrolling)")
 	m.highResolutionScrollingAwareBox.SetShowHint(true)
 	m.highResolutionScrollingAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.HighResolutionScrollingAware)
 	m.highResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
@@ -132,8 +159,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.ultraHighResolutionScrollingAwareBox = lcl.NewCheckBox(m)
 	m.ultraHighResolutionScrollingAwareBox.SetLeft(10)
 	m.ultraHighResolutionScrollingAwareBox.SetTop(windowsBaseTop + 200)
-	m.ultraHighResolutionScrollingAwareBox.SetCaption("ultraHighResolutionScrollingAware (超高分辨率滚动)")
-	m.ultraHighResolutionScrollingAwareBox.SetHint("ultraHighResolutionScrollingAware (超高分辨率滚动Windows 10 2004+ / Windows 11)")
+	m.ultraHighResolutionScrollingAwareBox.SetCaption("ultraHighResolutionScrollingAware")
+	m.ultraHighResolutionScrollingAwareBox.SetHint("ultraHighResolutionScrollingAware (Ultra-high resolution scrolling Windows 10 2004+ / Windows 11)")
 	m.ultraHighResolutionScrollingAwareBox.SetShowHint(true)
 	m.ultraHighResolutionScrollingAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.UltraHighResolutionScrollingAware)
 	m.ultraHighResolutionScrollingAwareBox.SetParent(m.platformTabPageWindows)
@@ -141,8 +168,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.longPathAwareBox = lcl.NewCheckBox(m)
 	m.longPathAwareBox.SetLeft(160*2 + 10)
 	m.longPathAwareBox.SetTop(windowsBaseTop + 150)
-	m.longPathAwareBox.SetCaption("longPathAware (启用长路径支持)")
-	m.longPathAwareBox.SetHint("longPathAware (启用长路径支持 Windows 10 1607 +)")
+	m.longPathAwareBox.SetCaption("longPathAware")
+	m.longPathAwareBox.SetHint("longPathAware (Enable long path support Windows 10 1607 +)")
 	m.longPathAwareBox.SetShowHint(true)
 	m.longPathAwareBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.LongPathAware)
 	m.longPathAwareBox.SetParent(m.platformTabPageWindows)
@@ -150,8 +177,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.gDIScalingBox = lcl.NewCheckBox(m)
 	m.gDIScalingBox.SetLeft(160*2 + 10)
 	m.gDIScalingBox.SetTop(windowsBaseTop + 175)
-	m.gDIScalingBox.SetCaption("gdiScaling (GDI 自动缩放)")
-	m.gDIScalingBox.SetHint("gdiScaling (启用 GDI 自动缩放 Windows 10 1703+)")
+	m.gDIScalingBox.SetCaption("gdiScaling")
+	m.gDIScalingBox.SetHint("gdiScaling (Enable GDI auto-scaling Windows 10 1703+)")
 	m.gDIScalingBox.SetShowHint(true)
 	m.gDIScalingBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.GDIScaling)
 	m.gDIScalingBox.SetParent(m.platformTabPageWindows)
@@ -159,8 +186,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.segmentHeapBox = lcl.NewCheckBox(m)
 	m.segmentHeapBox.SetLeft(160*2 + 10)
 	m.segmentHeapBox.SetTop(windowsBaseTop + 200)
-	m.segmentHeapBox.SetCaption("segmentHeap (分段堆)")
-	m.segmentHeapBox.SetHint("启用 Segment Heap（Windows 10 2004+）")
+	m.segmentHeapBox.SetCaption("segmentHeap")
+	m.segmentHeapBox.SetHint("Enable Segment Heap（Windows 10 2004+）")
 	m.segmentHeapBox.SetShowHint(true)
 	m.segmentHeapBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.SegmentHeap)
 	m.segmentHeapBox.SetParent(m.platformTabPageWindows)
@@ -168,8 +195,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.printerDriverIsolationBox = lcl.NewCheckBox(m)
 	m.printerDriverIsolationBox.SetLeft(10)
 	m.printerDriverIsolationBox.SetTop(windowsBaseTop + 225)
-	m.printerDriverIsolationBox.SetCaption("printerDriverIsolation (打印驱动隔离)")
-	m.printerDriverIsolationBox.SetHint("printerDriverIsolation (启用打印驱动隔离, 仅适用于打印驱动组件)")
+	m.printerDriverIsolationBox.SetCaption("printerDriverIsolation")
+	m.printerDriverIsolationBox.SetHint("printerDriverIsolation (Enable print driver isolation, applies only to print driver components)")
 	m.printerDriverIsolationBox.SetShowHint(true)
 	m.printerDriverIsolationBox.SetChecked(bean.GProject.AppOption.Windows.Manifest.PrinterDriverIsolation)
 	m.printerDriverIsolationBox.SetParent(m.platformTabPageWindows)
@@ -177,8 +204,8 @@ func (m *TConfigProjectForm) initWindowsOptions() {
 	m.useCommonControlsV6Box = lcl.NewCheckBox(m)
 	m.useCommonControlsV6Box.SetLeft(160*2 + 10)
 	m.useCommonControlsV6Box.SetTop(windowsBaseTop + 225)
-	m.useCommonControlsV6Box.SetCaption("useCommonControlsV6 (视觉样式)")
-	m.useCommonControlsV6Box.SetHint("useCommonControlsV6 (启用视觉样式的现代控件)")
+	m.useCommonControlsV6Box.SetCaption("useCommonControlsV6")
+	m.useCommonControlsV6Box.SetHint("useCommonControlsV6 (Enable modern controls with visual styles)")
 	m.useCommonControlsV6Box.SetShowHint(true)
 	m.useCommonControlsV6Box.SetChecked(bean.GProject.AppOption.Windows.Manifest.UseCommonControlsV6)
 	m.useCommonControlsV6Box.SetParent(m.platformTabPageWindows)
@@ -196,17 +223,53 @@ func (m *TConfigProjectForm) manifestDataInit() {
 	}
 	m.compatibilityOSBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.CompatibilityOS))
 
-	dpiBoxItems := m.dpiBox.Items()
-	for _, item := range bean.DPIList.Values() {
-		dpiBoxItems.Add(item)
+	dpiNamePrefix := strings.ToLower(m.dpiBox.Name() + ".Items[")           // > ConfigProjectFormDpiBox.Items[0]
+	runLevelNamePrefix := strings.ToLower(m.runLevelBox.Name() + ".Items[") // > ConfigProjectFormRunLevelBox.Items[0]
+	dpiList := make(map[winres.DPIAwareness]string)
+	runLevelList := make(map[winres.ExecutionLevel]string)
+	metadata.GI18n.Iterate(func(name, value string) bool {
+		name = strings.ToLower(name)
+		if strings.Contains(name, dpiNamePrefix) {
+			index := name[len(dpiNamePrefix) : len(dpiNamePrefix)+1]
+			i, _ := strconv.Atoi(index)
+			dpiList[winres.DPIAwareness(i)] = value
+		} else if strings.Contains(name, runLevelNamePrefix) {
+			index := name[len(runLevelNamePrefix) : len(runLevelNamePrefix)+1]
+			i, _ := strconv.Atoi(index)
+			runLevelList[winres.ExecutionLevel(i)] = value
+		}
+		return false
+	})
+	// dpi
+	{
+		dpiBoxItems := m.dpiBox.Items()
+		dpiAwareness := []winres.DPIAwareness{winres.DPIAware, winres.DPIUnaware,
+			winres.DPIPerMonitor, winres.DPIPerMonitorV2}
+		if len(dpiList) == len(dpiAwareness) {
+			for _, v := range dpiAwareness {
+				dpiBoxItems.Add(dpiList[v])
+			}
+		} else {
+			event.ConsoleWriteError("DPIAwareness i18n Configuration error: Items element invalid for winres.DPIAwareness")
+		}
+		m.dpiBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.DPI))
 	}
-	m.dpiBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.DPI))
+	// dpi end
 
-	runLevelBoxItems := m.runLevelBox.Items()
-	for _, item := range bean.RunLevelList.Values() {
-		runLevelBoxItems.Add(item)
+	// run level
+	{
+		runLevelBoxItems := m.runLevelBox.Items()
+		executionLevel := []winres.ExecutionLevel{winres.AsInvoker, winres.HighestAvailable, winres.RequireAdministrator}
+		if len(runLevelList) == len(executionLevel) {
+			for _, v := range executionLevel {
+				runLevelBoxItems.Add(runLevelList[v])
+			}
+		} else {
+			event.ConsoleWriteError("ExecutionLevel i18n Configuration error: Items element invalid for winres.ExecutionLevel")
+		}
+		m.runLevelBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.RunLevel))
 	}
-	m.runLevelBox.SetItemIndex(int32(bean.GProject.AppOption.Windows.Manifest.RunLevel))
+	// run level end
 }
 
 // saveOrUpdateWindowsManifest 用于生成并保存 Windows 平台所需的资源文件（如图标、版本信息等）。

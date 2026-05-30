@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -112,7 +113,8 @@ type TConfigProjectForm struct {
 
 func (m *TConfigProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TConfigProjectForm FormCreate")
-	m.SetCaption("应用配置")
+	m.SetName("ConfigProjectForm")
+	m.SetCaption(metadata.GI18n.Dict("ConfigProjectForm.Caption"))
 	m.SetWidth(configProjectFormWidth)
 	m.SetHeight(configProjectFormHeight)
 	m.SetVisible(false)
@@ -182,16 +184,17 @@ func (m *TConfigProjectForm) initComponents() {
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 
 	left := int32(10)
-	textLeft := int32(45)
+	textLeft := int32(70)
 
 	m.font = lcl.NewFont()
 	m.font.SetName("微软雅黑")
 	m.font.SetCharSet(font.CHINESEBIG5_CHARSET)
 
 	m.appConfigTitle = lcl.NewLabel(m)
+	m.appConfigTitle.SetName("ConfigProjectFormAppConfigTitle")
 	m.appConfigTitle.SetLeft(10)
 	m.appConfigTitle.SetTop(10)
-	m.appConfigTitle.SetCaption("应用程序配置")
+	m.appConfigTitle.SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppConfigTitle.Caption"))
 	m.appConfigTitle.SetFont(m.font)
 	m.appConfigTitle.Font().SetSize(10)
 	m.appConfigTitle.SetParent(m.box)
@@ -203,10 +206,11 @@ func (m *TConfigProjectForm) initComponents() {
 	}
 	{
 		m.appTitleEdit = lcl.NewLabeledEdit(m)
-		m.appTitleEdit.EditLabel().SetCaption("标题")
-		m.appTitleEdit.SetBounds(textLeft, nextTop(0), 340, 30)
+		m.appTitleEdit.SetName("ConfigProjectFormAppTitleEdit")
+		m.appTitleEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppTitleEdit.EditLabel.Caption"))
+		m.appTitleEdit.SetBounds(textLeft, nextTop(0), 320, 30)
 		m.appTitleEdit.SetFont(m.font)
-		m.appTitleEdit.SetTextHint("my energy app")
+		m.appTitleEdit.SetTextHint("MyEnergyApp")
 		m.appTitleEdit.SetText(bean.GProject.AppOption.Title)
 		m.appTitleEdit.SetLabelPosition(types.LpLeft)
 		m.appTitleEdit.SetParent(m.box)
@@ -214,8 +218,9 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 		m.appIdEdit = lcl.NewLabeledEdit(m)
-		m.appIdEdit.EditLabel().SetCaption("标识")
-		m.appIdEdit.SetBounds(textLeft, nextTop(35), 340, 30)
+		m.appIdEdit.SetName("ConfigProjectFormAppIdEdit")
+		m.appIdEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppIdEdit.EditLabel.Caption"))
+		m.appIdEdit.SetBounds(textLeft, nextTop(35), 320, 30)
 		m.appIdEdit.SetFont(m.font)
 		m.appIdEdit.SetTextHint("company.product.app")
 		m.appIdEdit.SetText(bean.GProject.AppOption.Id)
@@ -223,8 +228,9 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appIdEdit.SetParent(m.box)
 
 		m.appDescEdit = lcl.NewLabeledEdit(m)
-		m.appDescEdit.EditLabel().SetCaption("描述")
-		m.appDescEdit.SetBounds(textLeft, nextTop(35), 340, 30)
+		m.appDescEdit.SetName("ConfigProjectFormAppDescEdit")
+		m.appDescEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppDescEdit.EditLabel.Caption"))
+		m.appDescEdit.SetBounds(textLeft, nextTop(35), 320, 30)
 		m.appDescEdit.SetFont(m.font)
 		m.appDescEdit.SetTextHint("your application description.")
 		m.appDescEdit.SetText(bean.GProject.AppOption.Desc)
@@ -232,7 +238,8 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appDescEdit.SetParent(m.box)
 
 		m.appVersionEdit = lcl.NewLabeledEdit(m)
-		m.appVersionEdit.EditLabel().SetCaption("版本")
+		m.appVersionEdit.SetName("ConfigProjectFormAppVersionEdit")
+		m.appVersionEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppVersionEdit.EditLabel.Caption"))
 		m.appVersionEdit.SetBounds(textLeft, nextTop(35), 100, 30)
 		m.appVersionEdit.SetFont(m.font)
 		m.appVersionEdit.SetTextHint("1.2.3.4")
@@ -241,9 +248,10 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appVersionEdit.SetParent(m.box)
 
 		m.appCopyrightEdit = lcl.NewLabeledEdit(m)
-		m.appCopyrightEdit.EditLabel().SetCaption("版权")
+		m.appCopyrightEdit.SetName("ConfigProjectFormAppCopyrightEdit")
+		m.appCopyrightEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppCopyrightEdit.EditLabel.Caption"))
 		m.appCopyrightEdit.SetBounds(m.appVersionEdit.Left()+m.appVersionEdit.Width()+left+35,
-			m.appVersionEdit.Top(), 195, 30)
+			m.appVersionEdit.Top(), 175, 30)
 		m.appCopyrightEdit.SetFont(m.font)
 		m.appCopyrightEdit.SetTextHint("Copyright (C)")
 		m.appCopyrightEdit.SetText(bean.GProject.AppOption.Copyright)
@@ -251,6 +259,7 @@ func (m *TConfigProjectForm) initComponents() {
 		m.appCopyrightEdit.SetParent(m.box)
 
 		m.appIconBtn = wg.NewButton(m)
+		m.appIconBtn.SetName("ConfigProjectFormAppIconBtn")
 		m.appIconBtn.SetIconFormBytes(resources.Images("button/upload_64x64.png"))
 		//m.appIconBtn.SetIconCloseFormBytes(resources.Images("button/remove_16x16.png"))
 		//m.appIconBtn.SetIconCloseHighlightFormBytes(resources.Images("button/remove_16x16_highlight.png"))
@@ -260,8 +269,8 @@ func (m *TConfigProjectForm) initComponents() {
 		appIconRect.SetHeight(145)
 		m.appIconBtn.TextOffSetY = 50
 		m.appIconBtn.SetBoundsRect(appIconRect)
-		m.appIconBtn.SetCaption("点击加载应用图标")
-		m.appIconBtn.SetHint("点击加载应用图标")
+		m.appIconBtn.SetCaption(metadata.GI18n.Dict("ConfigProjectFormAppIconBtn.Caption"))
+		m.appIconBtn.SetHint(metadata.GI18n.Dict("ConfigProjectFormAppIconBtn.Hint"))
 		m.appIconBtn.SetShowHint(true)
 		m.appIconBtn.SetFont(m.font)
 		m.appIconBtn.SetBorderColor(wg.BbdNone, colors.RGBToColor(91, 155, 213))
@@ -287,9 +296,10 @@ func (m *TConfigProjectForm) initComponents() {
 
 	{
 		m.platformTitle = lcl.NewLabel(m)
+		m.platformTitle.SetName("ConfigProjectFormPlatformTitle")
 		m.platformTitle.SetLeft(10)
 		m.platformTitle.SetTop(nextTop(30))
-		m.platformTitle.SetCaption("平台配置")
+		m.platformTitle.SetCaption(metadata.GI18n.Dict("ConfigProjectFormPlatformTitle.Caption"))
 		m.platformTitle.SetFont(m.font)
 		m.platformTitle.Font().SetSize(10)
 		m.platformTitle.SetParent(m.box)
@@ -380,7 +390,8 @@ func (m *TConfigProjectForm) initComponents() {
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetText("关　闭")
+		m.cancelBtn.SetName("ConfigProjectFormCancelBtn")
+		m.cancelBtn.SetText(metadata.GI18n.Dict("ConfigProjectFormCancelBtn.Caption"))
 		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -393,7 +404,8 @@ func (m *TConfigProjectForm) initComponents() {
 		saveBtnRect.SetWidth(60)
 		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
-		m.saveBtn.SetText("保　存")
+		m.saveBtn.SetName("ConfigProjectFormSaveBtn")
+		m.saveBtn.SetText(metadata.GI18n.Dict("ConfigProjectFormSaveBtn.Caption"))
 		m.saveBtn.Font().SetSize(8)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)

@@ -63,3 +63,14 @@ func (m *TI18n) Dict(name string) string {
 	name = strings.ToLower(name)
 	return m.dict[name]
 }
+
+func (m *TI18n) Iterate(fn func(name, value string) bool) {
+	if fn == nil {
+		return
+	}
+	for name, value := range m.dict {
+		if fn(name, value) {
+			break
+		}
+	}
+}
