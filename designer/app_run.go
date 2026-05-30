@@ -21,7 +21,6 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/locales"
 	"strings"
 	"time"
 )
@@ -35,7 +34,6 @@ var (
 func Run() {
 	logs.Println("TID:", api.MainThreadId(), "ENERGY Designer RUN")
 	//locales.SwitchLCLLang("de")
-	locales.SwitchLCLLang("zh_CN")
 	lcl.Application.Initialize()
 	lcl.Application.SetTitle(config.DesignerConfig.Title)
 	lcl.Application.SetMainFormOnTaskBar(true)

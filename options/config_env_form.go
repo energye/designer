@@ -40,8 +40,8 @@ var (
 		code string
 		name string
 	}{
-		{"zh-CN", "简体中文"},
-		{"en-US", "English (US)"},
+		{"zh_CN", "简体中文"},
+		{"en_US", "English (US)"},
 		//{"ja", "日本語"},
 		//{"ko", "한국어"},
 	}
