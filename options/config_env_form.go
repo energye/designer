@@ -22,6 +22,7 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -85,7 +86,8 @@ type TEnvForm struct {
 func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TEnvForm FormCreate")
 
-	m.SetCaption("环境配置")
+	m.SetName("EnvForm")
+	m.SetCaption(metadata.GI18n.Dict("EnvForm.Caption"))
 	m.SetWidth(envFormWidth)
 	m.SetHeight(envFormHeight)
 	//constr := m.Constraints()
@@ -180,7 +182,8 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetText("关　闭")
+		m.cancelBtn.SetName("EnvFormCancelBtn")
+		m.cancelBtn.SetText(metadata.GI18n.Dict("EnvFormCancelBtn.Caption"))
 		m.cancelBtn.Font().SetSize(8)
 		m.cancelBtn.SetRadius(3)
 		m.cancelBtn.SetBoundsRect(cancelBtnRect)
@@ -193,7 +196,8 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		saveBtnRect.SetWidth(60)
 		saveBtnRect.SetHeight(25)
 		m.saveBtn = wg.NewButton(m)
-		m.saveBtn.SetText("保　存")
+		m.saveBtn.SetName("EnvFormSaveBtn")
+		m.saveBtn.SetText(metadata.GI18n.Dict("EnvFormSaveBtn.Caption"))
 		m.saveBtn.Font().SetSize(8)
 		m.saveBtn.Font().SetColor(colors.ClWhite)
 		m.saveBtn.SetRadius(3)
@@ -216,6 +220,11 @@ func (m *TEnvForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) 
 
 func (m *TEnvForm) closeClick(sender lcl.IObject) {
 	m.Close()
+}
+
+func (m *TEnvForm) UpdateBtnText() {
+	m.cancelBtn.SetText(metadata.GI18n.Dict("EnvFormCancelBtn.Caption"))
+	m.saveBtn.SetText(metadata.GI18n.Dict("EnvFormSaveBtn.Caption"))
 }
 
 func (m *TEnvForm) saveClick(sender lcl.IObject) {
@@ -334,5 +343,8 @@ func (m *TEnvForm) onLangChange(sender lcl.IObject) {
 		config.Config.EnvLang = m.currentLang
 		config.UpdateConfig()
 		event.ConsoleWriteInfo("Environment Configuration - Switch i18n-Completed")
+
+		// todo 缺陷, 自定义组件 button 还不能自动国际化适配
+		m.UpdateBtnText()
 	}
 }
