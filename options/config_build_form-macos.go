@@ -109,7 +109,7 @@ func (m *TBuildForm) initMacOSOptions() {
 	m.macPackConfigTab.Margin = 0
 	m.macPackConfigTab.SetBoundsRect(macPackConfigBR)
 	m.macPackConfigTab.SetColor(colors.ClWhite)
-	m.macPackConfigTab.EnableScrollButton(false)
+	m.macPackConfigTab.EnableScrollButton(true)
 	m.macPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 	m.macPackConfigTab.SetParent(m.platformTabPageMacOS)
 	m.macPackConfigTab.SetOnChange(func(sender lcl.IObject) {
@@ -123,11 +123,13 @@ func (m *TBuildForm) initMacOSOptions() {
 		} else if page == m.macPackConfigTabPageUniversalLink {
 			m.createMacAssociateUniversalLink()
 		}
+		m.macPackConfigTab.RecalculatePosition()
 	})
 
 	{
 		m.macPackConfigTabPageBinSign = m.macPackConfigTab.NewPage()
 		m.macPackConfigTabPageBinSign.SetName("BuildFormMacOSPackConfigTabPageBinSign")
+		m.macPackConfigTabPageBinSign.Button().SetAutoSize(true)
 		m.macPackConfigTabPageBinSign.SetCaption(metadata.GI18n.Dict("BuildFormMacOSPackConfigTabPageBinSign.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageBinSign)
 		m.macPackConfigTabPageBinSign.SetActive(true)
@@ -139,12 +141,14 @@ func (m *TBuildForm) initMacOSOptions() {
 	{
 		m.macPackConfigTabPageAssociateFiles = m.macPackConfigTab.NewPage()
 		m.macPackConfigTabPageAssociateFiles.SetName("BuildFormMacOSAssociateFiles")
+		m.macPackConfigTabPageAssociateFiles.Button().SetAutoSize(true)
 		m.macPackConfigTabPageAssociateFiles.SetCaption(metadata.GI18n.Dict("BuildFormMacOSAssociateFiles.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateFiles)
 	}
 	{
 		m.macPackConfigTabPageAssociateProtocols = m.macPackConfigTab.NewPage()
 		m.macPackConfigTabPageAssociateProtocols.SetName("BuildFormMacOSAssociateProtocols")
+		m.macPackConfigTabPageAssociateProtocols.Button().SetAutoSize(true)
 		m.macPackConfigTabPageAssociateProtocols.SetCaption(metadata.GI18n.Dict("BuildFormMacOSAssociateProtocols.Caption"))
 		setMacPackConfigTabPageStyle(m.macPackConfigTabPageAssociateProtocols)
 	}

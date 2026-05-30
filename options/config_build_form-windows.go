@@ -105,7 +105,7 @@ func (m *TBuildForm) initWindowsOptions() {
 	m.winPackConfigTab.Margin = 0
 	m.winPackConfigTab.SetBoundsRect(winPackConfigBR)
 	m.winPackConfigTab.SetColor(colors.ClWhite)
-	m.winPackConfigTab.EnableScrollButton(false)
+	m.winPackConfigTab.EnableScrollButton(true)
 	m.winPackConfigTab.SetAnchors(types.NewSet(types.AkTop, types.AkBottom, types.AkLeft, types.AkRight))
 	m.winPackConfigTab.SetParent(m.platformTabPageWindows)
 	m.winPackConfigTab.SetOnChange(func(sender lcl.IObject) {
@@ -123,10 +123,12 @@ func (m *TBuildForm) initWindowsOptions() {
 		} else if page == m.winPackConfigTabPageNSISLicense {
 			m.createWinNSISLicense()
 		}
+		m.winPackConfigTab.RecalculatePosition()
 	})
 	{
 		m.winPackConfigTabPageBinSign = m.winPackConfigTab.NewPage()
 		m.winPackConfigTabPageBinSign.SetName("BuildFormWinPackConfigTabPageBinSign")
+		m.winPackConfigTabPageBinSign.Button().SetAutoSize(true)
 		m.winPackConfigTabPageBinSign.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageBinSign.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageBinSign)
 		m.winPackConfigTabPageBinSign.SetActive(true)
@@ -138,27 +140,32 @@ func (m *TBuildForm) initWindowsOptions() {
 	{
 		m.winPackConfigTabPageAssociateFiles = m.winPackConfigTab.NewPage()
 		m.winPackConfigTabPageAssociateFiles.SetName("BuildFormWinPackConfigTabPageAssociateFiles")
+		m.winPackConfigTabPageAssociateFiles.Button().SetAutoSize(true)
 		m.winPackConfigTabPageAssociateFiles.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageAssociateFiles.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateFiles)
 	}
 	{
 		m.winPackConfigTabPageAssociateProtocols = m.winPackConfigTab.NewPage()
 		m.winPackConfigTabPageAssociateProtocols.SetName("BuildFormWinPackConfigTabPageAssociateProtocols")
+		m.winPackConfigTabPageAssociateProtocols.Button().SetAutoSize(true)
 		m.winPackConfigTabPageAssociateProtocols.SetCaption(metadata.GI18n.Dict("BuildFormWinPackConfigTabPageAssociateProtocols.Caption"))
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAssociateProtocols)
 	}
 	{
 		m.winPackConfigTabPageAppxAssets = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageAppxAssets.Button().SetAutoSize(true)
 		m.winPackConfigTabPageAppxAssets.SetCaption("Appx Assets")
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageAppxAssets)
 	}
 	{
 		m.winPackConfigTabPageNSISAssets = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageNSISAssets.Button().SetAutoSize(true)
 		m.winPackConfigTabPageNSISAssets.SetCaption("NSIS Assets")
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageNSISAssets)
 	}
 	{
 		m.winPackConfigTabPageNSISLicense = m.winPackConfigTab.NewPage()
+		m.winPackConfigTabPageNSISLicense.Button().SetAutoSize(true)
 		m.winPackConfigTabPageNSISLicense.SetCaption("NSIS License")
 		setWinPackConfigTabPageStyle(m.winPackConfigTabPageNSISLicense)
 	}
