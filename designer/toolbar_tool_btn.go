@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
 )
@@ -188,19 +189,25 @@ func CMDGoModDepsUpdate() {
 
 // 切换预览按钮状态, 在运行和结束运行之间切换
 func (m *TToolbarToolBtn) switchPreviewBtn(status consts.PreviewState) {
-	logs.Debug("切换预览按钮状态 status:", status)
+	logs.Debug("switchPreviewBtn status:", status)
 	changeStatus := func() {
 		m.previewState = status
 		m.runPreviewBtn.SetEnabled(true)
 		if m.previewState == consts.PsStarted {
-			m.runPreviewBtn.SetHint("停止(F9)")
+			m.runPreviewBtn.SetName("RunPreviewToolBtnStop")
+			m.runPreviewBtn.SetCaption(metadata.GI18n.Dict("RunPreviewToolBtnStop.Caption"))
+			m.runPreviewBtn.SetHint(metadata.GI18n.Dict("RunPreviewToolBtnStop.Hint"))
 			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
 		} else if m.previewState == consts.PsStarting {
+			m.runPreviewBtn.SetName("RunPreviewToolBtnStop")
 			m.runPreviewBtn.SetEnabled(false)
-			m.runPreviewBtn.SetHint("停止(F9)")
+			m.runPreviewBtn.SetCaption(metadata.GI18n.Dict("RunPreviewToolBtnStop.Caption"))
+			m.runPreviewBtn.SetHint(metadata.GI18n.Dict("RunPreviewToolBtnStop.Hint"))
 			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_stop_150.png"))
 		} else {
-			m.runPreviewBtn.SetHint("运行(F9)")
+			m.runPreviewBtn.SetName("RunPreviewToolBtn")
+			m.runPreviewBtn.SetCaption(metadata.GI18n.Dict("RunPreviewToolBtn.Caption"))
+			m.runPreviewBtn.SetHint(metadata.GI18n.Dict("RunPreviewToolBtn.Hint"))
 			m.runPreviewBtn.SetImageIndex(imageMenu.ImageIndex("menu_run_150.png"))
 		}
 		MainWindow.mainMenu.switchRunMenuItem(status)

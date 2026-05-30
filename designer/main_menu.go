@@ -20,6 +20,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	desTool "github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/metadata"
 	engLCL "github.com/energye/energy/v3/lcl"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -436,16 +437,16 @@ func (m *TMainMenu) switchRunMenuItem(status consts.PreviewState) {
 	m.runApp.SetEnabled(true)
 	if status == consts.PsStarted {
 		m.runApp.SetName("MenuRunPreviewStop")
-		m.runApp.SetCaption("停止")
+		m.runApp.SetCaption(metadata.GI18n.Dict("MenuRunPreviewStop.Caption"))
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else if status == consts.PsStarting {
 		m.runApp.SetName("MenuRunPreviewStop")
 		m.runApp.SetEnabled(false)
-		m.runApp.SetCaption("停止")
+		m.runApp.SetCaption(metadata.GI18n.Dict("MenuRunPreviewStop.Caption"))
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_stop.png"))
 	} else {
 		m.runApp.SetName("MenuRunPreview")
-		m.runApp.SetCaption("运行预览")
+		m.runApp.SetCaption(metadata.GI18n.Dict("MenuRunPreview.Caption"))
 		m.runApp.SetImageIndex(imageMenu.ImageIndex("menu_run.png"))
 	}
 }

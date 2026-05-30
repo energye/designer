@@ -18,6 +18,7 @@ import (
 	"github.com/energye/designer/designer/editor/webview"
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -88,12 +89,12 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.formDesignPage = lcl.NewTabSheet(formTab.mainPage)
 	m.formDesignPage.SetName("FormDesignPage")
 	m.formDesignPage.SetPageControl(m.formPageControl)
-	m.formDesignPage.SetCaption("窗体")
+	m.formDesignPage.SetCaption(metadata.GI18n.Dict("FormDesignPage.Caption"))
 
 	m.formUserEditorPage = lcl.NewTabSheet(formTab.mainPage)
 	m.formUserEditorPage.SetName("FormUserEditorPage")
 	m.formUserEditorPage.SetPageControl(m.formPageControl)
-	m.formUserEditorPage.SetCaption("代码")
+	m.formUserEditorPage.SetCaption(metadata.GI18n.Dict("FormUserEditorPage.Caption"))
 	m.formUserEditorPage.SetOnShow(m.UserEditorPageOnShow)
 
 	//m.formUIEditorPage = lcl.NewTabSheet(formTab.mainPage)
