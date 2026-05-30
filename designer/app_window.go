@@ -206,6 +206,7 @@ func SwitchLocalesI18n(lang string) error {
 		return errors.New("switch i18n failed")
 	}
 	if lang == "en_US" {
+		// 英文需要设置为""默认值
 		lang = ""
 	}
 	locales.SwitchDefaultLang(lang, true)

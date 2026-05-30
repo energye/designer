@@ -63,6 +63,7 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 		btn.SetShowHint(true)
 		btn.SetHint(hint)
 		btn.SetCaption(text)
+		btn.SetCursor(types.CrHandPoint)
 		btn.SetParent(toolBtnBar)
 		return btn
 	}
