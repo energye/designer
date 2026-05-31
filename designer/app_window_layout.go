@@ -49,6 +49,9 @@ func (m *TAppWindow) initDesignerLayoutV2() {
 // 初始化主窗口用到的组件
 func (m *TAppWindow) initWindowComponent() {
 	m.openDialog = lcl.NewOpenDialog(m)
+	m.openDialog.SetName("OpenDialog")
 	m.saveDialog = lcl.NewSaveDialog(m)
+	m.saveDialog.SetName("SaveDialog")
 	m.selectDirectoryDialog = lcl.NewSelectDirectoryDialog(m)
+	m.selectDirectoryDialog.SetName("SelectDirectoryDialog")
 }

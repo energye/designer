@@ -41,6 +41,7 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.topBox.SetParent(owner.projectPanel)
 
 	title := lcl.NewLabel(m.topBox)
+	title.SetName("ProjectTitle")
 	title.SetCaption("项目管理器")
 	title.SetLeft(5)
 	title.SetTop(5)

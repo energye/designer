@@ -114,6 +114,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	m.SetColor(colors.ClWhite)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+	m.selectDir.SetName("EnvFormSelectDir")
 
 	gTop := int32(0)
 	nextTop := func(top int32) int32 {
@@ -257,7 +258,7 @@ func (m *TEnvForm) saveClick(sender lcl.IObject) {
 }
 
 func (m *TEnvForm) goRootClick(sender lcl.IObject) {
-	m.selectDir.SetTitle("设置 Go SDK 目录")
+	m.selectDir.SetTitle(metadata.GI18n.Dict("EnvFormSelectDir.Title"))
 	if m.selectDir.Execute() {
 		goRoot := m.selectDir.FileName()
 		bin := filepath.Join(goRoot, "bin")
@@ -266,7 +267,7 @@ func (m *TEnvForm) goRootClick(sender lcl.IObject) {
 			goCmd = "go.exe"
 		}
 		if !tool.IsExist(filepath.Join(bin, goCmd)) {
-			api.ShowMessage("目录不是有效的 Go SDK 目录")
+			api.ShowMessage(metadata.GI18n.Dict("EnvFormSelectDir.GoSDKMsg"))
 			return
 		}
 		isAdd := true

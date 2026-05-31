@@ -148,7 +148,11 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	m.initTray()
 	notification.Init()
 
-	_ = SwitchLocalesI18n(config.Config.EnvLang)
+	lang := config.Config.EnvLang
+	if lang == "" {
+		lang = "en"
+	}
+	_ = SwitchLocalesI18n(lang)
 }
 
 func (m *TAppWindow) initAllImageList() {

@@ -171,6 +171,7 @@ func (m *TBuildForm) FormCreate(sender lcl.IObject) {
 	m.SetColor(colors.ClWhite)
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+	m.selectDir.SetName("BuildFormSelectDir")
 
 	{
 		tabBR := types.TRect{Left: 0, Top: 5}
@@ -701,7 +702,7 @@ func (m *TBuildForm) closeClick(sender lcl.IObject) {
 }
 
 func (m *TBuildForm) selectOutputDirClick(sender lcl.IObject) {
-	m.selectDir.SetTitle("选择输出目录")
+	m.selectDir.SetTitle(metadata.GI18n.Dict("BuildFormSelectDir.Title"))
 	if m.selectDir.Execute() {
 		output := m.selectDir.FileName()
 		m.outputEdit.SetText(output)
