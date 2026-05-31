@@ -86,7 +86,7 @@ type TCreateProjectForm struct {
 func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TCreateProjectForm FormCreate")
 	m.SetName("CreateProjectForm")
-	m.SetCaption("新建项目")
+	m.SetCaption(metadata.GI18n.Dict("CreateProjectForm.Caption"))
 	m.SetWidth(createProjectFormWidth)
 	m.SetHeight(createProjectFormHeight)
 	m.SetVisible(false)
@@ -122,6 +122,7 @@ func (m *TCreateProjectForm) initComponents() {
 	}
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
+	m.selectDir.SetName("CreateProjectFormSelectDir")
 	{
 		m.projNameEdit = lcl.NewLabeledEdit(m)
 		m.projNameEdit.SetName("CreateProjectFormProjectName")
@@ -334,7 +335,7 @@ func (m *TCreateProjectForm) checkGoVersion() {
 
 // 项目存放目录选择
 func (m *TCreateProjectForm) projPathClick(sender lcl.IObject) {
-	m.selectDir.SetTitle("新建项目")
+	m.selectDir.SetTitle(metadata.GI18n.Dict("CreateProjectFormSelectDir.Caption"))
 	if m.projPathEdit.Text() == "" {
 		initDir := bean.GPath
 		if initDir == "" {
