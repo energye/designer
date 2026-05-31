@@ -40,6 +40,7 @@ const makeappx = "MakeAppx.exe"
 func (m *Package) packageAppx() bool {
 	if !checkToolCMD(makeappx) {
 		event.ConsoleWriteError("Package - check", makeappx, " Not Installed")
+		event.ConsoleWriteWarn("Install Windows SDK: https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk/")
 		return false
 	}
 	var (
