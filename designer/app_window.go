@@ -216,6 +216,7 @@ func SwitchLocalesI18n(lang string) error {
 	locales.SwitchDefaultLang(lang, true)
 	//locales.SwitchLCLLang(lang)
 	WidgetTreeInvalidate()
+	designer.SetDefaultTip()
 	return nil
 }
 

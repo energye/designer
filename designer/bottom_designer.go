@@ -14,6 +14,7 @@
 package designer
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer/editor"
@@ -21,6 +22,7 @@ import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/dast"
 	"github.com/energye/designer/resources"
+	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
@@ -54,6 +56,18 @@ func (m *Designer) IsDuplicateName(currComp *TDesigningComponent, formName strin
 		}
 	}
 	return false
+}
+
+func (m *Designer) SetDefaultTip() {
+	defaultTipText := metadata.GI18n.Dict("HomePageDefaultTip.Text")
+	textBuf := bytes.Buffer{}
+	for i, text := range strings.Split(defaultTipText, "|") {
+		if i > 0 {
+			textBuf.WriteString("\n")
+		}
+		textBuf.WriteString(text)
+	}
+	m.defaultTip.SetText(textBuf.String())
 }
 
 // 创建tab上的右键菜单

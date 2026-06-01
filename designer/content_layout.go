@@ -221,12 +221,13 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des.tab.ScrollRight().SetColor(wg.DarkenColor(bgLightColor, 0.1))
 	des.tab.EnableScrollButton(false)
 	des.tab.SetParent(m.designerPanel)
+
 	//des.tab.SetOnChange(m.tabOnChange)
 
 	des.defaultTip = wg.NewButton(des.tab)
 	des.defaultTip.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))
 	defaultTipBr := des.defaultTip.BoundsRect()
-	dtw, dth := int32(140), int32(140)
+	dtw, dth := int32(180), int32(140)
 	defaultTipBr.Left = m.rightBox.Width()/2 - dtw/2
 	defaultTipBr.Top = m.rightBox.Height()/2 - dth/2
 	defaultTipBr.SetWidth(dtw)
@@ -234,14 +235,13 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des.defaultTip.SetBoundsRect(defaultTipBr)
 	des.defaultTip.SetAlpha(80)
 	des.defaultTip.SetRadius(15)
-	des.defaultTip.TextAlign = wg.TextAlignLeft
+	des.defaultTip.TextAlign = wg.TextAlignCenter
 	des.defaultTip.TextLineSpacing = 8
-	des.defaultTip.TextOffSetX = 10
 	des.defaultTip.Font().SetSize(10)
 	des.defaultTip.Font().SetColor(wg.DarkenColor(colors.ClGray, 0.2))
 	des.defaultTip.SetDisable(true)
 	des.defaultTip.SetAnchors(types.NewSet())
-	des.defaultTip.SetText("新建项目 (Ctrl+P)\n打开项目 (Ctrl+O)\n新建窗体 (Ctrl+N)\n应用配置 (Ctrl+F11)\n　　运行 (F9)")
+	des.SetDefaultTip()
 	des.defaultTip.SetParent(des.tab)
 
 	des.createTabMenu()
