@@ -15,40 +15,57 @@ package options
 
 // web/index.html
 const webIndexHTMLTemplate = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>ENERGY</title>
-    <style>
-        body {
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f5f5f5;
-        }
-        button {
-            padding: 10px 24px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #eee;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>ENERGY</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;background:#0f0f13;color:#e4e4e7;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px;position:relative}
+.hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 70%);pointer-events:none}
+.logo{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#818cf8,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
+.tagline{font-size:.78rem;color:#71717a;margin-top:5px;max-width:440px;line-height:1.4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:480px;margin:14px 0}
+.card{background:#18181b;border:1px solid #27272a;border-radius:8px;padding:10px 12px;transition:border-color .2s;text-align:left}
+.card:hover{border-color:#3f3f46}
+.card h3{font-size:.68rem;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.card p{font-size:.72rem;color:#d4d4d8;line-height:1.4}
+.demo{background:#18181b;border:1px solid #27272a;border-radius:10px;padding:12px 24px;display:flex;align-items:center;gap:16px}
+.demo-label{font-size:.68rem;color:#52525b;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+#count{font-size:1.2rem;font-weight:700;color:#e4e4e7;background:none;border:none;cursor:pointer;padding:2px 12px;border-radius:6px;transition:background .15s;white-space:nowrap}
+#count:hover{background:#27272a}
+#count:active{transform:scale(.97)}
+.hint{font-size:.68rem;color:#3f3f46;white-space:nowrap}
+footer{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:.65rem;color:#3f3f46}
+footer a{color:#6366f1;text-decoration:none}
+footer a:hover{text-decoration:underline}
+</style>
 </head>
 <body>
-<button id="count" onclick="count()">Count: -</button>
+<section class="hero">
+<div class="logo">ENERGY</div>
+<p class="tagline">Cross-platform desktop framework — Native, Webview, CEF rendering & self-bootstrapping GUI Designer</p>
+<div class="grid">
+<div class="card"><h3>Native UI</h3><p>System-native widgets for max performance and platform fidelity</p></div>
+<div class="card"><h3>Webview & CEF</h3><p>Chromium engine for modern web-powered application interfaces</p></div>
+<div class="card"><h3>Cross-Platform</h3><p>Windows, macOS and Linux from one Go codebase</p></div>
+<div class="card"><h3>GUI Designer</h3><p>Visual editor built with the framework itself — self-bootstrapping</p></div>
+</div>
+<div class="demo">
+<span class="demo-label">IPC Demo</span>
+<button id="count" onclick="doCount()">Count: 0</button>
+<span class="hint">Go backend ↔ Web frontend via IPC</span>
+</div>
+</section>
+<footer>Powered by <a href="https://github.com/energye/energy">ENERGY</a> &middot; Go + WebView</footer>
 <script>
-    let counter = 0;
-    function count() {
-        ipc.emit('counter:change', [++counter], function (r) {
-            document.getElementById('count').innerHTML = "Count: " + r
-        })
-    }
+let n=0;
+function doCount(){
+  ipc.emit('counter:change',[++n],function(r){
+    document.getElementById('count').textContent='Count: '+r
+  })
+}
 </script>
 </body>
 </html>
