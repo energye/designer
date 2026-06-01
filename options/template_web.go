@@ -21,7 +21,7 @@ const webIndexHTMLTemplate = `<!DOCTYPE html>
 <title>ENERGY</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;background:#0f0f13;color:#e4e4e7;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body{--webkit-app-region: drag;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;background:#0f0f13;color:#e4e4e7;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px;position:relative}
 .hero::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(99,102,241,.15) 0%,transparent 70%);pointer-events:none}
 .logo{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;background:linear-gradient(135deg,#818cf8,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
