@@ -83,9 +83,19 @@ func createProjectDir() {
 	case bean.GUIRenderFramework_LCL:
 		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)})
 	case bean.GUIRenderFramework_WV:
-		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runWVCodeTemplate, &data)})
+		webPath := filepath.Join(appRoot, "web")
+		_ = os.Mkdir(webPath, fs.ModePerm)
+		files = append(files,
+			TFile{appRoot, "main.go", buildTemplateData(runWVCodeTemplate, &data)},
+			TFile{webPath, "index.html", buildTemplateData(webIndexHTMLTemplate, &data)},
+		)
 	case bean.GUIRenderFramework_CEF:
-		files = append(files, TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)})
+		webPath := filepath.Join(appRoot, "web")
+		_ = os.Mkdir(webPath, fs.ModePerm)
+		files = append(files,
+			TFile{appRoot, "main.go", buildTemplateData(runLCLCodeTemplate, &data)},
+			TFile{webPath, "index.html", buildTemplateData(webIndexHTMLTemplate, &data)},
+		)
 	}
 	for _, file := range files {
 		if err := os.WriteFile(filepath.Join(file.path, file.name), []byte(file.data), 0644); err != nil {
