@@ -81,8 +81,11 @@
       - ❌搜索过滤框
       - ❌属性文档提示
   - 窗体组件设计器
-      - 常规资源: 代码、文本编辑(使用 webview ?)
-        - ✅ tab page 修改, 一级 tab 窗体, 二级 tab 窗体设计 + 窗体用户代码 + 窗体UI代码（只读）
+      - 代码编辑器: Webview, CEF, SynEdit
+        - ✅ Windows: Webview
+        - ✅ Linux: Webkit2gtk
+        - ❌ Macos: WkWebkit
+      - ✅ tab page 修改, 一级 tab 窗体, 二级 tab 窗体设计 + 窗体用户代码 + 窗体UI代码（只读）
       - ❌常规资源: 图片查看
       - ✅ 画布：tab button 按钮颜色适配
       - ✅ 窗体名称修改 > 联动修改 Go 的用户代码文件 self 相关函数
