@@ -152,7 +152,7 @@ func (m *TFormDesignPage) UIEditorPageOnShow(sender lcl.IObject) {
 func (m *TFormDesignPage) initEditor() {
 	if gFromEditor == nil {
 		gFromEditor = editor.NewEditor(designer.tab)
-		if gFromEditor.Type() == editor.EtWebview {
+		if gFromEditor != nil && gFromEditor.Type() == editor.EtWebview {
 			if wvEditor, ok := gFromEditor.(webview.IWebviewEditor); ok {
 				m.wvWindowParent = wvEditor.Webview().WindowParent()
 			}
@@ -162,7 +162,9 @@ func (m *TFormDesignPage) initEditor() {
 			m.wvWindowParent = webview.NewWebviewWindowParent(designer.tab)
 		}
 	}
-	webview.SetOnGoToDefinition(goToDefinition)
+	if gFromEditor != nil {
+		webview.SetOnGoToDefinition(goToDefinition)
+	}
 }
 
 func (m *TFormDesignPage) SwitchTabPageEditor(uiCode bool) {
