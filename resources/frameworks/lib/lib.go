@@ -16,6 +16,7 @@ package lib
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
 	"embed"
 	"fmt"
 	"github.com/energye/designer/cmd/env"
@@ -24,6 +25,8 @@ import (
 	"github.com/energye/lcl/api/libname"
 	"github.com/energye/lcl/rtl/version"
 	"github.com/energye/lcl/tool/command"
+	"io"
+	"os"
 	"path/filepath"
 	"runtime"
 )
@@ -102,17 +105,29 @@ func ExtractLibrary(outputPath string) (libPath string) {
 		if DefaultLibName(lib.OutputFilename) {
 			libPath = tempPath
 		}
-		if tool.IsExist(tempPath) {
-			return false
-		}
+		// 读取内嵌 zip 数据
 		libByte, e := lib.Lib.ReadFile(path)
 		err.CheckErr(e)
-		zipReader, e := zip.NewReader(bytes.NewReader(libByte), int64(len(libByte)))
+		// 在内存中解压，拿到原始文件字节
+		fileBytes, e := extractFromZIP(libByte)
 		err.CheckErr(e)
-		for _, file := range zipReader.File {
-			_, e := tool.ExtractFile(file, outputPath, lib.OutputFilename)
-			err.CheckErr(e)
-			break // 只有一个文件
+		// 计算内嵌文件 hash
+		embedHash := sha256.Sum256(fileBytes)
+		// 检查磁盘文件是否需要更新
+		needWrite := true
+		if tool.IsExist(tempPath) {
+			// 先比大小，大小不同直接判定需要更新
+			diskInfo, e := os.Stat(tempPath)
+			if e == nil && diskInfo.Size() == int64(len(fileBytes)) {
+				// 大小相同，计算磁盘文件 hash 对比
+				diskHash := hashFile(tempPath)
+				if diskHash != "" && diskHash == fmt.Sprintf("%x", embedHash) {
+					needWrite = false
+				}
+			}
+		}
+		if needWrite {
+			_ = os.WriteFile(tempPath, fileBytes, 0755)
 		}
 		return false
 	})
@@ -120,6 +135,44 @@ func ExtractLibrary(outputPath string) (libPath string) {
 		go macOSUniversalBinary(outputPath)
 	}
 	return
+}
+
+// hashFile 计算文件的 SHA256 hash，返回十六进制字符串
+func hashFile(filePath string) string {
+	f, e := os.Open(filePath)
+	if e != nil {
+		return ""
+	}
+	defer f.Close()
+	h := sha256.New()
+	if _, e := io.Copy(h, f); e != nil {
+		return ""
+	}
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// extractFromZIP 从 zip 数据中解压第一个非目录文件，返回其原始字节
+func extractFromZIP(zipData []byte) ([]byte, error) {
+	zipReader, e := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
+	if e != nil {
+		return nil, e
+	}
+	for _, file := range zipReader.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+		srcFile, e := file.Open()
+		if e != nil {
+			return nil, e
+		}
+		data, e := io.ReadAll(srcFile)
+		_ = srcFile.Close()
+		if e != nil {
+			return nil, e
+		}
+		return data, nil
+	}
+	return nil, fmt.Errorf("file not found in ZIP")
 }
 
 func DefaultLibName(filename string) bool {
