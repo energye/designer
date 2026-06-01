@@ -47,7 +47,7 @@ func (m *Package) packageAppx() bool {
 		libEnergy   = lib.GetDLLName()
 		libWebview2 string
 	)
-	GOARCH := os.Getenv("GOARCH")
+	GOARCH := lib.GOARCH()
 	processorArchitecture := "x64"
 	switch GOARCH {
 	case "amd64":
@@ -57,6 +57,9 @@ func (m *Package) packageAppx() bool {
 		processorArchitecture = "x86"
 	case "arm64":
 		event.ConsoleWriteWarn("Package - Currently, windows arm64 arch is not support")
+		return false
+	default:
+		event.ConsoleWriteError("Package - Currently, windows", GOARCH, "arch is not support")
 		return false
 	}
 
@@ -124,11 +127,11 @@ func (m *Package) packageAppx() bool {
 	// | AssociateFileIcon      | 256 x 256 |
 	// | AssociateProtocolLogo  | 88 x 88   |
 
-	publisher := ""
+	publisher := "CN=development" // dev 不是一个有效值, 需要启用签名并配置签名
 	if buildOption.WinSign.Enable {
 		cmdInfo := getSignCMDInfo()
 		if cmdInfo == nil {
-			event.ConsoleWriteError("Package - 已开启签名, 但获取签名命令配置失败")
+			event.ConsoleWriteError("Package - Signature enabled, but failed to obtain signature command configuration")
 			return false
 		}
 		if cmdInfo.Type == "auto" {

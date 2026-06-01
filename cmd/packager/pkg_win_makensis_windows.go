@@ -341,13 +341,13 @@ func nsisIconFMT(imagePath string, isConvertIco *bool) string {
 		pngBuf.Write(iconData)
 		pngImage, err := png.Decode(pngBuf)
 		if err != nil {
-			event.ConsoleWriteError("updateWindowICON, 图标转为 png 对象失败:", err.Error())
+			event.ConsoleWriteError("updateWindowICON, Failed to convert icon to PNG object:", err.Error())
 			return ""
 		}
 		icoBuf := new(bytes.Buffer)
 		err = tool.Encode(icoBuf, pngImage)
 		if err != nil {
-			event.ConsoleWriteError("updateWindowICON, png 转为 ico 对象失败:", err.Error())
+			event.ConsoleWriteError("updateWindowICON, Failed to convert PNG to ICO object:", err.Error())
 			return ""
 		}
 		outpath := bean.GProject.BuildOption.Output
