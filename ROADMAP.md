@@ -97,7 +97,6 @@
 - ✅ 【bug】 设计 放置组件: 放置组件删除后，恢复项目再次放置会出现组件名功能性问题（显示名“”，删除时有残留）
 - ✅ 【bug】 设计 UI锁死: TFrom 设置属性设置不当出现UI锁死(可能和 Align 有关)
 
-- ❌ win尝试内存加载 libenergy dll: https://github.com/jchv/go-winloader
 -  系统主题回调事件, 联动 energy
   - ✅ linux
   - ✅ windows
