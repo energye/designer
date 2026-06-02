@@ -47,7 +47,7 @@ func ConsoleWriteError(s ...string) {
 }
 
 func ConsoleWrite(s ...string) {
-	logs.Error(toAny(s...)...)
+	logs.Info(toAny(s...)...)
 	data := strings.Join(s, " ")
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
