@@ -34,6 +34,28 @@ var (
 	tabNoActiveBorderColor = colors.RGBToColor(209, 213, 219)
 )
 
+// newGrayButton 创建灰色(次要)按钮
+func newGrayButton(parent lcl.IWinControl, rect types.TRect, text string, onClick lcl.TNotifyEvent) *wg.TButton {
+	btn := wg.NewButton(parent)
+	btn.SetBoundsRect(rect)
+	btn.SetText(text)
+	btn.Font().SetSize(8)
+	btn.SetRadius(3)
+	btn.SetColor(grayBtnColor)
+	btn.SetCursor(types.CrHandPoint)
+	btn.SetParent(parent)
+	btn.SetOnClick(onClick)
+	return btn
+}
+
+// newBlueButton 创建蓝色(主要)按钮, 白色文字
+func newBlueButton(parent lcl.IWinControl, rect types.TRect, text string, onClick lcl.TNotifyEvent) *wg.TButton {
+	btn := newGrayButton(parent, rect, text, onClick)
+	btn.SetColor(blueBtnColor)
+	btn.Font().SetColor(colors.ClWhite)
+	return btn
+}
+
 func SetWindowCenterByMainWindow(window lcl.IEngForm) {
 	SetWindowCenterByRelativeWindow(window, &designer.MainWindow)
 }

@@ -33,6 +33,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -84,9 +85,9 @@ type TChromiumDirForm struct {
 	dirBtn  *wg.TButton
 
 	// 版本选择
-	versionText lcl.ILabel
-	versionBox  lcl.IComboBox
-	versionList []string          // 下拉框索引对应的真实版本号
+	versionText  lcl.ILabel
+	versionBox   lcl.IComboBox
+	versionList  []string        // 下拉框索引对应的真实版本号
 	installedSet map[string]bool // 已安装版本集合
 
 	// 下载进度
@@ -121,154 +122,130 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		return gTop
 	}
 
-	// 说明文字
-	{
-		m.dirText = lcl.NewLabel(m)
-		m.dirText.SetLeft(15)
-		m.dirText.SetTop(nextTop(15))
-		m.dirText.SetCaption("设置 CEF 框架目录，请选择安装目录或使用默认目录。")
-		m.dirText.SetParent(m)
-	}
+	m.setupDirSection(nextTop)
+	m.setupVersionSection(nextTop)
+	m.setupProgressSection(nextTop)
+	m.setupActionButtons(nextTop)
 
-	// 目录输入
-	{
-		m.dirEdit = lcl.NewLabeledEdit(m)
-		m.dirEdit.SetName("ChromiumDirFormDirEdit")
-		m.dirEdit.SetLeft(80)
-		m.dirEdit.SetTop(nextTop(25))
-		m.dirEdit.SetWidth(350)
-		m.dirEdit.SetDoubleBuffered(true)
-		m.dirEdit.SetTextHint(config.Config.Chromium.DefaultDir())
-		m.dirEdit.SetLabelPosition(types.LpLeft)
-		// 如果已有配置的目录, 显示出来
-		if config.Config.Chromium.Dir != "" {
-			m.dirEdit.SetText(config.Config.Chromium.Dir)
-		}
-		dirLabelText := m.dirEdit.EditLabel()
-		dirLabelText.SetCaption("安装目录:")
-		m.dirEdit.SetParent(m)
-
-		m.dirBtn = wg.NewButton(m)
-		m.dirBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
-		m.dirBtn.SetRadius(3)
-		cusRect := types.TRect{Left: m.dirEdit.Left() + m.dirEdit.Width() + 5, Top: m.dirEdit.Top()}
-		cusRect.SetWidth(35)
-		if tool.IsLinux {
-			cusRect.SetHeight(35)
-		} else {
-			cusRect.SetHeight(25)
-		}
-		m.dirBtn.SetBoundsRect(cusRect)
-		m.dirBtn.SetColor(grayBtnColor)
-		m.dirBtn.SetBorderColor(wg.BbdNone, grayBtnColor)
-		m.dirBtn.SetCursor(types.CrHandPoint)
-		m.dirBtn.SetParent(m)
-		m.dirBtn.SetOnClick(m.dirBtnClick)
-	}
-
-	// 版本选择 — 所有可用版本, 已安装标记
-	{
-		m.versionText = lcl.NewLabel(m)
-		m.versionText.SetLeft(15)
-		m.versionText.SetTop(nextTop(35))
-		m.versionText.SetCaption("CEF 版本:")
-		m.versionText.SetParent(m)
-
-		m.versionBox = lcl.NewComboBox(m)
-		m.versionBox.SetName("ChromiumDirFormVersionBox")
-		m.versionBox.SetLeft(80)
-		m.versionBox.SetTop(m.versionText.Top() - 3)
-		m.versionBox.SetWidth(200)
-		m.versionBox.SetReadOnly(true)
-		m.versionBox.SetStyle(types.CsDropDownList)
-		m.versionBox.SetBorderStyle(types.BsSingle)
-		// 填充版本列表
-		m.installedSet = m.buildInstalledSet()
-		m.versionList = m.sortedVersions()
-		for _, ver := range m.versionList {
-			if m.installedSet[ver] {
-				m.versionBox.Items().Add(ver + " ✓")
-			} else {
-				m.versionBox.Items().Add(ver)
-			}
-		}
-		if m.versionBox.Items().Count() > 0 {
-			m.versionBox.SetItemIndex(0)
-		}
-		m.versionBox.SetOnChange(m.onVersionChange)
-		m.versionBox.SetParent(m)
-	}
-
-	// 下载进度 (初始隐藏)
-	{
-		m.progressBar = lcl.NewProgressBar(m)
-		m.progressBar.SetName("ChromiumDirFormProgressBar")
-		m.progressBar.SetLeft(80)
-		m.progressBar.SetTop(nextTop(35))
-		m.progressBar.SetWidth(350)
-		m.progressBar.SetHeight(20)
-		m.progressBar.SetParent(m)
-		m.progressBar.SetVisible(false)
-
-		m.statusLabel = lcl.NewLabel(m)
-		m.statusLabel.SetLeft(80)
-		m.statusLabel.SetTop(nextTop(22))
-		m.statusLabel.SetCaption("选择目录和版本后, 开始安装")
-		m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
-		m.statusLabel.Font().SetSize(8)
-		m.statusLabel.SetParent(m)
-	}
-
-	// 操作按钮
-	{
-		defaultBtnRect := types.TRect{Left: 15, Top: nextTop(30)}
-		defaultBtnRect.SetWidth(100)
-		defaultBtnRect.SetHeight(25)
-		m.defaultBtn = wg.NewButton(m)
-		m.defaultBtn.SetName("ChromiumDirFormDefaultBtn")
-		m.defaultBtn.SetText("使用默认目录")
-		m.defaultBtn.Font().SetSize(8)
-		m.defaultBtn.SetRadius(3)
-		m.defaultBtn.SetBoundsRect(defaultBtnRect)
-		m.defaultBtn.SetColor(grayBtnColor)
-		m.defaultBtn.SetCursor(types.CrHandPoint)
-		m.defaultBtn.SetParent(m)
-		m.defaultBtn.SetOnClick(m.defaultBtnClick)
-
-		cancelBtnRect := types.TRect{Left: 325, Top: defaultBtnRect.Top}
-		cancelBtnRect.SetWidth(60)
-		cancelBtnRect.SetHeight(25)
-		m.cancelBtn = wg.NewButton(m)
-		m.cancelBtn.SetName("ChromiumDirFormCancelBtn")
-		m.cancelBtn.SetText("取 消")
-		m.cancelBtn.Font().SetSize(8)
-		m.cancelBtn.SetRadius(3)
-		m.cancelBtn.SetBoundsRect(cancelBtnRect)
-		m.cancelBtn.SetColor(grayBtnColor)
-		m.cancelBtn.SetCursor(types.CrHandPoint)
-		m.cancelBtn.SetParent(m)
-		m.cancelBtn.SetOnClick(m.cancelBtnClick)
-
-		confirmBtnRect := types.TRect{Left: cancelBtnRect.Left + cancelBtnRect.Width() + 20, Top: cancelBtnRect.Top}
-		confirmBtnRect.SetWidth(60)
-		confirmBtnRect.SetHeight(25)
-		m.confirmBtn = wg.NewButton(m)
-		m.confirmBtn.SetName("ChromiumDirFormConfirmBtn")
-		m.confirmBtn.SetText("确 定")
-		m.confirmBtn.Font().SetSize(8)
-		m.confirmBtn.Font().SetColor(colors.ClWhite)
-		m.confirmBtn.SetRadius(3)
-		m.confirmBtn.SetBoundsRect(confirmBtnRect)
-		m.confirmBtn.SetColor(blueBtnColor)
-		m.confirmBtn.SetCursor(types.CrHandPoint)
-		m.confirmBtn.SetParent(m)
-		m.confirmBtn.SetOnClick(m.confirmBtnClick)
-	}
-
-	// 初始按钮文字
 	if m.isVersionInstalled() {
 		m.confirmBtn.SetText("使 用")
 	}
+}
+
+// setupDirSection 创建目录输入区域 (说明文字 + 输入框 + 浏览按钮)
+func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
+	m.dirText = lcl.NewLabel(m)
+	m.dirText.SetLeft(15)
+	m.dirText.SetTop(nextTop(15))
+	m.dirText.SetCaption("设置 CEF 框架目录，请选择安装目录或使用默认目录。")
+	m.dirText.SetParent(m)
+
+	m.dirEdit = lcl.NewLabeledEdit(m)
+	m.dirEdit.SetName("ChromiumDirFormDirEdit")
+	m.dirEdit.SetLeft(80)
+	m.dirEdit.SetTop(nextTop(25))
+	m.dirEdit.SetWidth(350)
+	m.dirEdit.SetDoubleBuffered(true)
+	m.dirEdit.SetTextHint(config.Config.Chromium.DefaultDir())
+	m.dirEdit.SetLabelPosition(types.LpLeft)
+	if config.Config.Chromium.Dir != "" {
+		m.dirEdit.SetText(config.Config.Chromium.Dir)
+	}
+	m.dirEdit.EditLabel().SetCaption("安装目录:")
+	m.dirEdit.SetParent(m)
+
+	dirBtnRect := types.TRect{Left: m.dirEdit.Left() + m.dirEdit.Width() + 5, Top: m.dirEdit.Top()}
+	dirBtnRect.SetWidth(35)
+	if tool.IsLinux {
+		dirBtnRect.SetHeight(35)
+	} else {
+		dirBtnRect.SetHeight(25)
+	}
+	m.dirBtn = wg.NewButton(m)
+	m.dirBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
+	m.dirBtn.SetRadius(3)
+	m.dirBtn.SetBoundsRect(dirBtnRect)
+	m.dirBtn.SetColor(grayBtnColor)
+	m.dirBtn.SetBorderColor(wg.BbdNone, grayBtnColor)
+	m.dirBtn.SetCursor(types.CrHandPoint)
+	m.dirBtn.SetParent(m)
+	m.dirBtn.SetOnClick(m.dirBtnClick)
+}
+
+// setupVersionSection 创建版本选择区域 (标签 + 下拉框)
+func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
+	m.versionText = lcl.NewLabel(m)
+	m.versionText.SetLeft(15)
+	m.versionText.SetTop(nextTop(35))
+	m.versionText.SetCaption("CEF 版本:")
+	m.versionText.SetParent(m)
+
+	m.versionBox = lcl.NewComboBox(m)
+	m.versionBox.SetName("ChromiumDirFormVersionBox")
+	m.versionBox.SetLeft(80)
+	m.versionBox.SetTop(m.versionText.Top() - 3)
+	m.versionBox.SetWidth(200)
+	m.versionBox.SetReadOnly(true)
+	m.versionBox.SetStyle(types.CsDropDownList)
+	m.versionBox.SetBorderStyle(types.BsSingle)
+
+	m.installedSet = m.buildInstalledSet()
+	m.versionList = m.sortedVersions()
+	for _, ver := range m.versionList {
+		label := ver
+		if m.installedSet[ver] {
+			label += " ✓"
+		}
+		m.versionBox.Items().Add(label)
+	}
+	if m.versionBox.Items().Count() > 0 {
+		m.versionBox.SetItemIndex(0)
+	}
+	m.versionBox.SetOnChange(m.onVersionChange)
+	m.versionBox.SetParent(m)
+}
+
+// setupProgressSection 创建下载进度区域 (进度条 + 状态标签)
+func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
+	m.progressBar = lcl.NewProgressBar(m)
+	m.progressBar.SetName("ChromiumDirFormProgressBar")
+	m.progressBar.SetLeft(80)
+	m.progressBar.SetTop(nextTop(35))
+	m.progressBar.SetWidth(350)
+	m.progressBar.SetHeight(20)
+	m.progressBar.SetParent(m)
+	m.progressBar.SetVisible(false)
+
+	m.statusLabel = lcl.NewLabel(m)
+	m.statusLabel.SetLeft(80)
+	m.statusLabel.SetTop(nextTop(22))
+	m.statusLabel.SetCaption("选择目录和版本后, 开始安装")
+	m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
+	m.statusLabel.Font().SetSize(8)
+	m.statusLabel.SetParent(m)
+}
+
+// setupActionButtons 创建底部操作按钮 (默认目录、取消、确定)
+func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
+	btnTop := nextTop(30)
+
+	defaultBtnRect := types.TRect{Left: 15, Top: btnTop}
+	defaultBtnRect.SetWidth(100)
+	defaultBtnRect.SetHeight(25)
+	m.defaultBtn = newGrayButton(m, defaultBtnRect, "使用默认目录", m.defaultBtnClick)
+	m.defaultBtn.SetName("ChromiumDirFormDefaultBtn")
+
+	cancelBtnRect := types.TRect{Left: 325, Top: btnTop}
+	cancelBtnRect.SetWidth(60)
+	cancelBtnRect.SetHeight(25)
+	m.cancelBtn = newGrayButton(m, cancelBtnRect, "取 消", m.cancelBtnClick)
+	m.cancelBtn.SetName("ChromiumDirFormCancelBtn")
+
+	confirmBtnRect := types.TRect{Left: cancelBtnRect.Left + 60 + 20, Top: btnTop}
+	confirmBtnRect.SetWidth(60)
+	confirmBtnRect.SetHeight(25)
+	m.confirmBtn = newBlueButton(m, confirmBtnRect, "确 定", m.confirmBtnClick)
+	m.confirmBtn.SetName("ChromiumDirFormConfirmBtn")
 }
 
 // ==================== 版本与URL ====================
@@ -333,10 +310,10 @@ func compareVersion(a, b string) int {
 	for i := 0; i < maxLen; i++ {
 		var aNum, bNum int
 		if i < len(aParts) {
-			fmt.Sscanf(aParts[i], "%d", &aNum)
+			aNum, _ = strconv.Atoi(aParts[i])
 		}
 		if i < len(bParts) {
-			fmt.Sscanf(bParts[i], "%d", &bNum)
+			bNum, _ = strconv.Atoi(bParts[i])
 		}
 		if aNum < bNum {
 			return -1
@@ -740,19 +717,9 @@ func (m *TChromiumDirForm) checkRemoteFileSize(ctx context.Context, url string) 
 
 // ==================== UI 更新 ====================
 
-// updateProgress 更新进度条 (在下载协程中调用)
+// updateProgress 更新下载进度条 (在下载协程中调用)
 func (m *TChromiumDirForm) updateProgress() {
-	progress := m.dlProgress
-	total := m.dlTotal
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if total > 0 {
-			percent := int32(progress * 100 / total)
-			m.progressBar.SetPosition(percent)
-			m.statusLabel.SetCaption(fmt.Sprintf("下载中... %s / %s (%d%%)", formatSize(progress), formatSize(total), percent))
-		} else {
-			m.statusLabel.SetCaption(fmt.Sprintf("下载中... %s", formatSize(progress)))
-		}
-	})
+	m.updateProgressStatus("下载中... %s / %s", formatSize(m.dlProgress), formatSize(m.dlTotal))
 }
 
 // onDownloadError 下载出错 (在下载协程中调用)
@@ -819,11 +786,14 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 		m.confirmBtn.SetEnabled(true)
 		m.confirmBtn.SetText("完 成")
 		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
-		m.confirmBtn.SetOnClick(func(sender lcl.IObject) {
-			m.Confirmed = true
-			m.Close()
-		})
+		m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
 	})
+}
+
+// onCompleteBtnClick 安装完成后的确认按钮点击
+func (m *TChromiumDirForm) onCompleteBtnClick(sender lcl.IObject) {
+	m.Confirmed = true
+	m.Close()
 }
 
 // ==================== 解压 ====================
@@ -984,15 +954,21 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 
 // updateExtractProgress 更新解压进度
 func (m *TChromiumDirForm) updateExtractProgress() {
-	current := m.dlProgress
+	m.updateProgressStatus("解压中... %d / %d", m.dlProgress, m.dlTotal)
+}
+
+// updateProgressStatus 通用进度更新 (在下载/解压协程中调用)
+func (m *TChromiumDirForm) updateProgressStatus(format string, args ...any) {
+	progress := m.dlProgress
 	total := m.dlTotal
+	statusText := fmt.Sprintf(format, args...)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		if total > 0 {
-			percent := int32(current * 100 / total)
+			percent := int32(progress * 100 / total)
 			m.progressBar.SetPosition(percent)
-			m.statusLabel.SetCaption(fmt.Sprintf("解压中... %d / %d (%d%%)", current, total, percent))
+			m.statusLabel.SetCaption(fmt.Sprintf("%s (%d%%)", statusText, percent))
 		} else {
-			m.statusLabel.SetCaption(fmt.Sprintf("解压中... %d 个文件", current))
+			m.statusLabel.SetCaption(statusText)
 		}
 	})
 }
