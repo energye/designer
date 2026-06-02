@@ -39,7 +39,7 @@ import (
 
 var (
 	chromiumDirFormWidth  = int32(500)
-	chromiumDirFormHeight = int32(220)
+	chromiumDirFormHeight = int32(200)
 	errExtractStopped     = fmt.Errorf("extract stopped by user")
 )
 
@@ -47,11 +47,11 @@ var (
 type downloadState int32
 
 const (
-	downloadIdle      downloadState = iota // 空闲 - 按钮显示"确 定"
-	downloadRunning                        // 下载中 - 按钮显示"停 止"
-	downloadPaused                         // 已暂停 - 按钮显示"继 续"
-	downloadExtracting                     // 解压中 - 按钮显示"停 止"
-	downloadCompleted                      // 已完成
+	downloadIdle       downloadState = iota // 空闲 - 按钮显示"确 定"
+	downloadRunning                         // 下载中 - 按钮显示"停 止"
+	downloadPaused                          // 已暂停 - 按钮显示"继 续"
+	downloadExtracting                      // 解压中 - 按钮显示"停 止"
+	downloadCompleted                       // 已完成
 )
 
 // NewChromiumDirForm 创建 CEF 框架目录设置窗口
@@ -75,6 +75,7 @@ type TChromiumDirForm struct {
 	dlTotal    int64
 	dlVersion  string // 当前正在下载的版本, 用于暂停后检测版本变更
 	dlStop     bool   // 解压停止信号
+	Confirmed  bool   // 用户是否点击了"完成"确认按钮
 
 	// 目录设置
 	dirText lcl.ILabel
@@ -401,23 +402,17 @@ func (m *TChromiumDirForm) setDownloadState(state downloadState) {
 	m.dlMu.Lock()
 	m.dlState = state
 	m.dlMu.Unlock()
+	m.confirmBtn.SetEnabled(true)
 	switch state {
 	case downloadIdle:
 		m.confirmBtn.SetText("确 定")
 		m.confirmBtn.SetColor(blueBtnColor)
-		m.confirmBtn.SetEnabled(true)
-	case downloadRunning:
+	case downloadRunning, downloadExtracting:
 		m.confirmBtn.SetText("停 止")
 		m.confirmBtn.SetColor(colors.RGBToColor(255, 127, 127))
-		m.confirmBtn.SetEnabled(true)
 	case downloadPaused:
 		m.confirmBtn.SetText("继 续")
 		m.confirmBtn.SetColor(blueBtnColor)
-		m.confirmBtn.SetEnabled(true)
-	case downloadExtracting:
-		m.confirmBtn.SetText("停 止")
-		m.confirmBtn.SetColor(colors.RGBToColor(255, 127, 127))
-		m.confirmBtn.SetEnabled(true)
 	}
 }
 
@@ -497,20 +492,20 @@ func (m *TChromiumDirForm) pauseDownload() {
 		m.dlCancel()
 		m.dlCancel = nil
 	}
-	m.dlState = downloadPaused
 	m.dlMu.Unlock()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.confirmBtn.SetText("继 续")
+		m.setDownloadState(downloadPaused)
 		m.statusLabel.SetCaption("下载已暂停, 可更换版本后继续")
-		// 暂停后允许重新选择版本
 		m.versionBox.SetEnabled(true)
 	})
 }
 
 // stopExtract 停止解压, 恢复窗口到默认状态
 func (m *TChromiumDirForm) stopExtract() {
+	m.dlMu.Lock()
 	m.dlStop = true
+	m.dlMu.Unlock()
 }
 
 // resumeDownload 继续下载
@@ -538,15 +533,10 @@ func (m *TChromiumDirForm) resumeDownload() {
 		config.Config.Chromium.SetVersion(version)
 	}
 
-	m.dlMu.Lock()
-	m.dlState = downloadRunning
-	m.dlMu.Unlock()
-
 	downloadURL := buildDownloadURL(version)
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.confirmBtn.SetText("停 止")
-		m.confirmBtn.SetColor(colors.RGBToColor(255, 127, 127))
+		m.setDownloadState(downloadRunning)
 		m.versionBox.SetEnabled(false)
 		if versionChanged {
 			m.statusLabel.SetCaption("版本已更换, 重新下载...")
@@ -751,12 +741,8 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	if !config.Config.Chromium.IsCEFInstalled() {
 		event.ConsoleWriteError("CEF installation incomplete: libcef not found in", destDir)
 		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.setDownloadState(downloadIdle)
+			m.resetToIdle()
 			m.statusLabel.SetCaption("安装不完整, 未找到 " + config.CEFLibraryName())
-			m.confirmBtn.SetEnabled(true)
-			m.defaultBtn.SetEnabled(true)
-			m.dirBtn.SetEnabled(true)
-			m.versionBox.SetEnabled(true)
 		})
 		return
 	}
@@ -772,6 +758,7 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 		m.confirmBtn.SetText("完 成")
 		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
 		m.confirmBtn.SetOnClick(func(sender lcl.IObject) {
+			m.Confirmed = true
 			m.Close()
 		})
 	})
@@ -789,12 +776,10 @@ func (s *stopReader) Read(p []byte) (int, error) {
 	if *s.stop {
 		return 0, errExtractStopped
 	}
-	// 每次最多读 32KB, 保证停止信号能及时响应
-	buf := p
-	if len(buf) > 32*1024 {
-		buf = buf[:32*1024]
+	if len(p) > 32*1024 {
+		p = p[:32*1024]
 	}
-	n, err := s.r.Read(buf)
+	n, err := s.r.Read(p)
 	if *s.stop {
 		return n, errExtractStopped
 	}
@@ -910,9 +895,6 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 			sr := &stopReader{r: tarReader, stop: &m.dlStop}
 			if _, err = io.Copy(outFile, sr); err != nil {
 				outFile.Close()
-				if err == errExtractStopped {
-					return err
-				}
 				return err
 			}
 			outFile.Close()
