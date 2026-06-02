@@ -539,7 +539,7 @@ func (m *TChromiumDirForm) pauseDownload() {
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadPaused)
-		m.statusLabel.SetCaption("下载已暂停, 可更换版本后继续")
+		m.statusLabel.SetCaption("已暂停")
 		m.versionBox.SetEnabled(true)
 	})
 }
