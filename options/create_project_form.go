@@ -382,8 +382,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			// CEF 未安装或不完整, 弹出框架目录窗口下载安装
 			chromiumForm := NewChromiumDirForm()
 			chromiumForm.ShowModal()
-			// 安装未完成则中止创建
-			if !config.Config.Chromium.IsCEFInstalled() {
+			// 用户未点确认或安装未完成, 中止创建
+			if !chromiumForm.Confirmed || !config.Config.Chromium.IsCEFInstalled() {
 				return
 			}
 		}
