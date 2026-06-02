@@ -316,7 +316,6 @@ func init() {
 	defer func() {
 		// 初始化 i18n
 		_, _ = metadata.GI18n.Get(Config.EnvLang)
-
 	}()
 
 	if !tool.IsExist(configPath) {

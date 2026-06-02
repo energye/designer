@@ -21,12 +21,28 @@ import (
 var (
 	//go:embed i18n
 	i18n  embed.FS
-	GI18n = &TI18n{}
+	GI18n = &TI18n{dict: make(map[string]*value)}
 )
 
 type TI18n struct {
 	Lang string
-	dict map[string]string
+	dict map[string]*value
+}
+
+type value struct {
+	value    string
+	variable *string
+}
+
+func (m *TI18n) Bind(name string, variable *string) {
+	name = strings.ToLower(name)
+	if val, ok := m.dict[name]; ok {
+		val.variable = variable
+		*val.variable = val.value
+	} else {
+		val = &value{variable: variable}
+		m.dict[name] = val
+	}
 }
 
 func (m *TI18n) Get(lang string) ([]byte, error) {
@@ -36,7 +52,6 @@ func (m *TI18n) Get(lang string) ([]byte, error) {
 	data, err := i18n.ReadFile("i18n/" + lang + ".ini")
 	if err == nil && m.Lang != lang {
 		m.Lang = lang
-		m.dict = make(map[string]string)
 		lines := strings.Split(string(data), "\n")
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
@@ -48,8 +63,15 @@ func (m *TI18n) Get(lang string) ([]byte, error) {
 				continue
 			}
 			name := strings.TrimSpace(strings.ToLower(kv[0]))
-			value := kv[1]
-			m.dict[name] = value
+			if val, ok := m.dict[name]; ok {
+				val.value = kv[1]
+				if val.variable != nil {
+					*val.variable = val.value
+				}
+			} else {
+				val = &value{value: kv[1]}
+				m.dict[name] = val
+			}
 		}
 	}
 	return data, err
@@ -61,15 +83,18 @@ func (m *TI18n) Dict(name string) string {
 		return ""
 	}
 	name = strings.ToLower(name)
-	return m.dict[name]
+	if v, ok := m.dict[name]; ok {
+		return v.value
+	}
+	return ""
 }
 
 func (m *TI18n) Iterate(fn func(name, value string) bool) {
 	if fn == nil {
 		return
 	}
-	for name, value := range m.dict {
-		if fn(name, value) {
+	for name, val := range m.dict {
+		if fn(name, val.value) {
 			break
 		}
 	}

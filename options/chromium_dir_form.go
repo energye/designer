@@ -18,6 +18,7 @@ import (
 	"compress/bzip2"
 	"context"
 	"fmt"
+	"github.com/energye/designer/resources/metadata"
 	"io"
 	"net/http"
 	"os"
@@ -44,6 +45,26 @@ var (
 	chromiumDirFormHeight = int32(200)
 	errExtractStopped     = fmt.Errorf("extract stopped by user")
 )
+
+var (
+	statusLabelCaption                      string
+	statusLabelCaptionInvalid               string
+	statusLabelCaptionSelectCEF             string
+	statusLabelCaptionURLNotFound           string
+	statusLabelCaptionFailedCreateDirectory string
+	statusLabelCaptionCaptionFailedPreDown  string
+	statusLabelCaptionCaptionPaused         string
+)
+
+func init() {
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.Caption", &statusLabelCaption)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionInvalid", &statusLabelCaptionInvalid)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionSelectCEF", &statusLabelCaptionSelectCEF)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionURLNotFound", &statusLabelCaptionURLNotFound)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedCreateDirectory", &statusLabelCaptionFailedCreateDirectory)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedPreDown", &statusLabelCaptionCaptionFailedPreDown)
+	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionPaused", &statusLabelCaptionCaptionPaused)
+}
 
 // 下载状态
 type downloadState int32
@@ -104,7 +125,7 @@ type TChromiumDirForm struct {
 func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 	logs.Debug("TChromiumDirForm FormCreate")
 	m.SetName("ChromiumDirForm")
-	m.SetCaption("CEF 框架设置")
+	m.SetCaption(metadata.GI18n.Dict("ChromiumDirForm.Caption"))
 	m.SetWidth(chromiumDirFormWidth)
 	m.SetHeight(chromiumDirFormHeight)
 	m.SetVisible(false)
@@ -115,7 +136,7 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	m.selectDir.SetName("ChromiumDirFormSelectDir")
-	m.selectDir.SetTitle("选择 CEF 框架安装目录")
+	m.selectDir.SetTitle(metadata.GI18n.Dict("ChromiumDirFormSelectDir.Title"))
 
 	gTop := int32(0)
 	nextTop := func(top int32) int32 {
@@ -129,16 +150,17 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 	m.setupActionButtons(nextTop)
 
 	if m.isVersionInstalled() {
-		m.confirmBtn.SetText("使 用")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
 	}
 }
 
 // setupDirSection 创建目录输入区域 (说明文字 + 输入框 + 浏览按钮)
 func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 	m.dirText = lcl.NewLabel(m)
+	m.dirText.SetCaption("ChromiumDirFormDirText")
 	m.dirText.SetLeft(15)
 	m.dirText.SetTop(nextTop(15))
-	m.dirText.SetCaption("设置 CEF 框架目录，请选择安装目录或使用默认目录。")
+	m.dirText.SetCaption(metadata.GI18n.Dict("ChromiumDirFormDirText.Caption"))
 	m.dirText.SetParent(m)
 
 	m.dirEdit = lcl.NewLabeledEdit(m)
@@ -152,7 +174,7 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 	if config.Config.Chromium.Dir != "" {
 		m.dirEdit.SetText(config.Config.Chromium.Dir)
 	}
-	m.dirEdit.EditLabel().SetCaption("安装目录:")
+	m.dirEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ChromiumDirFormDirEdit.EditLabel.Caption"))
 	m.dirEdit.SetParent(m)
 
 	dirBtnRect := types.TRect{Left: m.dirEdit.Left() + m.dirEdit.Width() + 5, Top: m.dirEdit.Top()}
@@ -176,12 +198,13 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 // setupVersionSection 创建版本选择区域 (标签 + 下拉框)
 func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.versionText = lcl.NewLabel(m)
+	m.versionText.SetName("ChromiumDirFormVersionText")
 	m.versionText.SetLeft(0)
 	m.versionText.SetTop(nextTop(35))
 	m.versionText.SetAutoSize(false)
 	m.versionText.SetWidth(76)
 	m.versionText.SetAlignment(types.TaRightJustify)
-	m.versionText.SetCaption("CEF 版本:")
+	m.versionText.SetCaption(metadata.GI18n.Dict("ChromiumDirFormVersionText.Caption"))
 	m.versionText.SetParent(m)
 
 	m.versionBox = lcl.NewComboBox(m)
@@ -223,9 +246,10 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 	m.progressBar.SetVisible(false)
 
 	m.statusLabel = lcl.NewLabel(m)
+	m.statusLabel.SetName("ChromiumDirFormStatusLabel")
 	m.statusLabel.SetLeft(80)
 	m.statusLabel.SetTop(nextTop(22))
-	m.statusLabel.SetCaption("选择目录和版本后, 开始安装")
+	m.statusLabel.SetCaption(statusLabelCaption)
 	m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
 	m.statusLabel.Font().SetSize(8)
 	m.statusLabel.SetParent(m)
@@ -238,19 +262,19 @@ func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 	defaultBtnRect := types.TRect{Left: 15, Top: btnTop}
 	defaultBtnRect.SetWidth(100)
 	defaultBtnRect.SetHeight(25)
-	m.defaultBtn = newGrayButton(m, defaultBtnRect, "使用默认目录", m.defaultBtnClick)
+	m.defaultBtn = newGrayButton(m, defaultBtnRect, metadata.GI18n.Dict("ChromiumDirFormDefaultBtn.Text"), m.defaultBtnClick)
 	m.defaultBtn.SetName("ChromiumDirFormDefaultBtn")
 
 	cancelBtnRect := types.TRect{Left: 325, Top: btnTop}
 	cancelBtnRect.SetWidth(60)
 	cancelBtnRect.SetHeight(25)
-	m.cancelBtn = newGrayButton(m, cancelBtnRect, "取 消", m.cancelBtnClick)
+	m.cancelBtn = newGrayButton(m, cancelBtnRect, metadata.GI18n.Dict("ChromiumDirFormCancelBtn.Text"), m.cancelBtnClick)
 	m.cancelBtn.SetName("ChromiumDirFormCancelBtn")
 
 	confirmBtnRect := types.TRect{Left: cancelBtnRect.Left + 60 + 20, Top: btnTop}
 	confirmBtnRect.SetWidth(60)
 	confirmBtnRect.SetHeight(25)
-	m.confirmBtn = newBlueButton(m, confirmBtnRect, "确 定", m.confirmBtnClick)
+	m.confirmBtn = newBlueButton(m, confirmBtnRect, metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.Text"), m.confirmBtnClick)
 	m.confirmBtn.SetName("ChromiumDirFormConfirmBtn")
 }
 
@@ -299,9 +323,9 @@ func (m *TChromiumDirForm) isVersionInstalled() bool {
 // onVersionChange 版本切换时更新按钮文字
 func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
 	if m.isVersionInstalled() {
-		m.confirmBtn.SetText("使 用")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
 	} else {
-		m.confirmBtn.SetText("确 定")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.Text"))
 	}
 }
 
@@ -446,13 +470,13 @@ func (m *TChromiumDirForm) setDownloadState(state downloadState) {
 	m.confirmBtn.SetEnabled(true)
 	switch state {
 	case downloadIdle:
-		m.confirmBtn.SetText("确 定")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.Text"))
 		m.confirmBtn.SetColor(blueBtnColor)
 	case downloadRunning, downloadExtracting:
-		m.confirmBtn.SetText("停 止")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextStop"))
 		m.confirmBtn.SetColor(colors.RGBToColor(255, 127, 127))
 	case downloadPaused:
-		m.confirmBtn.SetText("继 续")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextRun"))
 		m.confirmBtn.SetColor(blueBtnColor)
 	}
 }
@@ -462,7 +486,7 @@ func (m *TChromiumDirForm) resetToIdle() {
 	m.setDownloadState(downloadIdle)
 	m.progressBar.SetVisible(false)
 	m.statusLabel.SetVisible(true)
-	m.statusLabel.SetCaption("选择目录和版本后, 点击确定开始下载")
+	m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.Caption"))
 	m.defaultBtn.SetEnabled(true)
 	m.dirBtn.SetEnabled(true)
 	m.versionBox.SetEnabled(true)
@@ -481,7 +505,7 @@ func (m *TChromiumDirForm) startDownload() {
 	absDir, err := filepath.Abs(dir)
 	if err != nil {
 		event.ConsoleWriteError("Invalid directory path:", err.Error())
-		m.statusLabel.SetCaption("目录路径无效")
+		m.statusLabel.SetCaption(statusLabelCaptionInvalid)
 		return
 	}
 
@@ -489,13 +513,13 @@ func (m *TChromiumDirForm) startDownload() {
 	version := m.selectedVersion()
 	if version == "" {
 		event.ConsoleWriteError("Please select a CEF version")
-		m.statusLabel.SetCaption("请选择 CEF 版本")
+		m.statusLabel.SetCaption(statusLabelCaptionSelectCEF)
 		return
 	}
 	downloadURL := buildDownloadURL(version)
 	if downloadURL == "" {
 		event.ConsoleWriteError("Download URL not found for version:", version)
-		m.statusLabel.SetCaption("未找到该版本的下载地址")
+		m.statusLabel.SetCaption(statusLabelCaptionURLNotFound)
 		return
 	}
 
@@ -503,7 +527,7 @@ func (m *TChromiumDirForm) startDownload() {
 	if !tool.IsExist(absDir) {
 		if err = os.MkdirAll(absDir, os.ModePerm); err != nil {
 			event.ConsoleWriteError("Failed to create directory:", err.Error())
-			m.statusLabel.SetCaption("创建目录失败: " + err.Error())
+			m.statusLabel.SetCaption(statusLabelCaptionFailedCreateDirectory + ": " + err.Error())
 			return
 		}
 	}
@@ -516,7 +540,7 @@ func (m *TChromiumDirForm) startDownload() {
 	m.setDownloadState(downloadRunning)
 	m.progressBar.SetVisible(true)
 	m.statusLabel.SetVisible(true)
-	m.statusLabel.SetCaption("准备下载...")
+	m.statusLabel.SetCaption(statusLabelCaptionCaptionFailedPreDown)
 	m.defaultBtn.SetEnabled(false)
 	m.dirBtn.SetEnabled(false)
 	m.versionBox.SetEnabled(false)
@@ -539,7 +563,7 @@ func (m *TChromiumDirForm) pauseDownload() {
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadPaused)
-		m.statusLabel.SetCaption("已暂停")
+		m.statusLabel.SetCaption(statusLabelCaptionCaptionPaused)
 		m.versionBox.SetEnabled(true)
 	})
 }
@@ -551,7 +575,7 @@ func (m *TChromiumDirForm) stopExtract() {
 	m.dlMu.Unlock()
 	// 即时反馈: 按钮变为"停止中", 禁用防重复点击
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.confirmBtn.SetText("停止中...")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextStopping"))
 		m.confirmBtn.SetEnabled(false)
 	})
 }
@@ -584,9 +608,9 @@ func (m *TChromiumDirForm) resumeDownload() {
 		m.setDownloadState(downloadRunning)
 		m.versionBox.SetEnabled(false)
 		if versionChanged {
-			m.statusLabel.SetCaption("版本已更换, 重新下载...")
+			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionReDownload"))
 		} else {
-			m.statusLabel.SetCaption("继续下载...")
+			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailedResumeDown"))
 		}
 	})
 
@@ -730,7 +754,7 @@ func (m *TChromiumDirForm) checkRemoteFileSize(ctx context.Context, url string) 
 
 // updateProgress 更新下载进度条 (在下载协程中调用)
 func (m *TChromiumDirForm) updateProgress() {
-	m.updateProgressStatus("下载中... %s / %s", formatSize(m.dlProgress), formatSize(m.dlTotal))
+	m.updateProgressStatus("Downloading... %s / %s", formatSize(m.dlProgress), formatSize(m.dlTotal))
 }
 
 // onDownloadError 下载出错 (在下载协程中调用)
@@ -738,7 +762,8 @@ func (m *TChromiumDirForm) onDownloadError(msg string) {
 	event.ConsoleWriteError("CEF download error:", msg)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.resetToIdle()
-		m.statusLabel.SetCaption("下载失败: " + msg)
+		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailDownload") +
+			": " + msg)
 	})
 }
 
@@ -748,7 +773,7 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	m.dlStop = false
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadExtracting)
-		m.statusLabel.SetCaption("下载完成, 正在解压...")
+		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
 		m.progressBar.SetPosition(0)
 	})
 
@@ -765,7 +790,8 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 			event.ConsoleWriteError("CEF extract error:", err.Error())
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				m.resetToIdle()
-				m.statusLabel.SetCaption("解压失败: " + err.Error())
+				m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailUnZip") +
+					": " + err.Error())
 			})
 		}
 		return
@@ -781,7 +807,7 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 		event.ConsoleWriteError("CEF installation verification failed")
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.resetToIdle()
-			m.statusLabel.SetCaption("安装校验失败")
+			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailVerify"))
 		})
 		return
 	}
@@ -793,9 +819,9 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadCompleted)
 		m.progressBar.SetPosition(100)
-		m.statusLabel.SetCaption("安装完成!")
+		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessInstall"))
 		m.confirmBtn.SetEnabled(true)
-		m.confirmBtn.SetText("完 成")
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextSuccess"))
 		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
 		m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
 	})
@@ -879,7 +905,7 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	}
 
 	if releasePrefix == "" {
-		return nil, fmt.Errorf("Release directory not found in archive")
+		return nil, fmt.Errorf("release directory not found in archive")
 	}
 
 	event.ConsoleWriteInfo("CEF archive release prefix:", releasePrefix, "files:", fmt.Sprintf("%d", totalFiles))
@@ -974,7 +1000,6 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	return files, nil
 }
 
-// copyWithStop 小块拷贝, 每块后检查停止信号
 func (m *TChromiumDirForm) copyWithStop(dst io.Writer, src io.Reader, buf []byte) error {
 	for {
 		if m.dlStop {
@@ -1004,7 +1029,7 @@ func (m *TChromiumDirForm) copyWithStop(dst io.Writer, src io.Reader, buf []byte
 
 // updateExtractProgress 更新解压进度
 func (m *TChromiumDirForm) updateExtractProgress() {
-	m.updateProgressStatus("解压中... %d / %d", m.dlProgress, m.dlTotal)
+	m.updateProgressStatus("Extracting... %d / %d", m.dlProgress, m.dlTotal)
 }
 
 // updateProgressStatus 通用进度更新 (在下载/解压协程中调用)
