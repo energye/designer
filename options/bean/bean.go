@@ -34,11 +34,12 @@ type TProject struct {
 	Package            string             `json:"package"`              // 项目(应用)包名 package "app"
 	Main               string             `json:"main"`                 // 主程序入口文件或相对文件目录名 "main.go"
 	GUIRenderFramework GUIRenderFramework `json:"gui_render_framework"` // GUI 渲染框架  LCL, WV, CEF
+	FrameworkVersion   string             `json:"framework_version"`    // 渲染框架 版本
 	UIForms            []TUIForm          `json:"ui_forms"`             // 窗体信息
 	ActiveUIForm       int                `json:"active_ui_form"`       // 当前激活设计的窗体Id
 	BuildOption        TBuildOption       `json:"build_option"`         // 构建配置
 	AppOption          TAppOption         `json:"app_option"`           // 应用配置
-	Data               any                `json:"-"`                    // 其它数据
+	Data               any                `json:"-"`                    // 其它数据-非持久化
 }
 
 // TUIForm 窗体信息

@@ -102,26 +102,34 @@ func checkCreate(dir string) bool {
 	return true
 }
 
+type CreateProject struct {
+	Name               string
+	Dir                string
+	GuiRenderFramework bean.GUIRenderFramework
+	FrameworkVersion   string
+}
+
 // 运行创建项目
-func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
+func doRunCreate(create *CreateProject) bool {
 	// 开始创建项目
-	event.ConsoleWriteInfo("Start creating project", name)
+	event.ConsoleWriteInfo("Start creating project", create.Name)
 	newProject := new(bean.TProject)
-	newProject.Name = name
-	newProject.EGPName = name + consts.EGPExt
+	newProject.Name = create.Name
+	newProject.EGPName = create.Name + consts.EGPExt
 	newProject.Main = "main.go"
-	newProject.GUIRenderFramework = guiRenderFramework
+	newProject.GUIRenderFramework = create.GuiRenderFramework
+	newProject.FrameworkVersion = create.FrameworkVersion
 	newProject.Package = consts.AppPackageName
 	newProject.InitAppOption()   // 初始化应用配置数据
 	newProject.InitBuildOption() // 初始化构建配置
 	// 创建并写入项目配置文件
-	if err := WriteEGPConfig(dir, newProject); err != nil {
+	if err := WriteEGPConfig(create.Dir, newProject); err != nil {
 		event.ConsoleWriteError("Failed to create project and write configuration:", err.Error())
 		SetGlobalProject("", nil)
 		return false
 	} else {
 		// 设置项目目录
-		SetGlobalProject(dir, newProject)
+		SetGlobalProject(create.Dir, newProject)
 		// 创建项目目录结构和文件
 		createProjectDir()
 		// 创建 windows 应用程序清单配置
@@ -131,7 +139,7 @@ func doRunCreate(name, dir, guiRenderFramework bean.GUIRenderFramework) bool {
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功
-		event.ConsoleWriteInfo("Project created successfully", newProject.Name, dir)
+		event.ConsoleWriteInfo("Project created successfully", newProject.Name, create.Dir)
 		return true
 	}
 }

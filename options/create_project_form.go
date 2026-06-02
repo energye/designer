@@ -377,6 +377,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		return false
 	})
 
+	create := &CreateProject{Name: projectName, Dir: projectDir, GuiRenderFramework: guiRenderFrameworkGUI}
 	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
 		// 弹出 CEF 版本选择/安装窗口
 		chromiumForm := NewChromiumDirForm()
@@ -386,6 +387,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 			!config.Config.Chromium.IsCEFInstalled(chromiumForm.Version) {
 			return
 		}
+		create.FrameworkVersion = chromiumForm.Version
 	}
 
 	// 检查创建项目
@@ -397,7 +399,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		designer.ResetDesigner()
 		go func() {
 			// 运行创建项目
-			if doRunCreate(projectName, projectDir, guiRenderFrameworkGUI) {
+			if doRunCreate(create) {
 				lcl.RunOnMainThreadAsync(func(id uint32) {
 					designer.ProjectTreeClear()
 					event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
