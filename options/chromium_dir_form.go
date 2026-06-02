@@ -86,6 +86,8 @@ type TChromiumDirForm struct {
 	// 版本选择
 	versionText lcl.ILabel
 	versionBox  lcl.IComboBox
+	versionList []string          // 下拉框索引对应的真实版本号
+	installedSet map[string]bool // 已安装版本集合
 
 	// 下载进度
 	progressBar lcl.IProgressBar
@@ -180,12 +182,12 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		m.versionBox.SetReadOnly(true)
 		m.versionBox.SetStyle(types.CsDropDownList)
 		m.versionBox.SetBorderStyle(types.BsSingle)
-		// 填充版本, 已安装标记
-		installed := m.installedVersionSet()
-		versions := m.sortedVersions()
-		for _, ver := range versions {
-			if installed[ver] {
-				m.versionBox.Items().Add(ver + " (已安装)")
+		// 填充版本列表
+		m.installedSet = m.buildInstalledSet()
+		m.versionList = m.sortedVersions()
+		for _, ver := range m.versionList {
+			if m.installedSet[ver] {
+				m.versionBox.Items().Add(ver + " ✓")
 			} else {
 				m.versionBox.Items().Add(ver)
 			}
@@ -211,7 +213,7 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		m.statusLabel = lcl.NewLabel(m)
 		m.statusLabel.SetLeft(80)
 		m.statusLabel.SetTop(nextTop(22))
-		m.statusLabel.SetCaption("选择目录和版本后, 点击确定开始下载")
+		m.statusLabel.SetCaption("选择目录和版本后, 开始安装")
 		m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
 		m.statusLabel.Font().SetSize(8)
 		m.statusLabel.SetParent(m)
@@ -284,8 +286,8 @@ func (m *TChromiumDirForm) sortedVersions() []string {
 	return versions
 }
 
-// installedVersionSet 返回已安装版本的集合
-func (m *TChromiumDirForm) installedVersionSet() map[string]bool {
+// buildInstalledSet 返回已安装版本的集合
+func (m *TChromiumDirForm) buildInstalledSet() map[string]bool {
 	manifest := config.Config.Chromium.LoadCEFManifest()
 	installed := make(map[string]bool)
 	for ver := range manifest {
@@ -296,24 +298,19 @@ func (m *TChromiumDirForm) installedVersionSet() map[string]bool {
 	return installed
 }
 
-// selectedVersion 返回下拉框选中的版本号(去掉标记后缀)
+// selectedVersion 通过索引返回真实版本号
 func (m *TChromiumDirForm) selectedVersion() string {
 	idx := m.versionBox.ItemIndex()
-	if idx < 0 {
+	if idx < 0 || int(idx) >= len(m.versionList) {
 		return ""
 	}
-	text := m.versionBox.Items().Strings(idx)
-	return strings.TrimSuffix(text, " (已安装)")
+	return m.versionList[idx]
 }
 
-// isVersionInstalled 判断下拉框选中的版本是否已安装
+// isVersionInstalled 判断当前选中版本是否已安装
 func (m *TChromiumDirForm) isVersionInstalled() bool {
-	idx := m.versionBox.ItemIndex()
-	if idx < 0 {
-		return false
-	}
-	text := m.versionBox.Items().Strings(idx)
-	return strings.HasSuffix(text, " (已安装)")
+	ver := m.selectedVersion()
+	return ver != "" && m.installedSet[ver]
 }
 
 // onVersionChange 版本切换时更新按钮文字
