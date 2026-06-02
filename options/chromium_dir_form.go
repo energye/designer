@@ -259,8 +259,8 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 	btnTop := nextTop(30)
 
-	defaultBtnRect := types.TRect{Left: 100, Top: btnTop}
-	defaultBtnRect.SetWidth(80)
+	defaultBtnRect := types.TRect{Left: 80, Top: btnTop}
+	defaultBtnRect.SetWidth(100)
 	defaultBtnRect.SetHeight(25)
 	m.defaultBtn = newGrayButton(m, defaultBtnRect, metadata.GI18n.Dict("ChromiumDirFormDefaultBtn.Text"), m.defaultBtnClick)
 	m.defaultBtn.SetName("ChromiumDirFormDefaultBtn")
