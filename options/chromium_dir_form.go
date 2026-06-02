@@ -165,9 +165,9 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 
 	m.dirEdit = lcl.NewLabeledEdit(m)
 	m.dirEdit.SetName("ChromiumDirFormDirEdit")
-	m.dirEdit.SetLeft(80)
+	m.dirEdit.SetLeft(100)
 	m.dirEdit.SetTop(nextTop(25))
-	m.dirEdit.SetWidth(350)
+	m.dirEdit.SetWidth(330)
 	m.dirEdit.SetDoubleBuffered(true)
 	m.dirEdit.SetTextHint(config.Config.Chromium.DefaultDir())
 	m.dirEdit.SetLabelPosition(types.LpLeft)
@@ -202,14 +202,14 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.versionText.SetLeft(0)
 	m.versionText.SetTop(nextTop(35))
 	m.versionText.SetAutoSize(false)
-	m.versionText.SetWidth(76)
+	m.versionText.SetWidth(96)
 	m.versionText.SetAlignment(types.TaRightJustify)
 	m.versionText.SetCaption(metadata.GI18n.Dict("ChromiumDirFormVersionText.Caption"))
 	m.versionText.SetParent(m)
 
 	m.versionBox = lcl.NewComboBox(m)
 	m.versionBox.SetName("ChromiumDirFormVersionBox")
-	m.versionBox.SetLeft(80)
+	m.versionBox.SetLeft(100)
 	m.versionBox.SetTop(m.versionText.Top())
 	m.versionBox.SetWidth(200)
 	m.versionBox.SetReadOnly(true)
@@ -259,8 +259,8 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 	btnTop := nextTop(30)
 
-	defaultBtnRect := types.TRect{Left: 15, Top: btnTop}
-	defaultBtnRect.SetWidth(100)
+	defaultBtnRect := types.TRect{Left: 100, Top: btnTop}
+	defaultBtnRect.SetWidth(80)
 	defaultBtnRect.SetHeight(25)
 	m.defaultBtn = newGrayButton(m, defaultBtnRect, metadata.GI18n.Dict("ChromiumDirFormDefaultBtn.Text"), m.defaultBtnClick)
 	m.defaultBtn.SetName("ChromiumDirFormDefaultBtn")
