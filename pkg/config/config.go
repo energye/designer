@@ -23,6 +23,7 @@ import (
 	toolExec "github.com/energye/lcl/tool/exec"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 )
 
@@ -137,6 +138,35 @@ func (m *TChromium) SetVersion(version string) {
 		}
 		UpdateConfig()
 	}
+}
+
+// CEFLibraryName 返回当前平台的 CEF 核心库文件名
+func CEFLibraryName() string {
+	switch runtime.GOOS {
+	case "windows":
+		return "libcef.dll"
+	case "linux":
+		return "libcef.so"
+	case "darwin":
+		return "libcef.dylib"
+	default:
+		return "libcef.dll"
+	}
+}
+
+// IsCEFInstalled 检查 CEF 是否已完整安装
+// 判断 Dir/Version/ 目录下是否存在平台的 libcef 库文件
+func (m *TChromium) IsCEFInstalled() bool {
+	if m.Dir == "" || m.Version == "" {
+		return false
+	}
+	libPath := filepath.Join(m.Dir, m.Version, CEFLibraryName())
+	return tool.IsExist(libPath)
+}
+
+// CEFVersionDir 返回指定版本的 CEF 安装目录
+func (m *TChromium) CEFVersionDir(version string) string {
+	return filepath.Join(m.Dir, version)
 }
 
 func (m *TConfig) FrameworkRuntimePath() string {

@@ -378,12 +378,12 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	})
 
 	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
-		if config.Config.Chromium.Dir == "" {
-			// 首次使用 CEF, 弹出目录设置窗口
+		if !config.Config.Chromium.IsCEFInstalled() {
+			// CEF 未安装或不完整, 弹出框架目录窗口下载安装
 			chromiumForm := NewChromiumDirForm()
 			chromiumForm.ShowModal()
-			// 用户取消则中止创建
-			if config.Config.Chromium.Dir == "" {
+			// 安装未完成则中止创建
+			if !config.Config.Chromium.IsCEFInstalled() {
 				return
 			}
 		}
