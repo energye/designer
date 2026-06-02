@@ -100,6 +100,7 @@ func buildWindows(ctx context.Context) bool {
 		args = append(args, "-trimpath")
 	}
 
+	var lastError bool
 	runGoBuild := func(env []string, output string) {
 		tempArgs := args[:]
 		tempArgs = append(tempArgs, "-o", output)
@@ -118,6 +119,7 @@ func buildWindows(ctx context.Context) bool {
 		cmd.Console = func(data string, level command.Level) {
 			err := isErrorLine(data)
 			if err {
+				lastError = true
 				event.ConsoleWriteError(data)
 			} else if level == command.LError {
 				event.ConsoleWriteDebug(data)
@@ -134,7 +136,9 @@ func buildWindows(ctx context.Context) bool {
 	buildFileName := buildBinFileName(option)
 	outputFilename := filepath.Join(output, buildFileName)
 	runGoBuild(env.ToEnviron(), outputFilename)
-
+	if lastError {
+		return false
+	}
 	event.ConsoleWriteInfo("Build Successfully")
 	return true
 }

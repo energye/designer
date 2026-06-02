@@ -120,6 +120,7 @@ func buildDarwin(ctx context.Context) bool {
 		args = append(args, "-trimpath")
 	}
 
+	var lastError bool
 	runGoBuild := func(env []string, output string) {
 		tempArgs := args[:]
 		tempArgs = append(tempArgs, "-o", output)
@@ -138,6 +139,7 @@ func buildDarwin(ctx context.Context) bool {
 		cmd.Console = func(data string, level command.Level) {
 			err := isErrorLine(data)
 			if err {
+				lastError = true
 				event.ConsoleWriteError(data)
 			} else if level == command.LError {
 				event.ConsoleWriteDebug(data)
@@ -161,9 +163,15 @@ func buildDarwin(ctx context.Context) bool {
 		// build amd64
 		amd64OutputFilename := filepath.Join(output, "temp_amd64_"+option.BuildFileName)
 		runGoBuild([]string{"GOARCH=amd64"}, amd64OutputFilename)
+		if lastError {
+			return false
+		}
 		// build arm64
 		arm64OutputFilename := filepath.Join(output, "temp_arm64_"+option.BuildFileName)
 		runGoBuild([]string{"GOARCH=arm64"}, arm64OutputFilename)
+		if lastError {
+			return false
+		}
 		defer func() {
 			_ = os.Remove(amd64OutputFilename)
 			_ = os.Remove(arm64OutputFilename)
@@ -175,6 +183,9 @@ func buildDarwin(ctx context.Context) bool {
 	} else {
 		outputFilename := filepath.Join(output, buildBinFileName(option))
 		runGoBuild(env.ToEnviron(), outputFilename)
+		if lastError {
+			return false
+		}
 		verifyUniversal(outputFilename)
 	}
 
