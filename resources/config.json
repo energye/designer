@@ -7,6 +7,10 @@
     "github.com/energye/wv": "v1.0.10",
     "github.com/energye/energy/v3": "v3.0.16"
   },
+  "chromium": {
+    "109.1.18": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bgf1c41e4%2Bchromium-109.0.5414.120_{osarch}_client.tar.bz2",
+    "127.3.5": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg114ea2a%2Bchromium-127.0.6533.120_{osarch}_client.tar.bz2"
+  },
   "window": {
     "width": 1150,
     "height": 650
@@ -176,6 +180,5 @@
     }
   },
   "propertyUseEditLink": {
-
   }
 }

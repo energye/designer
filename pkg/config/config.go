@@ -52,12 +52,14 @@ var (
 
 type dependencies map[string]string
 type goEnv map[string]string
+type chromium map[string]string
 
 // 设计器窗体配置
 type designerConfig struct {
 	Title         string              `json:"title"`         // 设计器标题
 	Version       string              `json:"version"`       // 设计器版本
 	Dependencies  dependencies        `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
+	Chromium      chromium            `json:"chromium"`      // CEF chromium 可用支持版本列表
 	WindowLayout  StorageWindowLayout `json:"window"`        // 设计器窗体信息
 	ComponentTabs ComponentTabs       `json:"componentTabs"` // 设计器加载组件
 }
@@ -140,6 +142,10 @@ func (m *TChromium) SetVersion(version string) {
 func (m *TConfig) FrameworkRuntimePath() string {
 	runtimeDir := filepath.Join(m.FrameworkDir, "runtime")
 	return runtimeDir
+}
+
+func (m chromium) Get(name string) string {
+	return m[name]
 }
 
 func (m dependencies) Get(modPath string) string {
