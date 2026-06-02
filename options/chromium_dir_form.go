@@ -76,6 +76,7 @@ type TChromiumDirForm struct {
 	dlVersion  string // 当前正在下载的版本, 用于暂停后检测版本变更
 	dlStop     bool   // 解压停止信号
 	Confirmed  bool   // 用户是否点击了"完成"确认按钮
+	Version    string // 已安装完成的 CEF 版本
 
 	// 目录设置
 	dirText lcl.ILabel
@@ -163,7 +164,7 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		m.dirBtn.SetOnClick(m.dirBtnClick)
 	}
 
-	// 版本选择
+	// 版本选择 — 所有可用版本, 已安装标记
 	{
 		m.versionText = lcl.NewLabel(m)
 		m.versionText.SetLeft(15)
@@ -179,14 +180,20 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		m.versionBox.SetReadOnly(true)
 		m.versionBox.SetStyle(types.CsDropDownList)
 		m.versionBox.SetBorderStyle(types.BsSingle)
-		// 从配置读取可用版本, 排序后填充
+		// 填充版本, 已安装标记
+		installed := m.installedVersionSet()
 		versions := m.sortedVersions()
 		for _, ver := range versions {
-			m.versionBox.Items().Add(ver)
+			if installed[ver] {
+				m.versionBox.Items().Add(ver + " (已安装)")
+			} else {
+				m.versionBox.Items().Add(ver)
+			}
 		}
 		if m.versionBox.Items().Count() > 0 {
 			m.versionBox.SetItemIndex(0)
 		}
+		m.versionBox.SetOnChange(m.onVersionChange)
 		m.versionBox.SetParent(m)
 	}
 
@@ -255,6 +262,11 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		m.confirmBtn.SetParent(m)
 		m.confirmBtn.SetOnClick(m.confirmBtnClick)
 	}
+
+	// 初始按钮文字
+	if m.isVersionInstalled() {
+		m.confirmBtn.SetText("使 用")
+	}
 }
 
 // ==================== 版本与URL ====================
@@ -270,6 +282,47 @@ func (m *TChromiumDirForm) sortedVersions() []string {
 		return compareVersion(versions[i], versions[j]) < 0
 	})
 	return versions
+}
+
+// installedVersionSet 返回已安装版本的集合
+func (m *TChromiumDirForm) installedVersionSet() map[string]bool {
+	manifest := config.Config.Chromium.LoadCEFManifest()
+	installed := make(map[string]bool)
+	for ver := range manifest {
+		if config.Config.Chromium.IsCEFInstalled(ver) {
+			installed[ver] = true
+		}
+	}
+	return installed
+}
+
+// selectedVersion 返回下拉框选中的版本号(去掉标记后缀)
+func (m *TChromiumDirForm) selectedVersion() string {
+	idx := m.versionBox.ItemIndex()
+	if idx < 0 {
+		return ""
+	}
+	text := m.versionBox.Items().Strings(idx)
+	return strings.TrimSuffix(text, " (已安装)")
+}
+
+// isVersionInstalled 判断下拉框选中的版本是否已安装
+func (m *TChromiumDirForm) isVersionInstalled() bool {
+	idx := m.versionBox.ItemIndex()
+	if idx < 0 {
+		return false
+	}
+	text := m.versionBox.Items().Strings(idx)
+	return strings.HasSuffix(text, " (已安装)")
+}
+
+// onVersionChange 版本切换时更新按钮文字
+func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
+	if m.isVersionInstalled() {
+		m.confirmBtn.SetText("使 用")
+	} else {
+		m.confirmBtn.SetText("确 定")
+	}
 }
 
 // compareVersion 比较两个版本号, 如 "109.1.18" vs "127.3.5"
@@ -385,6 +438,14 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 	state := m.dlState
 	m.dlMu.Unlock()
 
+	// 空闲状态: 已安装直接确认, 未安装走下载
+	if state == downloadIdle && m.isVersionInstalled() {
+		m.Version = m.selectedVersion()
+		m.Confirmed = true
+		m.Close()
+		return
+	}
+
 	switch state {
 	case downloadIdle:
 		m.startDownload()
@@ -440,19 +501,21 @@ func (m *TChromiumDirForm) startDownload() {
 	absDir, err := filepath.Abs(dir)
 	if err != nil {
 		event.ConsoleWriteError("Invalid directory path:", err.Error())
+		m.statusLabel.SetCaption("目录路径无效")
 		return
 	}
 
 	// 获取选中版本
-	versionIdx := m.versionBox.ItemIndex()
-	if versionIdx < 0 {
+	version := m.selectedVersion()
+	if version == "" {
 		event.ConsoleWriteError("Please select a CEF version")
+		m.statusLabel.SetCaption("请选择 CEF 版本")
 		return
 	}
-	version := m.versionBox.Items().Strings(versionIdx)
 	downloadURL := buildDownloadURL(version)
 	if downloadURL == "" {
 		event.ConsoleWriteError("Download URL not found for version:", version)
+		m.statusLabel.SetCaption("未找到该版本的下载地址")
 		return
 	}
 
@@ -460,13 +523,13 @@ func (m *TChromiumDirForm) startDownload() {
 	if !tool.IsExist(absDir) {
 		if err = os.MkdirAll(absDir, os.ModePerm); err != nil {
 			event.ConsoleWriteError("Failed to create directory:", err.Error())
+			m.statusLabel.SetCaption("创建目录失败: " + err.Error())
 			return
 		}
 	}
 
 	// 更新配置
 	config.Config.Chromium.Dir = absDir
-	config.Config.Chromium.SetVersion(version)
 	m.dlVersion = version
 
 	// 锁定 UI
@@ -510,9 +573,7 @@ func (m *TChromiumDirForm) stopExtract() {
 
 // resumeDownload 继续下载
 func (m *TChromiumDirForm) resumeDownload() {
-	// 获取当前选中版本
-	versionIdx := m.versionBox.ItemIndex()
-	version := m.versionBox.Items().Strings(versionIdx)
+	version := m.selectedVersion()
 
 	// 检测版本是否变更
 	versionChanged := version != m.dlVersion
@@ -530,7 +591,6 @@ func (m *TChromiumDirForm) resumeDownload() {
 		m.dlVersion = version
 		m.dlProgress = 0
 		m.dlTotal = 0
-		config.Config.Chromium.SetVersion(version)
 	}
 
 	downloadURL := buildDownloadURL(version)
@@ -707,7 +767,7 @@ func (m *TChromiumDirForm) onDownloadError(msg string) {
 	})
 }
 
-// onDownloadCompleted 下载完成, 开始解压 (在下载协程中调用)
+// onDownloadCompleted 下载完成, 开始解压
 func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	event.ConsoleWriteInfo("CEF download completed:", targetPath)
 	m.dlStop = false
@@ -717,10 +777,9 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 		m.progressBar.SetPosition(0)
 	})
 
-	absDir, _ := filepath.Abs(m.dirEdit.Text())
-	destDir := filepath.Join(absDir, version)
+	destDir := filepath.Join(config.Config.Chromium.Dir, version)
 
-	err := m.extractTarBz2(targetPath, destDir)
+	files, err := m.extractTarBz2(targetPath, destDir)
 	if err != nil {
 		if err == errExtractStopped {
 			event.ConsoleWriteInfo("CEF extract stopped by user")
@@ -737,17 +796,23 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 		return
 	}
 
-	// 验证 libcef 是否存在
-	if !config.Config.Chromium.IsCEFInstalled() {
-		event.ConsoleWriteError("CEF installation incomplete: libcef not found in", destDir)
+	// 保存安装清单
+	if err = config.Config.Chromium.SaveCEFManifest(version, files); err != nil {
+		event.ConsoleWriteError("Failed to save CEF manifest:", err.Error())
+	}
+
+	// 通过清单校验安装完整性
+	if !config.Config.Chromium.IsCEFInstalled(version) {
+		event.ConsoleWriteError("CEF installation verification failed")
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.resetToIdle()
-			m.statusLabel.SetCaption("安装不完整, 未找到 " + config.CEFLibraryName())
+			m.statusLabel.SetCaption("安装校验失败")
 		})
 		return
 	}
 
-	event.ConsoleWriteInfo("CEF installed to:", destDir)
+	event.ConsoleWriteInfo("CEF installed to:", destDir, "files:", fmt.Sprintf("%d", len(files)))
+	m.Version = version
 	config.UpdateConfig()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -788,10 +853,11 @@ func (s *stopReader) Read(p []byte) (int, error) {
 
 // extractTarBz2 解压 .tar.bz2 到指定目录
 // 只解压 Release/ 目录下的文件, 去掉 cef_binary_xxx/Release/ 前缀
-func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
+// 返回已记录的文件信息列表(排除 cefExcludeFiles)
+func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.CEFFileInfo, error) {
 	f, err := os.Open(archivePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 
@@ -803,17 +869,16 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 	var totalFiles int64
 	for {
 		if m.dlStop {
-			return errExtractStopped
+			return nil, errExtractStopped
 		}
 		header, err := tarReader.Next()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 		name := header.Name
-		// 查找包含 /Release/ 的目录或文件路径
 		if releasePrefix == "" {
 			if idx := strings.Index(name, "/Release/"); idx >= 0 {
 				releasePrefix = name[:idx+len("/Release/")]
@@ -821,14 +886,16 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 		}
 		if releasePrefix != "" && strings.HasPrefix(name, releasePrefix) {
 			relPath := strings.TrimPrefix(name, releasePrefix)
-			if relPath != "" {
-				totalFiles++
+			if relPath != "" && header.Typeflag == tar.TypeReg {
+				if !config.IsCEFExcludeFile(filepath.Base(relPath)) {
+					totalFiles++
+				}
 			}
 		}
 	}
 
 	if releasePrefix == "" {
-		return fmt.Errorf("Release directory not found in archive")
+		return nil, fmt.Errorf("Release directory not found in archive")
 	}
 
 	event.ConsoleWriteInfo("CEF archive release prefix:", releasePrefix, "files:", fmt.Sprintf("%d", totalFiles))
@@ -837,26 +904,25 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 	f.Close()
 	f, err = os.Open(archivePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 
 	bz2Reader = bzip2.NewReader(f)
 	tarReader = tar.NewReader(bz2Reader)
 
-	// 创建目标目录
 	if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
-		return err
+		return nil, err
 	}
 
-	// 重置进度计数器, 复用 dlProgress/dlTotal 做文件计数
 	m.dlProgress = 0
 	m.dlTotal = totalFiles
 
+	var files []config.CEFFileInfo
+
 	for {
-		// 检查停止信号
 		if m.dlStop {
-			return errExtractStopped
+			return nil, errExtractStopped
 		}
 
 		header, err := tarReader.Next()
@@ -864,7 +930,7 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		name := header.Name
@@ -881,29 +947,34 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err = os.MkdirAll(target, os.ModePerm); err != nil {
-				return err
+				return nil, err
 			}
 		case tar.TypeReg:
 			if err = os.MkdirAll(filepath.Dir(target), os.ModePerm); err != nil {
-				return err
+				return nil, err
 			}
 			outFile, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
 			if err != nil {
-				return err
+				return nil, err
 			}
-			// 用 stopReader 包装, 在读取过程中也能响应停止信号
 			sr := &stopReader{r: tarReader, stop: &m.dlStop}
 			if _, err = io.Copy(outFile, sr); err != nil {
 				outFile.Close()
-				return err
+				return nil, err
 			}
 			outFile.Close()
+
+			// 记录文件信息(排除 cefExcludeFiles)
+			fileName := filepath.Base(relPath)
+			if !config.IsCEFExcludeFile(fileName) {
+				files = append(files, config.CEFFileInfo{Name: relPath, Size: header.Size})
+			}
 
 			m.dlProgress++
 			m.updateExtractProgress()
 		case tar.TypeSymlink:
 			if err = os.MkdirAll(filepath.Dir(target), os.ModePerm); err != nil {
-				return err
+				return nil, err
 			}
 			os.Remove(target)
 			if err = os.Symlink(header.Linkname, target); err != nil {
@@ -911,10 +982,10 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) error {
 			}
 		}
 	}
-	return nil
+	return files, nil
 }
 
-// updateExtractProgress 更新解压进度 (在解压协程中调用)
+// updateExtractProgress 更新解压进度
 func (m *TChromiumDirForm) updateExtractProgress() {
 	current := m.dlProgress
 	total := m.dlTotal

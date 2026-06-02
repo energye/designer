@@ -23,7 +23,6 @@ import (
 	toolExec "github.com/energye/lcl/tool/exec"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 )
 
@@ -105,9 +104,7 @@ type TEnv struct {
 }
 
 type TChromium struct {
-	Dir     string   `json:"dir"`     // CEF 根目录, 默认 ~/.energy/chromium
-	Version string   `json:"version"` // 当前使用的 CEF 版本
-	List    []string `json:"list"`    // 已安装的 CEF 版本列表, 如 ["110", "120"]
+	Dir string `json:"dir"` // CEF 根目录, 默认 ~/.energy/chromium
 }
 
 // DefaultDir CEF 默认目录
@@ -122,46 +119,70 @@ func (m *TChromium) SetDir(dir string) {
 	}
 }
 
-func (m *TChromium) SetVersion(version string) {
-	if version != "" && m.Version != version {
-		m.Version = version
-		exist := false
-		for _, v := range m.List {
-			if v == version {
-				exist = true
-				break
-			}
-		}
-		if !exist {
-			m.List = append(m.List, version)
-			sort.Strings(m.List)
-		}
-		UpdateConfig()
-	}
+// CEFFileInfo CEF 安装文件信息
+type CEFFileInfo struct {
+	Name string `json:"name"`
+	Size int64  `json:"size"`
 }
 
-// CEFLibraryName 返回当前平台的 CEF 核心库文件名
-func CEFLibraryName() string {
-	switch runtime.GOOS {
-	case "windows":
-		return "libcef.dll"
-	case "linux":
-		return "libcef.so"
-	case "darwin":
-		return "libcef.dylib"
-	default:
-		return "libcef.dll"
-	}
+// cefExcludeFiles 解压时不记录的文件
+var cefExcludeFiles = map[string]bool{
+	"cefclient":     true,
+	"cefclient.exe": true,
 }
 
-// IsCEFInstalled 检查 CEF 是否已完整安装
-// 判断 Dir/Version/ 目录下是否存在平台的 libcef 库文件
-func (m *TChromium) IsCEFInstalled() bool {
-	if m.Dir == "" || m.Version == "" {
+// IsCEFExcludeFile 判断文件是否在排除列表中
+func IsCEFExcludeFile(name string) bool {
+	return cefExcludeFiles[name]
+}
+
+// cefManifestPath 返回清单文件路径 (Dir/.cef_versions)
+func (m *TChromium) cefManifestPath() string {
+	return filepath.Join(m.Dir, ".cef_versions")
+}
+
+// LoadCEFManifest 读取 CEF 安装清单
+func (m *TChromium) LoadCEFManifest() map[string][]CEFFileInfo {
+	manifest := make(map[string][]CEFFileInfo)
+	data, err := os.ReadFile(m.cefManifestPath())
+	if err != nil {
+		return manifest
+	}
+	_ = json.Unmarshal(data, &manifest)
+	return manifest
+}
+
+// SaveCEFManifest 写入 CEF 安装清单
+func (m *TChromium) SaveCEFManifest(version string, files []CEFFileInfo) error {
+	manifest := m.LoadCEFManifest()
+	manifest[version] = files
+	data, err := json.MarshalIndent(manifest, "", "\t")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(m.cefManifestPath(), data, 0644)
+}
+
+// IsCEFInstalled 检查指定版本的 CEF 是否已完整安装
+// 读取清单, 逐个校验文件存在且大小一致
+func (m *TChromium) IsCEFInstalled(version string) bool {
+	if m.Dir == "" || version == "" {
 		return false
 	}
-	libPath := filepath.Join(m.Dir, m.Version, CEFLibraryName())
-	return tool.IsExist(libPath)
+	manifest := m.LoadCEFManifest()
+	files, ok := manifest[version]
+	if !ok || len(files) == 0 {
+		return false
+	}
+	versionDir := filepath.Join(m.Dir, version)
+	for _, f := range files {
+		fullPath := filepath.Join(versionDir, f.Name)
+		info, err := os.Stat(fullPath)
+		if err != nil || info.Size() != f.Size {
+			return false
+		}
+	}
+	return true
 }
 
 // CEFVersionDir 返回指定版本的 CEF 安装目录
