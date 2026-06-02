@@ -19,7 +19,7 @@ import (
 	"github.com/energye/designer/resources"
 )
 
-// 弹窗过滤
+// DialogFilter Pop-up filtering
 var DialogFilter = &dialogFilter{}
 
 type dialogFilter struct {
@@ -35,12 +35,12 @@ type File struct {
 func init() {
 	data := resources.DialogFilter()
 	if data == nil {
-		println("[ERROR] 加载弹窗过滤配置为nil")
+		println("[ERROR] Set pop-up filter configuration to nil")
 		return
 	}
 	err := json.Unmarshal(data, DialogFilter)
 	if err != nil {
-		println("[ERROR] 加载弹窗过滤配置错误:", err.Error())
+		println("[ERROR] Pop-up filter configuration error:", err.Error())
 		return
 	}
 }

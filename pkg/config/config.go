@@ -86,7 +86,7 @@ type Tab struct {
 type TConfig struct {
 	WindowLayout   StorageWindowLayout `json:"window"`          // 窗口配置
 	FrameworkDir   string              `json:"framework"`       // 框架目录
-	Mod            TMod                `json:"mod"`             // 模块配置
+	ChromiumDir    TChromium           `json:"chromium"`        // CEF 框架
 	Registry       string              `json:"registry"`        // 远程服务配置地址
 	Proxy          string              `json:"proxy"`           // 代理地址
 	LastProject    string              `json:"last_project"`    // 最后打开项目
@@ -101,58 +101,8 @@ type TEnv struct {
 	GoRootSelectIndex int32    `json:"go_root_select_index"` // Go SDK select index
 }
 
-type TMod struct {
-}
-
-// FrameworkDirForSrcVersion 返回源码版本的框架目录路径。
-// 它通过将 FrameworkDir 与 "src" 和当前版本连接来构建路径。
-//
-//   - string: 构建的源码版本框架目录路径，如果未设置 FrameworkDir 则返回空字符串
-func (m *TConfig) FrameworkDirForSrcVersion() (string, string) {
-	if m.FrameworkDir != "" {
-		return filepath.Join(m.FrameworkDir, "src"), DesignerConfig.Version
-	}
-	return "", ""
-}
-
-func (m *TConfig) FrameworkDirForLCL() string {
-	src, version := m.FrameworkDirForSrcVersion()
-	return filepath.Join(src, "lcl@"+version)
-}
-
-func (m *TConfig) FrameworkDirForLCLRelativePath() string {
-	_, version := m.FrameworkDirForSrcVersion()
-	return "../lcl@" + version
-}
-
-func (m *TConfig) FrameworkDirForCEF() string {
-	src, version := m.FrameworkDirForSrcVersion()
-	return filepath.Join(src, "cef@"+version)
-}
-
-func (m *TConfig) FrameworkDirForCEFRelativePath() string {
-	_, version := m.FrameworkDirForSrcVersion()
-	return "../cef@" + version
-}
-
-func (m *TConfig) FrameworkDirForWV() string {
-	src, version := m.FrameworkDirForSrcVersion()
-	return filepath.Join(src, "wv@"+version)
-}
-
-func (m *TConfig) FrameworkDirForWVRelativePath() string {
-	_, version := m.FrameworkDirForSrcVersion()
-	return "../wv@" + version
-}
-
-func (m *TConfig) FrameworkDirForENERGY() string {
-	src, version := m.FrameworkDirForSrcVersion()
-	return filepath.Join(src, "energy@"+version)
-}
-
-func (m *TConfig) FrameworkDirForENERGYRelativePath() string {
-	_, version := m.FrameworkDirForSrcVersion()
-	return "../energy@" + version
+type TChromium struct {
+	Dir string `json:"dir"`
 }
 
 func (m *TConfig) FrameworkRuntimePath() string {
