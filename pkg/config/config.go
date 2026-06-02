@@ -86,7 +86,7 @@ type Tab struct {
 type TConfig struct {
 	WindowLayout   StorageWindowLayout `json:"window"`          // 窗口配置
 	FrameworkDir   string              `json:"framework"`       // 框架目录
-	ChromiumDir    TChromium           `json:"chromium"`        // CEF 框架
+	Chromium       TChromium           `json:"chromium"`        // CEF 框架
 	Registry       string              `json:"registry"`        // 远程服务配置地址
 	Proxy          string              `json:"proxy"`           // 代理地址
 	LastProject    string              `json:"last_project"`    // 最后打开项目
@@ -102,7 +102,39 @@ type TEnv struct {
 }
 
 type TChromium struct {
-	Dir string `json:"dir"`
+	Dir     string   `json:"dir"`     // CEF 根目录, 默认 ~/.energy/chromium
+	Version string   `json:"version"` // 当前使用的 CEF 版本
+	List    []string `json:"list"`    // 已安装的 CEF 版本列表, 如 ["110", "120"]
+}
+
+// DefaultDir CEF 默认目录
+func (m *TChromium) DefaultDir() string {
+	return filepath.Join(energyDir, "chromium")
+}
+
+func (m *TChromium) SetDir(dir string) {
+	if m.Dir != dir && tool.IsExist(dir) {
+		m.Dir = dir
+		UpdateConfig()
+	}
+}
+
+func (m *TChromium) SetVersion(version string) {
+	if version != "" && m.Version != version {
+		m.Version = version
+		exist := false
+		for _, v := range m.List {
+			if v == version {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			m.List = append(m.List, version)
+			sort.Strings(m.List)
+		}
+		UpdateConfig()
+	}
 }
 
 func (m *TConfig) FrameworkRuntimePath() string {
@@ -225,8 +257,11 @@ func init() {
 	// config.json
 	Config = &TConfig{WindowLayout: DesignerConfig.WindowLayout}
 	defer func() {
+		// 初始化 i18n
 		_, _ = metadata.GI18n.Get(Config.EnvLang)
+
 	}()
+
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.WindowLayout = DesignerConfig.WindowLayout
@@ -237,6 +272,7 @@ func init() {
 		err.CheckErr(e)
 		e = os.WriteFile(configPath, data, 0644)
 		err.CheckErr(e)
+
 		return
 	}
 	// 存在读取 config.json
@@ -244,6 +280,7 @@ func init() {
 	err.CheckErr(e)
 	e = json.Unmarshal(data, Config)
 	err.CheckErr(e)
+
 	Config.WindowLayout.InitDefaultMenuView()
 	Config.WindowLayout.InitDefaultContentLayout()
 	DesignerConfig.WindowLayout = Config.WindowLayout
