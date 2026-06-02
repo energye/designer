@@ -18,15 +18,6 @@ import (
 	"compress/bzip2"
 	"context"
 	"fmt"
-	"github.com/energye/designer/event"
-	"github.com/energye/designer/pkg/config"
-	"github.com/energye/designer/pkg/logs"
-	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/designer/resources"
-	"github.com/energye/energy/v3/lcl/wg"
-	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 	"io"
 	"net/http"
 	"os"
@@ -36,6 +27,16 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/config"
+	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources"
+	"github.com/energye/energy/v3/lcl/wg"
+	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 )
 
 var (
@@ -548,6 +549,11 @@ func (m *TChromiumDirForm) stopExtract() {
 	m.dlMu.Lock()
 	m.dlStop = true
 	m.dlMu.Unlock()
+	// 即时反馈: 按钮变为"停止中", 禁用防重复点击
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.confirmBtn.SetText("停止中...")
+		m.confirmBtn.SetEnabled(false)
+	})
 }
 
 // resumeDownload 继续下载
@@ -833,7 +839,10 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	}
 	defer f.Close()
 
-	bz2Reader := bzip2.NewReader(f)
+	// stopReader 包装文件层, 当 m.dlStop 被设置时, bzip2 读取底层文件会立即返回错误,
+	// 从而中断整个解压链: file → stopReader → bzip2 → tar
+	sf := &stopReader{r: f, stop: &m.dlStop}
+	bz2Reader := bzip2.NewReader(sf)
 	tarReader := tar.NewReader(bz2Reader)
 
 	// 第一遍扫描: 找到 Release/ 前缀 + 统计需要解压的文件数
@@ -844,10 +853,13 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 			return nil, errExtractStopped
 		}
 		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
+			if m.dlStop {
+				return nil, errExtractStopped
+			}
+			if err == io.EOF {
+				break
+			}
 			return nil, err
 		}
 		name := header.Name
@@ -880,7 +892,8 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	}
 	defer f.Close()
 
-	bz2Reader = bzip2.NewReader(f)
+	sf = &stopReader{r: f, stop: &m.dlStop}
+	bz2Reader = bzip2.NewReader(sf)
 	tarReader = tar.NewReader(bz2Reader)
 
 	if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
@@ -891,6 +904,7 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	m.dlTotal = totalFiles
 
 	var files []config.CEFFileInfo
+	copyBuf := make([]byte, 32*1024)
 
 	for {
 		if m.dlStop {
@@ -898,10 +912,13 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 		}
 
 		header, err := tarReader.Next()
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
+			if m.dlStop {
+				return nil, errExtractStopped
+			}
+			if err == io.EOF {
+				break
+			}
 			return nil, err
 		}
 
@@ -929,12 +946,12 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 			if err != nil {
 				return nil, err
 			}
-			sr := &stopReader{r: tarReader, stop: &m.dlStop}
-			if _, err = io.Copy(outFile, sr); err != nil {
-				outFile.Close()
-				return nil, err
-			}
+			// 小块拷贝, 每块后检查停止信号
+			writeErr := m.copyWithStop(outFile, tarReader, copyBuf)
 			outFile.Close()
+			if writeErr != nil {
+				return nil, writeErr
+			}
 
 			// 记录文件信息(排除 cefExcludeFiles)
 			fileName := filepath.Base(relPath)
@@ -955,6 +972,34 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 		}
 	}
 	return files, nil
+}
+
+// copyWithStop 小块拷贝, 每块后检查停止信号
+func (m *TChromiumDirForm) copyWithStop(dst io.Writer, src io.Reader, buf []byte) error {
+	for {
+		if m.dlStop {
+			return errExtractStopped
+		}
+		nr, readErr := src.Read(buf)
+		if nr > 0 {
+			nw, writeErr := dst.Write(buf[:nr])
+			if writeErr != nil {
+				return writeErr
+			}
+			if nw != nr {
+				return io.ErrShortWrite
+			}
+		}
+		if readErr != nil {
+			if readErr == io.EOF {
+				return nil
+			}
+			if m.dlStop {
+				return errExtractStopped
+			}
+			return readErr
+		}
+	}
 }
 
 // updateExtractProgress 更新解压进度
