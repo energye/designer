@@ -18,6 +18,7 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -164,7 +165,7 @@ func (m *TCreateProjectForm) initComponents() {
 		m.projPathBtn = wg.NewButton(m)
 		m.projPathBtn.SetIconFormBytes(resources.Images("menu/menu_project_open.png"))
 		m.projPathBtn.SetRadius(3)
-		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: m.projPathEdit.Top() - 2}
+		cusRect := types.TRect{Left: m.projPathEdit.Left() + m.projPathEdit.Width() + 5, Top: m.projPathEdit.Top()}
 		cusRect.SetWidth(35)
 		if tool.IsLinux {
 			cusRect.SetHeight(35)
@@ -363,16 +364,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if !m.validateInputs() {
 		return
 	}
-	// 禁用按钮
-	//m.cancelBtn.SetDisable(true)
-	//m.createBtn.SetDisable(true)
-	//recoverBtn := func() {
-	//	if !m.closing {
-	//		// 恢复按钮
-	//		m.cancelBtn.SetDisable(false)
-	//		m.createBtn.SetDisable(false)
-	//	}
-	//}
+
 	projectName := m.projNameEdit.Text()
 	projectDir := m.projPathEdit.Text()
 	guiRenderFramework := m.guiRenderFrameworkBox.Text()
@@ -384,6 +376,19 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		}
 		return false
 	})
+
+	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
+		if config.Config.Chromium.Dir == "" {
+			// 首次使用 CEF, 弹出目录设置窗口
+			chromiumForm := NewChromiumDirForm()
+			chromiumForm.ShowModal()
+			// 用户取消则中止创建
+			if config.Config.Chromium.Dir == "" {
+				return
+			}
+		}
+	}
+
 	// 检查创建项目
 	if checkCreate(projectDir) {
 		m.Close()
