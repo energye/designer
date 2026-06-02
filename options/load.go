@@ -74,7 +74,7 @@ func LoadProject(path, egpFilePath string) {
 		SetGlobalProject("", nil)
 		return
 	}
-	event.ConsoleWriteInfo("Project loaded successfully", loadProject.Name)
+	event.ConsoleWriteInfo("Project loaded successfully:", loadProject.Name)
 	SetGlobalProject(path, loadProject)
 	// 触发文件修改监听事件
 	event.Emit(event.TTrigger{Name: event.ListenFileChange})

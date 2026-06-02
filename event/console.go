@@ -46,6 +46,12 @@ func ConsoleWriteError(s ...string) {
 	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
 }
 
+func ConsoleWrite(s ...string) {
+	logs.Error(toAny(s...)...)
+	data := strings.Join(s, " ")
+	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+}
+
 func toAny(str ...string) (log []any) {
 	for _, v := range str {
 		log = append(log, v)

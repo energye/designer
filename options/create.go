@@ -75,8 +75,9 @@ func checkCreate(dir string) bool {
 	}
 	// 已存在项目 egp 文件, 提示覆盖
 	if existEgp != "" {
-		msg := fmt.Sprintf("Project configuration already exists %s\nOverwrite？", existEgp)
-		event.ConsoleWriteWarn("Project config exists in current directory.", existEgp, "Overwrite?")
+		// Project config already exists in current directory: myappcef.egp. Overwrite?
+		msg := fmt.Sprintf("Project config already exists in current directory: %s. Overwrite?", existEgp)
+		event.ConsoleWriteWarn(msg)
 		isCreate = api.MessageDlg(msg, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes
 		if !isCreate {
 			event.ConsoleWriteInfo("Cancel project creation")
@@ -112,7 +113,7 @@ type CreateProject struct {
 // 运行创建项目
 func doRunCreate(create *CreateProject) bool {
 	// 开始创建项目
-	event.ConsoleWriteInfo("Start creating project", create.Name)
+	event.ConsoleWriteInfo("Starting creation of project:", create.Name)
 	newProject := new(bean.TProject)
 	newProject.Name = create.Name
 	newProject.EGPName = create.Name + consts.EGPExt
@@ -139,7 +140,7 @@ func doRunCreate(create *CreateProject) bool {
 		// 更新应用图标
 		updateWindowICON()
 		// 创建项目成功
-		event.ConsoleWriteInfo("Project created successfully", newProject.Name, create.Dir)
+		event.ConsoleWriteInfo("Project created successfully:", newProject.Name, "->", create.Dir)
 		return true
 	}
 }

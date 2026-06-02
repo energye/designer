@@ -50,19 +50,23 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 		markup lcl.ISynSelectedColor) {
 		lines := m.designer.Lines()
 		lineText := lines.Strings(line - 1)
-		markup.SetBackground(0xFFFFFF)
 		*special = true
 		//markup.SetForeground(0x1E1F22)
-		if strings.Contains(lineText, "[ERROR]") {
+		if strings.Contains(lineText, " [ERROR] ") {
 			markup.SetForeground(0x0000CC)
-		} else if strings.Contains(lineText, "[WARN]") {
+			markup.SetBackground(0xFFF0F0)
+		} else if strings.Contains(lineText, " [WARN] ") {
 			markup.SetForeground(0x0066CC)
-		} else if strings.Contains(lineText, "[INFO]") {
+			markup.SetBackground(0xFFF5F0)
+		} else if strings.Contains(lineText, " [INFO] ") {
 			markup.SetForeground(0x008800)
-		} else if strings.Contains(lineText, "[DEBUG]") {
+			markup.SetBackground(0xF0F6F0)
+		} else if strings.Contains(lineText, " [DEBUG] ") {
 			markup.SetForeground(0x666666)
+			markup.SetBackground(0xF3F3F3)
 		} else {
-			//markup.SetForeground(0x008800)
+			markup.SetBackground(0xF6F6F6)
+			markup.SetForeground(0xCC9900)
 		}
 	})
 

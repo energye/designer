@@ -171,20 +171,23 @@ func CMDGoModDepsUpdate() {
 	if bean.GPath == "" {
 		return
 	}
+	SetEnableFuncComponent(false)
+	event.ConsoleWrite("Updating go mod. Please wait...")
 	cmd := command.NewCMD()
 	cmd.HideWindow = true
 	cmd.Dir = bean.GPath
 	cmd.Console = func(data string, level command.Level) {
-		event.ConsoleWriteInfo(data)
+		event.ConsoleWrite(data)
 	}
 	for modName, modVersion := range config.DesignerConfig.Dependencies {
 		cmdStr := modName + "@" + modVersion
-		event.ConsoleWriteInfo("go", "get", cmdStr)
+		event.ConsoleWrite("go", "get", cmdStr)
 		cmd.Command("go", "get", cmdStr)
 	}
-	event.ConsoleWriteInfo("go", "mod", "tidy")
+	event.ConsoleWrite("go", "mod", "tidy")
 	cmd.Command("go", "mod", "tidy")
-	event.ConsoleWriteInfo("end")
+	event.ConsoleWrite("Go mod update successfully")
+	SetEnableFuncComponent(true)
 }
 
 // 切换预览按钮状态, 在运行和结束运行之间切换
