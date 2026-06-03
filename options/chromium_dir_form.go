@@ -54,6 +54,8 @@ var (
 	statusLabelCaptionFailedCreateDirectory string
 	statusLabelCaptionCaptionFailedPreDown  string
 	statusLabelCaptionCaptionPaused         string
+	osLabelText                             string
+	archLabelText                           string
 )
 
 func init() {
@@ -64,6 +66,8 @@ func init() {
 	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedCreateDirectory", &statusLabelCaptionFailedCreateDirectory)
 	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedPreDown", &statusLabelCaptionCaptionFailedPreDown)
 	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionPaused", &statusLabelCaptionCaptionPaused)
+	metadata.GI18n.Bind("ChromiumDirFormOSText.Caption", &osLabelText)
+	metadata.GI18n.Bind("ChromiumDirFormARCHText.Caption", &archLabelText)
 }
 
 // 下载状态
@@ -106,7 +110,11 @@ type TChromiumDirForm struct {
 	dirEdit lcl.ILabeledEdit
 	dirBtn  *wg.TButton
 
-	// 版本选择
+	// 系统/架构/版本选择
+	osText       lcl.ILabel
+	osBox        lcl.IComboBox
+	archText     lcl.ILabel
+	archBox      lcl.IComboBox
 	versionText  lcl.ILabel
 	versionBox   lcl.IComboBox
 	versionList  []string        // 下拉框索引对应的真实版本号
@@ -195,12 +203,15 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 	m.dirBtn.SetOnClick(m.dirBtnClick)
 }
 
-// setupVersionSection 创建版本选择区域 (标签 + 下拉框)
+// setupVersionSection 创建系统/架构/版本选择区域 (同一行: OS + ARCH + CEF Version)
 func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
+	rowTop := nextTop(35)
+
+	// Version 标签 + 下拉框
 	m.versionText = lcl.NewLabel(m)
 	m.versionText.SetName("ChromiumDirFormVersionText")
 	m.versionText.SetLeft(0)
-	m.versionText.SetTop(nextTop(35))
+	m.versionText.SetTop(rowTop)
 	m.versionText.SetAutoSize(false)
 	m.versionText.SetWidth(96)
 	m.versionText.SetAlignment(types.TaRightJustify)
@@ -210,35 +221,79 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.versionBox = lcl.NewComboBox(m)
 	m.versionBox.SetName("ChromiumDirFormVersionBox")
 	m.versionBox.SetLeft(100)
-	m.versionBox.SetTop(m.versionText.Top())
-	m.versionBox.SetWidth(200)
+	m.versionBox.SetTop(rowTop)
+	m.versionBox.SetWidth(100)
 	m.versionBox.SetReadOnly(true)
 	m.versionBox.AnchorSideTop().SetControl(m.versionText)
 	m.versionBox.AnchorSideTop().SetSide(types.AsrCenter)
 	m.versionBox.SetStyle(types.CsDropDownList)
 	m.versionBox.SetBorderStyle(types.BsSingle)
-
-	m.installedSet = m.buildInstalledSet()
-	m.versionList = m.sortedVersions()
-	for _, ver := range m.versionList {
-		label := ver
-		if m.installedSet[ver] {
-			label += " ✓"
-		}
-		m.versionBox.Items().Add(label)
-	}
-	if m.versionBox.Items().Count() > 0 {
-		m.versionBox.SetItemIndex(0)
-	}
 	m.versionBox.SetOnChange(m.onVersionChange)
 	m.versionBox.SetParent(m)
+
+	// OS 标签 + 下拉框
+	m.osText = lcl.NewLabel(m)
+	m.osText.SetName("ChromiumDirFormOSText")
+	m.osText.SetLeft(m.versionBox.Left() + m.versionBox.Width() + 10)
+	m.osText.SetTop(rowTop)
+	m.osText.SetAutoSize(false)
+	m.osText.SetWidth(35)
+	m.osText.SetAlignment(types.TaRightJustify)
+	m.osText.SetCaption(osLabelText)
+	m.osText.SetParent(m)
+
+	m.osBox = lcl.NewComboBox(m)
+	m.osBox.SetName("ChromiumDirFormOSBox")
+	m.osBox.SetLeft(m.osText.Left() + m.osText.Width() + 4)
+	m.osBox.SetTop(rowTop)
+	m.osBox.SetWidth(100)
+	m.osBox.SetReadOnly(true)
+	m.osBox.AnchorSideTop().SetControl(m.osText)
+	m.osBox.AnchorSideTop().SetSide(types.AsrCenter)
+	m.osBox.SetStyle(types.CsDropDownList)
+	m.osBox.SetBorderStyle(types.BsSingle)
+	for _, osName := range supportedOSList {
+		m.osBox.Items().Add(osName)
+	}
+	m.osBox.SetItemIndex(0) // 默认 windows
+	m.osBox.SetOnChange(m.onOSChange)
+	m.osBox.SetParent(m)
+
+	// ARCH 标签 + 下拉框
+	m.archText = lcl.NewLabel(m)
+	m.archText.SetName("ChromiumDirFormARCHText")
+	m.archText.SetLeft(m.osBox.Left() + m.osBox.Width() + 10)
+	m.archText.SetTop(rowTop)
+	m.archText.SetAutoSize(false)
+	m.archText.SetWidth(35)
+	m.archText.SetAlignment(types.TaRightJustify)
+	m.archText.SetCaption(archLabelText)
+	m.archText.SetParent(m)
+
+	m.archBox = lcl.NewComboBox(m)
+	m.archBox.SetName("ChromiumDirFormARCHBox")
+	m.archBox.SetLeft(m.archText.Left() + m.archText.Width() + 4)
+	m.archBox.SetTop(rowTop)
+	m.archBox.SetWidth(80)
+	m.archBox.SetReadOnly(true)
+	m.archBox.AnchorSideTop().SetControl(m.archText)
+	m.archBox.AnchorSideTop().SetSide(types.AsrCenter)
+	m.archBox.SetStyle(types.CsDropDownList)
+	m.archBox.SetBorderStyle(types.BsSingle)
+	m.archBox.SetOnChange(m.onArchChange)
+	m.archBox.SetParent(m)
+
+	// 初始化: 设置默认 OS 并联动 ARCH
+	m.initOSArchDefault()
+	// 填充版本列表
+	m.populateVersionList()
 }
 
 // setupProgressSection 创建下载进度区域 (进度条 + 状态标签)
 func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 	m.progressBar = lcl.NewProgressBar(m)
 	m.progressBar.SetName("ChromiumDirFormProgressBar")
-	m.progressBar.SetLeft(80)
+	m.progressBar.SetLeft(100)
 	m.progressBar.SetTop(nextTop(35))
 	m.progressBar.SetWidth(350)
 	m.progressBar.SetHeight(20)
@@ -247,7 +302,7 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 
 	m.statusLabel = lcl.NewLabel(m)
 	m.statusLabel.SetName("ChromiumDirFormStatusLabel")
-	m.statusLabel.SetLeft(80)
+	m.statusLabel.SetLeft(100)
 	m.statusLabel.SetTop(nextTop(22))
 	m.statusLabel.SetCaption(statusLabelCaption)
 	m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
@@ -259,7 +314,7 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 	btnTop := nextTop(30)
 
-	defaultBtnRect := types.TRect{Left: 80, Top: btnTop}
+	defaultBtnRect := types.TRect{Left: 100, Top: btnTop}
 	defaultBtnRect.SetWidth(100)
 	defaultBtnRect.SetHeight(25)
 	m.defaultBtn = newGrayButton(m, defaultBtnRect, metadata.GI18n.Dict("ChromiumDirFormDefaultBtn.Text"), m.defaultBtnClick)
@@ -278,7 +333,161 @@ func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 	m.confirmBtn.SetName("ChromiumDirFormConfirmBtn")
 }
 
-// ==================== 版本与URL ====================
+// ==================== OS/ARCH/版本 与 URL ====================
+
+// supportedOSList 支持的操作系统列表
+var supportedOSList = []string{"windows", "linux", "darwin"}
+
+// osArchMap 每个系统支持的架构列表
+var osArchMap = map[string][]string{
+	"windows": {"amd64", "386"},
+	"linux":   {"amd64", "386", "arm64", "arm"},
+	"darwin":  {"amd64", "arm64"},
+}
+
+// cefOSArchMap Go runtime 架构名到 CEF 下载链接架构名的映射
+var cefOSArchMap = map[string]map[string]string{
+	"windows": {"amd64": "windows64", "386": "windows32"},
+	"linux":   {"amd64": "linux64", "386": "linux32", "arm64": "linuxarm64", "arm": "linuxarm"},
+	"darwin":  {"amd64": "macosx64", "arm64": "macosarm64"},
+}
+
+// selectedOS 返回当前选中的系统名
+func (m *TChromiumDirForm) selectedOS() string {
+	idx := m.osBox.ItemIndex()
+	if idx < 0 || int(idx) >= len(supportedOSList) {
+		return runtime.GOOS
+	}
+	return supportedOSList[idx]
+}
+
+// selectedArch 返回当前选中的架构名
+func (m *TChromiumDirForm) selectedArch() string {
+	idx := m.archBox.ItemIndex()
+	osName := m.selectedOS()
+	archs := osArchMap[osName]
+	if idx < 0 || int(idx) >= len(archs) {
+		return runtime.GOARCH
+	}
+	return archs[idx]
+}
+
+// osArchVersion 返回 os_arch_version 格式的标识, 用于目录名和清单 key
+func (m *TChromiumDirForm) osArchVersion(version string) string {
+	return fmt.Sprintf("%s_%s_%s", m.selectedOS(), m.selectedArch(), version)
+}
+
+// initOSArchDefault 初始化 OS/ARCH 下拉框默认值为当前系统和架构
+func (m *TChromiumDirForm) initOSArchDefault() {
+	// 设置默认 OS
+	currentOS := runtime.GOOS
+	osIdx := 0
+	for i, osName := range supportedOSList {
+		if osName == currentOS {
+			osIdx = i
+			break
+		}
+	}
+	m.osBox.SetItemIndex(int32(osIdx))
+
+	// 填充对应架构并设置默认
+	m.populateArchList()
+}
+
+// populateArchList 根据当前选中的 OS 填充架构下拉框
+func (m *TChromiumDirForm) populateArchList() {
+	osName := m.selectedOS()
+	archs := osArchMap[osName]
+	m.archBox.Items().Clear()
+	for _, arch := range archs {
+		m.archBox.Items().Add(arch)
+	}
+	// 默认选中当前架构
+	currentArch := runtime.GOARCH
+	archIdx := 0
+	for i, arch := range archs {
+		if arch == currentArch {
+			archIdx = i
+			break
+		}
+	}
+	if archIdx >= len(archs) {
+		archIdx = 0
+	}
+	m.archBox.SetItemIndex(int32(archIdx))
+}
+
+// onOSChange 系统切换时联动更新架构下拉框和版本列表
+func (m *TChromiumDirForm) onOSChange(sender lcl.IObject) {
+	m.populateArchList()
+	// 保留当前版本选择, 重建版本列表以更新 ✓ 标记
+	curVer := m.selectedVersion()
+	m.populateVersionList()
+	// 恢复之前的版本选择
+	for i, ver := range m.versionList {
+		if ver == curVer {
+			m.versionBox.SetItemIndex(int32(i))
+			break
+		}
+	}
+	m.updateConfirmBtnTextOnly()
+}
+
+// onArchChange 架构切换时重建版本列表并更新按钮文字
+func (m *TChromiumDirForm) onArchChange(sender lcl.IObject) {
+	curVer := m.selectedVersion()
+	m.populateVersionList()
+	for i, ver := range m.versionList {
+		if ver == curVer {
+			m.versionBox.SetItemIndex(int32(i))
+			break
+		}
+	}
+	m.updateConfirmBtnTextOnly()
+}
+
+// onVersionChange 版本切换时仅更新按钮文字, 不重建列表
+func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
+	m.updateConfirmBtnTextOnly()
+}
+
+// updateConfirmBtnTextOnly 仅更新按钮文字, 不重建版本列表
+func (m *TChromiumDirForm) updateConfirmBtnTextOnly() {
+	if m.isVersionInstalled() {
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
+	} else {
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.Text"))
+	}
+}
+
+// populateVersionList 填充版本列表
+func (m *TChromiumDirForm) populateVersionList() {
+	m.installedSet = m.buildInstalledSet()
+	m.versionList = m.sortedVersions()
+	m.versionBox.Items().Clear()
+	for _, ver := range m.versionList {
+		label := ver
+		oav := m.osArchVersion(ver)
+		if m.installedSet[oav] {
+			label += " ✓"
+		}
+		m.versionBox.Items().Add(label)
+	}
+	if m.versionBox.Items().Count() > 0 {
+		// 尝试恢复上次选中的版本
+		savedVersion := config.Config.Chromium.Version
+		selectIdx := int32(0)
+		if savedVersion != "" {
+			for i, ver := range m.versionList {
+				if m.osArchVersion(ver) == savedVersion {
+					selectIdx = int32(i)
+					break
+				}
+			}
+		}
+		m.versionBox.SetItemIndex(selectIdx)
+	}
+}
 
 // sortedVersions 从 DesignerConfig.Chromium 读取版本号并排序
 func (m *TChromiumDirForm) sortedVersions() []string {
@@ -293,13 +502,13 @@ func (m *TChromiumDirForm) sortedVersions() []string {
 	return versions
 }
 
-// buildInstalledSet 返回已安装版本的集合
+// buildInstalledSet 返回已安装版本的集合, key 为 os_arch_version
 func (m *TChromiumDirForm) buildInstalledSet() map[string]bool {
 	manifest := config.Config.Chromium.LoadCEFManifest()
 	installed := make(map[string]bool)
-	for ver := range manifest {
-		if config.Config.Chromium.IsCEFInstalled(ver) {
-			installed[ver] = true
+	for oav := range manifest {
+		if config.Config.Chromium.IsCEFInstalled(oav) {
+			installed[oav] = true
 		}
 	}
 	return installed
@@ -314,19 +523,19 @@ func (m *TChromiumDirForm) selectedVersion() string {
 	return m.versionList[idx]
 }
 
-// isVersionInstalled 判断当前选中版本是否已安装
+// isVersionInstalled 判断当前选中版本是否已安装 (基于 os_arch_version)
 func (m *TChromiumDirForm) isVersionInstalled() bool {
 	ver := m.selectedVersion()
-	return ver != "" && m.installedSet[ver]
+	if ver == "" {
+		return false
+	}
+	oav := m.osArchVersion(ver)
+	return m.installedSet[oav]
 }
 
-// onVersionChange 版本切换时更新按钮文字
-func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
-	if m.isVersionInstalled() {
-		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
-	} else {
-		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.Text"))
-	}
+// updateConfirmBtnText 根据安装状态更新按钮文字 (仅更新按钮, 不重建列表)
+func (m *TChromiumDirForm) updateConfirmBtnText() {
+	m.updateConfirmBtnTextOnly()
 }
 
 // compareVersion 比较两个版本号, 如 "109.1.18" vs "127.3.5"
@@ -356,46 +565,29 @@ func compareVersion(a, b string) int {
 }
 
 // cefOSArch 返回 CEF 下载链接中的 {osarch} 部分
-func cefOSArch() string {
-	switch runtime.GOOS {
-	case "windows":
-		if runtime.GOARCH == "386" {
-			return "windows32"
+func cefOSArch(osName, arch string) string {
+	if osMap, ok := cefOSArchMap[osName]; ok {
+		if cefArch, ok := osMap[arch]; ok {
+			return cefArch
 		}
-		return "windows64"
-	case "linux":
-		if runtime.GOARCH == "arm64" {
-			return "linuxarm64"
-		} else if runtime.GOARCH == "386" {
-			return "linux32" // linux 32 > CEF 101.0.18
-		} else if runtime.GOARCH == "arm" {
-			return "linuxarm"
-		}
-		return "linux64"
-	case "darwin":
-		if runtime.GOARCH == "arm64" {
-			return "macosarm64"
-		}
-		return "macosx64"
-	default:
-		return "windows64"
 	}
+	return "windows64"
 }
 
 // buildDownloadURL 构建 CEF 下载链接
-func buildDownloadURL(version string) string {
+func buildDownloadURL(version, osName, arch string) string {
 	urlTemplate := config.DesignerConfig.Chromium.Get(version)
 	if urlTemplate == "" {
 		return ""
 	}
 	url := strings.ReplaceAll(urlTemplate, "{version}", version)
-	url = strings.ReplaceAll(url, "{osarch}", cefOSArch())
+	url = strings.ReplaceAll(url, "{osarch}", cefOSArch(osName, arch))
 	return url
 }
 
 // cefArchiveFileName 返回 CEF 压缩包文件名
-func cefArchiveFileName(version string) string {
-	return fmt.Sprintf("cef_binary_%s_%s_client.tar.bz2", version, cefOSArch())
+func cefArchiveFileName(version, osName, arch string) string {
+	return fmt.Sprintf("cef_binary_%s_%s_client.tar.bz2", version, cefOSArch(osName, arch))
 }
 
 // ==================== 窗口事件 ====================
@@ -448,7 +640,11 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 
 	// 空闲状态: 已安装直接确认, 未安装走下载
 	if state == downloadIdle && m.isVersionInstalled() {
-		m.Version = m.selectedVersion()
+		oav := m.osArchVersion(m.selectedVersion())
+		m.Version = oav
+		// 记录当前 CEF 版本到配置
+		config.Config.Chromium.Version = oav
+		config.UpdateConfig()
 		m.Confirmed = true
 		m.Close()
 		return
@@ -493,6 +689,8 @@ func (m *TChromiumDirForm) resetToIdle() {
 	m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.Caption"))
 	m.defaultBtn.SetEnabled(true)
 	m.dirBtn.SetEnabled(true)
+	m.osBox.SetEnabled(true)
+	m.archBox.SetEnabled(true)
 	m.versionBox.SetEnabled(true)
 }
 
@@ -520,7 +718,10 @@ func (m *TChromiumDirForm) startDownload() {
 		m.statusLabel.SetCaption(statusLabelCaptionSelectCEF)
 		return
 	}
-	downloadURL := buildDownloadURL(version)
+
+	osName := m.selectedOS()
+	arch := m.selectedArch()
+	downloadURL := buildDownloadURL(version, osName, arch)
 	if downloadURL == "" {
 		event.ConsoleWriteError("Download URL not found for version:", version)
 		m.statusLabel.SetCaption(statusLabelCaptionURLNotFound)
@@ -547,9 +748,11 @@ func (m *TChromiumDirForm) startDownload() {
 	m.statusLabel.SetCaption(statusLabelCaptionCaptionFailedPreDown)
 	m.defaultBtn.SetEnabled(false)
 	m.dirBtn.SetEnabled(false)
+	m.osBox.SetEnabled(false)
+	m.archBox.SetEnabled(false)
 	m.versionBox.SetEnabled(false)
 
-	targetPath := filepath.Join(absDir, cefArchiveFileName(version))
+	targetPath := filepath.Join(absDir, cefArchiveFileName(version, osName, arch))
 	event.ConsoleWriteInfo("Start downloading CEF:", downloadURL)
 	event.ConsoleWriteInfo("Target:", targetPath)
 
@@ -568,6 +771,8 @@ func (m *TChromiumDirForm) pauseDownload() {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadPaused)
 		m.statusLabel.SetCaption(statusLabelCaptionCaptionPaused)
+		m.osBox.SetEnabled(true)
+		m.archBox.SetEnabled(true)
 		m.versionBox.SetEnabled(true)
 	})
 }
@@ -587,16 +792,18 @@ func (m *TChromiumDirForm) stopExtract() {
 // resumeDownload 继续下载
 func (m *TChromiumDirForm) resumeDownload() {
 	version := m.selectedVersion()
+	osName := m.selectedOS()
+	arch := m.selectedArch()
 
 	// 检测版本是否变更
 	versionChanged := version != m.dlVersion
 
 	absDir, _ := filepath.Abs(m.dirEdit.Text())
-	targetPath := filepath.Join(absDir, cefArchiveFileName(version))
+	targetPath := filepath.Join(absDir, cefArchiveFileName(version, osName, arch))
 
 	if versionChanged {
 		// 版本变更, 删除旧的不完整文件
-		oldPath := filepath.Join(absDir, cefArchiveFileName(m.dlVersion))
+		oldPath := filepath.Join(absDir, cefArchiveFileName(m.dlVersion, osName, arch))
 		if tool.IsExist(oldPath) {
 			os.Remove(oldPath)
 			event.ConsoleWriteInfo("Removed old partial file:", oldPath)
@@ -606,10 +813,12 @@ func (m *TChromiumDirForm) resumeDownload() {
 		m.dlTotal = 0
 	}
 
-	downloadURL := buildDownloadURL(version)
+	downloadURL := buildDownloadURL(version, osName, arch)
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadRunning)
+		m.osBox.SetEnabled(false)
+		m.archBox.SetEnabled(false)
 		m.versionBox.SetEnabled(false)
 		if versionChanged {
 			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionReDownload"))
@@ -775,13 +984,16 @@ func (m *TChromiumDirForm) onDownloadError(msg string) {
 func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	event.ConsoleWriteInfo("CEF download completed:", targetPath)
 	m.dlStop = false
+
+	oav := m.osArchVersion(version)
+
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadExtracting)
 		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
 		m.progressBar.SetPosition(0)
 	})
 
-	destDir := filepath.Join(config.Config.Chromium.Dir, version)
+	destDir := filepath.Join(config.Config.Chromium.Dir, oav)
 
 	files, err := m.extractTarBz2(targetPath, destDir)
 	if err != nil {
@@ -802,12 +1014,12 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	}
 
 	// 保存安装清单
-	if err = config.Config.Chromium.SaveCEFManifest(version, files); err != nil {
+	if err = config.Config.Chromium.SaveCEFManifest(oav, files); err != nil {
 		event.ConsoleWriteError("Failed to save CEF manifest:", err.Error())
 	}
 
 	// 通过清单校验安装完整性
-	if !config.Config.Chromium.IsCEFInstalled(version) {
+	if !config.Config.Chromium.IsCEFInstalled(oav) {
 		event.ConsoleWriteError("CEF installation verification failed")
 		lcl.RunOnMainThreadAsync(func(id uint32) {
 			m.resetToIdle()
@@ -817,7 +1029,9 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	}
 
 	event.ConsoleWriteInfo("CEF installed to:", destDir, "files:", fmt.Sprintf("%d", len(files)))
-	m.Version = version
+	m.Version = oav
+	// 记录当前 CEF 版本到配置
+	config.Config.Chromium.Version = oav
 	config.UpdateConfig()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {

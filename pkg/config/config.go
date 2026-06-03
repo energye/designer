@@ -104,7 +104,8 @@ type TEnv struct {
 }
 
 type TChromium struct {
-	Dir string `json:"dir"` // CEF 根目录, 默认 ~/.energy/chromium
+	Dir     string `json:"dir"`     // CEF 根目录, 默认 ~/.energy/chromium
+	Version string `json:"version"` // 当前使用的 CEF 版本, 格式: os_arch_version
 }
 
 // DefaultDir CEF 默认目录
@@ -136,9 +137,9 @@ func IsCEFExcludeFile(name string) bool {
 	return cefExcludeFiles[name]
 }
 
-// cefManifestPath 返回清单文件路径 (Dir/.cef_versions)
+// cefManifestPath 返回清单文件路径 (Dir/.versions)
 func (m *TChromium) cefManifestPath() string {
-	return filepath.Join(m.Dir, ".cef_versions")
+	return filepath.Join(m.Dir, ".versions")
 }
 
 // LoadCEFManifest 读取 CEF 安装清单
@@ -153,9 +154,10 @@ func (m *TChromium) LoadCEFManifest() map[string][]CEFFileInfo {
 }
 
 // SaveCEFManifest 写入 CEF 安装清单
-func (m *TChromium) SaveCEFManifest(version string, files []CEFFileInfo) error {
+// osArchVersion 格式: os_arch_version, 如 windows_amd64_127.3.5
+func (m *TChromium) SaveCEFManifest(osArchVersion string, files []CEFFileInfo) error {
 	manifest := m.LoadCEFManifest()
-	manifest[version] = files
+	manifest[osArchVersion] = files
 	data, err := json.MarshalIndent(manifest, "", "\t")
 	if err != nil {
 		return err
@@ -165,16 +167,17 @@ func (m *TChromium) SaveCEFManifest(version string, files []CEFFileInfo) error {
 
 // IsCEFInstalled 检查指定版本的 CEF 是否已完整安装
 // 读取清单, 逐个校验文件存在且大小一致
-func (m *TChromium) IsCEFInstalled(version string) bool {
-	if m.Dir == "" || version == "" {
+// osArchVersion 格式: os_arch_version, 如 windows_amd64_127.3.5
+func (m *TChromium) IsCEFInstalled(osArchVersion string) bool {
+	if m.Dir == "" || osArchVersion == "" {
 		return false
 	}
 	manifest := m.LoadCEFManifest()
-	files, ok := manifest[version]
+	files, ok := manifest[osArchVersion]
 	if !ok || len(files) == 0 {
 		return false
 	}
-	versionDir := filepath.Join(m.Dir, version)
+	versionDir := filepath.Join(m.Dir, osArchVersion)
 	for _, f := range files {
 		fullPath := filepath.Join(versionDir, f.Name)
 		info, err := os.Stat(fullPath)
@@ -186,8 +189,9 @@ func (m *TChromium) IsCEFInstalled(version string) bool {
 }
 
 // CEFVersionDir 返回指定版本的 CEF 安装目录
-func (m *TChromium) CEFVersionDir(version string) string {
-	return filepath.Join(m.Dir, version)
+// osArchVersion 格式: os_arch_version, 如 windows_amd64_127.3.5
+func (m *TChromium) CEFVersionDir(osArchVersion string) string {
+	return filepath.Join(m.Dir, osArchVersion)
 }
 
 func (m *TConfig) FrameworkRuntimePath() string {
