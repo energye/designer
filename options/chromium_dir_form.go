@@ -364,15 +364,19 @@ func cefOSArch() string {
 		}
 		return "windows64"
 	case "linux":
-		if runtime.GOARCH == "386" {
-			return "linux32"
+		if runtime.GOARCH == "arm64" {
+			return "linuxarm64"
+		} else if runtime.GOARCH == "386" {
+			return "linux32" // linux 32 > CEF 101.0.18
+		} else if runtime.GOARCH == "arm" {
+			return "linuxarm"
 		}
 		return "linux64"
 	case "darwin":
 		if runtime.GOARCH == "arm64" {
 			return "macosarm64"
 		}
-		return "macos64"
+		return "macosx64"
 	default:
 		return "windows64"
 	}
@@ -972,13 +976,11 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 			if err != nil {
 				return nil, err
 			}
-			// 小块拷贝, 每块后检查停止信号
 			writeErr := m.copyWithStop(outFile, tarReader, copyBuf)
 			outFile.Close()
 			if writeErr != nil {
 				return nil, writeErr
 			}
-
 			// 记录文件信息(排除 cefExcludeFiles)
 			fileName := filepath.Base(relPath)
 			if !config.IsCEFExcludeFile(fileName) {
