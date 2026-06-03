@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/resources/metadata"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -205,7 +206,7 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 
 // setupVersionSection 创建系统/架构/版本选择区域 (同一行: OS + ARCH + CEF Version)
 func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
-	rowTop := nextTop(35)
+	rowTop := nextTop(40)
 
 	// Version 标签 + 下拉框
 	m.versionText = lcl.NewLabel(m)
@@ -246,7 +247,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.osBox.SetName("ChromiumDirFormOSBox")
 	m.osBox.SetLeft(m.osText.Left() + m.osText.Width() + 4)
 	m.osBox.SetTop(rowTop)
-	m.osBox.SetWidth(100)
+	m.osBox.SetWidth(90)
 	m.osBox.SetReadOnly(true)
 	m.osBox.AnchorSideTop().SetControl(m.osText)
 	m.osBox.AnchorSideTop().SetSide(types.AsrCenter)
@@ -295,7 +296,7 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 	m.progressBar.SetName("ChromiumDirFormProgressBar")
 	m.progressBar.SetLeft(100)
 	m.progressBar.SetTop(nextTop(35))
-	m.progressBar.SetWidth(350)
+	m.progressBar.SetWidth(370)
 	m.progressBar.SetHeight(20)
 	m.progressBar.SetParent(m)
 	m.progressBar.SetVisible(false)
@@ -312,7 +313,7 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 
 // setupActionButtons 创建底部操作按钮 (默认目录、取消、确定)
 func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
-	btnTop := nextTop(30)
+	btnTop := nextTop(25)
 
 	defaultBtnRect := types.TRect{Left: 100, Top: btnTop}
 	defaultBtnRect.SetWidth(100)
@@ -585,9 +586,22 @@ func buildDownloadURL(version, osName, arch string) string {
 	return url
 }
 
-// cefArchiveFileName 返回 CEF 压缩包文件名
+// cefArchiveFileName 从下载 URL 中提取压缩包文件名 (URL 解码)
 func cefArchiveFileName(version, osName, arch string) string {
-	return fmt.Sprintf("cef_binary_%s_%s_client.tar.bz2", version, cefOSArch(osName, arch))
+	dlURL := buildDownloadURL(version, osName, arch)
+	if dlURL == "" {
+		return fmt.Sprintf("cef_binary_%s_%s_minimal.tar.bz2", version, cefOSArch(osName, arch))
+	}
+	// 取 URL 最后一段作为文件名, 并解码 %2B 等编码字符
+	idx := strings.LastIndex(dlURL, "/")
+	if idx >= 0 {
+		name := dlURL[idx+1:]
+		if decoded, err := url.PathUnescape(name); err == nil {
+			return decoded
+		}
+		return name
+	}
+	return fmt.Sprintf("cef_binary_%s_%s_minimal.tar.bz2", version, cefOSArch(osName, arch))
 }
 
 // ==================== 窗口事件 ====================
@@ -1074,7 +1088,8 @@ func (s *stopReader) Read(p []byte) (int, error) {
 }
 
 // extractTarBz2 解压 .tar.bz2 到指定目录
-// 只解压 Release/ 目录下的文件, 去掉 cef_binary_xxx/Release/ 前缀
+// 提取顶层 Release/ 和 Resources/ 目录内的文件到 destDir, 去掉这两个前缀
+// macOS Resources/ 在 Release/ 内部, 自然不会被顶层 Resources/ 匹配
 // 返回已记录的文件信息列表(排除 cefExcludeFiles)
 func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.CEFFileInfo, error) {
 	f, err := os.Open(archivePath)
@@ -1083,14 +1098,12 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 	}
 	defer f.Close()
 
-	// stopReader 包装文件层, 当 m.dlStop 被设置时, bzip2 读取底层文件会立即返回错误,
-	// 从而中断整个解压链: file → stopReader → bzip2 → tar
 	sf := &stopReader{r: f, stop: &m.dlStop}
 	bz2Reader := bzip2.NewReader(sf)
 	tarReader := tar.NewReader(bz2Reader)
 
-	// 第一遍扫描: 找到 Release/ 前缀 + 统计需要解压的文件数
-	var releasePrefix string
+	// 第一遍扫描: 确定根目录前缀 + 统计需要解压的文件数
+	var rootDir string // 如 "cef_binary_xxx/"
 	var totalFiles int64
 	for {
 		if m.dlStop {
@@ -1107,26 +1120,27 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 			return nil, err
 		}
 		name := header.Name
-		if releasePrefix == "" {
+		// 从第一个包含 /Release/ 的路径提取根目录
+		if rootDir == "" {
 			if idx := strings.Index(name, "/Release/"); idx >= 0 {
-				releasePrefix = name[:idx+len("/Release/")]
+				rootDir = name[:idx+1] // 包含尾部 /
 			}
 		}
-		if releasePrefix != "" && strings.HasPrefix(name, releasePrefix) {
-			relPath := strings.TrimPrefix(name, releasePrefix)
-			if relPath != "" && header.Typeflag == tar.TypeReg {
-				if !config.IsCEFExcludeFile(filepath.Base(relPath)) {
+		if rootDir != "" {
+			rel := extractRelPath(name, rootDir)
+			if rel != "" && header.Typeflag == tar.TypeReg {
+				if !config.IsCEFExcludeFile(filepath.Base(rel)) {
 					totalFiles++
 				}
 			}
 		}
 	}
 
-	if releasePrefix == "" {
+	if rootDir == "" {
 		return nil, fmt.Errorf("release directory not found in archive")
 	}
 
-	event.ConsoleWriteInfo("CEF archive release prefix:", releasePrefix, "files:", fmt.Sprintf("%d", totalFiles))
+	event.ConsoleWriteInfo("CEF archive root:", rootDir, "files:", fmt.Sprintf("%d", totalFiles))
 
 	// 重新打开进行实际解压
 	f.Close()
@@ -1167,15 +1181,12 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 		}
 
 		name := header.Name
-		if !strings.HasPrefix(name, releasePrefix) {
-			continue
-		}
-		relPath := strings.TrimPrefix(name, releasePrefix)
-		if relPath == "" {
+		rel := extractRelPath(name, rootDir)
+		if rel == "" {
 			continue
 		}
 
-		target := filepath.Join(destDir, relPath)
+		target := filepath.Join(destDir, rel)
 
 		switch header.Typeflag {
 		case tar.TypeDir:
@@ -1196,9 +1207,9 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 				return nil, writeErr
 			}
 			// 记录文件信息(排除 cefExcludeFiles)
-			fileName := filepath.Base(relPath)
+			fileName := filepath.Base(rel)
 			if !config.IsCEFExcludeFile(fileName) {
-				files = append(files, config.CEFFileInfo{Name: relPath, Size: header.Size})
+				files = append(files, config.CEFFileInfo{Name: rel, Size: header.Size})
 			}
 
 			m.dlProgress++
@@ -1214,6 +1225,19 @@ func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.
 		}
 	}
 	return files, nil
+}
+
+// extractRelPath 从 tar 路径中提取 Release/ 或 Resources/ 内的相对路径
+// rootDir 为根目录前缀, 如 "cef_binary_xxx/"
+// 匹配: rootDir + "Release/" + rel 或 rootDir + "Resources/" + rel
+func extractRelPath(name, rootDir string) string {
+	if strings.HasPrefix(name, rootDir+"Release/") {
+		return strings.TrimPrefix(name, rootDir+"Release/")
+	}
+	if strings.HasPrefix(name, rootDir+"Resources/") {
+		return strings.TrimPrefix(name, rootDir+"Resources/")
+	}
+	return ""
 }
 
 func (m *TChromiumDirForm) copyWithStop(dst io.Writer, src io.Reader, buf []byte) error {
