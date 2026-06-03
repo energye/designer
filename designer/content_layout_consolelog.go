@@ -54,10 +54,10 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 		//markup.SetForeground(0x1E1F22)
 		if strings.Contains(lineText, " [ERROR] ") {
 			markup.SetForeground(0x0000CC)
-			markup.SetBackground(0xFFF0F0)
+			markup.SetBackground(0xF6F0F0)
 		} else if strings.Contains(lineText, " [WARN] ") {
 			markup.SetForeground(0x0066CC)
-			markup.SetBackground(0xFFF5F0)
+			markup.SetBackground(0xF9F5F0)
 		} else if strings.Contains(lineText, " [INFO] ") {
 			markup.SetForeground(0x008800)
 			markup.SetBackground(0xF0F6F0)
