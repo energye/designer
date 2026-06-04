@@ -643,9 +643,10 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 		m.Version = oav
 		// 记录当前 CEF 版本到全局配置
 		config.Config.Chromium.Version = oav
-		// 仅 CEF 项目更新项目配置
+		// 项目已创建并且仅 CEF 项目更新项目配置
 		if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
 			bean.GProject.FrameworkVersion = oav
+			bean.GProject.Save()
 		}
 		config.UpdateConfig()
 		m.Confirmed = true

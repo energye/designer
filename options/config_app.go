@@ -87,7 +87,7 @@ func (m *TConfigProjectForm) saveProjectConfig() {
 	}
 	go func() {
 		// 更新项目配置文件
-		if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
+		if err := bean.GProject.Save(); err != nil {
 			event.ConsoleWriteError("WriteEGPConfig Error writing project configuration file", err.Error())
 			return
 		}

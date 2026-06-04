@@ -59,7 +59,7 @@ func runUpdate(formTab *designer.FormTab) {
 	bean.GProject.ActiveUIForm = formTab.Id
 	bean.GProject.UIForms = uiForms
 	// 1. 更新 TUIForm 配置
-	if err := WriteEGPConfig(bean.GPath, bean.GProject); err != nil {
+	if err := bean.GProject.Save(); err != nil {
 		logs.Error("项目更新, 写入项目配置失败:", err.Error())
 		return
 	}

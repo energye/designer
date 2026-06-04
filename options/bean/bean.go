@@ -14,9 +14,12 @@
 package bean
 
 import (
+	"encoding/json"
+	"errors"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/pkg/winres"
+	"os"
 	"path/filepath"
 )
 
@@ -331,6 +334,26 @@ func (m *TProject) LinuxWS() string {
 	} else {
 		return "gtk2"
 	}
+}
+
+func (m *TProject) Save() error {
+	if m == nil {
+		return errors.New("project configuration is empty")
+	}
+	if m.CheckLinuxWSGTK3() {
+		// Linux: 如果渲染框架为 WV 或 CEF 则强制启用 GTK3
+		m.BuildOption.UIGtk3 = true
+	}
+	data, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+	egpFilePath := filepath.Join(GPath, m.EGPName)
+	err = os.WriteFile(egpFilePath, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func init() {
