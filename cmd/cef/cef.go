@@ -178,34 +178,11 @@ func ArchiveFileName(version, osName, arch string) string {
 }
 
 func EnsureInstalled(ctx context.Context, options InstallOptions) (*InstallResult, error) {
-	if options.Version == "" {
-		options.Version = LatestVersion()
-	}
-	if options.Version == "" {
-		return nil, errors.New("CEF version is empty")
-	}
-	if options.OS == "" {
-		options.OS = runtime.GOOS
-	}
-	if options.Arch == "" {
-		options.Arch = runtime.GOARCH
-	}
-	if !IsSupportedOSArch(options.OS, options.Arch) {
-		return nil, fmt.Errorf("unsupported CEF target: %s/%s", options.OS, options.Arch)
-	}
-	if options.Dir == "" {
-		if config.Config.Chromium.Dir != "" {
-			options.Dir = config.Config.Chromium.Dir
-		} else {
-			options.Dir = config.Config.Chromium.DefaultDir()
-		}
-	}
-	absDir, err := filepath.Abs(options.Dir)
+	options, oav, err := normalizeInstallOptions(options, true, true, true)
 	if err != nil {
 		return nil, err
 	}
-	oav := OSArchVersion(options.OS, options.Arch, options.Version)
-	config.Config.Chromium.Dir = absDir
+	config.Config.Chromium.Dir = options.Dir
 	if config.Config.Chromium.IsCEFInstalled(oav) {
 		if err = useInstalled(oav, options.Project); err != nil {
 			return nil, err
@@ -216,38 +193,25 @@ func EnsureInstalled(ctx context.Context, options InstallOptions) (*InstallResul
 }
 
 func Install(ctx context.Context, options InstallOptions) (*InstallResult, error) {
-	if options.Version == "" {
-		return nil, errors.New("CEF version is empty")
-	}
-	if options.OS == "" {
-		options.OS = runtime.GOOS
-	}
-	if options.Arch == "" {
-		options.Arch = runtime.GOARCH
-	}
-	if options.Dir == "" {
-		options.Dir = config.Config.Chromium.DefaultDir()
-	}
-	absDir, err := filepath.Abs(options.Dir)
+	options, oav, err := normalizeInstallOptions(options, false, false, false)
 	if err != nil {
 		return nil, err
 	}
-	if err = os.MkdirAll(absDir, os.ModePerm); err != nil {
+	if err = os.MkdirAll(options.Dir, os.ModePerm); err != nil {
 		return nil, err
 	}
 	downloadURL := BuildDownloadURL(options.Version, options.OS, options.Arch)
 	if downloadURL == "" {
 		return nil, fmt.Errorf("download URL not found for CEF version: %s", options.Version)
 	}
-	config.Config.Chromium.Dir = absDir
-	oav := OSArchVersion(options.OS, options.Arch, options.Version)
-	archivePath := filepath.Join(absDir, ArchiveFileName(options.Version, options.OS, options.Arch))
+	config.Config.Chromium.Dir = options.Dir
+	archivePath := filepath.Join(options.Dir, ArchiveFileName(options.Version, options.OS, options.Arch))
 	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Start downloading CEF: " + downloadURL})
 	if err = download(ctx, downloadURL, archivePath, options.OnProgress); err != nil {
 		return nil, err
 	}
 	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Extracting CEF: " + archivePath})
-	destDir := filepath.Join(absDir, oav)
+	destDir := filepath.Join(options.Dir, oav)
 	files, err := ExtractTarBz2(ctx, archivePath, destDir, options.OnProgress)
 	if err != nil {
 		return nil, err
@@ -263,6 +227,37 @@ func Install(ctx context.Context, options InstallOptions) (*InstallResult, error
 	}
 	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "CEF installed: " + destDir})
 	return &InstallResult{OSArchVersion: oav, Dir: destDir, ArchivePath: archivePath, Installed: true}, nil
+}
+
+func normalizeInstallOptions(options InstallOptions, useLatestVersion, useConfiguredDir, validateTarget bool) (InstallOptions, string, error) {
+	if options.Version == "" && useLatestVersion {
+		options.Version = LatestVersion()
+	}
+	if options.Version == "" {
+		return options, "", errors.New("CEF version is empty")
+	}
+	if options.OS == "" {
+		options.OS = runtime.GOOS
+	}
+	if options.Arch == "" {
+		options.Arch = runtime.GOARCH
+	}
+	if validateTarget && !IsSupportedOSArch(options.OS, options.Arch) {
+		return options, "", fmt.Errorf("unsupported CEF target: %s/%s", options.OS, options.Arch)
+	}
+	if options.Dir == "" {
+		if useConfiguredDir && config.Config.Chromium.Dir != "" {
+			options.Dir = config.Config.Chromium.Dir
+		} else {
+			options.Dir = config.Config.Chromium.DefaultDir()
+		}
+	}
+	absDir, err := filepath.Abs(options.Dir)
+	if err != nil {
+		return options, "", err
+	}
+	options.Dir = absDir
+	return options, OSArchVersion(options.OS, options.Arch, options.Version), nil
 }
 
 func UseInstalled(oav string, project *bean.TProject) error {

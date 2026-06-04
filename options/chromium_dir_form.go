@@ -77,7 +77,6 @@ type TChromiumDirForm struct {
 	dlState   downloadState
 	dlCancel  context.CancelFunc
 	dlMu      sync.Mutex
-	dlVersion string // 当前正在下载的版本, 用于暂停后检测版本变更
 	Confirmed bool   // 用户是否点击了"完成"确认按钮
 	Version   string // 已安装完成的 CEF 版本
 
@@ -133,9 +132,7 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 	m.setupProgressSection(nextTop)
 	m.setupActionButtons(nextTop)
 
-	if m.isVersionInstalled() {
-		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
-	}
+	m.updateConfirmBtnText()
 }
 
 // setupDirSection 创建目录输入区域 (说明文字 + 输入框 + 浏览按钮)
@@ -357,38 +354,21 @@ func (m *TChromiumDirForm) initOSArchDefault() {
 
 // resolveConfiguredOSArch 从已配置的 CEF 版本中解析 OS 和 ARCH, 否则返回当前系统架构
 func (m *TChromiumDirForm) resolveConfiguredOSArch() (osName, arch string) {
-	version := config.Config.Chromium.Version
-	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
-		version = bean.GProject.FrameworkVersion
-	}
+	version := m.configuredCEFVersion()
 	if version != "" {
 		parts := strings.SplitN(version, "_", 3)
-		if len(parts) >= 2 {
-			cfgOS := parts[0]
-			cfgArch := parts[1]
-			// 验证 OS 和 ARCH 是否有效
-			osValid := false
-			for _, os := range cmdcef.SupportedOSList {
-				if os == cfgOS {
-					osValid = true
-					break
-				}
-			}
-			archValid := false
-			if archs, ok := cmdcef.OSArchMap[cfgOS]; ok {
-				for _, a := range archs {
-					if a == cfgArch {
-						archValid = true
-						break
-					}
-				}
-			}
-			if osValid && archValid {
-				return cfgOS, cfgArch
-			}
+		if len(parts) >= 2 && cmdcef.IsSupportedOSArch(parts[0], parts[1]) {
+			return parts[0], parts[1]
 		}
 	}
 	return runtime.GOOS, runtime.GOARCH
+}
+
+func (m *TChromiumDirForm) configuredCEFVersion() string {
+	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+		return bean.GProject.FrameworkVersion
+	}
+	return config.Config.Chromium.Version
 }
 
 // populateArchList 根据当前选中的 OS 填充架构下拉框, 默认选中当前系统架构
@@ -421,39 +401,40 @@ func (m *TChromiumDirForm) populateArchListWithDefault(defaultArch string) {
 // onOSChange 系统切换时联动更新架构下拉框和版本列表
 func (m *TChromiumDirForm) onOSChange(sender lcl.IObject) {
 	m.populateArchList()
-	// 保留当前版本选择, 重建版本列表以更新 ✓ 标记
-	curVer := m.selectedVersion()
-	m.populateVersionList()
-	// 恢复之前的版本选择
-	for i, ver := range m.versionList {
-		if ver == curVer {
-			m.versionBox.SetItemIndex(int32(i))
-			break
-		}
-	}
-	m.updateConfirmBtnTextOnly()
+	m.refreshVersionListPreserveSelection()
 }
 
 // onArchChange 架构切换时重建版本列表并更新按钮文字
 func (m *TChromiumDirForm) onArchChange(sender lcl.IObject) {
-	curVer := m.selectedVersion()
-	m.populateVersionList()
-	for i, ver := range m.versionList {
-		if ver == curVer {
-			m.versionBox.SetItemIndex(int32(i))
-			break
-		}
-	}
-	m.updateConfirmBtnTextOnly()
+	m.refreshVersionListPreserveSelection()
 }
 
 // onVersionChange 版本切换时仅更新按钮文字, 不重建列表
 func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
-	m.updateConfirmBtnTextOnly()
+	m.updateConfirmBtnText()
 }
 
-// updateConfirmBtnTextOnly 仅更新按钮文字, 不重建版本列表
-func (m *TChromiumDirForm) updateConfirmBtnTextOnly() {
+func (m *TChromiumDirForm) refreshVersionListPreserveSelection() {
+	currentVersion := m.selectedVersion()
+	m.populateVersionList()
+	m.selectVersion(currentVersion)
+	m.updateConfirmBtnText()
+}
+
+func (m *TChromiumDirForm) selectVersion(version string) bool {
+	if version == "" {
+		return false
+	}
+	for i, ver := range m.versionList {
+		if ver == version {
+			m.versionBox.SetItemIndex(int32(i))
+			return true
+		}
+	}
+	return false
+}
+
+func (m *TChromiumDirForm) updateConfirmBtnText() {
 	if m.isVersionInstalled() {
 		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextUse"))
 	} else {
@@ -464,7 +445,7 @@ func (m *TChromiumDirForm) updateConfirmBtnTextOnly() {
 // populateVersionList 填充版本列表
 func (m *TChromiumDirForm) populateVersionList() {
 	m.installedSet = m.buildInstalledSet()
-	m.versionList = m.sortedVersions()
+	m.versionList = cmdcef.Versions()
 	m.versionBox.Items().Clear()
 	for _, ver := range m.versionList {
 		label := ver
@@ -474,10 +455,7 @@ func (m *TChromiumDirForm) populateVersionList() {
 		}
 		m.versionBox.Items().Add(label)
 	}
-	version := config.Config.Chromium.Version
-	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
-		version = bean.GProject.FrameworkVersion
-	}
+	version := m.configuredCEFVersion()
 	if m.versionBox.Items().Count() > 0 {
 		// 尝试恢复上次选中的版本
 		savedVersion := version
@@ -492,11 +470,6 @@ func (m *TChromiumDirForm) populateVersionList() {
 		}
 		m.versionBox.SetItemIndex(selectIdx)
 	}
-}
-
-// sortedVersions 从 DesignerConfig.Chromium 读取版本号并排序
-func (m *TChromiumDirForm) sortedVersions() []string {
-	return cmdcef.Versions()
 }
 
 // buildInstalledSet 返回已安装版本的集合, key 为 os_arch_version
@@ -527,17 +500,10 @@ func (m *TChromiumDirForm) isVersionInstalled() bool {
 	return m.installedSet[oav]
 }
 
-// updateConfirmBtnText 根据安装状态更新按钮文字 (仅更新按钮, 不重建列表)
-func (m *TChromiumDirForm) updateConfirmBtnText() {
-	m.updateConfirmBtnTextOnly()
-}
 func (m *TChromiumDirForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
-	m.dlMu.Lock()
-	defer m.dlMu.Unlock()
-	if m.dlState == downloadRunning || m.dlState == downloadExtracting {
-		if m.dlCancel != nil {
-			m.dlCancel()
-		}
+	state := m.currentDownloadState()
+	if state == downloadRunning || state == downloadExtracting {
+		m.cancelInstall()
 	}
 	m.closing = true
 }
@@ -628,12 +594,29 @@ func (m *TChromiumDirForm) resetToIdle() {
 	m.progressBar.SetVisible(false)
 	m.statusLabel.SetVisible(true)
 	m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.Caption"))
-	m.defaultBtn.SetEnabled(true)
-	m.dirBtn.SetEnabled(true)
-	m.osBox.SetEnabled(true)
-	m.archBox.SetEnabled(true)
-	m.versionBox.SetEnabled(true)
+	m.setInstallControlsEnabled(true)
 	m.confirmBtn.SetOnClick(m.confirmBtnClick)
+}
+
+func (m *TChromiumDirForm) setInstallControlsEnabled(enabled bool) {
+	m.defaultBtn.SetEnabled(enabled)
+	m.dirBtn.SetEnabled(enabled)
+	m.setVersionControlsEnabled(enabled)
+}
+
+func (m *TChromiumDirForm) setVersionControlsEnabled(enabled bool) {
+	m.osBox.SetEnabled(enabled)
+	m.archBox.SetEnabled(enabled)
+	m.versionBox.SetEnabled(enabled)
+}
+
+func (m *TChromiumDirForm) cancelInstall() {
+	m.dlMu.Lock()
+	if m.dlCancel != nil {
+		m.dlCancel()
+		m.dlCancel = nil
+	}
+	m.dlMu.Unlock()
 }
 
 // ==================== 下载流程 ====================
@@ -679,20 +662,13 @@ func (m *TChromiumDirForm) startDownload() {
 		}
 	}
 
-	// 更新配置
-	m.dlVersion = version
-
 	// 锁定 UI
 	m.setDownloadState(downloadRunning)
 	m.progressBar.SetVisible(true)
 	m.progressBar.SetPosition(0)
 	m.statusLabel.SetVisible(true)
 	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
-	m.defaultBtn.SetEnabled(false)
-	m.dirBtn.SetEnabled(false)
-	m.osBox.SetEnabled(false)
-	m.archBox.SetEnabled(false)
-	m.versionBox.SetEnabled(false)
+	m.setInstallControlsEnabled(false)
 
 	targetPath := filepath.Join(absDir, cmdcef.ArchiveFileName(version, osName, arch))
 	event.ConsoleWriteInfo("Start downloading CEF:", downloadURL)
@@ -803,30 +779,18 @@ func (m *TChromiumDirForm) currentDownloadState() downloadState {
 
 // pauseDownload 暂停下载
 func (m *TChromiumDirForm) pauseDownload() {
-	m.dlMu.Lock()
-	if m.dlCancel != nil {
-		m.dlCancel()
-		m.dlCancel = nil
-	}
-	m.dlMu.Unlock()
+	m.cancelInstall()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadPaused)
 		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionPaused)
-		m.osBox.SetEnabled(true)
-		m.archBox.SetEnabled(true)
-		m.versionBox.SetEnabled(true)
+		m.setVersionControlsEnabled(true)
 	})
 }
 
 // stopExtract 停止解压, 恢复窗口到默认状态
 func (m *TChromiumDirForm) stopExtract() {
-	m.dlMu.Lock()
-	if m.dlCancel != nil {
-		m.dlCancel()
-		m.dlCancel = nil
-	}
-	m.dlMu.Unlock()
+	m.cancelInstall()
 	// 即时反馈: 按钮变为"停止中", 禁用防重复点击
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextStopping"))
@@ -857,14 +821,16 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 	}
 	m.Version = result.OSArchVersion
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.setDownloadState(downloadCompleted)
-		m.progressBar.SetPosition(100)
-		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessInstall"))
-		m.confirmBtn.SetEnabled(true)
-		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextSuccess"))
-		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
-		m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
+		m.showInstallCompleted()
 	})
+}
+
+func (m *TChromiumDirForm) showInstallCompleted() {
+	m.setDownloadState(downloadCompleted)
+	m.progressBar.SetPosition(100)
+	m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessInstall"))
+	m.confirmBtn.SetEnabled(true)
+	m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
 }
 
 func (m *TChromiumDirForm) onInstallCanceled() {
@@ -881,9 +847,7 @@ func (m *TChromiumDirForm) onInstallCanceled() {
 		if state == downloadRunning {
 			m.setDownloadState(downloadPaused)
 			m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionPaused)
-			m.osBox.SetEnabled(true)
-			m.archBox.SetEnabled(true)
-			m.versionBox.SetEnabled(true)
+			m.setVersionControlsEnabled(true)
 		}
 	})
 }
