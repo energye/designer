@@ -459,9 +459,13 @@ func (m *TChromiumDirForm) populateVersionList() {
 		}
 		m.versionBox.Items().Add(label)
 	}
+	version := config.Config.Chromium.Version
+	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+		version = bean.GProject.FrameworkVersion
+	}
 	if m.versionBox.Items().Count() > 0 {
 		// 尝试恢复上次选中的版本
-		savedVersion := config.Config.Chromium.Version
+		savedVersion := version
 		selectIdx := int32(0)
 		if savedVersion != "" {
 			for i, ver := range m.versionList {
