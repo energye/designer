@@ -363,13 +363,15 @@ func (m *TChromiumDirForm) osArchVersion(version string) string {
 	return fmt.Sprintf("%s_%s_%s", m.selectedOS(), m.selectedArch(), version)
 }
 
-// initOSArchDefault 初始化 OS/ARCH 下拉框默认值为当前系统和架构
+// initOSArchDefault 初始化 OS/ARCH 下拉框默认值, 优先从已配置的 CEF 版本中解析, 否则使用当前系统架构
 func (m *TChromiumDirForm) initOSArchDefault() {
+	// 从已配置的 CEF 版本中解析 OS 和 ARCH
+	targetOS, targetArch := m.resolveConfiguredOSArch()
+
 	// 设置默认 OS
-	currentOS := runtime.GOOS
 	osIdx := 0
 	for i, osName := range supportedOSList {
-		if osName == currentOS {
+		if osName == targetOS {
 			osIdx = i
 			break
 		}
@@ -377,22 +379,62 @@ func (m *TChromiumDirForm) initOSArchDefault() {
 	m.osBox.SetItemIndex(int32(osIdx))
 
 	// 填充对应架构并设置默认
-	m.populateArchList()
+	m.populateArchListWithDefault(targetArch)
 }
 
-// populateArchList 根据当前选中的 OS 填充架构下拉框
+// resolveConfiguredOSArch 从已配置的 CEF 版本中解析 OS 和 ARCH, 否则返回当前系统架构
+func (m *TChromiumDirForm) resolveConfiguredOSArch() (osName, arch string) {
+	version := config.Config.Chromium.Version
+	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+		version = bean.GProject.FrameworkVersion
+	}
+	if version != "" {
+		parts := strings.SplitN(version, "_", 3)
+		if len(parts) >= 2 {
+			cfgOS := parts[0]
+			cfgArch := parts[1]
+			// 验证 OS 和 ARCH 是否有效
+			osValid := false
+			for _, os := range supportedOSList {
+				if os == cfgOS {
+					osValid = true
+					break
+				}
+			}
+			archValid := false
+			if archs, ok := osArchMap[cfgOS]; ok {
+				for _, a := range archs {
+					if a == cfgArch {
+						archValid = true
+						break
+					}
+				}
+			}
+			if osValid && archValid {
+				return cfgOS, cfgArch
+			}
+		}
+	}
+	return runtime.GOOS, runtime.GOARCH
+}
+
+// populateArchList 根据当前选中的 OS 填充架构下拉框, 默认选中当前系统架构
 func (m *TChromiumDirForm) populateArchList() {
+	m.populateArchListWithDefault(runtime.GOARCH)
+}
+
+// populateArchListWithDefault 根据当前选中的 OS 填充架构下拉框, 并选中指定的默认架构
+func (m *TChromiumDirForm) populateArchListWithDefault(defaultArch string) {
 	osName := m.selectedOS()
 	archs := osArchMap[osName]
 	m.archBox.Items().Clear()
 	for _, arch := range archs {
 		m.archBox.Items().Add(arch)
 	}
-	// 默认选中当前架构
-	currentArch := runtime.GOARCH
+	// 默认选中指定架构
 	archIdx := 0
 	for i, arch := range archs {
-		if arch == currentArch {
+		if arch == defaultArch {
 			archIdx = i
 			break
 		}
@@ -1043,6 +1085,7 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 	// 仅 CEF 项目更新项目配置
 	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
 		bean.GProject.FrameworkVersion = oav
+		bean.GProject.Save()
 	}
 	config.UpdateConfig()
 
