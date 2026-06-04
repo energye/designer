@@ -14,20 +14,13 @@
 package options
 
 import (
-	"archive/tar"
-	"compress/bzip2"
 	"context"
 	"fmt"
 	cmdcef "github.com/energye/designer/cmd/cef"
 	"github.com/energye/designer/resources/metadata"
-	"io"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
-	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -46,7 +39,6 @@ import (
 var (
 	chromiumDirFormWidth  = int32(500)
 	chromiumDirFormHeight = int32(200)
-	errExtractStopped     = fmt.Errorf("extract stopped by user")
 )
 
 // 下载状态
@@ -80,17 +72,14 @@ func NewChromiumDirForm() *TChromiumDirForm {
 
 type TChromiumDirForm struct {
 	lcl.TEngForm
-	closing    bool
-	selectDir  lcl.ISelectDirectoryDialog
-	dlState    downloadState
-	dlCancel   context.CancelFunc
-	dlMu       sync.Mutex
-	dlProgress int64
-	dlTotal    int64
-	dlVersion  string // 当前正在下载的版本, 用于暂停后检测版本变更
-	dlStop     bool   // 解压停止信号
-	Confirmed  bool   // 用户是否点击了"完成"确认按钮
-	Version    string // 已安装完成的 CEF 版本
+	closing   bool
+	selectDir lcl.ISelectDirectoryDialog
+	dlState   downloadState
+	dlCancel  context.CancelFunc
+	dlMu      sync.Mutex
+	dlVersion string // 当前正在下载的版本, 用于暂停后检测版本变更
+	Confirmed bool   // 用户是否点击了"完成"确认按钮
+	Version   string // 已安装完成的 CEF 版本
 
 	// 目录设置
 	dirText lcl.ILabel
@@ -239,7 +228,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.osBox.AnchorSideTop().SetSide(types.AsrCenter)
 	m.osBox.SetStyle(types.CsDropDownList)
 	m.osBox.SetBorderStyle(types.BsSingle)
-	for _, osName := range supportedOSList {
+	for _, osName := range cmdcef.SupportedOSList {
 		m.osBox.Items().Add(osName)
 	}
 	m.osBox.SetItemIndex(0) // 默认 windows
@@ -322,37 +311,20 @@ func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 
 // ==================== OS/ARCH/版本 与 URL ====================
 
-// supportedOSList 支持的操作系统列表
-var supportedOSList = []string{"windows", "linux", "darwin"}
-
-// osArchMap 每个系统支持的架构列表
-var osArchMap = map[string][]string{
-	"windows": {"amd64", "386"},
-	"linux":   {"amd64", "386", "arm64", "arm"},
-	"darwin":  {"amd64", "arm64"},
-}
-
-// cefOSArchMap Go runtime 架构名到 CEF 下载链接架构名的映射
-var cefOSArchMap = map[string]map[string]string{
-	"windows": {"amd64": "windows64", "386": "windows32"},
-	"linux":   {"amd64": "linux64", "386": "linux32", "arm64": "linuxarm64", "arm": "linuxarm"},
-	"darwin":  {"amd64": "macosx64", "arm64": "macosarm64"},
-}
-
 // selectedOS 返回当前选中的系统名
 func (m *TChromiumDirForm) selectedOS() string {
 	idx := m.osBox.ItemIndex()
-	if idx < 0 || int(idx) >= len(supportedOSList) {
+	if idx < 0 || int(idx) >= len(cmdcef.SupportedOSList) {
 		return runtime.GOOS
 	}
-	return supportedOSList[idx]
+	return cmdcef.SupportedOSList[idx]
 }
 
 // selectedArch 返回当前选中的架构名
 func (m *TChromiumDirForm) selectedArch() string {
 	idx := m.archBox.ItemIndex()
 	osName := m.selectedOS()
-	archs := osArchMap[osName]
+	archs := cmdcef.OSArchMap[osName]
 	if idx < 0 || int(idx) >= len(archs) {
 		return runtime.GOARCH
 	}
@@ -371,7 +343,7 @@ func (m *TChromiumDirForm) initOSArchDefault() {
 
 	// 设置默认 OS
 	osIdx := 0
-	for i, osName := range supportedOSList {
+	for i, osName := range cmdcef.SupportedOSList {
 		if osName == targetOS {
 			osIdx = i
 			break
@@ -396,14 +368,14 @@ func (m *TChromiumDirForm) resolveConfiguredOSArch() (osName, arch string) {
 			cfgArch := parts[1]
 			// 验证 OS 和 ARCH 是否有效
 			osValid := false
-			for _, os := range supportedOSList {
+			for _, os := range cmdcef.SupportedOSList {
 				if os == cfgOS {
 					osValid = true
 					break
 				}
 			}
 			archValid := false
-			if archs, ok := osArchMap[cfgOS]; ok {
+			if archs, ok := cmdcef.OSArchMap[cfgOS]; ok {
 				for _, a := range archs {
 					if a == cfgArch {
 						archValid = true
@@ -427,7 +399,7 @@ func (m *TChromiumDirForm) populateArchList() {
 // populateArchListWithDefault 根据当前选中的 OS 填充架构下拉框, 并选中指定的默认架构
 func (m *TChromiumDirForm) populateArchListWithDefault(defaultArch string) {
 	osName := m.selectedOS()
-	archs := osArchMap[osName]
+	archs := cmdcef.OSArchMap[osName]
 	m.archBox.Items().Clear()
 	for _, arch := range archs {
 		m.archBox.Items().Add(arch)
@@ -524,25 +496,14 @@ func (m *TChromiumDirForm) populateVersionList() {
 
 // sortedVersions 从 DesignerConfig.Chromium 读取版本号并排序
 func (m *TChromiumDirForm) sortedVersions() []string {
-	chromiumMap := config.DesignerConfig.Chromium
-	versions := make([]string, 0, len(chromiumMap))
-	for ver := range chromiumMap {
-		versions = append(versions, ver)
-	}
-	sort.Slice(versions, func(i, j int) bool {
-		return compareVersion(versions[i], versions[j]) < 0
-	})
-	return versions
+	return cmdcef.Versions()
 }
 
 // buildInstalledSet 返回已安装版本的集合, key 为 os_arch_version
 func (m *TChromiumDirForm) buildInstalledSet() map[string]bool {
-	manifest := config.Config.Chromium.LoadCEFManifest()
 	installed := make(map[string]bool)
-	for oav := range manifest {
-		if config.Config.Chromium.IsCEFInstalled(oav) {
-			installed[oav] = true
-		}
+	for _, oav := range cmdcef.InstalledVersions(m.selectedOS(), m.selectedArch()) {
+		installed[oav] = true
 	}
 	return installed
 }
@@ -570,84 +531,13 @@ func (m *TChromiumDirForm) isVersionInstalled() bool {
 func (m *TChromiumDirForm) updateConfirmBtnText() {
 	m.updateConfirmBtnTextOnly()
 }
-
-// compareVersion 比较两个版本号, 如 "109.1.18" vs "127.3.5"
-func compareVersion(a, b string) int {
-	aParts := strings.Split(a, ".")
-	bParts := strings.Split(b, ".")
-	maxLen := len(aParts)
-	if len(bParts) > maxLen {
-		maxLen = len(bParts)
-	}
-	for i := 0; i < maxLen; i++ {
-		var aNum, bNum int
-		if i < len(aParts) {
-			aNum, _ = strconv.Atoi(aParts[i])
-		}
-		if i < len(bParts) {
-			bNum, _ = strconv.Atoi(bParts[i])
-		}
-		if aNum < bNum {
-			return -1
-		}
-		if aNum > bNum {
-			return 1
-		}
-	}
-	return 0
-}
-
-// cefOSArch 返回 CEF 下载链接中的 {osarch} 部分
-func cefOSArch(osName, arch string) string {
-	if osMap, ok := cefOSArchMap[osName]; ok {
-		if cefArch, ok := osMap[arch]; ok {
-			return cefArch
-		}
-	}
-	return "windows64"
-}
-
-// buildDownloadURL 构建 CEF 下载链接
-func buildDownloadURL(version, osName, arch string) string {
-	urlTemplate := config.DesignerConfig.Chromium.Get(version)
-	if urlTemplate == "" {
-		return ""
-	}
-	url := strings.ReplaceAll(urlTemplate, "{version}", version)
-	url = strings.ReplaceAll(url, "{osarch}", cefOSArch(osName, arch))
-	return url
-}
-
-// cefArchiveFileName 从下载 URL 中提取压缩包文件名 (URL 解码)
-func cefArchiveFileName(version, osName, arch string) string {
-	dlURL := buildDownloadURL(version, osName, arch)
-	if dlURL == "" {
-		return fmt.Sprintf("cef_binary_%s_%s_minimal.tar.bz2", version, cefOSArch(osName, arch))
-	}
-	// 取 URL 最后一段作为文件名, 并解码 %2B 等编码字符
-	idx := strings.LastIndex(dlURL, "/")
-	if idx >= 0 {
-		name := dlURL[idx+1:]
-		if decoded, err := url.PathUnescape(name); err == nil {
-			return decoded
-		}
-		return name
-	}
-	return fmt.Sprintf("cef_binary_%s_%s_minimal.tar.bz2", version, cefOSArch(osName, arch))
-}
-
-// ==================== 窗口事件 ====================
-
 func (m *TChromiumDirForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
 	m.dlMu.Lock()
 	defer m.dlMu.Unlock()
-	if m.dlState == downloadRunning {
+	if m.dlState == downloadRunning || m.dlState == downloadExtracting {
 		if m.dlCancel != nil {
 			m.dlCancel()
 		}
-	}
-	if m.dlState == downloadExtracting {
-		m.dlStop = true
 	}
 	m.closing = true
 }
@@ -726,6 +616,9 @@ func (m *TChromiumDirForm) setDownloadState(state downloadState) {
 	case downloadPaused:
 		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextRun"))
 		m.confirmBtn.SetColor(blueBtnColor)
+	case downloadCompleted:
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextSuccess"))
+		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
 	}
 }
 
@@ -740,6 +633,7 @@ func (m *TChromiumDirForm) resetToIdle() {
 	m.osBox.SetEnabled(true)
 	m.archBox.SetEnabled(true)
 	m.versionBox.SetEnabled(true)
+	m.confirmBtn.SetOnClick(m.confirmBtnClick)
 }
 
 // ==================== 下载流程 ====================
@@ -769,7 +663,7 @@ func (m *TChromiumDirForm) startDownload() {
 
 	osName := m.selectedOS()
 	arch := m.selectedArch()
-	downloadURL := buildDownloadURL(version, osName, arch)
+	downloadURL := cmdcef.BuildDownloadURL(version, osName, arch)
 	if downloadURL == "" {
 		event.ConsoleWriteError("Download URL not found for version:", version)
 		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionURLNotFound)
@@ -786,12 +680,12 @@ func (m *TChromiumDirForm) startDownload() {
 	}
 
 	// 更新配置
-	config.Config.Chromium.Dir = absDir
 	m.dlVersion = version
 
 	// 锁定 UI
 	m.setDownloadState(downloadRunning)
 	m.progressBar.SetVisible(true)
+	m.progressBar.SetPosition(0)
 	m.statusLabel.SetVisible(true)
 	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
 	m.defaultBtn.SetEnabled(false)
@@ -800,7 +694,7 @@ func (m *TChromiumDirForm) startDownload() {
 	m.archBox.SetEnabled(false)
 	m.versionBox.SetEnabled(false)
 
-	targetPath := filepath.Join(absDir, cefArchiveFileName(version, osName, arch))
+	targetPath := filepath.Join(absDir, cmdcef.ArchiveFileName(version, osName, arch))
 	event.ConsoleWriteInfo("Start downloading CEF:", downloadURL)
 	event.ConsoleWriteInfo("Target:", targetPath)
 
@@ -809,24 +703,102 @@ func (m *TChromiumDirForm) startDownload() {
 	m.dlCancel = cancel
 	m.dlMu.Unlock()
 	go m.installCEF(ctx, cmdcef.InstallOptions{
-		Dir:     absDir,
-		Version: version,
-		OS:      osName,
-		Arch:    arch,
-		Project: bean.GProject,
-		OnProgress: func(progress cmdcef.Progress) {
-			switch progress.Kind {
-			case cmdcef.ProgressDownload, cmdcef.ProgressExtract:
-				m.dlProgress = progress.Current
-				m.dlTotal = progress.Total
-				m.updateProgressStatus(progress.Message)
-			case cmdcef.ProgressInfo:
-				if progress.Message != "" {
-					event.ConsoleWriteInfo(progress.Message)
-				}
-			}
-		},
+		Dir:        absDir,
+		Version:    version,
+		OS:         osName,
+		Arch:       arch,
+		Project:    bean.GProject,
+		OnProgress: m.handleInstallProgress,
 	})
+}
+
+// handleInstallProgress 同步 cmd/cef 的安装进度到窗口状态。
+func (m *TChromiumDirForm) handleInstallProgress(progress cmdcef.Progress) {
+	if progress.Kind == cmdcef.ProgressInfo {
+		if progress.Message != "" {
+			event.ConsoleWriteInfo(progress.Message)
+		}
+		m.updateInstallInfo(progress.Message)
+		return
+	}
+	if progress.Kind == cmdcef.ProgressDownload {
+		m.updateInstallProgress(downloadRunning, progress, "Downloading...")
+		return
+	}
+	if progress.Kind == cmdcef.ProgressExtract {
+		m.updateInstallProgress(downloadExtracting, progress, "Extracting...")
+	}
+}
+
+func (m *TChromiumDirForm) updateInstallInfo(message string) {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing {
+			return
+		}
+		state := m.currentDownloadState()
+		if state == downloadPaused || state == downloadCompleted {
+			return
+		}
+		m.progressBar.SetVisible(true)
+		if strings.HasPrefix(message, "Start downloading CEF:") {
+			m.setDownloadState(downloadRunning)
+			m.progressBar.SetPosition(0)
+			m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
+			return
+		}
+		if strings.HasPrefix(message, "Extracting CEF:") {
+			m.setDownloadState(downloadExtracting)
+			m.progressBar.SetPosition(0)
+			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
+			return
+		}
+		if message != "" {
+			m.statusLabel.SetCaption(message)
+		}
+	})
+}
+
+func (m *TChromiumDirForm) updateInstallProgress(state downloadState, progress cmdcef.Progress, fallback string) {
+	current := progress.Current
+	total := progress.Total
+	message := progress.Message
+	if message == "" {
+		message = fallback
+	}
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing {
+			return
+		}
+		currentState := m.currentDownloadState()
+		if currentState == downloadPaused || currentState == downloadCompleted {
+			return
+		}
+		if currentState == downloadExtracting && state == downloadRunning {
+			return
+		}
+		m.setDownloadState(state)
+		m.progressBar.SetVisible(true)
+		m.statusLabel.SetVisible(true)
+		if total > 0 {
+			percent := int32(current * 100 / total)
+			if percent < 0 {
+				percent = 0
+			}
+			if percent > 100 {
+				percent = 100
+			}
+			m.progressBar.SetPosition(percent)
+			m.statusLabel.SetCaption(fmt.Sprintf("%s (%d%%)", message, percent))
+			return
+		}
+		m.statusLabel.SetCaption(message)
+	})
+}
+
+func (m *TChromiumDirForm) currentDownloadState() downloadState {
+	m.dlMu.Lock()
+	defer m.dlMu.Unlock()
+	return m.dlState
 }
 
 // pauseDownload 暂停下载
@@ -850,7 +822,6 @@ func (m *TChromiumDirForm) pauseDownload() {
 // stopExtract 停止解压, 恢复窗口到默认状态
 func (m *TChromiumDirForm) stopExtract() {
 	m.dlMu.Lock()
-	m.dlStop = true
 	if m.dlCancel != nil {
 		m.dlCancel()
 		m.dlCancel = nil
@@ -866,47 +837,9 @@ func (m *TChromiumDirForm) stopExtract() {
 // resumeDownload 继续下载
 func (m *TChromiumDirForm) resumeDownload() {
 	m.startDownload()
-	return
-	version := m.selectedVersion()
-	osName := m.selectedOS()
-	arch := m.selectedArch()
-
-	// 检测版本是否变更
-	versionChanged := version != m.dlVersion
-
-	absDir, _ := filepath.Abs(m.dirEdit.Text())
-	targetPath := filepath.Join(absDir, cefArchiveFileName(version, osName, arch))
-
-	if versionChanged {
-		// 版本变更, 删除旧的不完整文件
-		oldPath := filepath.Join(absDir, cefArchiveFileName(m.dlVersion, osName, arch))
-		if tool.IsExist(oldPath) {
-			os.Remove(oldPath)
-			event.ConsoleWriteInfo("Removed old partial file:", oldPath)
-		}
-		m.dlVersion = version
-		m.dlProgress = 0
-		m.dlTotal = 0
-	}
-
-	downloadURL := buildDownloadURL(version, osName, arch)
-
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.setDownloadState(downloadRunning)
-		m.osBox.SetEnabled(false)
-		m.archBox.SetEnabled(false)
-		m.versionBox.SetEnabled(false)
-		if versionChanged {
-			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionReDownload"))
-		} else {
-			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailedResumeDown"))
-		}
-	})
-
-	go m.doDownload(downloadURL, targetPath, version)
 }
 
-// doDownload 执行下载, 支持断点续传
+// installCEF 执行 CEF 安装流程。
 func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.InstallOptions) {
 	defer func() {
 		m.dlMu.Lock()
@@ -916,6 +849,7 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 	result, err := cmdcef.EnsureInstalled(ctx, options)
 	if err != nil {
 		if ctx.Err() != nil {
+			m.onInstallCanceled()
 			return
 		}
 		m.onDownloadError(err.Error())
@@ -933,146 +867,27 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 	})
 }
 
-func (m *TChromiumDirForm) doDownload(url, targetPath, version string) {
-	ctx, cancel := context.WithCancel(context.Background())
-	m.dlMu.Lock()
-	m.dlCancel = cancel
-	m.dlMu.Unlock()
-
-	defer func() {
-		m.dlMu.Lock()
-		m.dlCancel = nil
-		m.dlMu.Unlock()
-	}()
-
-	// 检查已下载的文件大小, 用于断点续传
-	var existingSize int64
-	if info, err := os.Stat(targetPath); err == nil {
-		existingSize = info.Size()
-	}
-
-	// 先用 HEAD 检查远程文件大小, 判断是否已完整下载
-	remoteSize := m.checkRemoteFileSize(ctx, url)
-	if ctx.Err() != nil {
-		return
-	}
-
-	if existingSize > 0 && remoteSize > 0 && existingSize >= remoteSize {
-		// 文件已完整下载, 跳过下载直接完成
-		event.ConsoleWriteInfo("CEF archive already downloaded:", targetPath)
-		m.dlProgress = existingSize
-		m.dlTotal = remoteSize
-		m.onDownloadCompleted(version, targetPath)
-		return
-	}
-
-	// 构建请求, 支持断点续传
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		m.onDownloadError(err.Error())
-		return
-	}
-
-	if existingSize > 0 {
-		// 设置 Range 头实现断点续传
-		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", existingSize))
-		event.ConsoleWriteInfo("Resuming download from:", formatSize(existingSize))
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		if ctx.Err() != nil {
+func (m *TChromiumDirForm) onInstallCanceled() {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing {
 			return
 		}
-		m.onDownloadError(err.Error())
-		return
-	}
-	defer resp.Body.Close()
-
-	// 判断服务器是否支持断点续传
-	var startSize int64
-	if resp.StatusCode == http.StatusPartialContent {
-		// 206: 服务器支持 Range, 从断点继续
-		startSize = existingSize
-		m.dlTotal = remoteSize
-	} else if resp.StatusCode == http.StatusOK {
-		// 200: 服务器不支持 Range, 从头开始
-		startSize = 0
-		m.dlTotal = resp.ContentLength
-		existingSize = 0
-	} else {
-		m.onDownloadError(fmt.Sprintf("HTTP %d: %s", resp.StatusCode, resp.Status))
-		return
-	}
-
-	m.dlProgress = startSize
-
-	// 打开文件: 续传用追加, 新下载用创建
-	var out *os.File
-	if startSize > 0 {
-		out, err = os.OpenFile(targetPath, os.O_APPEND|os.O_WRONLY, 0644)
-	} else {
-		out, err = os.Create(targetPath)
-	}
-	if err != nil {
-		m.onDownloadError(err.Error())
-		return
-	}
-	defer out.Close()
-
-	// 带进度的读取
-	buf := make([]byte, 32*1024)
-	for {
-		n, readErr := resp.Body.Read(buf)
-		if n > 0 {
-			if _, writeErr := out.Write(buf[:n]); writeErr != nil {
-				m.onDownloadError(writeErr.Error())
-				return
-			}
-			m.dlProgress += int64(n)
-			m.updateProgress()
-		}
-		if readErr != nil {
-			if readErr == io.EOF {
-				break
-			}
-			if ctx.Err() != nil {
-				// 被取消, 进度已保存, 下次可续传
-				return
-			}
-			m.onDownloadError(readErr.Error())
+		state := m.currentDownloadState()
+		if state == downloadExtracting {
+			m.resetToIdle()
+			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.Caption"))
 			return
 		}
-	}
-
-	m.onDownloadCompleted(version, targetPath)
+		if state == downloadRunning {
+			m.setDownloadState(downloadPaused)
+			m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionPaused)
+			m.osBox.SetEnabled(true)
+			m.archBox.SetEnabled(true)
+			m.versionBox.SetEnabled(true)
+		}
+	})
 }
 
-// checkRemoteFileSize 通过 HEAD 请求获取远程文件大小
-func (m *TChromiumDirForm) checkRemoteFileSize(ctx context.Context, url string) int64 {
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, url, nil)
-	if err != nil {
-		return -1
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return -1
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
-		return resp.ContentLength
-	}
-	return -1
-}
-
-// ==================== UI 更新 ====================
-
-// updateProgress 更新下载进度条 (在下载协程中调用)
-func (m *TChromiumDirForm) updateProgress() {
-	m.updateProgressStatus("Downloading... %s / %s", formatSize(m.dlProgress), formatSize(m.dlTotal))
-}
-
-// onDownloadError 下载出错 (在下载协程中调用)
 func (m *TChromiumDirForm) onDownloadError(msg string) {
 	event.ConsoleWriteError("CEF download error:", msg)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -1082,352 +897,14 @@ func (m *TChromiumDirForm) onDownloadError(msg string) {
 	})
 }
 
-// onDownloadCompleted 下载完成, 开始解压
-func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
-	event.ConsoleWriteInfo("CEF download completed:", targetPath)
-	m.dlStop = false
-
-	oav := m.osArchVersion(version)
-
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.setDownloadState(downloadExtracting)
-		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
-		m.progressBar.SetPosition(0)
-	})
-
-	destDir := filepath.Join(config.Config.Chromium.Dir, oav)
-
-	files, err := m.extractTarBz2(targetPath, destDir)
-	if err != nil {
-		if err == errExtractStopped {
-			event.ConsoleWriteInfo("CEF extract stopped by user")
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.resetToIdle()
-			})
-		} else {
-			event.ConsoleWriteError("CEF extract error:", err.Error())
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				m.resetToIdle()
-				m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailUnZip") +
-					": " + err.Error())
-			})
-		}
-		return
-	}
-
-	// 保存安装清单
-	if err = config.Config.Chromium.SaveCEFManifest(oav, files); err != nil {
-		event.ConsoleWriteError("Failed to save CEF manifest:", err.Error())
-	}
-
-	// 通过清单校验安装完整性
-	if !config.Config.Chromium.IsCEFInstalled(oav) {
-		event.ConsoleWriteError("CEF installation verification failed")
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			m.resetToIdle()
-			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailVerify"))
-		})
-		return
-	}
-
-	event.ConsoleWriteInfo("CEF installed to:", destDir, "files:", fmt.Sprintf("%d", len(files)))
-	m.Version = oav
-	// 记录当前 CEF 版本到全局配置
-	config.Config.Chromium.Version = oav
-	// 仅 CEF 项目更新项目配置
-	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
-		bean.GProject.FrameworkVersion = oav
-		bean.GProject.Save()
-	}
-	config.UpdateConfig()
-
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		m.setDownloadState(downloadCompleted)
-		m.progressBar.SetPosition(100)
-		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessInstall"))
-		m.confirmBtn.SetEnabled(true)
-		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextSuccess"))
-		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
-		m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
-	})
-}
-
-// onCompleteBtnClick 安装完成后的确认按钮点击
 func (m *TChromiumDirForm) onCompleteBtnClick(sender lcl.IObject) {
 	m.Confirmed = true
 	m.Close()
-}
-
-// ==================== 解压 ====================
-
-// stopReader 包装 io.Reader, 在每次读取时检查停止信号
-type stopReader struct {
-	r    io.Reader
-	stop *bool
-}
-
-func (s *stopReader) Read(p []byte) (int, error) {
-	if *s.stop {
-		return 0, errExtractStopped
-	}
-	if len(p) > 32*1024 {
-		p = p[:32*1024]
-	}
-	n, err := s.r.Read(p)
-	if *s.stop {
-		return n, errExtractStopped
-	}
-	return n, err
-}
-
-// extractTarBz2 解压 .tar.bz2 到指定目录
-// 提取顶层 Release/ 和 Resources/ 目录内的文件到 destDir, 去掉这两个前缀
-// macOS Resources/ 在 Release/ 内部, 自然不会被顶层 Resources/ 匹配
-// 返回已记录的文件信息列表(排除 cefExcludeFiles)
-func (m *TChromiumDirForm) extractTarBz2(archivePath, destDir string) ([]config.CEFFileInfo, error) {
-	f, err := os.Open(archivePath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	sf := &stopReader{r: f, stop: &m.dlStop}
-	bz2Reader := bzip2.NewReader(sf)
-	tarReader := tar.NewReader(bz2Reader)
-
-	// 第一遍扫描: 确定根目录前缀 + 统计需要解压的文件数
-	var rootDir string // 如 "cef_binary_xxx/"
-	var totalFiles int64
-	for {
-		if m.dlStop {
-			return nil, errExtractStopped
-		}
-		header, err := tarReader.Next()
-		if err != nil {
-			if m.dlStop {
-				return nil, errExtractStopped
-			}
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-		name := header.Name
-		// 从第一个包含 /Release/ 的路径提取根目录
-		if rootDir == "" {
-			if idx := strings.Index(name, "/Release/"); idx >= 0 {
-				rootDir = name[:idx+1] // 包含尾部 /
-			}
-		}
-		if rootDir != "" {
-			rel := extractRelPath(name, rootDir)
-			if rel != "" && header.Typeflag == tar.TypeReg {
-				if !config.IsCEFExcludeFile(filepath.Base(rel)) {
-					totalFiles++
-				}
-			}
-		}
-	}
-
-	if rootDir == "" {
-		return nil, fmt.Errorf("release directory not found in archive")
-	}
-
-	event.ConsoleWriteInfo("CEF archive root:", rootDir, "files:", fmt.Sprintf("%d", totalFiles))
-
-	// 重新打开进行实际解压
-	f.Close()
-	f, err = os.Open(archivePath)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	sf = &stopReader{r: f, stop: &m.dlStop}
-	bz2Reader = bzip2.NewReader(sf)
-	tarReader = tar.NewReader(bz2Reader)
-
-	if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
-		return nil, err
-	}
-
-	m.dlProgress = 0
-	m.dlTotal = totalFiles
-
-	var files []config.CEFFileInfo
-	copyBuf := make([]byte, 32*1024)
-
-	for {
-		if m.dlStop {
-			return nil, errExtractStopped
-		}
-
-		header, err := tarReader.Next()
-		if err != nil {
-			if m.dlStop {
-				return nil, errExtractStopped
-			}
-			if err == io.EOF {
-				break
-			}
-			return nil, err
-		}
-
-		name := header.Name
-		rel := extractRelPath(name, rootDir)
-		if rel == "" {
-			continue
-		}
-
-		target := filepath.Join(destDir, rel)
-
-		switch header.Typeflag {
-		case tar.TypeDir:
-			if err = os.MkdirAll(target, os.ModePerm); err != nil {
-				return nil, err
-			}
-		case tar.TypeReg:
-			if err = os.MkdirAll(filepath.Dir(target), os.ModePerm); err != nil {
-				return nil, err
-			}
-			outFile, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode))
-			if err != nil {
-				return nil, err
-			}
-			writeErr := m.copyWithStop(outFile, tarReader, copyBuf)
-			outFile.Close()
-			if writeErr != nil {
-				return nil, writeErr
-			}
-			// 记录文件信息(排除 cefExcludeFiles)
-			fileName := filepath.Base(rel)
-			if !config.IsCEFExcludeFile(fileName) {
-				files = append(files, config.CEFFileInfo{Name: rel, Size: header.Size})
-			}
-
-			m.dlProgress++
-			m.updateExtractProgress()
-		case tar.TypeSymlink:
-			if err = os.MkdirAll(filepath.Dir(target), os.ModePerm); err != nil {
-				return nil, err
-			}
-			os.Remove(target)
-			if err = os.Symlink(header.Linkname, target); err != nil {
-				event.ConsoleWriteInfo("Symlink skipped:", target, err.Error())
-			}
-		}
-	}
-	return files, nil
-}
-
-// extractRelPath 从 tar 路径中提取 Release/ 或 Resources/ 内的相对路径
-// rootDir 为根目录前缀, 如 "cef_binary_xxx/"
-// 匹配: rootDir + "Release/" + rel 或 rootDir + "Resources/" + rel
-func extractRelPath(name, rootDir string) string {
-	if strings.HasPrefix(name, rootDir+"Release/") {
-		return strings.TrimPrefix(name, rootDir+"Release/")
-	}
-	if strings.HasPrefix(name, rootDir+"Resources/") {
-		return strings.TrimPrefix(name, rootDir+"Resources/")
-	}
-	return ""
-}
-
-func (m *TChromiumDirForm) copyWithStop(dst io.Writer, src io.Reader, buf []byte) error {
-	for {
-		if m.dlStop {
-			return errExtractStopped
-		}
-		nr, readErr := src.Read(buf)
-		if nr > 0 {
-			nw, writeErr := dst.Write(buf[:nr])
-			if writeErr != nil {
-				return writeErr
-			}
-			if nw != nr {
-				return io.ErrShortWrite
-			}
-		}
-		if readErr != nil {
-			if readErr == io.EOF {
-				return nil
-			}
-			if m.dlStop {
-				return errExtractStopped
-			}
-			return readErr
-		}
-	}
-}
-
-// updateExtractProgress 更新解压进度
-func (m *TChromiumDirForm) updateExtractProgress() {
-	m.updateProgressStatus("Extracting... %d / %d", m.dlProgress, m.dlTotal)
-}
-
-// updateProgressStatus 通用进度更新 (在下载/解压协程中调用)
-func (m *TChromiumDirForm) updateProgressStatus(format string, args ...any) {
-	progress := m.dlProgress
-	total := m.dlTotal
-	statusText := fmt.Sprintf(format, args...)
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if total > 0 {
-			percent := int32(progress * 100 / total)
-			m.progressBar.SetPosition(percent)
-			m.statusLabel.SetCaption(fmt.Sprintf("%s (%d%%)", statusText, percent))
-		} else {
-			m.statusLabel.SetCaption(statusText)
-		}
-	})
-}
-
-// formatSize 格式化文件大小
-func formatSize(bytes int64) string {
-	const (
-		KB = 1024
-		MB = KB * 1024
-		GB = MB * 1024
-	)
-	switch {
-	case bytes >= GB:
-		return fmt.Sprintf("%.1f GB", float64(bytes)/float64(GB))
-	case bytes >= MB:
-		return fmt.Sprintf("%.1f MB", float64(bytes)/float64(MB))
-	case bytes >= KB:
-		return fmt.Sprintf("%.1f KB", float64(bytes)/float64(KB))
-	default:
-		return fmt.Sprintf("%d B", bytes)
-	}
 }
 
 // ==================== CEF 版本辅助函数 ====================
 
 // GetInstalledCEFVersions 返回当前系统架构下已安装的 CEF 版本列表 (os_arch_version 格式)
 func GetInstalledCEFVersions() []string {
-	manifest := config.Config.Chromium.LoadCEFManifest()
-	currentOS := runtime.GOOS
-	currentArch := runtime.GOARCH
-	var versions []string
-	for oav := range manifest {
-		if config.Config.Chromium.IsCEFInstalled(oav) {
-			// 检查是否匹配当前系统架构
-			prefix := fmt.Sprintf("%s_%s_", currentOS, currentArch)
-			if strings.HasPrefix(oav, prefix) {
-				versions = append(versions, oav)
-			}
-		}
-	}
-	sort.Slice(versions, func(i, j int) bool {
-		return compareVersion(extractVersionFromOAV(versions[i]), extractVersionFromOAV(versions[j])) > 0
-	})
-	return versions
-}
-
-// extractVersionFromOAV 从 os_arch_version 格式中提取版本号
-func extractVersionFromOAV(oav string) string {
-	parts := strings.SplitN(oav, "_", 3)
-	if len(parts) >= 3 {
-		return parts[2]
-	}
-	return ""
+	return cmdcef.InstalledVersions(runtime.GOOS, runtime.GOARCH)
 }

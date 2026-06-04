@@ -299,7 +299,7 @@ func ExtractTarBz2(ctx context.Context, archivePath, destDir string, onProgress 
 		return nil, err
 	}
 	defer f.Close()
-	tarReader := tar.NewReader(bzip2.NewReader(f))
+	tarReader := tar.NewReader(bzip2.NewReader(&contextReader{ctx: ctx, r: f}))
 	var files []config.CEFFileInfo
 	var current int64
 	copyBuf := make([]byte, 32*1024)
@@ -332,7 +332,7 @@ func ExtractTarBz2(ctx context.Context, archivePath, destDir string, onProgress 
 			if err != nil {
 				return nil, err
 			}
-			_, copyErr := io.CopyBuffer(outFile, tarReader, copyBuf)
+			copyErr := copyWithContext(ctx, outFile, tarReader, copyBuf)
 			closeErr := outFile.Close()
 			if copyErr != nil {
 				return nil, copyErr
@@ -426,7 +426,7 @@ func scanArchive(ctx context.Context, archivePath string) (string, int64, error)
 		return "", 0, err
 	}
 	defer f.Close()
-	tarReader := tar.NewReader(bzip2.NewReader(f))
+	tarReader := tar.NewReader(bzip2.NewReader(&contextReader{ctx: ctx, r: f}))
 	var rootDir string
 	var totalFiles int64
 	for {
@@ -483,6 +483,55 @@ func extractRelPath(name, rootDir string) string {
 		return strings.TrimPrefix(name, rootDir+"Resources/")
 	}
 	return ""
+}
+
+type contextReader struct {
+	ctx context.Context
+	r   io.Reader
+}
+
+func (r *contextReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	n, err := r.r.Read(p)
+	if ctxErr := r.ctx.Err(); ctxErr != nil {
+		return n, ctxErr
+	}
+	return n, err
+}
+
+func copyWithContext(ctx context.Context, dst io.Writer, src io.Reader, buf []byte) error {
+	if len(buf) == 0 {
+		buf = make([]byte, 32*1024)
+	}
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		nr, readErr := src.Read(buf)
+		if nr > 0 {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			nw, writeErr := dst.Write(buf[:nr])
+			if writeErr != nil {
+				return writeErr
+			}
+			if nw != nr {
+				return io.ErrShortWrite
+			}
+		}
+		if readErr != nil {
+			if readErr == io.EOF {
+				return nil
+			}
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			return readErr
+		}
+	}
 }
 
 func cefOSArch(osName, arch string) string {
