@@ -31,6 +31,7 @@ import (
 	"sync"
 
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
@@ -81,6 +82,14 @@ const (
 	downloadExtracting                      // 解压中 - 按钮显示"停 止"
 	downloadCompleted                       // 已完成
 )
+
+// runChromiumDirConfig 运行 CEF 框架配置窗口
+func runChromiumDirConfig() {
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		form := NewChromiumDirForm()
+		form.ShowModal()
+	})
+}
 
 // NewChromiumDirForm 创建 CEF 框架目录设置窗口
 func NewChromiumDirForm() *TChromiumDirForm {
@@ -656,8 +665,12 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 	if state == downloadIdle && m.isVersionInstalled() {
 		oav := m.osArchVersion(m.selectedVersion())
 		m.Version = oav
-		// 记录当前 CEF 版本到配置
+		// 记录当前 CEF 版本到全局配置
 		config.Config.Chromium.Version = oav
+		// 仅 CEF 项目更新项目配置
+		if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+			bean.GProject.FrameworkVersion = oav
+		}
 		config.UpdateConfig()
 		m.Confirmed = true
 		m.Close()
@@ -1044,8 +1057,12 @@ func (m *TChromiumDirForm) onDownloadCompleted(version, targetPath string) {
 
 	event.ConsoleWriteInfo("CEF installed to:", destDir, "files:", fmt.Sprintf("%d", len(files)))
 	m.Version = oav
-	// 记录当前 CEF 版本到配置
+	// 记录当前 CEF 版本到全局配置
 	config.Config.Chromium.Version = oav
+	// 仅 CEF 项目更新项目配置
+	if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+		bean.GProject.FrameworkVersion = oav
+	}
 	config.UpdateConfig()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -1305,4 +1322,36 @@ func formatSize(bytes int64) string {
 	default:
 		return fmt.Sprintf("%d B", bytes)
 	}
+}
+
+// ==================== CEF 版本辅助函数 ====================
+
+// GetInstalledCEFVersions 返回当前系统架构下已安装的 CEF 版本列表 (os_arch_version 格式)
+func GetInstalledCEFVersions() []string {
+	manifest := config.Config.Chromium.LoadCEFManifest()
+	currentOS := runtime.GOOS
+	currentArch := runtime.GOARCH
+	var versions []string
+	for oav := range manifest {
+		if config.Config.Chromium.IsCEFInstalled(oav) {
+			// 检查是否匹配当前系统架构
+			prefix := fmt.Sprintf("%s_%s_", currentOS, currentArch)
+			if strings.HasPrefix(oav, prefix) {
+				versions = append(versions, oav)
+			}
+		}
+	}
+	sort.Slice(versions, func(i, j int) bool {
+		return compareVersion(extractVersionFromOAV(versions[i]), extractVersionFromOAV(versions[j])) > 0
+	})
+	return versions
+}
+
+// extractVersionFromOAV 从 os_arch_version 格式中提取版本号
+func extractVersionFromOAV(oav string) string {
+	parts := strings.SplitN(oav, "_", 3)
+	if len(parts) >= 3 {
+		return parts[2]
+	}
+	return ""
 }

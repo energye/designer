@@ -472,15 +472,14 @@ func (m *TMainMenu) settingMenu(owner lcl.IComponent) {
 	})
 	m.setting.Add(m.environmentOption)
 
-	//m.frameworkOption = lcl.NewMenuItem(owner)
-	//m.frameworkOption.SetCaption("框架安装目录")
-	//m.frameworkOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
-	//m.frameworkOption.SetOnClick(func(lcl.IObject) {
-	//	logs.Debug("框架安装目录")
-	//	form := NewInstallFrameworkForm()
-	//	form.ShowModal()
-	//})
-	//m.setting.Add(m.frameworkOption)
+	m.frameworkOption = lcl.NewMenuItem(owner)
+	m.frameworkOption.SetName("MenuSettingFrameworkOption")
+	m.frameworkOption.SetCaption("CEF配置")
+	m.frameworkOption.SetImageIndex(imageMenu.ImageIndex("menu_environment_options.png"))
+	m.frameworkOption.SetOnClick(func(lcl.IObject) {
+		event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{Type: event.ChromiumConfig}})
+	})
+	m.setting.Add(m.frameworkOption)
 
 	m.projectOption = lcl.NewMenuItem(owner)
 	m.projectOption.SetName("MenuSettingProjectOption")

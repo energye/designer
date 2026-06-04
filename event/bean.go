@@ -24,6 +24,7 @@ const (
 	ProjectConfig                 // 项目(应用)配置
 	EnvConfig                     // 项目(环境)配置
 	BuildConfig                   // 项目(构建)配置
+	ChromiumConfig                // CEF框架配置
 )
 
 // 代码生成模块, 数据载体类型

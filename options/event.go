@@ -45,6 +45,9 @@ func Init() {
 			case event.EnvConfig:
 				// 项目(环境)配置
 				runEnvConfig()
+			case event.ChromiumConfig:
+				// CEF框架配置
+				runChromiumDirConfig()
 			case event.BuildConfig:
 				// 项目(构建)配置
 				runBuildConfig()
