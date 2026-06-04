@@ -18,6 +18,7 @@ import (
 	"compress/bzip2"
 	"context"
 	"fmt"
+	cmdcef "github.com/energye/designer/cmd/cef"
 	"github.com/energye/designer/resources/metadata"
 	"io"
 	"net/http"
@@ -688,13 +689,10 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 		oav := m.osArchVersion(m.selectedVersion())
 		m.Version = oav
 		// 记录当前 CEF 版本到全局配置
-		config.Config.Chromium.Version = oav
-		// 项目已创建并且仅 CEF 项目更新项目配置
-		if bean.GProject != nil && bean.GProject.GUIRenderFramework == bean.GUIRenderFramework_CEF {
-			bean.GProject.FrameworkVersion = oav
-			bean.GProject.Save()
+		if err := cmdcef.UseInstalled(oav, bean.GProject); err != nil {
+			event.ConsoleWriteError("CEF configuration failed:", err.Error())
+			return
 		}
-		config.UpdateConfig()
 		m.Confirmed = true
 		m.Close()
 		return
@@ -806,7 +804,29 @@ func (m *TChromiumDirForm) startDownload() {
 	event.ConsoleWriteInfo("Start downloading CEF:", downloadURL)
 	event.ConsoleWriteInfo("Target:", targetPath)
 
-	go m.doDownload(downloadURL, targetPath, version)
+	ctx, cancel := context.WithCancel(context.Background())
+	m.dlMu.Lock()
+	m.dlCancel = cancel
+	m.dlMu.Unlock()
+	go m.installCEF(ctx, cmdcef.InstallOptions{
+		Dir:     absDir,
+		Version: version,
+		OS:      osName,
+		Arch:    arch,
+		Project: bean.GProject,
+		OnProgress: func(progress cmdcef.Progress) {
+			switch progress.Kind {
+			case cmdcef.ProgressDownload, cmdcef.ProgressExtract:
+				m.dlProgress = progress.Current
+				m.dlTotal = progress.Total
+				m.updateProgressStatus(progress.Message)
+			case cmdcef.ProgressInfo:
+				if progress.Message != "" {
+					event.ConsoleWriteInfo(progress.Message)
+				}
+			}
+		},
+	})
 }
 
 // pauseDownload 暂停下载
@@ -831,6 +851,10 @@ func (m *TChromiumDirForm) pauseDownload() {
 func (m *TChromiumDirForm) stopExtract() {
 	m.dlMu.Lock()
 	m.dlStop = true
+	if m.dlCancel != nil {
+		m.dlCancel()
+		m.dlCancel = nil
+	}
 	m.dlMu.Unlock()
 	// 即时反馈: 按钮变为"停止中", 禁用防重复点击
 	lcl.RunOnMainThreadAsync(func(id uint32) {
@@ -841,6 +865,8 @@ func (m *TChromiumDirForm) stopExtract() {
 
 // resumeDownload 继续下载
 func (m *TChromiumDirForm) resumeDownload() {
+	m.startDownload()
+	return
 	version := m.selectedVersion()
 	osName := m.selectedOS()
 	arch := m.selectedArch()
@@ -881,6 +907,32 @@ func (m *TChromiumDirForm) resumeDownload() {
 }
 
 // doDownload 执行下载, 支持断点续传
+func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.InstallOptions) {
+	defer func() {
+		m.dlMu.Lock()
+		m.dlCancel = nil
+		m.dlMu.Unlock()
+	}()
+	result, err := cmdcef.EnsureInstalled(ctx, options)
+	if err != nil {
+		if ctx.Err() != nil {
+			return
+		}
+		m.onDownloadError(err.Error())
+		return
+	}
+	m.Version = result.OSArchVersion
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		m.setDownloadState(downloadCompleted)
+		m.progressBar.SetPosition(100)
+		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessInstall"))
+		m.confirmBtn.SetEnabled(true)
+		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextSuccess"))
+		m.confirmBtn.SetColor(colors.RGBToColor(46, 204, 113))
+		m.confirmBtn.SetOnClick(m.onCompleteBtnClick)
+	})
+}
+
 func (m *TChromiumDirForm) doDownload(url, targetPath, version string) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m.dlMu.Lock()

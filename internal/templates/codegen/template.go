@@ -13,8 +13,8 @@
 
 package codegen
 
-// userCodeTemplate 用户代码模板
-const userCodeTemplate = `// ==============================================================================
+// UserCodeTemplate 用户代码模板
+const UserCodeTemplate = `// ==============================================================================
 // Event handling and business logic can be added to this file
 // Which is automatically created when it does not exist
 // ==============================================================================

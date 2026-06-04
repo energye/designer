@@ -16,8 +16,10 @@ package options
 import (
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/designer"
+	projecttpl "github.com/energye/designer/internal/templates/project"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/designer/pkg/tool"
 	"os"
 	"path/filepath"
 	"time"
@@ -74,7 +76,10 @@ func runUpdate(formTab *designer.FormTab) {
 func updateAppGoFile() error {
 	appRoot := bean.GPath
 	appCodePath := filepath.Join(appRoot, consts.AppPackageName, consts.FormListFileName)
-	code := buildTemplateData(appCodeTemplate, bean.GProject)
-	err := os.WriteFile(appCodePath, []byte(code), 0644)
+	code, err := tool.RenderTemplate(projecttpl.AppCodeTemplate, bean.GProject)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(appCodePath, code, 0644)
 	return err
 }

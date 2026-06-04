@@ -15,6 +15,7 @@ package options
 
 import (
 	"fmt"
+	cmdproject "github.com/energye/designer/cmd/project"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -24,6 +25,7 @@ import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/lcl/wg"
+	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool/command"
 	"github.com/energye/lcl/tool/exec"
@@ -377,7 +379,7 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		return false
 	})
 
-	create := &CreateProject{Name: projectName, Dir: projectDir, GuiRenderFramework: guiRenderFrameworkGUI}
+	create := cmdproject.CreateOptions{Name: projectName, Dir: projectDir, GUIRenderFramework: guiRenderFrameworkGUI}
 	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
 		// 弹出 CEF 版本选择/安装窗口
 		chromiumForm := NewChromiumDirForm()
@@ -390,29 +392,41 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		create.FrameworkVersion = chromiumForm.Version
 	}
 
-	// 检查创建项目
-	if checkCreate(projectDir) {
-		m.Close()
-		// 触发文件修改监听事件
-		event.Emit(event.TTrigger{Name: event.ListenFileChange})
-		// 重置设计器
-		designer.ResetDesigner()
-		go func() {
-			// 运行创建项目
-			if doRunCreate(create) {
-				lcl.RunOnMainThreadAsync(func(id uint32) {
-					designer.ProjectTreeClear()
-					event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
-				})
-				designer.CMDGoModDepsUpdate()
-				designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", bean.GProject.Name, bean.GPath))
-				designer.SetEnableFuncComponent(true)
-				//recoverBtn()
-			}
-		}()
-	} else {
+	m.Close()
+	// 触发文件修改监听事件
+	event.Emit(event.TTrigger{Name: event.ListenFileChange})
+	// 重置设计器
+	designer.ResetDesigner()
+	go func() {
+		create.OnConflict = guiCreateConflictDecision
+		result, err := cmdproject.Create(create)
+		if err != nil {
+			event.ConsoleWriteError("Failed to create project:", err.Error())
+			return
+		}
+		SetGlobalProject(result.Dir, result.Project)
+		event.ConsoleWriteInfo("Project created successfully:", result.Project.Name, "->", result.Dir)
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			designer.ProjectTreeClear()
+			event.Emit(event.TTrigger{Name: event.ListenProjectSrcFileChange, Payload: event.TPayload{Type: event.ProjectSrcScan}})
+		})
+		designer.CMDGoModDepsUpdate()
+		designer.UpdateDesignerTitle(fmt.Sprintf("%v (%v)", bean.GProject.Name, bean.GPath))
+		designer.SetEnableFuncComponent(true)
 		//recoverBtn()
-	}
+	}()
+}
+
+func guiCreateConflictDecision(conflict cmdproject.Conflict) cmdproject.ConflictDecision {
+	result := make(chan cmdproject.ConflictDecision, 1)
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if api.MessageDlg(conflict.Message, types.MtCustom, types.NewSet(types.MbYes, types.MbNo), types.MbNo) == types.IdYes {
+			result <- cmdproject.ConflictOverwrite
+		} else {
+			result <- cmdproject.ConflictCancel
+		}
+	})
+	return <-result
 }
 
 func (m *TCreateProjectForm) projIconPreviewPaintBackground(sender lcl.IObject, canvas lcl.ICanvas, rect types.TRect) {

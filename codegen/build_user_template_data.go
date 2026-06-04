@@ -16,6 +16,7 @@ package codegen
 import (
 	"fmt"
 	"github.com/energye/designer/designer"
+	codegentpl "github.com/energye/designer/internal/templates/codegen"
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
@@ -50,7 +51,7 @@ func generateUserCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	data.IncludePackage()
 
 	// 解析模板
-	tmpl, err := template.New("user").Parse(userCodeTemplate)
+	tmpl, err := template.New("user").Parse(codegentpl.UserCodeTemplate)
 	if err != nil {
 		return fmt.Errorf("解析用户代码模板失败: %w", err)
 	}

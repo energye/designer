@@ -38,6 +38,16 @@ func main() {
 	}
 	cmd := dflag.New()
 	cmd.Add(&dflag.Command{
+		Name: "init",
+		Long: `energy init, Create a new ENERGY project
+    -name <project-name>
+    -path <project-directory>
+    -ui <LCL|WV|CEF>`,
+		Run: func(args dflag.Args) {
+			project.RunInit(args, projectPath(args))
+		},
+	})
+	cmd.Add(&dflag.Command{
 		Name: "run",
 		Long: "energy run, Run the application",
 		Run: func(args dflag.Args) {
@@ -52,7 +62,7 @@ func main() {
 	cmd.Add(&dflag.Command{
 		Name: "build",
 		Long: `energy build, Build the application binary
-  --all: build all platform, cgo disable and enable other platform.`,
+    --all: build all platform, cgo disable and enable other platform.`,
 		Run: func(args dflag.Args) {
 			path := projectPath(args)
 			project.LoadProject(path)
