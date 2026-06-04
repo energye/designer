@@ -48,30 +48,6 @@ var (
 	errExtractStopped     = fmt.Errorf("extract stopped by user")
 )
 
-var (
-	statusLabelCaption                      string
-	statusLabelCaptionInvalid               string
-	statusLabelCaptionSelectCEF             string
-	statusLabelCaptionURLNotFound           string
-	statusLabelCaptionFailedCreateDirectory string
-	statusLabelCaptionCaptionFailedPreDown  string
-	statusLabelCaptionCaptionPaused         string
-	osLabelText                             string
-	archLabelText                           string
-)
-
-func init() {
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.Caption", &statusLabelCaption)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionInvalid", &statusLabelCaptionInvalid)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionSelectCEF", &statusLabelCaptionSelectCEF)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionURLNotFound", &statusLabelCaptionURLNotFound)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedCreateDirectory", &statusLabelCaptionFailedCreateDirectory)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionFailedPreDown", &statusLabelCaptionCaptionFailedPreDown)
-	metadata.GI18n.Bind("ChromiumDirFormStatusLabel.CaptionPaused", &statusLabelCaptionCaptionPaused)
-	metadata.GI18n.Bind("ChromiumDirFormOSText.Caption", &osLabelText)
-	metadata.GI18n.Bind("ChromiumDirFormARCHText.Caption", &archLabelText)
-}
-
 // 下载状态
 type downloadState int32
 
@@ -249,7 +225,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.osText.SetAutoSize(false)
 	m.osText.SetWidth(35)
 	m.osText.SetAlignment(types.TaRightJustify)
-	m.osText.SetCaption(osLabelText)
+	m.osText.SetCaption(metadata.CEFFormOsLabelText)
 	m.osText.SetParent(m)
 
 	m.osBox = lcl.NewComboBox(m)
@@ -277,7 +253,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.archText.SetAutoSize(false)
 	m.archText.SetWidth(35)
 	m.archText.SetAlignment(types.TaRightJustify)
-	m.archText.SetCaption(archLabelText)
+	m.archText.SetCaption(metadata.CEFFormArchLabelText)
 	m.archText.SetParent(m)
 
 	m.archBox = lcl.NewComboBox(m)
@@ -314,7 +290,7 @@ func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 	m.statusLabel.SetName("ChromiumDirFormStatusLabel")
 	m.statusLabel.SetLeft(100)
 	m.statusLabel.SetTop(nextTop(22))
-	m.statusLabel.SetCaption(statusLabelCaption)
+	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaption)
 	m.statusLabel.Font().SetColor(colors.RGBToColor(128, 128, 128))
 	m.statusLabel.Font().SetSize(8)
 	m.statusLabel.SetParent(m)
@@ -734,7 +710,7 @@ func (m *TChromiumDirForm) startDownload() {
 	absDir, err := filepath.Abs(dir)
 	if err != nil {
 		event.ConsoleWriteError("Invalid directory path:", err.Error())
-		m.statusLabel.SetCaption(statusLabelCaptionInvalid)
+		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionInvalid)
 		return
 	}
 
@@ -742,7 +718,7 @@ func (m *TChromiumDirForm) startDownload() {
 	version := m.selectedVersion()
 	if version == "" {
 		event.ConsoleWriteError("Please select a CEF version")
-		m.statusLabel.SetCaption(statusLabelCaptionSelectCEF)
+		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionSelectCEF)
 		return
 	}
 
@@ -751,7 +727,7 @@ func (m *TChromiumDirForm) startDownload() {
 	downloadURL := buildDownloadURL(version, osName, arch)
 	if downloadURL == "" {
 		event.ConsoleWriteError("Download URL not found for version:", version)
-		m.statusLabel.SetCaption(statusLabelCaptionURLNotFound)
+		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionURLNotFound)
 		return
 	}
 
@@ -759,7 +735,7 @@ func (m *TChromiumDirForm) startDownload() {
 	if !tool.IsExist(absDir) {
 		if err = os.MkdirAll(absDir, os.ModePerm); err != nil {
 			event.ConsoleWriteError("Failed to create directory:", err.Error())
-			m.statusLabel.SetCaption(statusLabelCaptionFailedCreateDirectory + ": " + err.Error())
+			m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionFailedCreateDirectory + ": " + err.Error())
 			return
 		}
 	}
@@ -772,7 +748,7 @@ func (m *TChromiumDirForm) startDownload() {
 	m.setDownloadState(downloadRunning)
 	m.progressBar.SetVisible(true)
 	m.statusLabel.SetVisible(true)
-	m.statusLabel.SetCaption(statusLabelCaptionCaptionFailedPreDown)
+	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
 	m.defaultBtn.SetEnabled(false)
 	m.dirBtn.SetEnabled(false)
 	m.osBox.SetEnabled(false)
@@ -797,7 +773,7 @@ func (m *TChromiumDirForm) pauseDownload() {
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.setDownloadState(downloadPaused)
-		m.statusLabel.SetCaption(statusLabelCaptionCaptionPaused)
+		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionPaused)
 		m.osBox.SetEnabled(true)
 		m.archBox.SetEnabled(true)
 		m.versionBox.SetEnabled(true)
