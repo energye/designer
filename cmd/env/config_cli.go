@@ -88,11 +88,19 @@ func readConfig(configFile, query string, out io.Writer) error {
 	}
 	if isJSONPath(query) {
 		value, ok := getPath(root, query)
-		if !ok {
+		if ok {
+			fmt.Fprintf(out, "%s=%s\n", query, formatValue(value))
+			return nil
+		}
+		matches, ok := findIndexedKey(root, query)
+		if !ok || len(matches) == 0 {
 			fmt.Fprintln(out)
 			return nil
 		}
-		fmt.Fprintf(out, "%s=%s\n", query, formatValue(value))
+		sortMatches(matches)
+		for _, match := range matches {
+			fmt.Fprintf(out, "%s=%s\n", match.path, formatValue(match.value))
+		}
 		return nil
 	}
 	matches := findKey(root, query)
@@ -124,6 +132,20 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 		if len(matches) == 0 {
 			return fmt.Errorf("energy env: key not found: %s", name)
 		}
+		if len(matches) > 1 {
+			targetPath, err = selectMatch(matches, in, out)
+			if err != nil {
+				return err
+			}
+		} else {
+			targetPath = matches[0].path
+		}
+	} else if _, ok := getPath(root, name); !ok {
+		matches, indexed := findIndexedKey(root, name)
+		if !indexed || len(matches) == 0 {
+			return fmt.Errorf("energy env: json path not found: %s", name)
+		}
+		sortMatches(matches)
 		if len(matches) > 1 {
 			targetPath, err = selectMatch(matches, in, out)
 			if err != nil {
@@ -192,6 +214,62 @@ func findKey(root any, key string) []jsonMatch {
 	}
 	walk(root, "")
 	return matches
+}
+
+func findIndexedKey(root any, query string) ([]jsonMatch, bool) {
+	baseKey, suffix, ok := splitIndexedKey(query)
+	if !ok {
+		return nil, false
+	}
+	baseMatches := findKey(root, baseKey)
+	matches := make([]jsonMatch, 0, len(baseMatches))
+	for _, match := range baseMatches {
+		value := match.value
+		matched := true
+		for _, token := range suffix {
+			next, ok := applyToken(value, token)
+			if !ok {
+				matched = false
+				break
+			}
+			value = next
+		}
+		if matched {
+			matches = append(matches, jsonMatch{path: match.path + indexedSuffixPath(suffix), value: value})
+		}
+	}
+	return matches, true
+}
+
+func splitIndexedKey(query string) (string, []jsonPathToken, bool) {
+	if strings.Contains(query, ".") {
+		return "", nil, false
+	}
+	indexStart := strings.Index(query, "[")
+	if indexStart <= 0 {
+		return "", nil, false
+	}
+	baseKey := query[:indexStart]
+	suffix, err := parsePathPart(query[indexStart:], query)
+	if err != nil {
+		return "", nil, false
+	}
+	for _, token := range suffix {
+		if !token.hasIndex || token.hasKey {
+			return "", nil, false
+		}
+	}
+	return baseKey, suffix, true
+}
+
+func indexedSuffixPath(tokens []jsonPathToken) string {
+	var result strings.Builder
+	for _, token := range tokens {
+		result.WriteString("[")
+		result.WriteString(strconv.Itoa(token.index))
+		result.WriteString("]")
+	}
+	return result.String()
 }
 
 func joinPath(parent, key string) string {

@@ -25,7 +25,19 @@ func writeTestConfig(t *testing.T) string {
 		},
 		"history_project": [
 			"C:/a.egp"
-		]
+		],
+		"env": {
+			"myapp": {
+				"go_root": [
+					"C:\\go"
+				]
+			},
+			"myappcef": {
+				"go_root": [
+					"D:\\go"
+				]
+			}
+		}
 	}`
 	if err := os.WriteFile(configFile, []byte(data), 0644); err != nil {
 		t.Fatal(err)
@@ -56,6 +68,21 @@ func TestReadConfigExactMissing(t *testing.T) {
 	}
 	if out.String() != "\n" {
 		t.Fatalf("missing exact path should return empty value, got %q", out.String())
+	}
+}
+
+func TestReadConfigFuzzyIndexedKey(t *testing.T) {
+	configFile := writeTestConfig(t)
+	var out bytes.Buffer
+	if err := readConfig(configFile, "go_root[0]", &out); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	if !strings.Contains(got, `env.myapp.go_root[0]=C:\go`) {
+		t.Fatalf("missing myapp go root: %q", got)
+	}
+	if !strings.Contains(got, `env.myappcef.go_root[0]=D:\go`) {
+		t.Fatalf("missing myappcef go root: %q", got)
 	}
 }
 
@@ -103,6 +130,23 @@ func TestWriteConfigFuzzySelect(t *testing.T) {
 	}
 	assertPath(t, root, "chromium.version", "2.0.0")
 	assertPath(t, root, "app.version", "1.0.0")
+	if !strings.Contains(out.String(), "Multiple keys matched:") {
+		t.Fatalf("expected selection prompt, got %q", out.String())
+	}
+}
+
+func TestWriteConfigFuzzyIndexedKeySelect(t *testing.T) {
+	configFile := writeTestConfig(t)
+	var out bytes.Buffer
+	if err := writeConfig(configFile, `go_root[0]=C:\go1`, strings.NewReader("2\n"), &out); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertPath(t, root, "env.myapp.go_root[0]", `C:\go`)
+	assertPath(t, root, "env.myappcef.go_root[0]", `C:\go1`)
 	if !strings.Contains(out.String(), "Multiple keys matched:") {
 		t.Fatalf("expected selection prompt, got %q", out.String())
 	}
