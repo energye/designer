@@ -100,6 +100,14 @@ func RunInit(args dflag.Args, defaultPath string) {
 	}
 	fmt.Println("Project created successfully:", result.Project.Name, "->", result.Dir)
 	fmt.Println("Project config:", result.EGPPath)
+	if err = UpdateGoModDependencies(context.Background(), GoModUpdateOptions{
+		Dir: result.Dir,
+		OnOutput: func(message string) {
+			fmt.Println(message)
+		},
+	}); err != nil {
+		fmt.Println("[ERROR] go mod update failed:", err.Error())
+	}
 }
 
 func argValue(args dflag.Args, names ...string) string {

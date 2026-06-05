@@ -14,6 +14,9 @@
 package designer
 
 import (
+	"context"
+
+	cmdproject "github.com/energye/designer/cmd/project"
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -22,7 +25,6 @@ import (
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/tool/command"
 )
 
 // 工具按钮功能
@@ -172,21 +174,15 @@ func CMDGoModDepsUpdate() {
 		return
 	}
 	SetEnableFuncComponent(false)
-	event.ConsoleWrite("Updating go mod. Please wait...")
-	cmd := command.NewCMD()
-	cmd.HideWindow = true
-	cmd.Dir = bean.GPath
-	cmd.Console = func(data string, level command.Level) {
-		event.ConsoleWrite(data)
+	err := cmdproject.UpdateGoModDependencies(context.Background(), cmdproject.GoModUpdateOptions{
+		Dir: bean.GPath,
+		OnOutput: func(message string) {
+			event.ConsoleWrite(message)
+		},
+	})
+	if err != nil {
+		event.ConsoleWriteError("Go mod update failed:", err.Error())
 	}
-	for modName, modVersion := range config.DesignerConfig.Dependencies {
-		cmdStr := modName + "@" + modVersion
-		event.ConsoleWrite("go", "get", cmdStr)
-		cmd.Command("go", "get", cmdStr)
-	}
-	event.ConsoleWrite("go", "mod", "tidy")
-	cmd.Command("go", "mod", "tidy")
-	event.ConsoleWrite("Go mod update successfully")
 	SetEnableFuncComponent(true)
 }
 
