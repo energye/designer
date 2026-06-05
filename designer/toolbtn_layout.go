@@ -68,7 +68,7 @@ func (m *TToolBtnLayout) initToolBarBtns() {
 		return btn
 	}
 
-	m.toolbarBtn.newWindowBtn = newBtn("NewFormToolBtn", imageMenu.ImageIndex("menu_new_form.png"), "新建窗体(Ctrl+N)", 0, "新建")
+	m.toolbarBtn.newWindowBtn = newBtn("NewFormToolBtn", imageMenu.ImageIndex("menu_new_form.png"), "新建窗体(Ctrl+N)", 0, "新建窗体")
 	m.toolbarBtn.newWindowBtn.SetOnClick(m.toolbarBtn.onNewForm)
 
 	m.toolbarBtn.openBtn = newBtn("OpenProjectToolBtn", imageMenu.ImageIndex("menu_project_open.png"), "打开(Ctrl+O)", 1, "打开")
