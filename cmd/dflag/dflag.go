@@ -26,7 +26,8 @@ func New() *dFlag {
 }
 
 type Args struct {
-	list *tool.HashMap[string, string]
+	list        *tool.HashMap[string, string]
+	positionals []string
 }
 
 // Get 获取指定名称的参数值
@@ -41,6 +42,12 @@ func (m *Args) Get(name string) string {
 //	name: 参数名称, "-path --path" > path
 func (m *Args) Contains(name string) bool {
 	return m.list.ContainsKey(name)
+}
+
+func (m *Args) Positionals() []string {
+	result := make([]string, len(m.positionals))
+	copy(result, m.positionals)
+	return result
 }
 
 type Command struct {
@@ -77,7 +84,7 @@ func (m *dFlag) Parse() {
 		return
 	}
 	if cmd := m.commands.Get(newArgs[0]); cmd != nil {
-		inArgs := &Args{tool.NewHashMap[string, string]()}
+		inArgs := &Args{list: tool.NewHashMap[string, string]()}
 		cmdArgs := newArgs[1:]
 		for i := 0; i < len(cmdArgs); i++ {
 			el := strings.TrimSpace(cmdArgs[i])
@@ -86,7 +93,7 @@ func (m *dFlag) Parse() {
 			}
 			if el[0] == '-' {
 				v := ""
-				if eqEl := strings.Split(el, "="); len(eqEl) > 1 {
+				if eqEl := strings.SplitN(el, "=", 2); len(eqEl) > 1 {
 					el = eqEl[0]
 					v = eqEl[1]
 				} else if i+1 <= len(cmdArgs)-1 {
@@ -104,6 +111,7 @@ func (m *dFlag) Parse() {
 				})
 				inArgs.list.Add(name, v)
 			} else {
+				inArgs.positionals = append(inArgs.positionals, el)
 				inArgs.list.Add(el, "")
 			}
 		}

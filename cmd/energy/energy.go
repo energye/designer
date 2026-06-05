@@ -16,6 +16,7 @@ package main
 import (
 	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/cmd/dflag"
+	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/cmd/packager"
 	"github.com/energye/designer/cmd/project"
 	"github.com/energye/designer/cmd/run"
@@ -83,6 +84,16 @@ func main() {
 			if !packager.Run(nil) {
 				return
 			}
+		},
+	})
+	cmd.Add(&dflag.Command{
+		Name: "env",
+		Long: `energy env, Read or write ~/.energy/config.json
+    energy env
+    energy env <key|json.path>
+    energy env -w <key|json.path>=<value>`,
+		Run: func(args dflag.Args) {
+			env.RunConfig(args)
 		},
 	})
 	cmd.Add(&dflag.Command{
