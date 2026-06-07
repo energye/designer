@@ -9,7 +9,8 @@
   },
   "chromium": {
     "109.1.18": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bgf1c41e4%2Bchromium-109.0.5414.120_{osarch}_minimal.tar.bz2",
-    "127.3.5": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg114ea2a%2Bchromium-127.0.6533.120_{osarch}_minimal.tar.bz2"
+    "127.3.5": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg114ea2a%2Bchromium-127.0.6533.120_{osarch}_minimal.tar.bz2",
+    "147.0.14": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg76d2442%2Bchromium-147.0.7727.138_{osarch}_minimal.tar.bz2"
   },
   "window": {
     "width": 1150,
