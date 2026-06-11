@@ -57,6 +57,9 @@ func RunConfig(args dflag.Args) {
 
 func runConfig(args dflag.Args, in io.Reader, out, errOut io.Writer) error {
 	configFile := filepath.Join(config.Path(), "config.json")
+	if args.Contains("l") {
+		return listVersions(configFile, args.Get("l"), out)
+	}
 	if args.Contains("w") {
 		if len(args.Positionals()) > 0 {
 			return errors.New("energy env: write accepts only one -w expression")
@@ -68,6 +71,96 @@ func runConfig(args dflag.Args, in io.Reader, out, errOut io.Writer) error {
 		return errors.New("energy env: read accepts only one key or json path")
 	}
 	return readConfig(configFile, firstArg(positionals), out)
+}
+
+// listVersions lists installed versions for a given module.
+// Currently supports module "cef" which lists directories under the chromium root.
+// Each directory is expected to be named as "os_arch_version".
+// The currently active version (from config) is prefixed with "*".
+func listVersions(configFile, module string, out io.Writer) error {
+	module = strings.TrimSpace(module)
+	if module == "" {
+		return errors.New("energy env: -l requires a module name, e.g. -l cef")
+	}
+	if module != "cef" {
+		return fmt.Errorf("energy env: unsupported module %q, supported: cef", module)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		return err
+	}
+	// Extract chromium.dir and chromium.version from config
+	chromiumDir := ""
+	currentVersion := ""
+	if obj, ok := root.(*orderedObject); ok {
+		for _, m := range obj.members {
+			if m.key == "chromium" {
+				if cObj, ok := m.value.(*orderedObject); ok {
+					for _, cm := range cObj.members {
+						switch cm.key {
+						case "dir":
+							if s, ok := cm.value.(string); ok {
+								chromiumDir = s
+							}
+						case "version":
+							if s, ok := cm.value.(string); ok {
+								currentVersion = s
+							}
+						}
+					}
+				}
+				break
+			}
+		}
+	}
+	if chromiumDir == "" {
+		chromiumDir = filepath.Join(config.Path(), "chromium")
+	}
+	entries, err := os.ReadDir(chromiumDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("energy env: chromium directory not found: %s", chromiumDir)
+		}
+		return err
+	}
+	var versions []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		// Valid format: os_arch_version (at least 3 underscore-separated parts)
+		if !isValidVersionDir(name) {
+			continue
+		}
+		versions = append(versions, name)
+	}
+	if len(versions) == 0 {
+		fmt.Fprintln(out, "No installed versions found.")
+		return nil
+	}
+	sort.Strings(versions)
+	for _, v := range versions {
+		if v == currentVersion {
+			fmt.Fprintf(out, "* %s\n", v)
+		} else {
+			fmt.Fprintf(out, "  %s\n", v)
+		}
+	}
+	return nil
+}
+
+// isValidVersionDir checks if a directory name matches the os_arch_version pattern.
+// The name must have at least 3 underscore-separated parts where the last part is a version string.
+func isValidVersionDir(name string) bool {
+	// Minimum: os_arch_version (e.g. "win_x64_1.0")
+	parts := strings.Split(name, "_")
+	if len(parts) < 3 {
+		return false
+	}
+	// Last part should look like a version (contains at least one digit)
+	last := parts[len(parts)-1]
+	return strings.ContainsAny(last, "0123456789")
 }
 
 func firstArg(args []string) string {

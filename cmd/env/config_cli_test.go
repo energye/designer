@@ -196,3 +196,84 @@ type ioDiscard struct{}
 func (ioDiscard) Write(p []byte) (int, error) {
 	return len(p), nil
 }
+
+func TestListVersionsCEF(t *testing.T) {
+	// Create a temp chromium dir with some version directories
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_109.1.18"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "linux_amd64_109.1.18"), 0755)
+	// This should be ignored (not a valid version dir name)
+	os.MkdirAll(filepath.Join(chromiumDir, "somefile.txt"), 0755)
+	os.WriteFile(filepath.Join(chromiumDir, "somefile.txt"), []byte(""), 0644)
+
+	// Write a config.json pointing to this dir with current version set
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": "windows_amd64_127.3.5"
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	var out bytes.Buffer
+	if err := listVersions(configFile, "cef", &out); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	if !strings.Contains(got, "* windows_amd64_127.3.5") {
+		t.Fatalf("expected current version marked with *, got:\n%s", got)
+	}
+	if !strings.Contains(got, "  linux_amd64_109.1.18") {
+		t.Fatalf("expected linux version without *, got:\n%s", got)
+	}
+	if !strings.Contains(got, "  windows_amd64_109.1.18") {
+		t.Fatalf("expected old windows version without *, got:\n%s", got)
+	}
+	if strings.Contains(got, "somefile") {
+		t.Fatalf("should not list non-version entries, got:\n%s", got)
+	}
+}
+
+func TestListVersionsUnsupportedModule(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	os.WriteFile(configFile, []byte("{}"), 0644)
+	var out bytes.Buffer
+	err := listVersions(configFile, "unsupported", &out)
+	if err == nil {
+		t.Fatal("expected error for unsupported module")
+	}
+	if !strings.Contains(err.Error(), "unsupported module") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestListVersionsEmptyModule(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	os.WriteFile(configFile, []byte("{}"), 0644)
+	var out bytes.Buffer
+	err := listVersions(configFile, "", &out)
+	if err == nil {
+		t.Fatal("expected error for empty module")
+	}
+}
+
+func TestIsValidVersionDir(t *testing.T) {
+	tests := []struct {
+		name string
+		want bool
+	}{
+		{"windows_amd64_127.3.5", true},
+		{"linux_arm64_109.1.18", true},
+		{"win_x64_1", true},
+		{"no_underscore", false},
+		{"a_b", false},
+		{"os_arch_noDigit", false},
+	}
+	for _, tt := range tests {
+		if got := isValidVersionDir(tt.name); got != tt.want {
+			t.Errorf("isValidVersionDir(%q) = %v, want %v", tt.name, got, tt.want)
+		}
+	}
+}

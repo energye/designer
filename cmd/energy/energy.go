@@ -91,7 +91,8 @@ func main() {
 		Long: `energy env, Read or write ~/.energy/config.json
     energy env
     energy env <key|json.path>
-    energy env -w <key|json.path>=<value>`,
+    energy env -w <key|json.path>=<value>
+    energy env -l <module>, List installed versions for a module (e.g. cef)`,
 		Run: func(args dflag.Args) {
 			env.RunConfig(args)
 		},
