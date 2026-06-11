@@ -277,3 +277,210 @@ func TestIsValidVersionDir(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteConfigFuzzyChromiumVersionSingleMatch(t *testing.T) {
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "linux_amd64_109.1.18"), 0755)
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": "linux_amd64_109.1.18"
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	// "127" should auto-resolve to "windows_amd64_127.3.5" (only one match)
+	if err := writeConfig(configFile, "version=127", strings.NewReader(""), ioDiscard{}); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "windows_amd64_127.3.5" {
+		t.Fatalf("expected windows_amd64_127.3.5, got %q", formatValue(got))
+	}
+}
+
+func TestWriteConfigFuzzyChromiumVersionMultipleMatch(t *testing.T) {
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_386_127.3.5"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "linux_amd64_109.1.18"), 0755)
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": "linux_amd64_109.1.18"
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	var out bytes.Buffer
+	// "127" matches two dirs; user selects the first one
+	if err := writeConfig(configFile, "version=127", strings.NewReader("1\n"), &out); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "Multiple versions matched") {
+		t.Fatalf("expected selection prompt, got %q", out.String())
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "windows_386_127.3.5" {
+		t.Fatalf("expected windows_386_127.3.5 (first sorted), got %q", formatValue(got))
+	}
+}
+
+func TestWriteConfigFuzzyChromiumVersionExactPassthrough(t *testing.T) {
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": ""
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	// Exact match should pass through without fuzzy logic
+	if err := writeConfig(configFile, "version=windows_amd64_127.3.5", strings.NewReader(""), ioDiscard{}); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "windows_amd64_127.3.5" {
+		t.Fatalf("expected exact passthrough, got %q", formatValue(got))
+	}
+}
+
+func TestWriteConfigFuzzyChromiumVersionPrefixMatch(t *testing.T) {
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_386_127.3.5"), 0755)
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": ""
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	// "windows_amd64_127" should match "windows_amd64_127.3.5" as prefix
+	if err := writeConfig(configFile, "version=windows_amd64_127", strings.NewReader(""), ioDiscard{}); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "windows_amd64_127.3.5" {
+		t.Fatalf("expected windows_amd64_127.3.5, got %q", formatValue(got))
+	}
+}
+
+func TestWriteConfigFuzzyChromiumVersionNoMatch(t *testing.T) {
+	chromiumDir := t.TempDir()
+	os.MkdirAll(filepath.Join(chromiumDir, "windows_amd64_127.3.5"), 0755)
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(chromiumDir, `\`, `\\`) + `",
+			"version": ""
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	// No match -> write is skipped entirely, config unchanged
+	if err := writeConfig(configFile, "version=999", strings.NewReader(""), ioDiscard{}); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "" {
+		t.Fatalf("expected value unchanged (empty), got %q", formatValue(got))
+	}
+}
+
+func TestWriteConfigFuzzyChromiumVersionNoInstalledDir(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "` + strings.ReplaceAll(filepath.Join(t.TempDir(), "nonexistent"), `\`, `\\`) + `",
+			"version": ""
+		}
+	}`
+	os.WriteFile(configFile, []byte(data), 0644)
+
+	// Directory doesn't exist -> no installed versions to match, set as-is
+	if err := writeConfig(configFile, "version=127", strings.NewReader(""), ioDiscard{}); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, ok := getPath(root, "chromium.version")
+	if !ok {
+		t.Fatal("chromium.version not found")
+	}
+	if formatValue(got) != "127" {
+		t.Fatalf("expected raw value 127, got %q", formatValue(got))
+	}
+}
+
+func TestIsFuzzyVersionMatch(t *testing.T) {
+	tests := []struct {
+		dir   string
+		value string
+		want  bool
+	}{
+		{"windows_amd64_127.3.5", "127", true},
+		{"windows_amd64_127.3.5", "127.3", true},
+		{"windows_amd64_127.3.5", "windows_amd64_127", true},
+		{"windows_amd64_127.3.5", "windows_amd64_127.3.5", true},
+		{"windows_amd64_127.3.5", "109", false},
+		{"windows_amd64_127.3.5", "linux", false},
+		{"windows_386_127.3.5", "127", true},
+		{"windows_386_127.3.5", "windows_386_127", true},
+	}
+	for _, tt := range tests {
+		if got := isFuzzyVersionMatch(tt.dir, tt.value); got != tt.want {
+			t.Errorf("isFuzzyVersionMatch(%q, %q) = %v, want %v", tt.dir, tt.value, got, tt.want)
+		}
+	}
+}

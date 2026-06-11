@@ -1,6 +1,6 @@
 //----------------------------------------
 //
-// Copyright © yanghy. All Rights Reserved.
+// Copyright 漏 yanghy. All Rights Reserved.
 //
 // Licensed under Apache License Version 2.0, January 2004
 //
@@ -26,6 +26,9 @@ import (
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/pkg/config"
 )
+
+// errNoVersionMatch is returned when a fuzzy chromium.version query matches nothing.
+var errNoVersionMatch = errors.New("no version match")
 
 type jsonPathToken struct {
 	key      string
@@ -73,6 +76,35 @@ func runConfig(args dflag.Args, in io.Reader, out, errOut io.Writer) error {
 	return readConfig(configFile, firstArg(positionals), out)
 }
 
+// extractChromiumConfig reads the chromium.dir and chromium.version from the parsed JSON root.
+func extractChromiumConfig(root any) (dir, version string) {
+	if obj, ok := root.(*orderedObject); ok {
+		for _, m := range obj.members {
+			if m.key == "chromium" {
+				if cObj, ok := m.value.(*orderedObject); ok {
+					for _, cm := range cObj.members {
+						switch cm.key {
+						case "dir":
+							if s, ok := cm.value.(string); ok {
+								dir = s
+							}
+						case "version":
+							if s, ok := cm.value.(string); ok {
+								version = s
+							}
+						}
+					}
+				}
+				break
+			}
+		}
+	}
+	if dir == "" {
+		dir = filepath.Join(config.Path(), "chromium")
+	}
+	return
+}
+
 // listVersions lists installed versions for a given module.
 // Currently supports module "cef" which lists directories under the chromium root.
 // Each directory is expected to be named as "os_arch_version".
@@ -89,51 +121,10 @@ func listVersions(configFile, module string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	// Extract chromium.dir and chromium.version from config
-	chromiumDir := ""
-	currentVersion := ""
-	if obj, ok := root.(*orderedObject); ok {
-		for _, m := range obj.members {
-			if m.key == "chromium" {
-				if cObj, ok := m.value.(*orderedObject); ok {
-					for _, cm := range cObj.members {
-						switch cm.key {
-						case "dir":
-							if s, ok := cm.value.(string); ok {
-								chromiumDir = s
-							}
-						case "version":
-							if s, ok := cm.value.(string); ok {
-								currentVersion = s
-							}
-						}
-					}
-				}
-				break
-			}
-		}
-	}
-	if chromiumDir == "" {
-		chromiumDir = filepath.Join(config.Path(), "chromium")
-	}
-	entries, err := os.ReadDir(chromiumDir)
+	chromiumDir, currentVersion := extractChromiumConfig(root)
+	versions, err := installedVersions(chromiumDir)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("energy env: chromium directory not found: %s", chromiumDir)
-		}
 		return err
-	}
-	var versions []string
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-		name := entry.Name()
-		// Valid format: os_arch_version (at least 3 underscore-separated parts)
-		if !isValidVersionDir(name) {
-			continue
-		}
-		versions = append(versions, name)
 	}
 	if len(versions) == 0 {
 		fmt.Fprintln(out, "No installed versions found.")
@@ -150,6 +141,28 @@ func listVersions(configFile, module string, out io.Writer) error {
 	return nil
 }
 
+// installedVersions returns sorted valid os_arch_version directory names under dir.
+func installedVersions(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var versions []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		if isValidVersionDir(entry.Name()) {
+			versions = append(versions, entry.Name())
+		}
+	}
+	sort.Strings(versions)
+	return versions, nil
+}
+
 // isValidVersionDir checks if a directory name matches the os_arch_version pattern.
 // The name must have at least 3 underscore-separated parts where the last part is a version string.
 func isValidVersionDir(name string) bool {
@@ -161,6 +174,93 @@ func isValidVersionDir(name string) bool {
 	// Last part should look like a version (contains at least one digit)
 	last := parts[len(parts)-1]
 	return strings.ContainsAny(last, "0123456789")
+}
+
+// resolveChromiumVersion resolves a potentially fuzzy chromium version value.
+// If value exactly matches an installed directory name it is returned as-is.
+// Otherwise it is treated as a fuzzy query: matched against the version part
+// (everything after os_arch_) of each installed directory, or as a prefix of
+// the full directory name. When multiple matches are found the user is prompted
+// to select one.
+func resolveChromiumVersion(root any, value string, in io.Reader, out io.Writer) (string, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return value, nil
+	}
+	chromiumDir, _ := extractChromiumConfig(root)
+	installed, err := installedVersions(chromiumDir)
+	if err != nil || len(installed) == 0 {
+		return value, nil // no installed versions to match against, set as-is
+	}
+	// Exact match -> use as-is, no fuzzy logic needed
+	for _, v := range installed {
+		if v == value {
+			return value, nil
+		}
+	}
+	// Fuzzy match
+	matches := fuzzyMatchVersions(installed, value)
+	switch len(matches) {
+	case 0:
+		return "", errNoVersionMatch
+	case 1:
+		return matches[0], nil
+	default:
+		return selectVersion(matches, in, out)
+	}
+}
+
+// fuzzyMatchVersions returns installed directory names that match value.
+// Matching rules (checked in order):
+//  1. The full directory name starts with value (e.g. "windows_amd64_127" matches "windows_amd64_127.3.5")
+//  2. The version part (everything after os_arch_) starts with value (e.g. "127" matches "windows_amd64_127.3.5")
+func fuzzyMatchVersions(installed []string, value string) []string {
+	var matches []string
+	for _, dir := range installed {
+		if isFuzzyVersionMatch(dir, value) {
+			matches = append(matches, dir)
+		}
+	}
+	return matches
+}
+
+// isFuzzyVersionMatch checks whether installedDir matches the fuzzy value.
+func isFuzzyVersionMatch(installedDir, value string) bool {
+	// Rule 1: full name prefix
+	if strings.HasPrefix(installedDir, value) {
+		return true
+	}
+	// Rule 2: version-part prefix (everything after the second "_")
+	parts := strings.SplitN(installedDir, "_", 3)
+	if len(parts) >= 3 {
+		if strings.HasPrefix(parts[2], value) {
+			return true
+		}
+	}
+	return false
+}
+
+// selectVersion prompts the user to choose one version from a list.
+func selectVersion(versions []string, in io.Reader, out io.Writer) (string, error) {
+	fmt.Fprintln(out, "Multiple versions matched:")
+	for i, v := range versions {
+		fmt.Fprintf(out, "  %d. %s\n", i+1, v)
+	}
+	fmt.Fprintf(out, "Select version (0 to cancel): ")
+	reader := bufio.NewReader(in)
+	line, err := reader.ReadString('\n')
+	if err != nil && !errors.Is(err, io.EOF) {
+		return "", err
+	}
+	line = strings.TrimSpace(line)
+	if line == "" || line == "0" {
+		return "", errors.New("energy env: write canceled")
+	}
+	idx, err := strconv.Atoi(line)
+	if err != nil || idx < 1 || idx > len(versions) {
+		return "", errors.New("energy env: invalid selection")
+	}
+	return versions[idx-1], nil
 }
 
 func firstArg(args []string) string {
@@ -246,6 +346,18 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			}
 		} else {
 			targetPath = matches[0].path
+		}
+	}
+	// Smart resolution: when setting chromium.version, try fuzzy matching
+	// against installed version directories so the user can type a short
+	// value like "127" instead of the full "windows_amd64_127.3.5".
+	if targetPath == "chromium.version" {
+		value, err = resolveChromiumVersion(root, value, in, out)
+		if err != nil {
+			if errors.Is(err, errNoVersionMatch) {
+				return nil // nothing matched, skip the write entirely
+			}
+			return err
 		}
 	}
 	if err = setPath(root, targetPath, value); err != nil {
