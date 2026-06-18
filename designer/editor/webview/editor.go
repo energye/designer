@@ -20,9 +20,9 @@ import (
 	"github.com/energye/designer/pkg/logs"
 	reseditor "github.com/energye/designer/resources/editor"
 	"github.com/energye/energy/v3/application"
+	"github.com/energye/energy/v3/core"
 	"github.com/energye/energy/v3/ipc"
 	"github.com/energye/energy/v3/wv"
-	engwv "github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"os"
@@ -35,7 +35,7 @@ type IWebviewEditor interface {
 	editor.IEditor
 	LoadURL(url string)
 	CreateBrowser()
-	SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent)
+	SwitchTabPage(owner lcl.IWinControl, windowParent core.WindowParent)
 	Webview() wv.IWebview
 	Initialized() bool
 	SetCanLoadChan(canLoad chan error)
@@ -43,7 +43,7 @@ type IWebviewEditor interface {
 
 type TWebviewEditor struct {
 	WVEditor            wv.IWebview
-	currentWindowParent engwv.IWindowParent
+	currentWindowParent core.WindowParent
 	fileManager         *editor.FileManager
 	checkTimer          *time.Ticker
 	stopChan            chan struct{}
@@ -94,8 +94,8 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 	//m.LoadURL("energy://designer/index.html")
 	//m.LoadURL("http://localhost:22022/test.html")
 	m.LoadURL("http://localhost:22022/index.html")
-	m.WVEditor.SetOnLoadChange(func(url, title string, load wv.TLoadChange) {
-		if load == wv.LcFinish {
+	m.WVEditor.SetOnLoadChange(func(url, title string, load core.TLoadChange) {
+		if load == core.LcFinish {
 			m.initialized = true
 			m.sendCanLoadSignal()
 		}

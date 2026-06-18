@@ -18,8 +18,8 @@ import (
 	"github.com/energye/designer/designer/editor/webview"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
+	"github.com/energye/energy/v3/core"
 	"github.com/energye/energy/v3/lcl/wg"
-	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -30,9 +30,9 @@ import (
 // 在设计器主 tab 同级创建代码编辑标签, 复用现有的 Monaco 编辑器
 
 type CodeEditorTab struct {
-	filePath       string           // 绝对文件路径
-	mainPage       *wg.TPage        // Level 1 tab page in Designer.tab
-	wvWindowParent wv.IWindowParent // WebView2 窗口父容器
+	filePath       string            // 绝对文件路径
+	mainPage       *wg.TPage         // Level 1 tab page in Designer.tab
+	wvWindowParent core.WindowParent // WebView2 窗口父容器
 }
 
 // addCodeEditorTab 创建或获取一个代码编辑器标签

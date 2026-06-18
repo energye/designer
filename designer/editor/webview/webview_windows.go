@@ -16,13 +16,13 @@
 package webview
 
 import (
-	engwv "github.com/energye/energy/v3/wv"
+	"github.com/energye/energy/v3/core"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	wv "github.com/energye/wv/windows"
 )
 
-func NewWebviewWindowParent(owner lcl.IWinControl) engwv.IWindowParent {
+func NewWebviewWindowParent(owner lcl.IWinControl) core.WindowParent {
 	windowParent := wv.NewWindowParent(owner)
 	windowParent.SetDoubleBuffered(true)
 	windowParent.SetAlign(types.AlClient)
@@ -37,7 +37,7 @@ func (m *TWebviewEditor) PlatformClose() {
 	// no impl
 }
 
-func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent engwv.IWindowParent) {
+func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent core.WindowParent) {
 	newWindowParent := windowParent.(wv.IWVWindowParent)
 	currentWindowParent := m.WVEditor.WindowParent().(wv.IWVWindowParent)
 	currentWindowParent.SetBrowser(nil)

@@ -19,7 +19,7 @@ import (
 	projBean "github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/metadata"
-	"github.com/energye/energy/v3/wv"
+	"github.com/energye/energy/v3/core"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"path/filepath"
@@ -50,7 +50,7 @@ type TFormDesignPage struct {
 	formUserEditorPage lcl.ITabSheet // "代码"
 	formUIEditorPage   lcl.ITabSheet // "UI代码" - 只读
 
-	wvWindowParent wv.IWindowParent
+	wvWindowParent core.WindowParent
 
 	formDesignCode IFormDesignCode
 }
