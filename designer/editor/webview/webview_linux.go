@@ -16,6 +16,7 @@
 package webview
 
 import (
+	"github.com/energye/energy/v3/core"
 	. "github.com/energye/energy/v3/platform/linux/types"
 	wvEng "github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/api"
@@ -25,7 +26,7 @@ import (
 	wvLinux "github.com/energye/wv/linux"
 )
 
-func NewWebviewWindowParent(owner lcl.IWinControl) wvEng.IWindowParent {
+func NewWebviewWindowParent(owner lcl.IWinControl) core.WindowParent {
 	windowParent := wvLinux.NewWebviewParent(owner)
 	windowParent.SetDoubleBuffered(true)
 	windowParent.SetAlign(types.AlClient)
@@ -70,7 +71,7 @@ func (m *TWebviewEditor) PlatformClose() {
 	}
 }
 
-func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent wvEng.IWindowParent) {
+func (m *TWebviewEditor) SwitchTabPage(owner lcl.IWinControl, windowParent core.WindowParent) {
 	newWindowParent := windowParent.(wvLinux.IWkWebviewParent)
 	if part := newWindowParent.Parent(); part == nil || !part.IsVisible() {
 		newWindowParent.SetParent(owner)

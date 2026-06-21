@@ -14,11 +14,11 @@
 package webview
 
 import (
-	engwv "github.com/energye/energy/v3/wv"
+	"github.com/energye/energy/v3/core"
 	"github.com/energye/lcl/lcl"
 )
 
-func NewWebviewWindowParent(owner lcl.IWinControl) engwv.IWindowParent {
+func NewWebviewWindowParent(owner lcl.IWinControl) core.WindowParent {
 	return nil
 }
 
