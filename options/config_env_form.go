@@ -41,9 +41,9 @@ var (
 		name string
 	}{
 		{"en", "English"},               // 英语
-		{"zh_CN", "简体中文"},               // 中国大陆
-		{"zh_TW", "繁體中文"},               // 台湾地区/香港
-		{"ja", "日本語"},                   // 日本
+		{"zh_CN", "简体中文"},           // 中国大陆
+		{"zh_TW", "繁體中文"},           // 台湾地区/香港
+		{"ja", "日本語"},                // 日本
 		{"ko", "한국어"},                   // 韩国
 		{"de", "Deutsch"},               // 德国、奥地利、瑞士
 		{"fr", "Français"},              // 法国、比利时、加拿大魁北克
@@ -175,7 +175,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.langComboBox = lcl.NewComboBox(m)
 		m.langComboBox.SetName("LangComboBox")
 		m.langComboBox.SetLeft(m.goRootBox.Left())
-		m.langComboBox.SetTop(nextTop(30))
+		m.langComboBox.SetTop(nextTop(35))
 		m.langComboBox.SetWidth(m.goRootBox.Width())
 		m.langComboBox.SetStyle(types.CsDropDownList)
 		selectIndex := 0
@@ -191,7 +191,7 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 	}
 
 	{
-		cancelBtnRect := types.TRect{Left: 400, Top: nextTop(35)}
+		cancelBtnRect := types.TRect{Left: 400, Top: nextTop(45)}
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)

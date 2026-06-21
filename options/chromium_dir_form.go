@@ -80,6 +80,8 @@ type TChromiumDirForm struct {
 	Confirmed bool   // 用户是否点击了"完成"确认按钮
 	Version   string // 已安装完成的 CEF 版本
 
+	fontLbl lcl.IFont
+
 	// 目录设置
 	dirText lcl.ILabel
 	dirEdit lcl.ILabeledEdit
@@ -117,6 +119,9 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 	m.SetColor(colors.ClWhite)
 	SetWindowCenterByMainWindow(m)
 
+	m.fontLbl = lcl.NewFont()
+	m.fontLbl.SetSize(10)
+
 	m.selectDir = lcl.NewSelectDirectoryDialog(m)
 	m.selectDir.SetName("ChromiumDirFormSelectDir")
 	m.selectDir.SetTitle(metadata.GI18n.Dict("ChromiumDirFormSelectDir.Title"))
@@ -141,6 +146,7 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 	m.dirText.SetCaption("ChromiumDirFormDirText")
 	m.dirText.SetLeft(15)
 	m.dirText.SetTop(nextTop(15))
+	m.dirText.SetFont(m.fontLbl)
 	m.dirText.SetCaption(metadata.GI18n.Dict("ChromiumDirFormDirText.Caption"))
 	m.dirText.SetParent(m)
 
@@ -154,6 +160,8 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 	m.dirEdit.SetLabelPosition(types.LpLeft)
 	if config.Config.Chromium.Dir != "" {
 		m.dirEdit.SetText(config.Config.Chromium.Dir)
+	} else {
+		m.dirEdit.SetText("")
 	}
 	m.dirEdit.EditLabel().SetCaption(metadata.GI18n.Dict("ChromiumDirFormDirEdit.EditLabel.Caption"))
 	m.dirEdit.SetParent(m)
@@ -178,13 +186,14 @@ func (m *TChromiumDirForm) setupDirSection(nextTop func(int32) int32) {
 
 // setupVersionSection 创建系统/架构/版本选择区域 (同一行: OS + ARCH + CEF Version)
 func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
-	rowTop := nextTop(40)
+	rowTop := nextTop(45)
 
 	// Version 标签 + 下拉框
 	m.versionText = lcl.NewLabel(m)
 	m.versionText.SetName("ChromiumDirFormVersionText")
 	m.versionText.SetLeft(0)
 	m.versionText.SetTop(rowTop)
+	m.versionText.SetFont(m.fontLbl)
 	m.versionText.SetAutoSize(false)
 	m.versionText.SetWidth(96)
 	m.versionText.SetAlignment(types.TaRightJustify)
@@ -211,6 +220,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.osText.SetTop(rowTop)
 	m.osText.SetAutoSize(false)
 	m.osText.SetWidth(35)
+	m.osText.SetFont(m.fontLbl)
 	m.osText.SetAlignment(types.TaRightJustify)
 	m.osText.SetCaption(metadata.CEFFormOsLabelText)
 	m.osText.SetParent(m)
@@ -239,6 +249,7 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.archText.SetTop(rowTop)
 	m.archText.SetAutoSize(false)
 	m.archText.SetWidth(35)
+	m.archText.SetFont(m.fontLbl)
 	m.archText.SetAlignment(types.TaRightJustify)
 	m.archText.SetCaption(metadata.CEFFormArchLabelText)
 	m.archText.SetParent(m)
