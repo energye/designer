@@ -168,6 +168,48 @@ func TestWriteConfigPreservesKeyOrder(t *testing.T) {
 	assertBefore(t, content, `"state"`, `"visible"`)
 }
 
+func TestWriteCEFRuntimeSourceCreatesSelectionOnly(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(configFile, []byte(`{"window": {}}`), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ensureCEFRuntimeSelection(root)
+	if err = setPath(root, "cef_runtime.source", "sourceforge"); err != nil {
+		t.Fatal(err)
+	}
+
+	assertPath(t, root, "cef_runtime.source", "sourceforge")
+	if _, ok := getPath(root, "cef_runtime.version"); ok {
+		t.Fatal("cef_runtime.version should not be created")
+	}
+	if _, ok := getPath(root, "cef_runtime.sources"); ok {
+		t.Fatal("cef_runtime.sources should not be created")
+	}
+}
+
+func TestEnsureCEFRuntimeSelectionReplacesNull(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(configFile, []byte(`{"cef_runtime": null}`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ensureCEFRuntimeSelection(root)
+	if err = setPath(root, "cef_runtime.source", "sourceforge"); err != nil {
+		t.Fatal(err)
+	}
+
+	assertPath(t, root, "cef_runtime.source", "sourceforge")
+}
+
 func assertPath(t *testing.T, root any, path string, want any) {
 	t.Helper()
 	got, ok := getPath(root, path)

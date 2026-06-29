@@ -43,6 +43,18 @@ func TestRuntimeArchiveFileNameSourceForgeDownload(t *testing.T) {
 	}
 }
 
+func TestRuntimeTempLibPathKeepsLibraryExtension(t *testing.T) {
+	tests := map[string]string{
+		"/runtime/libenergy-amd64-109.dll":     "/runtime/libenergy-amd64-109.download.dll",
+		"/runtime/libenergy-amd64-gtk3-109.so": "/runtime/libenergy-amd64-gtk3-109.download.so",
+	}
+	for input, want := range tests {
+		if got := runtimeTempLibPath(input); got != want {
+			t.Fatalf("runtimeTempLibPath(%q) got %q want %q", input, got, want)
+		}
+	}
+}
+
 func TestNormalizeSourceForgeDownloadURL(t *testing.T) {
 	rawURL := "https://sourceforge.net/projects/liblcl/files/v3.0.1/libenergy-linux-amd64-gtk3-109.zip"
 	got := normalizeDownloadURL(rawURL)
@@ -64,15 +76,15 @@ func TestRuntimeDownloadURLs(t *testing.T) {
 		_ = os.Setenv("ENERGY_CEF_RUNTIME_SOURCE", oldSource)
 	}()
 
-	config.Config.CEFRuntime = []byte(`{
+	config.Config.CEFRuntime = []byte(`{"source": "sourceforge"}`)
+	config.DesignerConfig.CEFRuntime = []byte(`{
 		"version": "v1.1.1",
-		"source": "sourceforge",
+		"source": "github",
 		"sources": {
 			"github": ["https://github.example/{major}/{os}-{arch}-{ws}.zip"],
 			"sourceforge": ["https://sf.example/{version}/{os}-{arch}-{ws}.zip"]
 		}
 	}`)
-	config.DesignerConfig.CEFRuntime = nil
 	_ = os.Setenv("ENERGY_CEF_RUNTIME_URL", "https://env.example/{major}.zip")
 	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_SOURCE")
 
@@ -82,6 +94,47 @@ func TestRuntimeDownloadURLs(t *testing.T) {
 		"https://env.example/109.zip",
 		"https://sf.example/v1.1.1/linux-amd64-gtk3.zip",
 		"https://github.example/109/linux-amd64-gtk3.zip",
+	}, "\n")
+	if got != want {
+		t.Fatalf("RuntimeDownloadURLs got:\n%s\nwant:\n%s", got, want)
+	}
+}
+
+func TestRuntimeDownloadURLsIgnoreUserRuntimeTemplates(t *testing.T) {
+	oldRuntime := config.Config.CEFRuntime
+	oldDesignerRuntime := config.DesignerConfig.CEFRuntime
+	oldURL := os.Getenv("ENERGY_CEF_RUNTIME_URL")
+	oldSource := os.Getenv("ENERGY_CEF_RUNTIME_SOURCE")
+	defer func() {
+		config.Config.CEFRuntime = oldRuntime
+		config.DesignerConfig.CEFRuntime = oldDesignerRuntime
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_URL", oldURL)
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_SOURCE", oldSource)
+	}()
+
+	config.Config.CEFRuntime = []byte(`{
+		"version": "old-release",
+		"source": "sourceforge",
+		"sources": {
+			"sourceforge": ["https://old-user.example/{version}/{major}.zip"]
+		}
+	}`)
+	config.DesignerConfig.CEFRuntime = []byte(`{
+		"version": "v1.1.1",
+		"source": "github",
+		"sources": {
+			"github": ["https://github.example/{version}/{major}.zip"],
+			"sourceforge": ["https://sf.example/{version}/{major}.zip"]
+		}
+	}`)
+	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_URL")
+	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_SOURCE")
+
+	urls := RuntimeDownloadURLs("109.1.18", "linux", "amd64", "gtk3")
+	got := strings.Join(urls, "\n")
+	want := strings.Join([]string{
+		"https://sf.example/v1.1.1/109.zip",
+		"https://github.example/v1.1.1/109.zip",
 	}, "\n")
 	if got != want {
 		t.Fatalf("RuntimeDownloadURLs got:\n%s\nwant:\n%s", got, want)

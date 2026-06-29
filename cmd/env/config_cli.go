@@ -346,18 +346,22 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			targetPath = matches[0].path
 		}
 	} else if _, ok := getPath(root, name); !ok {
-		matches, indexed := findIndexedKey(root, name)
-		if !indexed || len(matches) == 0 {
-			return fmt.Errorf("energy env: json path not found: %s", name)
-		}
-		sortMatches(matches)
-		if len(matches) > 1 {
-			targetPath, err = selectMatch(matches, in, out)
-			if err != nil {
-				return err
-			}
+		if canCreateConfigPath(configFile, name) {
+			targetPath = name
 		} else {
-			targetPath = matches[0].path
+			matches, indexed := findIndexedKey(root, name)
+			if !indexed || len(matches) == 0 {
+				return fmt.Errorf("energy env: json path not found: %s", name)
+			}
+			sortMatches(matches)
+			if len(matches) > 1 {
+				targetPath, err = selectMatch(matches, in, out)
+				if err != nil {
+					return err
+				}
+			} else {
+				targetPath = matches[0].path
+			}
 		}
 	}
 	// Smart resolution: when setting chromium.version, try fuzzy matching
@@ -374,6 +378,9 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			}
 			return err
 		}
+	}
+	if isDefaultConfigFile(configFile) && targetPath == "cef_runtime.source" {
+		ensureCEFRuntimeSelection(root)
 	}
 	if err = setPath(root, targetPath, value); err != nil {
 		return err
@@ -416,6 +423,23 @@ func mergeMissingObject(dst, defaults any) {
 		}
 		dstObj.members = append(dstObj.members, defaultMember)
 	}
+}
+
+func canCreateConfigPath(configFile, path string) bool {
+	return isDefaultConfigFile(configFile) && path == "cef_runtime.source"
+}
+
+func ensureCEFRuntimeSelection(root any) {
+	obj, ok := root.(*orderedObject)
+	if !ok {
+		return
+	}
+	value := &orderedObject{members: []orderedMember{{key: "source", value: ""}}}
+	if member := obj.find("cef_runtime"); member != nil {
+		member.value = value
+		return
+	}
+	obj.members = append(obj.members, orderedMember{key: "cef_runtime", value: value})
 }
 
 func isDefaultConfigFile(configFile string) bool {

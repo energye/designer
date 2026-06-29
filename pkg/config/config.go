@@ -15,15 +15,16 @@ package config
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"sort"
+
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/err"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
 	"github.com/energye/designer/resources/metadata"
 	toolExec "github.com/energye/lcl/tool/exec"
-	"os"
-	"path/filepath"
-	"sort"
 )
 
 // 设计器配置
@@ -327,7 +328,6 @@ func init() {
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.WindowLayout = DesignerConfig.WindowLayout
-		Config.CEFRuntime = DesignerConfig.CEFRuntime
 		Config.FrameworkDir = filepath.Join(energyDir)
 		Config.WindowLayout.InitDefaultMenuView()
 		Config.WindowLayout.InitDefaultContentLayout()
@@ -346,9 +346,6 @@ func init() {
 
 	Config.WindowLayout.InitDefaultMenuView()
 	Config.WindowLayout.InitDefaultContentLayout()
-	if len(Config.CEFRuntime) == 0 {
-		Config.CEFRuntime = DesignerConfig.CEFRuntime
-	}
 	DesignerConfig.WindowLayout = Config.WindowLayout
 
 	// 框架目录为空或无效重新设置
