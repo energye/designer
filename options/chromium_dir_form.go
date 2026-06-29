@@ -554,14 +554,7 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 	// 空闲状态: 已安装直接确认, 未安装走下载
 	if state == downloadIdle && m.isVersionInstalled() {
 		oav := m.osArchVersion(m.selectedVersion())
-		m.Version = oav
-		// 记录当前 CEF 版本到全局配置
-		if err := cmdcef.UseInstalled(oav, bean.GProject); err != nil {
-			event.ConsoleWriteError("CEF configuration failed:", err.Error())
-			return
-		}
-		m.Confirmed = true
-		m.Close()
+		m.startUseInstalled(oav)
 		return
 	}
 
@@ -699,6 +692,21 @@ func (m *TChromiumDirForm) startDownload() {
 	})
 }
 
+func (m *TChromiumDirForm) startUseInstalled(oav string) {
+	m.setDownloadState(downloadRunning)
+	m.progressBar.SetVisible(true)
+	m.progressBar.SetPosition(0)
+	m.statusLabel.SetVisible(true)
+	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
+	m.setInstallControlsEnabled(false)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	m.dlMu.Lock()
+	m.dlCancel = cancel
+	m.dlMu.Unlock()
+	go m.useInstalledCEF(ctx, oav)
+}
+
 // handleInstallProgress 同步 cmd/cef 的安装进度到窗口状态。
 func (m *TChromiumDirForm) handleInstallProgress(progress cmdcef.Progress) {
 	if progress.Kind == cmdcef.ProgressInfo {
@@ -733,10 +741,20 @@ func (m *TChromiumDirForm) updateInstallInfo(message string) {
 			m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
 			return
 		}
-		if strings.HasPrefix(message, "Extracting CEF:") {
+		if strings.HasPrefix(message, "Start downloading libenergy:") {
+			m.setDownloadState(downloadRunning)
+			m.progressBar.SetPosition(0)
+			m.statusLabel.SetCaption(message)
+			return
+		}
+		if strings.HasPrefix(message, "Extracting CEF:") || strings.HasPrefix(message, "Extracting libenergy:") {
 			m.setDownloadState(downloadExtracting)
 			m.progressBar.SetPosition(0)
-			m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
+			if strings.HasPrefix(message, "Extracting CEF:") {
+				m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionSuccessDownloadUnZip"))
+			} else {
+				m.statusLabel.SetCaption(message)
+			}
 			return
 		}
 		if message != "" {
@@ -833,6 +851,30 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 	m.Version = result.OSArchVersion
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.showInstallCompleted()
+	})
+}
+
+func (m *TChromiumDirForm) useInstalledCEF(ctx context.Context, oav string) {
+	defer func() {
+		m.dlMu.Lock()
+		m.dlCancel = nil
+		m.dlMu.Unlock()
+	}()
+	if err := cmdcef.UseInstalledWithProgress(ctx, oav, bean.GProject, m.handleInstallProgress); err != nil {
+		if ctx.Err() != nil {
+			m.onInstallCanceled()
+			return
+		}
+		m.onDownloadError(err.Error())
+		return
+	}
+	m.Version = oav
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing {
+			return
+		}
+		m.Confirmed = true
+		m.Close()
 	})
 }
 

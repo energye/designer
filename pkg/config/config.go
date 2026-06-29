@@ -60,6 +60,7 @@ type designerConfig struct {
 	Version       string              `json:"version"`       // 设计器版本
 	Dependencies  dependencies        `json:"dependencies"`  // 核心依赖列表: "模块路径": "版本号" => github.com/energye/energy/v3@latest or github.com/energye/energy/v3@v3.0.0
 	Chromium      chromium            `json:"chromium"`      // CEF chromium 可用支持版本列表
+	CEFRuntime    json.RawMessage     `json:"cef_runtime"`   // CEF libenergy 运行时库下载源配置
 	WindowLayout  StorageWindowLayout `json:"window"`        // 设计器窗体信息
 	ComponentTabs ComponentTabs       `json:"componentTabs"` // 设计器加载组件
 }
@@ -89,6 +90,7 @@ type TConfig struct {
 	WindowLayout   StorageWindowLayout `json:"window"`          // 窗口配置
 	FrameworkDir   string              `json:"framework"`       // 框架目录
 	Chromium       TChromium           `json:"chromium"`        // CEF 框架
+	CEFRuntime     json.RawMessage     `json:"cef_runtime"`     // CEF libenergy 运行时库下载源配置
 	Registry       string              `json:"registry"`        // 远程服务配置地址
 	Proxy          string              `json:"proxy"`           // 代理地址
 	LastProject    string              `json:"last_project"`    // 最后打开项目
@@ -325,6 +327,7 @@ func init() {
 	if !tool.IsExist(configPath) {
 		// 不存在创建 config.json
 		Config.WindowLayout = DesignerConfig.WindowLayout
+		Config.CEFRuntime = DesignerConfig.CEFRuntime
 		Config.FrameworkDir = filepath.Join(energyDir)
 		Config.WindowLayout.InitDefaultMenuView()
 		Config.WindowLayout.InitDefaultContentLayout()
@@ -343,6 +346,9 @@ func init() {
 
 	Config.WindowLayout.InitDefaultMenuView()
 	Config.WindowLayout.InitDefaultContentLayout()
+	if len(Config.CEFRuntime) == 0 {
+		Config.CEFRuntime = DesignerConfig.CEFRuntime
+	}
 	DesignerConfig.WindowLayout = Config.WindowLayout
 
 	// 框架目录为空或无效重新设置

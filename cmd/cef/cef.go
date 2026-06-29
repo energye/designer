@@ -184,7 +184,7 @@ func EnsureInstalled(ctx context.Context, options InstallOptions) (*InstallResul
 	}
 	config.Config.Chromium.Dir = options.Dir
 	if config.Config.Chromium.IsCEFInstalled(oav) {
-		if err = useInstalled(oav, options.Project); err != nil {
+		if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
 			return nil, err
 		}
 		return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), Installed: true}, nil
@@ -222,7 +222,7 @@ func Install(ctx context.Context, options InstallOptions) (*InstallResult, error
 	if !config.Config.Chromium.IsCEFInstalled(oav) {
 		return nil, errors.New("CEF installation verification failed")
 	}
-	if err = useInstalled(oav, options.Project); err != nil {
+	if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
 		return nil, err
 	}
 	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "CEF installed: " + destDir})
@@ -261,13 +261,23 @@ func normalizeInstallOptions(options InstallOptions, useLatestVersion, useConfig
 }
 
 func UseInstalled(oav string, project *bean.TProject) error {
+	return UseInstalledWithProgress(context.Background(), oav, project, nil)
+}
+
+func UseInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {
 	if !config.Config.Chromium.IsCEFInstalled(oav) {
 		return fmt.Errorf("CEF is not installed or incomplete: %s", oav)
 	}
-	return useInstalled(oav, project)
+	return useInstalledWithProgress(ctx, oav, project, onProgress)
 }
 
-func useInstalled(oav string, project *bean.TProject) error {
+func useInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ensureRuntimeForCEF(ctx, oav, onProgress); err != nil {
+		return err
+	}
 	config.Config.Chromium.Version = oav
 	if project != nil && project.GUIRenderFramework == bean.GUIRenderFramework_CEF {
 		project.FrameworkVersion = oav
@@ -352,19 +362,21 @@ func ExtractTarBz2(ctx context.Context, archivePath, destDir string, onProgress 
 }
 
 func download(ctx context.Context, rawURL, targetPath string, onProgress func(Progress)) error {
+	downloadURL := normalizeDownloadURL(rawURL)
 	var existingSize int64
 	if info, err := os.Stat(targetPath); err == nil {
 		existingSize = info.Size()
 	}
-	remoteSize := checkRemoteFileSize(ctx, rawURL)
+	remoteSize := checkRemoteFileSize(ctx, downloadURL)
 	if existingSize > 0 && remoteSize > 0 && existingSize >= remoteSize {
 		progress(onProgress, Progress{Kind: ProgressDownload, Current: existingSize, Total: remoteSize, Message: "CEF archive already downloaded"})
 		return nil
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 	if err != nil {
 		return err
 	}
+	setDownloadHeaders(req)
 	if existingSize > 0 {
 		req.Header.Set("Range", fmt.Sprintf("bytes=%d-", existingSize))
 	}
@@ -415,6 +427,26 @@ func download(ctx context.Context, rawURL, targetPath string, onProgress func(Pr
 	return nil
 }
 
+func normalizeDownloadURL(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil || u.Hostname() != "sourceforge.net" {
+		return rawURL
+	}
+	if !strings.HasPrefix(u.Path, "/projects/") || !strings.Contains(u.Path, "/files/") {
+		return rawURL
+	}
+	if strings.HasSuffix(u.Path, "/download") {
+		return rawURL
+	}
+	u.Path = strings.TrimRight(u.Path, "/") + "/download"
+	return u.String()
+}
+
+func setDownloadHeaders(req *http.Request) {
+	req.Header.Set("User-Agent", "ENERGY Designer")
+	req.Header.Set("Accept", "application/octet-stream,application/zip,*/*")
+}
+
 func scanArchive(ctx context.Context, archivePath string) (string, int64, error) {
 	f, err := os.Open(archivePath)
 	if err != nil {
@@ -455,10 +487,12 @@ func scanArchive(ctx context.Context, archivePath string) (string, int64, error)
 }
 
 func checkRemoteFileSize(ctx context.Context, rawURL string) int64 {
+	rawURL = normalizeDownloadURL(rawURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, rawURL, nil)
 	if err != nil {
 		return -1
 	}
+	setDownloadHeaders(req)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return -1

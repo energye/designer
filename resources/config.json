@@ -12,6 +12,16 @@
     "127.3.5": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg114ea2a%2Bchromium-127.0.6533.120_{osarch}_minimal.tar.bz2",
     "147.0.14": "https://cef-builds.spotifycdn.com/cef_binary_{version}%2Bg76d2442%2Bchromium-147.0.7727.138_{osarch}_minimal.tar.bz2"
   },
+  "cef_runtime": {
+    "version": "v3.0.1",
+    "source": "sourceforge",
+    "sources": {
+      "github": [],
+      "sourceforge": [
+        "https://sourceforge.net/projects/liblcl/files/{version}/libenergy-{os}-{arch}-{ws}-{major}.zip/download"
+      ]
+    }
+  },
   "window": {
     "width": 1150,
     "height": 650

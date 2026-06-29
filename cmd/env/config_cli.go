@@ -13,16 +13,19 @@ package env
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/energye/designer/cmd/cef"
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/pkg/config"
 )
@@ -120,6 +123,9 @@ func listVersions(configFile, module string, out io.Writer) error {
 	root, err := loadJSONFile(configFile)
 	if err != nil {
 		return err
+	}
+	if isDefaultConfigFile(configFile) {
+		root = mergeDefaultConfig(root)
 	}
 	chromiumDir, currentVersion := extractChromiumConfig(root)
 	versions, err := installedVersions(chromiumDir)
@@ -275,6 +281,9 @@ func readConfig(configFile, query string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	if isDefaultConfigFile(configFile) {
+		root = mergeDefaultConfig(root)
+	}
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return printJSON(out, root)
@@ -318,6 +327,9 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	if isDefaultConfigFile(configFile) {
+		root = mergeDefaultConfig(root)
+	}
 	targetPath := name
 	if !isJSONPath(name) {
 		matches := findKey(root, name)
@@ -352,6 +364,9 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 	// against installed version directories so the user can type a short
 	// value like "127" instead of the full "windows_amd64_127.3.5".
 	if targetPath == "chromium.version" {
+		if isDefaultConfigFile(configFile) {
+			return useOrInstallChromiumVersion(root, value, in, out)
+		}
 		value, err = resolveChromiumVersion(root, value, in, out)
 		if err != nil {
 			if errors.Is(err, errNoVersionMatch) {
@@ -364,6 +379,109 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 		return err
 	}
 	return saveJSONFile(configFile, root)
+}
+
+func mergeDefaultConfig(root any) any {
+	data, err := json.Marshal(config.Config)
+	if err != nil {
+		return root
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	defaultRoot, err := decodeOrderedValue(decoder)
+	if err != nil {
+		return root
+	}
+	mergeMissingObject(root, defaultRoot)
+	return root
+}
+
+func mergeMissingObject(dst, defaults any) {
+	dstObj, ok := dst.(*orderedObject)
+	if !ok {
+		return
+	}
+	defaultObj, ok := defaults.(*orderedObject)
+	if !ok {
+		return
+	}
+	index := make(map[string]int, len(dstObj.members))
+	for i, member := range dstObj.members {
+		index[member.key] = i
+	}
+	for _, defaultMember := range defaultObj.members {
+		if dstIndex, ok := index[defaultMember.key]; ok {
+			mergeMissingObject(dstObj.members[dstIndex].value, defaultMember.value)
+			continue
+		}
+		dstObj.members = append(dstObj.members, defaultMember)
+	}
+}
+
+func isDefaultConfigFile(configFile string) bool {
+	defaultPath := filepath.Join(config.Path(), "config.json")
+	absConfig, err := filepath.Abs(configFile)
+	if err != nil {
+		return false
+	}
+	absDefault, err := filepath.Abs(defaultPath)
+	if err != nil {
+		return false
+	}
+	return filepath.Clean(absConfig) == filepath.Clean(absDefault)
+}
+
+func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Writer) error {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	chromiumDir, _ := extractChromiumConfig(root)
+	config.Config.Chromium.Dir = chromiumDir
+	oav := value
+	if _, _, _, ok := cef.ParseOSArchVersion(oav); !ok {
+		resolved, err := resolveChromiumVersion(root, value, in, out)
+		if err == nil {
+			oav = resolved
+		} else if errors.Is(err, errNoVersionMatch) {
+			version := cef.ResolveConfiguredVersion(value)
+			if version == "" {
+				return nil
+			}
+			oav = cef.OSArchVersion(runtime.GOOS, runtime.GOARCH, version)
+		} else {
+			return err
+		}
+	}
+	osName, arch, version, ok := cef.ParseOSArchVersion(oav)
+	if !ok {
+		version = cef.ResolveConfiguredVersion(oav)
+		if version == "" {
+			return nil
+		}
+		osName, arch = runtime.GOOS, runtime.GOARCH
+		oav = cef.OSArchVersion(osName, arch, version)
+	}
+	if config.Config.Chromium.IsCEFInstalled(oav) {
+		return cef.UseInstalled(oav, nil)
+	}
+	_, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
+		Dir:     chromiumDir,
+		Version: version,
+		OS:      osName,
+		Arch:    arch,
+		OnProgress: func(progress cef.Progress) {
+			if progress.Message == "" {
+				return
+			}
+			if progress.Total > 0 {
+				fmt.Fprintf(out, "%s (%d%%)\n", progress.Message, progress.Current*100/progress.Total)
+				return
+			}
+			fmt.Fprintln(out, progress.Message)
+		},
+	})
+	return err
 }
 
 func loadJSONFile(configFile string) (any, error) {
