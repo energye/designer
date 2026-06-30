@@ -468,33 +468,17 @@ func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Wr
 		oav = cef.OSArchVersion(osName, arch, version)
 	}
 	ui := cliUI(in, out, out)
-	var bar clui.Progress
+	progressSink := clui.NewProgressSink(ui)
 	_, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
 		Dir:     chromiumDir,
 		Version: version,
 		OS:      osName,
 		Arch:    arch,
 		OnProgress: func(progress cef.Progress) {
-			if progress.Message == "" {
-				return
-			}
-			if progress.Total > 0 {
-				if bar == nil {
-					bar = ui.Progress(progress.Message, progress.Total)
-				}
-				bar.Update(progress.Current, progress.Message)
-				return
-			}
-			if bar != nil {
-				bar.Update(-1, progress.Message)
-				return
-			}
-			ui.Info(progress.Message)
+			progressSink.Update(progress.Message, progress.Current, progress.Total)
 		},
 	})
-	if bar != nil {
-		bar.Finish()
-	}
+	progressSink.Finish()
 	return err
 }
 

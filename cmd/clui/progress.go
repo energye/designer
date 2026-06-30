@@ -12,6 +12,9 @@ import (
 )
 
 func startProgress(state *state) *progressState {
+	if state == nil {
+		return &progressState{active: true}
+	}
 	state.mu.Lock()
 	defer state.mu.Unlock()
 	state.progress = &progressState{active: true}
@@ -19,11 +22,27 @@ func startProgress(state *state) *progressState {
 }
 
 func finishProgressLine(out io.Writer, state *state) {
+	if state == nil {
+		return
+	}
 	state.mu.Lock()
 	defer state.mu.Unlock()
 	if state.progress != nil && state.progress.active {
 		fmt.Fprintln(out)
 		state.progress.active = false
+		state.progress = nil
+	}
+}
+
+func deactivateProgress(state *state, progress *progressState) {
+	if state == nil || progress == nil {
+		return
+	}
+	state.mu.Lock()
+	defer state.mu.Unlock()
+	progress.active = false
+	if state.progress == progress {
+		state.progress = nil
 	}
 }
 
@@ -37,7 +56,8 @@ type lineProgress struct {
 	ansi      bool
 	lastTitle string
 	done      bool
-	state     *progressState
+	shared    *state
+	progress  *progressState
 }
 
 func (p *lineProgress) Set(current int64) {
@@ -123,9 +143,7 @@ func (p *lineProgress) writeLine(text string, width int) {
 }
 
 func (p *lineProgress) deactivate() {
-	if p.state != nil {
-		p.state.active = false
-	}
+	deactivateProgress(p.shared, p.progress)
 }
 
 func trimLine(value string, max int) string {
@@ -157,13 +175,14 @@ func useANSIProgress(out io.Writer) bool {
 }
 
 type bubbleProgress struct {
-	program *tea.Program
-	total   int64
-	current int64
-	message string
-	doneCh  chan struct{}
-	done    bool
-	state   *progressState
+	program  *tea.Program
+	total    int64
+	current  int64
+	message  string
+	doneCh   chan struct{}
+	done     bool
+	shared   *state
+	progress *progressState
 }
 
 func (p *bubbleProgress) Set(current int64) {
@@ -217,7 +236,45 @@ func (p *bubbleProgress) send(current int64, done bool) {
 }
 
 func (p *bubbleProgress) deactivate() {
-	if p.state != nil {
-		p.state.active = false
+	deactivateProgress(p.shared, p.progress)
+}
+
+type ProgressSink struct {
+	ui    UI
+	bar   Progress
+	total int64
+}
+
+func NewProgressSink(ui UI) *ProgressSink {
+	return &ProgressSink{ui: ui}
+}
+
+func (s *ProgressSink) Update(message string, current, total int64) {
+	if s == nil || s.ui == nil || message == "" {
+		return
+	}
+	if total > 0 {
+		if s.bar == nil || s.total != total {
+			if s.bar != nil {
+				s.bar.Finish()
+			}
+			s.bar = s.ui.Progress(message, total)
+			s.total = total
+		}
+		s.bar.Update(current, message)
+		return
+	}
+	if s.bar != nil {
+		s.bar.Update(-1, message)
+		return
+	}
+	s.ui.Info(message)
+}
+
+func (s *ProgressSink) Finish() {
+	if s != nil && s.bar != nil {
+		s.bar.Finish()
+		s.bar = nil
+		s.total = 0
 	}
 }

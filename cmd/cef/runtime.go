@@ -38,7 +38,12 @@ type runtimeSourceConfig struct {
 
 type runtimeURLTemplate struct {
 	value   string
-	version string
+	release string
+}
+
+type runtimeDownloadURL struct {
+	value   string
+	release string
 }
 
 func ensureRuntimeForCEF(ctx context.Context, oav string, onProgress func(Progress)) error {
@@ -58,7 +63,7 @@ func ensureRuntimeForCEF(ctx context.Context, oav string, onProgress func(Progre
 	releaseVersion := runtimeReleaseVersion(runtimeSourceConfigs())
 
 	if !isCachedRuntimeValid(oav, targetPath, major, releaseVersion) {
-		if err := downloadRuntimeLib(ctx, version, major, releaseVersion, osName, arch, runtimeWS(osName), targetPath, onProgress); err != nil {
+		if err := downloadRuntimeLib(ctx, version, major, osName, arch, runtimeWS(osName), targetPath, onProgress); err != nil {
 			return err
 		}
 		if err := saveRuntimeManifest(oav, releaseVersion, targetPath); err != nil {
@@ -92,14 +97,15 @@ func saveRuntimeManifest(oav, releaseVersion, targetPath string) error {
 	})
 }
 
-func downloadRuntimeLib(ctx context.Context, version, major, releaseVersion, osName, arch, ws, targetPath string, onProgress func(Progress)) error {
-	urls := RuntimeDownloadURLs(version, osName, arch, ws)
+func downloadRuntimeLib(ctx context.Context, version, major, osName, arch, ws, targetPath string, onProgress func(Progress)) error {
+	urls := runtimeDownloadURLs(version, osName, arch, ws)
 	if len(urls) == 0 {
 		return fmt.Errorf("download URL not found for libenergy CEF major: %s", major)
 	}
 	var errs []error
-	for _, rawURL := range urls {
-		archivePath := runtimeArchivePath(config.Config.Chromium.Dir, rawURL, major, releaseVersion)
+	for _, item := range urls {
+		rawURL := item.value
+		archivePath := runtimeArchivePath(config.Config.Chromium.Dir, rawURL, major, item.release)
 		tmpTargetPath := runtimeTempLibPath(targetPath)
 		_ = os.Remove(archivePath)
 		_ = os.Remove(tmpTargetPath)
@@ -169,13 +175,22 @@ func runtimeTempLibPath(targetPath string) string {
 }
 
 func RuntimeDownloadURLs(version, osName, arch, ws string) []string {
+	downloads := runtimeDownloadURLs(version, osName, arch, ws)
+	result := make([]string, 0, len(downloads))
+	for _, item := range downloads {
+		result = append(result, item.value)
+	}
+	return result
+}
+
+func runtimeDownloadURLs(version, osName, arch, ws string) []runtimeDownloadURL {
 	major := MajorVersion(version)
 	configs := runtimeSourceConfigs()
 	defaultReleaseVersion := runtimeReleaseVersion(configs)
 	selected := runtimeSelectedSource(configs)
 	var templates []runtimeURLTemplate
 	addTemplate := func(value, releaseVersion string) {
-		templates = append(templates, runtimeURLTemplate{value: value, version: releaseVersion})
+		templates = append(templates, runtimeURLTemplate{value: value, release: releaseVersion})
 	}
 	for _, cfg := range configs {
 		releaseVersion := strings.TrimSpace(cfg.Version)
@@ -215,21 +230,21 @@ func RuntimeDownloadURLs(version, osName, arch, ws string) []string {
 		})
 		prefix := make([]runtimeURLTemplate, 0, len(envTemplates))
 		for _, value := range envTemplates {
-			prefix = append(prefix, runtimeURLTemplate{value: value, version: defaultReleaseVersion})
+			prefix = append(prefix, runtimeURLTemplate{value: value, release: defaultReleaseVersion})
 		}
 		templates = append(prefix, templates...)
 	}
-	var result []string
+	var result []runtimeDownloadURL
 	seen := map[string]bool{}
 	for _, tmpl := range templates {
 		value := strings.TrimSpace(tmpl.value)
 		if value == "" {
 			continue
 		}
-		u := expandRuntimeURL(value, version, major, osName, arch, ws, tmpl.version)
+		u := expandRuntimeURL(value, version, major, osName, arch, ws, tmpl.release)
 		if !seen[u] {
 			seen[u] = true
-			result = append(result, u)
+			result = append(result, runtimeDownloadURL{value: u, release: tmpl.release})
 		}
 	}
 	return result

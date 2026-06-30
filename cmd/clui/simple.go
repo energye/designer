@@ -115,11 +115,12 @@ func (u *simpleUI) Confirm(title string, def bool) (bool, error) {
 
 func (u *simpleUI) Progress(title string, total int64) Progress {
 	return &lineProgress{
-		out:   u.opt.Out,
-		title: title,
-		total: total,
-		ansi:  useANSIProgress(u.opt.Out),
-		state: startProgress(u.state),
+		out:      u.opt.Out,
+		title:    title,
+		total:    total,
+		ansi:     useANSIProgress(u.opt.Out),
+		shared:   u.state,
+		progress: startProgress(u.state),
 	}
 }
 

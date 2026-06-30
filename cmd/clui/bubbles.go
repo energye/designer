@@ -149,11 +149,12 @@ func (u *bubbleUI) Progress(title string, total int64) Progress {
 	}
 	program := tea.NewProgram(model, tea.WithInput(nil), tea.WithOutput(u.opt.Out))
 	p := &bubbleProgress{
-		program: program,
-		total:   total,
-		message: title,
-		doneCh:  make(chan struct{}),
-		state:   startProgress(u.state),
+		program:  program,
+		total:    total,
+		message:  title,
+		doneCh:   make(chan struct{}),
+		shared:   u.state,
+		progress: startProgress(u.state),
 	}
 	go func() {
 		_, _ = program.Run()
@@ -240,7 +241,6 @@ type progressModel struct {
 	title    string
 	message  string
 	progress progress.Model
-	err      error
 }
 
 type progressUpdateMsg struct {
@@ -272,9 +272,6 @@ func (m progressModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m progressModel) View() string {
-	if m.err != nil {
-		return "Error: " + m.err.Error() + "\n"
-	}
 	message := m.message
 	if message == "" {
 		message = m.title

@@ -78,6 +78,21 @@ func TestLineProgress(t *testing.T) {
 	}
 }
 
+func TestProgressSink(t *testing.T) {
+	var out bytes.Buffer
+	sink := NewProgressSink(NewSimple(Options{Out: &out}))
+	sink.Update("Preparing", 0, 0)
+	sink.Update("Downloading", 50, 100)
+	sink.Update("Extracting", 1, 2)
+	sink.Finish()
+	got := out.String()
+	for _, want := range []string{"Preparing", "Downloading", "Extracting", "50%", "100%"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("progress sink output missing %q: %q", want, got)
+		}
+	}
+}
+
 func TestBubbleProgress(t *testing.T) {
 	var out bytes.Buffer
 	progress := NewBubble(Options{Out: &out}, &state{}).Progress("Downloading", 100)

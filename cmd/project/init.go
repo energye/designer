@@ -76,30 +76,17 @@ func RunInit(args dflag.Args, defaultPath string) {
 		}
 		cefDir := argValue(args, "cef-dir")
 		console.Info("Preparing CEF:", version, osName, arch)
-		var bar clui.Progress
+		progressSink := clui.NewProgressSink(console)
 		result, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
 			Dir:     cefDir,
 			Version: version,
 			OS:      osName,
 			Arch:    arch,
 			OnProgress: func(progress cef.Progress) {
-				if progress.Total > 0 {
-					if bar == nil {
-						bar = console.Progress(progress.Message, progress.Total)
-					}
-					bar.Update(progress.Current, progress.Message)
-				} else if progress.Message != "" {
-					if bar != nil {
-						bar.Update(-1, progress.Message)
-						return
-					}
-					console.Info(progress.Message)
-				}
+				progressSink.Update(progress.Message, progress.Current, progress.Total)
 			},
 		})
-		if bar != nil {
-			bar.Finish()
-		}
+		progressSink.Finish()
 		if err != nil {
 			console.Error(err.Error())
 			return
