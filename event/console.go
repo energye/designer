@@ -18,38 +18,53 @@ import (
 	"strings"
 )
 
+type ConsoleLevel int
+
+const (
+	ConsoleLevelInfo ConsoleLevel = iota
+	ConsoleLevelWarn
+	ConsoleLevelDebug
+	ConsoleLevelError
+)
+
+var consoleWriter func(ConsoleLevel, string)
+
+func SetConsoleWriter(writer func(ConsoleLevel, string)) {
+	consoleWriter = writer
+}
+
 func ConsoleWriteInfo(s ...string) {
-	logs.Info(toAny(s...)...)
-	s = append([]string{"[INFO]"}, s...)
-	data := strings.Join(s, " ")
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+	consoleWrite(ConsoleLevelInfo, logs.Info, "[INFO]", s...)
 }
 
 func ConsoleWriteWarn(s ...string) {
-	logs.Warn(toAny(s...)...)
-	s = append([]string{"[WARN]"}, s...)
-	data := strings.Join(s, " ")
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+	consoleWrite(ConsoleLevelWarn, logs.Warn, "[WARN]", s...)
 }
 
 func ConsoleWriteDebug(s ...string) {
-	logs.Warn(toAny(s...)...)
-	s = append([]string{"[DEBUG]"}, s...)
-	data := strings.Join(s, " ")
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+	consoleWrite(ConsoleLevelDebug, logs.Warn, "[DEBUG]", s...)
 }
 
 func ConsoleWriteError(s ...string) {
-	logs.Error(toAny(s...)...)
-	s = append([]string{"[ERROR]"}, s...)
-	data := strings.Join(s, " ")
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+	consoleWrite(ConsoleLevelError, logs.Error, "[ERROR]", s...)
 }
 
 func ConsoleWrite(s ...string) {
-	logs.Info(toAny(s...)...)
-	data := strings.Join(s, " ")
-	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: data}})
+	consoleWrite(ConsoleLevelInfo, logs.Info, "", s...)
+}
+
+func consoleWrite(level ConsoleLevel, log func(...any), prefix string, s ...string) {
+	raw := strings.Join(s, " ")
+	if consoleWriter != nil {
+		consoleWriter(level, raw)
+	} else {
+		log(toAny(s...)...)
+	}
+	dataParts := s
+	if prefix != "" {
+		dataParts = append([]string{prefix}, s...)
+	}
+	Emit(TTrigger{Name: Console, Payload: TPayload{Type: ConsoleInfo, Data: strings.Join(dataParts, " ")}})
 }
 
 func toAny(str ...string) (log []any) {

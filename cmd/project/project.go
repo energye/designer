@@ -16,10 +16,10 @@ package project
 import (
 	"encoding/json"
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/tool"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,15 +35,15 @@ func LoadProject(filePath string) {
 	if bean.GPath != "" && bean.GProject != nil {
 		return
 	}
-	log.Println("[INFO] Load project Config:", filePath)
+	event.ConsoleWriteInfo("Load project Config:", filePath)
 	if filePath == "" {
-		log.Println("[ERROR] Project config .egp path is nil")
+		event.ConsoleWriteError("Project config .egp path is nil")
 		return
 	}
 	if tool.IsExist(filePath) {
 		st, err := os.Stat(filePath)
 		if err != nil {
-			log.Println("[ERROR] Project config", err.Error())
+			event.ConsoleWriteError("Project config", err.Error())
 			return
 		}
 		if st.IsDir() {
@@ -58,7 +58,7 @@ func LoadProject(filePath string) {
 				return nil
 			})
 			if err != nil {
-				log.Println("[ERROR] Project config", err.Error())
+				event.ConsoleWriteError("Project config", err.Error())
 				return
 			}
 		}
@@ -68,21 +68,21 @@ func LoadProject(filePath string) {
 		if isEgp {
 			data, err := os.ReadFile(filePath)
 			if err != nil {
-				log.Println("[ERROR] Read project config file error:", err)
+				event.ConsoleWriteError("Read project config file error:", err.Error())
 				return
 			}
 			project := &bean.TProject{}
 			err = json.Unmarshal(data, project)
 			if err != nil {
-				log.Println("[ERROR] Unmarshal project config file error:", err)
+				event.ConsoleWriteError("Unmarshal project config file error:", err.Error())
 				return
 			}
 			bean.GPath = path
 			bean.GProject = project
 		} else {
-			log.Println("[ERROR] Not .egp project config file:", filePath)
+			event.ConsoleWriteError("Not .egp project config file:", filePath)
 		}
 	} else {
-		log.Println("[ERROR] project config file .egp not exist", filePath)
+		event.ConsoleWriteError("project config file .egp not exist", filePath)
 	}
 }

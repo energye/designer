@@ -14,6 +14,7 @@
 package dflag
 
 import (
+	"fmt"
 	"github.com/energye/designer/pkg/tool"
 	"os"
 	"strings"
@@ -58,6 +59,7 @@ type Command struct {
 
 type dFlag struct {
 	commands *tool.ArrayMap[string, *Command]
+	help     func(string)
 }
 
 func (m *dFlag) Add(cmd *Command) {
@@ -67,14 +69,33 @@ func (m *dFlag) Add(cmd *Command) {
 	m.commands.Add(cmd.Name, cmd)
 }
 
+func (m *dFlag) SetHelpPrinter(help func(string)) {
+	m.help = help
+}
+
 func (m *dFlag) Help() {
-	keys := m.commands.Keys()
-	println("energy command")
-	for _, name := range keys {
-		println("  ", name)
-		cmd := m.commands.Get(name)
-		println("    ", cmd.Long)
+	text := m.HelpText()
+	if m.help != nil {
+		m.help(strings.TrimRight(text, "\n"))
+		return
 	}
+	fmt.Print(text)
+}
+
+func (m *dFlag) HelpText() string {
+	keys := m.commands.Keys()
+	var result strings.Builder
+	result.WriteString("energy command\n")
+	for _, name := range keys {
+		result.WriteString("  ")
+		result.WriteString(name)
+		result.WriteByte('\n')
+		cmd := m.commands.Get(name)
+		result.WriteString("    ")
+		result.WriteString(cmd.Long)
+		result.WriteByte('\n')
+	}
+	return result.String()
 }
 
 func (m *dFlag) Parse() {

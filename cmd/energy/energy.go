@@ -15,6 +15,8 @@ package main
 
 import (
 	"github.com/energye/designer/cmd/build"
+	"github.com/energye/designer/cmd/clioutput"
+	"github.com/energye/designer/cmd/clui"
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/cmd/env"
 	"github.com/energye/designer/cmd/packager"
@@ -29,6 +31,8 @@ energy build -path /you/app/path
 energy package -path /you/app/path
 */
 func main() {
+	console := clui.New()
+	clioutput.Bind(console)
 	projectPath := func(args dflag.Args) string {
 		if args.Contains("path") {
 			path := args.Get("path")
@@ -38,6 +42,9 @@ func main() {
 		return wd
 	}
 	cmd := dflag.New()
+	cmd.SetHelpPrinter(func(text string) {
+		console.Info(text)
+	})
 	cmd.Add(&dflag.Command{
 		Name: "init",
 		Long: `energy init, Create a new ENERGY project

@@ -34,6 +34,10 @@ func RunInit(args dflag.Args, defaultPath string) {
 			console.Error(err.Error())
 			return
 		}
+		if name == "" {
+			console.Error("project name is required")
+			return
+		}
 	}
 	path := argValue(args, "path")
 	if path == "" {
