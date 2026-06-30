@@ -14,43 +14,57 @@
 package project
 
 import (
-	"bufio"
 	"context"
-	"fmt"
-	"os"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/energye/designer/cmd/cef"
+	"github.com/energye/designer/cmd/clui"
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/options/bean"
 )
 
 func RunInit(args dflag.Args, defaultPath string) {
-	reader := bufio.NewReader(os.Stdin)
+	console := clui.New()
 	name := argValue(args, "name")
 	if name == "" {
-		name = promptText(reader, "Project name")
+		var err error
+		name, err = console.Input("Project name", "")
+		if err != nil {
+			console.Error(err.Error())
+			return
+		}
 	}
 	path := argValue(args, "path")
 	if path == "" {
 		path = defaultPath
 	}
-	ui := strings.ToUpper(argValue(args, "ui"))
-	if ui == "" {
-		ui = strings.ToUpper(argValue(args, "framework"))
+	uiName := strings.ToUpper(argValue(args, "ui"))
+	if uiName == "" {
+		uiName = strings.ToUpper(argValue(args, "framework"))
 	}
-	if ui == "" {
-		ui = promptSelect(reader, "Select UI", []string{bean.GUIRenderFramework_LCL, bean.GUIRenderFramework_WV, bean.GUIRenderFramework_CEF})
+	if uiName == "" {
+		items := []string{bean.GUIRenderFramework_LCL, bean.GUIRenderFramework_WV, bean.GUIRenderFramework_CEF}
+		idx, err := console.Select("Select UI", items, 0)
+		if err != nil {
+			console.Error(err.Error())
+			return
+		}
+		uiName = items[idx]
 	}
-	framework := bean.GUIRenderFramework(ui)
+	framework := bean.GUIRenderFramework(uiName)
 
 	frameworkVersion := ""
 	if framework == bean.GUIRenderFramework_CEF {
 		version := argValue(args, "cef-version")
 		if version == "" {
-			version = promptSelect(reader, "Select CEF version", cef.Versions())
+			versions := cef.Versions()
+			idx, err := console.Select("Select CEF version", versions, 0)
+			if err != nil {
+				console.Error(err.Error())
+				return
+			}
+			version = versions[idx]
 		}
 		osName := argValue(args, "os")
 		if osName == "" {
@@ -61,7 +75,8 @@ func RunInit(args dflag.Args, defaultPath string) {
 			arch = runtime.GOARCH
 		}
 		cefDir := argValue(args, "cef-dir")
-		fmt.Println("Preparing CEF:", version, osName, arch)
+		console.Info("Preparing CEF:", version, osName, arch)
+		var bar clui.Progress
 		result, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
 			Dir:     cefDir,
 			Version: version,
@@ -69,14 +84,24 @@ func RunInit(args dflag.Args, defaultPath string) {
 			Arch:    arch,
 			OnProgress: func(progress cef.Progress) {
 				if progress.Total > 0 {
-					fmt.Printf("%s: %s (%d%%)\n", progress.Kind, progress.Message, progress.Current*100/progress.Total)
+					if bar == nil {
+						bar = console.Progress(progress.Message, progress.Total)
+					}
+					bar.Update(progress.Current, progress.Message)
 				} else if progress.Message != "" {
-					fmt.Println(progress.Message)
+					if bar != nil {
+						bar.Update(-1, progress.Message)
+						return
+					}
+					console.Info(progress.Message)
 				}
 			},
 		})
+		if bar != nil {
+			bar.Finish()
+		}
 		if err != nil {
-			fmt.Println("[ERROR]", err.Error())
+			console.Error(err.Error())
 			return
 		}
 		frameworkVersion = result.OSArchVersion
@@ -88,25 +113,26 @@ func RunInit(args dflag.Args, defaultPath string) {
 		GUIRenderFramework: framework,
 		FrameworkVersion:   frameworkVersion,
 		OnConflict: func(conflict Conflict) ConflictDecision {
-			if askYesNo(reader, conflict.Message+" [y/N] ") {
+			ok, _ := console.Confirm(conflict.Message, true)
+			if ok {
 				return ConflictOverwrite
 			}
 			return ConflictCancel
 		},
 	})
 	if err != nil {
-		fmt.Println("[ERROR]", err.Error())
+		console.Error(err.Error())
 		return
 	}
-	fmt.Println("Project created successfully:", result.Project.Name, "->", result.Dir)
-	fmt.Println("Project config:", result.EGPPath)
+	console.Success("Project created successfully:", result.Project.Name, "->", result.Dir)
+	console.Info("Project config:", result.EGPPath)
 	if err = UpdateGoModDependencies(context.Background(), GoModUpdateOptions{
 		Dir: result.Dir,
 		OnOutput: func(message string) {
-			fmt.Println(message)
+			console.Info(message)
 		},
 	}); err != nil {
-		fmt.Println("[ERROR] go mod update failed:", err.Error())
+		console.Error("go mod update failed:", err.Error())
 	}
 }
 
@@ -117,38 +143,4 @@ func argValue(args dflag.Args, names ...string) string {
 		}
 	}
 	return ""
-}
-
-func promptText(reader *bufio.Reader, label string) string {
-	for {
-		fmt.Print(label + ": ")
-		text, _ := reader.ReadString('\n')
-		text = strings.TrimSpace(text)
-		if text != "" {
-			return text
-		}
-	}
-}
-
-func promptSelect(reader *bufio.Reader, label string, items []string) string {
-	for {
-		fmt.Println(label + ":")
-		for i, item := range items {
-			fmt.Printf("  %d. %s\n", i+1, item)
-		}
-		fmt.Print("Select number: ")
-		text, _ := reader.ReadString('\n')
-		text = strings.TrimSpace(text)
-		idx, err := strconv.Atoi(text)
-		if err == nil && idx > 0 && idx <= len(items) {
-			return items[idx-1]
-		}
-	}
-}
-
-func askYesNo(reader *bufio.Reader, label string) bool {
-	fmt.Print(label)
-	text, _ := reader.ReadString('\n')
-	text = strings.ToLower(strings.TrimSpace(text))
-	return text == "y" || text == "yes"
 }

@@ -106,16 +106,38 @@ func InstalledVersions(osName, arch string) []string {
 	}
 	manifest := config.Config.Chromium.LoadCEFManifest()
 	prefix := fmt.Sprintf("%s_%s_", osName, arch)
-	var versions []string
-	for oav := range manifest {
-		if strings.HasPrefix(oav, prefix) && config.Config.Chromium.IsCEFInstalled(oav) {
-			versions = append(versions, oav)
+	seen := map[string]bool{}
+	add := func(oav string) {
+		if strings.HasPrefix(oav, prefix) && IsInstalled(oav) {
+			seen[oav] = true
 		}
+	}
+	for oav := range manifest {
+		add(oav)
+	}
+	if entries, err := os.ReadDir(config.Config.Chromium.Dir); err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				add(entry.Name())
+			}
+		}
+	}
+	add(config.Config.Chromium.Version)
+	versions := make([]string, 0, len(seen))
+	for oav := range seen {
+		versions = append(versions, oav)
 	}
 	sort.Slice(versions, func(i, j int) bool {
 		return CompareVersion(ExtractVersionFromOAV(versions[i]), ExtractVersionFromOAV(versions[j])) > 0
 	})
 	return versions
+}
+
+func IsInstalled(oav string) bool {
+	if config.Config.Chromium.IsCEFInstalled(oav) {
+		return true
+	}
+	return hasCEFInstallDir(oav)
 }
 
 func OSArchVersion(osName, arch, version string) string {
@@ -151,6 +173,41 @@ func IsSupportedOSArch(osName, arch string) bool {
 	return false
 }
 
+func hasCEFInstallDir(oav string) bool {
+	osName, _, _, ok := ParseOSArchVersion(oav)
+	if !ok || config.Config.Chromium.Dir == "" {
+		return false
+	}
+	versionDir := config.Config.Chromium.CEFVersionDir(oav)
+	info, err := os.Stat(versionDir)
+	if err != nil || !info.IsDir() {
+		return false
+	}
+	for _, marker := range cefInstallMarkers(osName) {
+		if fileInfo, err := os.Stat(filepath.Join(versionDir, marker)); err == nil && !fileInfo.IsDir() && fileInfo.Size() > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func cefInstallMarkers(osName string) []string {
+	switch osName {
+	case "windows":
+		return []string{"libcef.dll", filepath.Join("Release", "libcef.dll")}
+	case "linux":
+		return []string{"libcef.so", filepath.Join("Release", "libcef.so")}
+	case "darwin":
+		return []string{
+			filepath.Join("Chromium Embedded Framework.framework", "Chromium Embedded Framework"),
+			filepath.Join("Release", "Chromium Embedded Framework.framework", "Chromium Embedded Framework"),
+			"Chromium Embedded Framework",
+		}
+	default:
+		return nil
+	}
+}
+
 func BuildDownloadURL(version, osName, arch string) string {
 	urlTemplate := config.DesignerConfig.Chromium.Get(version)
 	if urlTemplate == "" {
@@ -183,13 +240,17 @@ func EnsureInstalled(ctx context.Context, options InstallOptions) (*InstallResul
 		return nil, err
 	}
 	config.Config.Chromium.Dir = options.Dir
-	if config.Config.Chromium.IsCEFInstalled(oav) {
-		if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
+	archivePath := ""
+	if !IsInstalled(oav) {
+		archivePath, err = installCEF(ctx, options, oav)
+		if err != nil {
 			return nil, err
 		}
-		return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), Installed: true}, nil
 	}
-	return Install(ctx, options)
+	if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
+		return nil, err
+	}
+	return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), ArchivePath: archivePath, Installed: true}, nil
 }
 
 func Install(ctx context.Context, options InstallOptions) (*InstallResult, error) {
@@ -197,36 +258,62 @@ func Install(ctx context.Context, options InstallOptions) (*InstallResult, error
 	if err != nil {
 		return nil, err
 	}
-	if err = os.MkdirAll(options.Dir, os.ModePerm); err != nil {
-		return nil, err
-	}
-	downloadURL := BuildDownloadURL(options.Version, options.OS, options.Arch)
-	if downloadURL == "" {
-		return nil, fmt.Errorf("download URL not found for CEF version: %s", options.Version)
-	}
 	config.Config.Chromium.Dir = options.Dir
-	archivePath := filepath.Join(options.Dir, ArchiveFileName(options.Version, options.OS, options.Arch))
-	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Start downloading CEF: " + downloadURL})
-	if err = download(ctx, downloadURL, archivePath, options.OnProgress); err != nil {
-		return nil, err
-	}
-	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Extracting CEF: " + archivePath})
-	destDir := filepath.Join(options.Dir, oav)
-	files, err := ExtractTarBz2(ctx, archivePath, destDir, options.OnProgress)
+	archivePath, err := installCEF(ctx, options, oav)
 	if err != nil {
 		return nil, err
-	}
-	if err = config.Config.Chromium.SaveCEFManifest(oav, files); err != nil {
-		return nil, err
-	}
-	if !config.Config.Chromium.IsCEFInstalled(oav) {
-		return nil, errors.New("CEF installation verification failed")
 	}
 	if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
 		return nil, err
 	}
-	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "CEF installed: " + destDir})
-	return &InstallResult{OSArchVersion: oav, Dir: destDir, ArchivePath: archivePath, Installed: true}, nil
+	return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), ArchivePath: archivePath, Installed: true}, nil
+}
+
+func installCEF(ctx context.Context, options InstallOptions, oav string) (string, error) {
+	if err := os.MkdirAll(options.Dir, os.ModePerm); err != nil {
+		return "", err
+	}
+	downloadURL := BuildDownloadURL(options.Version, options.OS, options.Arch)
+	if downloadURL == "" {
+		return "", fmt.Errorf("download URL not found for CEF version: %s", options.Version)
+	}
+	archivePath := filepath.Join(options.Dir, ArchiveFileName(options.Version, options.OS, options.Arch))
+	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Start downloading CEF: " + downloadURL})
+	if err := download(ctx, downloadURL, archivePath, options.OnProgress); err != nil {
+		return "", err
+	}
+	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "Extracting CEF: " + archivePath})
+	files, err := ExtractTarBz2(ctx, archivePath, config.Config.Chromium.CEFVersionDir(oav), options.OnProgress)
+	if err != nil {
+		return "", err
+	}
+	if err = config.Config.Chromium.SaveCEFManifest(oav, files); err != nil {
+		return "", err
+	}
+	if !config.Config.Chromium.IsCEFInstalled(oav) {
+		return "", errors.New("CEF installation verification failed")
+	}
+	progress(options.OnProgress, Progress{Kind: ProgressInfo, Message: "CEF installed: " + config.Config.Chromium.CEFVersionDir(oav)})
+	return archivePath, nil
+}
+
+func UseInstalled(oav string, project *bean.TProject) error {
+	return UseInstalledWithProgress(context.Background(), oav, project, nil)
+}
+
+func UseInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {
+	osName, arch, version, ok := ParseOSArchVersion(oav)
+	if !ok {
+		return fmt.Errorf("invalid CEF version: %s", oav)
+	}
+	_, err := EnsureInstalled(ctx, InstallOptions{
+		Version:    version,
+		OS:         osName,
+		Arch:       arch,
+		Project:    project,
+		OnProgress: onProgress,
+	})
+	return err
 }
 
 func normalizeInstallOptions(options InstallOptions, useLatestVersion, useConfiguredDir, validateTarget bool) (InstallOptions, string, error) {
@@ -258,17 +345,6 @@ func normalizeInstallOptions(options InstallOptions, useLatestVersion, useConfig
 	}
 	options.Dir = absDir
 	return options, OSArchVersion(options.OS, options.Arch, options.Version), nil
-}
-
-func UseInstalled(oav string, project *bean.TProject) error {
-	return UseInstalledWithProgress(context.Background(), oav, project, nil)
-}
-
-func UseInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {
-	if !config.Config.Chromium.IsCEFInstalled(oav) {
-		return fmt.Errorf("CEF is not installed or incomplete: %s", oav)
-	}
-	return useInstalledWithProgress(ctx, oav, project, onProgress)
 }
 
 func useInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {

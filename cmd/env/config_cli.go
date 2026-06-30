@@ -11,7 +11,6 @@
 package env
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -26,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/energye/designer/cmd/cef"
+	"github.com/energye/designer/cmd/clui"
 	"github.com/energye/designer/cmd/dflag"
 	"github.com/energye/designer/pkg/config"
 )
@@ -77,6 +77,15 @@ func runConfig(args dflag.Args, in io.Reader, out, errOut io.Writer) error {
 		return errors.New("energy env: read accepts only one key or json path")
 	}
 	return readConfig(configFile, firstArg(positionals), out)
+}
+
+func cliUI(in io.Reader, out, errOut io.Writer) clui.UI {
+	return clui.New(clui.Options{
+		In:    in,
+		Out:   out,
+		Err:   errOut,
+		NoTUI: in != os.Stdin || out != os.Stdout,
+	})
 }
 
 // extractChromiumConfig reads the chromium.dir and chromium.version from the parsed JSON root.
@@ -212,7 +221,7 @@ func resolveChromiumVersion(root any, value string, in io.Reader, out io.Writer)
 	case 1:
 		return matches[0], nil
 	default:
-		return selectVersion(matches, in, out)
+		return selectVersion(matches, cliUI(in, out, out))
 	}
 }
 
@@ -246,27 +255,12 @@ func isFuzzyVersionMatch(installedDir, value string) bool {
 	return false
 }
 
-// selectVersion prompts the user to choose one version from a list.
-func selectVersion(versions []string, in io.Reader, out io.Writer) (string, error) {
-	fmt.Fprintln(out, "Multiple versions matched:")
-	for i, v := range versions {
-		fmt.Fprintf(out, "  %d. %s\n", i+1, v)
-	}
-	fmt.Fprintf(out, "Select version (0 to cancel): ")
-	reader := bufio.NewReader(in)
-	line, err := reader.ReadString('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		return "", err
-	}
-	line = strings.TrimSpace(line)
-	if line == "" || line == "0" {
+func selectVersion(versions []string, ui clui.UI) (string, error) {
+	idx, err := ui.Select("Multiple versions matched", versions, -1)
+	if err != nil {
 		return "", errors.New("energy env: write canceled")
 	}
-	idx, err := strconv.Atoi(line)
-	if err != nil || idx < 1 || idx > len(versions) {
-		return "", errors.New("energy env: invalid selection")
-	}
-	return versions[idx-1], nil
+	return versions[idx], nil
 }
 
 func firstArg(args []string) string {
@@ -338,7 +332,7 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			return fmt.Errorf("energy env: key not found: %s", name)
 		}
 		if len(matches) > 1 {
-			targetPath, err = selectMatch(matches, in, out)
+			targetPath, err = selectMatch(matches, cliUI(in, out, out))
 			if err != nil {
 				return err
 			}
@@ -355,7 +349,7 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			}
 			sortMatches(matches)
 			if len(matches) > 1 {
-				targetPath, err = selectMatch(matches, in, out)
+				targetPath, err = selectMatch(matches, cliUI(in, out, out))
 				if err != nil {
 					return err
 				}
@@ -379,11 +373,11 @@ func writeConfig(configFile, expr string, in io.Reader, out io.Writer) error {
 			return err
 		}
 	}
-	if isDefaultConfigFile(configFile) && targetPath == "cef_runtime.source" {
-		ensureCEFRuntimeSelection(root)
-	}
 	if err = setPath(root, targetPath, value); err != nil {
 		return err
+	}
+	if isDefaultConfigFile(configFile) {
+		removeTopLevelKey(root, "cef_runtime")
 	}
 	return saveJSONFile(configFile, root)
 }
@@ -426,20 +420,7 @@ func mergeMissingObject(dst, defaults any) {
 }
 
 func canCreateConfigPath(configFile, path string) bool {
-	return isDefaultConfigFile(configFile) && path == "cef_runtime.source"
-}
-
-func ensureCEFRuntimeSelection(root any) {
-	obj, ok := root.(*orderedObject)
-	if !ok {
-		return
-	}
-	value := &orderedObject{members: []orderedMember{{key: "source", value: ""}}}
-	if member := obj.find("cef_runtime"); member != nil {
-		member.value = value
-		return
-	}
-	obj.members = append(obj.members, orderedMember{key: "cef_runtime", value: value})
+	return isDefaultConfigFile(configFile) && path == "chromium.source"
 }
 
 func isDefaultConfigFile(configFile string) bool {
@@ -486,9 +467,8 @@ func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Wr
 		osName, arch = runtime.GOOS, runtime.GOARCH
 		oav = cef.OSArchVersion(osName, arch, version)
 	}
-	if config.Config.Chromium.IsCEFInstalled(oav) {
-		return cef.UseInstalled(oav, nil)
-	}
+	ui := cliUI(in, out, out)
+	var bar clui.Progress
 	_, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
 		Dir:     chromiumDir,
 		Version: version,
@@ -499,12 +479,22 @@ func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Wr
 				return
 			}
 			if progress.Total > 0 {
-				fmt.Fprintf(out, "%s (%d%%)\n", progress.Message, progress.Current*100/progress.Total)
+				if bar == nil {
+					bar = ui.Progress(progress.Message, progress.Total)
+				}
+				bar.Update(progress.Current, progress.Message)
 				return
 			}
-			fmt.Fprintln(out, progress.Message)
+			if bar != nil {
+				bar.Update(-1, progress.Message)
+				return
+			}
+			ui.Info(progress.Message)
 		},
 	})
+	if bar != nil {
+		bar.Finish()
+	}
 	return err
 }
 
@@ -653,26 +643,16 @@ func pathDepth(path string) int {
 	return depth
 }
 
-func selectMatch(matches []jsonMatch, in io.Reader, out io.Writer) (string, error) {
-	fmt.Fprintln(out, "Multiple keys matched:")
-	for i, match := range matches {
-		fmt.Fprintf(out, "%d. %s %s %s\n", i+1, match.path, valueType(match.value), formatValue(match.value))
+func selectMatch(matches []jsonMatch, ui clui.UI) (string, error) {
+	items := make([]string, 0, len(matches))
+	for _, match := range matches {
+		items = append(items, fmt.Sprintf("%s %s %s", match.path, valueType(match.value), formatValue(match.value)))
 	}
-	fmt.Fprint(out, "Select path (0 to cancel): ")
-	reader := bufio.NewReader(in)
-	line, err := reader.ReadString('\n')
-	if err != nil && !errors.Is(err, io.EOF) {
-		return "", err
-	}
-	line = strings.TrimSpace(line)
-	if line == "" || line == "0" {
+	idx, err := ui.Select("Multiple keys matched", items, -1)
+	if err != nil {
 		return "", errors.New("energy env: write canceled")
 	}
-	idx, err := strconv.Atoi(line)
-	if err != nil || idx < 1 || idx > len(matches) {
-		return "", errors.New("energy env: invalid selection")
-	}
-	return matches[idx-1].path, nil
+	return matches[idx].path, nil
 }
 
 func getPath(root any, path string) (any, bool) {
@@ -750,6 +730,19 @@ func (m *orderedObject) find(key string) *orderedMember {
 		}
 	}
 	return nil
+}
+
+func removeTopLevelKey(root any, key string) {
+	obj, ok := root.(*orderedObject)
+	if !ok {
+		return
+	}
+	for i := range obj.members {
+		if obj.members[i].key == key {
+			obj.members = append(obj.members[:i], obj.members[i+1:]...)
+			return
+		}
+	}
 }
 
 func applyToken(node any, token jsonPathToken) (any, bool) {

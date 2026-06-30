@@ -2,6 +2,7 @@ package env
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -168,9 +169,9 @@ func TestWriteConfigPreservesKeyOrder(t *testing.T) {
 	assertBefore(t, content, `"state"`, `"visible"`)
 }
 
-func TestWriteCEFRuntimeSourceCreatesSelectionOnly(t *testing.T) {
+func TestSetChromiumSource(t *testing.T) {
 	configFile := filepath.Join(t.TempDir(), "config.json")
-	if err := os.WriteFile(configFile, []byte(`{"window": {}}`), 0644); err != nil {
+	if err := os.WriteFile(configFile, []byte(`{"chromium": {"dir": "", "version": "", "source": ""}}`), 0644); err != nil {
 		t.Fatal(err)
 	}
 
@@ -178,36 +179,27 @@ func TestWriteCEFRuntimeSourceCreatesSelectionOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ensureCEFRuntimeSelection(root)
-	if err = setPath(root, "cef_runtime.source", "sourceforge"); err != nil {
+	if err = setPath(root, "chromium.source", "sourceforge"); err != nil {
 		t.Fatal(err)
 	}
 
-	assertPath(t, root, "cef_runtime.source", "sourceforge")
-	if _, ok := getPath(root, "cef_runtime.version"); ok {
-		t.Fatal("cef_runtime.version should not be created")
-	}
-	if _, ok := getPath(root, "cef_runtime.sources"); ok {
-		t.Fatal("cef_runtime.sources should not be created")
-	}
+	assertPath(t, root, "chromium.source", "sourceforge")
 }
 
-func TestEnsureCEFRuntimeSelectionReplacesNull(t *testing.T) {
-	configFile := filepath.Join(t.TempDir(), "config.json")
-	if err := os.WriteFile(configFile, []byte(`{"cef_runtime": null}`), 0644); err != nil {
-		t.Fatal(err)
-	}
-	root, err := loadJSONFile(configFile)
+func TestRemoveTopLevelCEFRuntime(t *testing.T) {
+	decoder := json.NewDecoder(strings.NewReader(`{
+		"chromium": {"dir": "", "version": "", "source": ""},
+		"cef_runtime": {"source": "sourceforge"}
+	}`))
+	root, err := decodeOrderedValue(decoder)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	ensureCEFRuntimeSelection(root)
-	if err = setPath(root, "cef_runtime.source", "sourceforge"); err != nil {
-		t.Fatal(err)
+	removeTopLevelKey(root, "cef_runtime")
+	if _, ok := getPath(root, "cef_runtime"); ok {
+		t.Fatal("cef_runtime should be removed")
 	}
-
-	assertPath(t, root, "cef_runtime.source", "sourceforge")
+	assertPath(t, root, "chromium.source", "")
 }
 
 func assertPath(t *testing.T, root any, path string, want any) {

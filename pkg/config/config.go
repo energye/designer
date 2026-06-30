@@ -91,7 +91,6 @@ type TConfig struct {
 	WindowLayout   StorageWindowLayout `json:"window"`          // 窗口配置
 	FrameworkDir   string              `json:"framework"`       // 框架目录
 	Chromium       TChromium           `json:"chromium"`        // CEF 框架
-	CEFRuntime     json.RawMessage     `json:"cef_runtime"`     // CEF libenergy 运行时库下载源配置
 	Registry       string              `json:"registry"`        // 远程服务配置地址
 	Proxy          string              `json:"proxy"`           // 代理地址
 	LastProject    string              `json:"last_project"`    // 最后打开项目
@@ -109,6 +108,7 @@ type TEnv struct {
 type TChromium struct {
 	Dir     string `json:"dir"`     // CEF 根目录, 默认 ~/.energy/chromium
 	Version string `json:"version"` // 当前使用的 CEF 版本, 格式: os_arch_version
+	Source  string `json:"source"`  // libenergy 运行时库下载源
 }
 
 // DefaultDir CEF 默认目录
@@ -129,6 +129,16 @@ type CEFFileInfo struct {
 	Size int64  `json:"size"`
 }
 
+type CEFRuntimeInfo struct {
+	Release string      `json:"release"`
+	File    CEFFileInfo `json:"file"`
+}
+
+type CEFManifestEntry struct {
+	Files   []CEFFileInfo   `json:"files"`
+	Runtime *CEFRuntimeInfo `json:"runtime,omitempty"`
+}
+
 // cefExcludeFiles 解压时不记录的文件
 var cefExcludeFiles = map[string]bool{
 	"cefclient":     true,
@@ -146,13 +156,21 @@ func (m *TChromium) cefManifestPath() string {
 }
 
 // LoadCEFManifest 读取 CEF 安装清单
-func (m *TChromium) LoadCEFManifest() map[string][]CEFFileInfo {
-	manifest := make(map[string][]CEFFileInfo)
+func (m *TChromium) LoadCEFManifest() map[string]CEFManifestEntry {
+	manifest := make(map[string]CEFManifestEntry)
 	data, err := os.ReadFile(m.cefManifestPath())
 	if err != nil {
 		return manifest
 	}
-	_ = json.Unmarshal(data, &manifest)
+	if err = json.Unmarshal(data, &manifest); err == nil {
+		return manifest
+	}
+	var oldManifest map[string][]CEFFileInfo
+	if json.Unmarshal(data, &oldManifest) == nil {
+		for oav, files := range oldManifest {
+			manifest[oav] = CEFManifestEntry{Files: files}
+		}
+	}
 	return manifest
 }
 
@@ -160,7 +178,29 @@ func (m *TChromium) LoadCEFManifest() map[string][]CEFFileInfo {
 // osArchVersion 格式: os_arch_version, 如 windows_amd64_127.3.5
 func (m *TChromium) SaveCEFManifest(osArchVersion string, files []CEFFileInfo) error {
 	manifest := m.LoadCEFManifest()
-	manifest[osArchVersion] = files
+	entry := manifest[osArchVersion]
+	entry.Files = files
+	manifest[osArchVersion] = entry
+	return m.saveCEFManifest(manifest)
+}
+
+func (m *TChromium) SaveCEFRuntimeManifest(osArchVersion, release string, file CEFFileInfo) error {
+	manifest := m.LoadCEFManifest()
+	entry := manifest[osArchVersion]
+	entry.Runtime = &CEFRuntimeInfo{Release: release, File: file}
+	manifest[osArchVersion] = entry
+	return m.saveCEFManifest(manifest)
+}
+
+func (m *TChromium) CEFRuntimeManifest(osArchVersion string) (CEFRuntimeInfo, bool) {
+	entry, ok := m.LoadCEFManifest()[osArchVersion]
+	if !ok || entry.Runtime == nil {
+		return CEFRuntimeInfo{}, false
+	}
+	return *entry.Runtime, true
+}
+
+func (m *TChromium) saveCEFManifest(manifest map[string]CEFManifestEntry) error {
 	data, err := json.MarshalIndent(manifest, "", "\t")
 	if err != nil {
 		return err
@@ -176,12 +216,12 @@ func (m *TChromium) IsCEFInstalled(osArchVersion string) bool {
 		return false
 	}
 	manifest := m.LoadCEFManifest()
-	files, ok := manifest[osArchVersion]
-	if !ok || len(files) == 0 {
+	entry, ok := manifest[osArchVersion]
+	if !ok || len(entry.Files) == 0 {
 		return false
 	}
 	versionDir := filepath.Join(m.Dir, osArchVersion)
-	for _, f := range files {
+	for _, f := range entry.Files {
 		fullPath := filepath.Join(versionDir, f.Name)
 		info, err := os.Stat(fullPath)
 		if err != nil || info.Size() != f.Size {

@@ -551,13 +551,6 @@ func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
 	state := m.dlState
 	m.dlMu.Unlock()
 
-	// 空闲状态: 已安装直接确认, 未安装走下载
-	if state == downloadIdle && m.isVersionInstalled() {
-		oav := m.osArchVersion(m.selectedVersion())
-		m.startUseInstalled(oav)
-		return
-	}
-
 	switch state {
 	case downloadIdle:
 		m.startDownload()
@@ -625,7 +618,7 @@ func (m *TChromiumDirForm) cancelInstall() {
 
 // ==================== 下载流程 ====================
 
-// startDownload 开始下载 CEF
+// startDownload 确保选中的 CEF 和 libenergy runtime 可用并切换使用。
 func (m *TChromiumDirForm) startDownload() {
 	dir := m.dirEdit.Text()
 	if dir == "" {
@@ -650,12 +643,6 @@ func (m *TChromiumDirForm) startDownload() {
 
 	osName := m.selectedOS()
 	arch := m.selectedArch()
-	downloadURL := cmdcef.BuildDownloadURL(version, osName, arch)
-	if downloadURL == "" {
-		event.ConsoleWriteError("Download URL not found for version:", version)
-		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionURLNotFound)
-		return
-	}
 
 	// 创建目录
 	if !tool.IsExist(absDir) {
@@ -674,10 +661,6 @@ func (m *TChromiumDirForm) startDownload() {
 	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
 	m.setInstallControlsEnabled(false)
 
-	targetPath := filepath.Join(absDir, cmdcef.ArchiveFileName(version, osName, arch))
-	event.ConsoleWriteInfo("Start downloading CEF:", downloadURL)
-	event.ConsoleWriteInfo("Target:", targetPath)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	m.dlMu.Lock()
 	m.dlCancel = cancel
@@ -690,21 +673,6 @@ func (m *TChromiumDirForm) startDownload() {
 		Project:    bean.GProject,
 		OnProgress: m.handleInstallProgress,
 	})
-}
-
-func (m *TChromiumDirForm) startUseInstalled(oav string) {
-	m.setDownloadState(downloadRunning)
-	m.progressBar.SetVisible(true)
-	m.progressBar.SetPosition(0)
-	m.statusLabel.SetVisible(true)
-	m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionFailedPreDown)
-	m.setInstallControlsEnabled(false)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	m.dlMu.Lock()
-	m.dlCancel = cancel
-	m.dlMu.Unlock()
-	go m.useInstalledCEF(ctx, oav)
 }
 
 // handleInstallProgress 同步 cmd/cef 的安装进度到窗口状态。
@@ -851,30 +819,6 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 	m.Version = result.OSArchVersion
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.showInstallCompleted()
-	})
-}
-
-func (m *TChromiumDirForm) useInstalledCEF(ctx context.Context, oav string) {
-	defer func() {
-		m.dlMu.Lock()
-		m.dlCancel = nil
-		m.dlMu.Unlock()
-	}()
-	if err := cmdcef.UseInstalledWithProgress(ctx, oav, bean.GProject, m.handleInstallProgress); err != nil {
-		if ctx.Err() != nil {
-			m.onInstallCanceled()
-			return
-		}
-		m.onDownloadError(err.Error())
-		return
-	}
-	m.Version = oav
-	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if m.closing {
-			return
-		}
-		m.Confirmed = true
-		m.Close()
 	})
 }
 

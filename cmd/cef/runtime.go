@@ -53,80 +53,53 @@ func ensureRuntimeForCEF(ctx context.Context, oav string, onProgress func(Progre
 	if major == "" {
 		return fmt.Errorf("invalid CEF version major: %s", version)
 	}
-	runtimeDir := config.Config.FrameworkRuntimePath()
-	if err := os.MkdirAll(runtimeDir, os.ModePerm); err != nil {
-		return err
-	}
 	libName := runtimeLibName(osName, arch)
-	activePath := filepath.Join(runtimeDir, libName)
-	targetPath := filepath.Join(runtimeDir, runtimeVersionedLibName(libName, major))
+	targetPath := filepath.Join(config.Config.Chromium.CEFVersionDir(oav), libName)
+	releaseVersion := runtimeReleaseVersion(runtimeSourceConfigs())
 
-	if fileExists(activePath) {
-		activeVersion, err := CEFLibVersion(activePath)
-		if err != nil {
-			return fmt.Errorf("read active libenergy CEF version failed: %w", err)
-		}
-		if fmt.Sprint(activeVersion.Major) == major {
-			return nil
-		}
-	}
-
-	if !fileExists(targetPath) {
-		if err := downloadRuntimeLib(ctx, version, major, osName, arch, runtimeWS(osName), targetPath, onProgress); err != nil {
+	if !isCachedRuntimeValid(oav, targetPath, major, releaseVersion) {
+		if err := downloadRuntimeLib(ctx, version, major, releaseVersion, osName, arch, runtimeWS(osName), targetPath, onProgress); err != nil {
 			return err
 		}
-	}
-	targetVersion, err := CEFLibVersion(targetPath)
-	if err != nil {
-		_ = os.Remove(targetPath)
-		return fmt.Errorf("read target libenergy CEF version failed: %w", err)
-	}
-	if fmt.Sprint(targetVersion.Major) != major {
-		_ = os.Remove(targetPath)
-		return fmt.Errorf("libenergy CEF major mismatch: want %s, got %d", major, targetVersion.Major)
-	}
-	return switchRuntimeLib(activePath, targetPath, libName)
-}
-
-func switchRuntimeLib(activePath, targetPath, libName string) error {
-	var backupPath, archivePath string
-	if fileExists(activePath) {
-		activeVersion, err := CEFLibVersion(activePath)
-		if err != nil {
+		if err := saveRuntimeManifest(oav, releaseVersion, targetPath); err != nil {
 			return err
-		}
-		archivePath = filepath.Join(filepath.Dir(activePath), runtimeVersionedLibName(libName, fmt.Sprint(activeVersion.Major)))
-		if archivePath != activePath {
-			backupPath = activePath + ".switch-backup"
-			_ = os.Remove(backupPath)
-			if err = os.Rename(activePath, backupPath); err != nil {
-				return err
-			}
-		}
-	}
-	if err := os.Rename(targetPath, activePath); err != nil {
-		if backupPath != "" {
-			_ = os.Rename(backupPath, activePath)
-		}
-		return err
-	}
-	if backupPath != "" {
-		_ = os.Remove(archivePath)
-		if err := os.Rename(backupPath, archivePath); err != nil {
-			_ = os.Rename(backupPath, archivePath+".switch-backup")
 		}
 	}
 	return nil
 }
 
-func downloadRuntimeLib(ctx context.Context, version, major, osName, arch, ws, targetPath string, onProgress func(Progress)) error {
+func isCachedRuntimeValid(oav, targetPath, major, releaseVersion string) bool {
+	info, ok := config.Config.Chromium.CEFRuntimeManifest(oav)
+	if !ok || info.Release != releaseVersion || info.File.Name != filepath.Base(targetPath) {
+		return false
+	}
+	stat, err := os.Stat(targetPath)
+	if err != nil || stat.IsDir() || stat.Size() != info.File.Size {
+		return false
+	}
+	version, err := CEFLibVersion(targetPath)
+	return err == nil && fmt.Sprint(version.Major) == major
+}
+
+func saveRuntimeManifest(oav, releaseVersion, targetPath string) error {
+	stat, err := os.Stat(targetPath)
+	if err != nil {
+		return err
+	}
+	return config.Config.Chromium.SaveCEFRuntimeManifest(oav, releaseVersion, config.CEFFileInfo{
+		Name: filepath.Base(targetPath),
+		Size: stat.Size(),
+	})
+}
+
+func downloadRuntimeLib(ctx context.Context, version, major, releaseVersion, osName, arch, ws, targetPath string, onProgress func(Progress)) error {
 	urls := RuntimeDownloadURLs(version, osName, arch, ws)
 	if len(urls) == 0 {
 		return fmt.Errorf("download URL not found for libenergy CEF major: %s", major)
 	}
 	var errs []error
-	for i, rawURL := range urls {
-		archivePath := filepath.Join(filepath.Dir(targetPath), runtimeArchiveFileName(rawURL, major, i))
+	for _, rawURL := range urls {
+		archivePath := runtimeArchivePath(config.Config.Chromium.Dir, rawURL, major, releaseVersion)
 		tmpTargetPath := runtimeTempLibPath(targetPath)
 		_ = os.Remove(archivePath)
 		_ = os.Remove(tmpTargetPath)
@@ -151,7 +124,7 @@ func downloadRuntimeLib(ctx context.Context, version, major, osName, arch, ws, t
 			errs = append(errs, fmt.Errorf("%s: libenergy CEF major mismatch: want %s, got %d", rawURL, major, targetVersion.Major))
 			continue
 		}
-		if err := os.Rename(tmpTargetPath, targetPath); err != nil {
+		if err := replaceFile(tmpTargetPath, targetPath); err != nil {
 			_ = os.Remove(tmpTargetPath)
 			errs = append(errs, fmt.Errorf("%s: install libenergy failed: %w", rawURL, err))
 			continue
@@ -159,6 +132,34 @@ func downloadRuntimeLib(ctx context.Context, version, major, osName, arch, ws, t
 		return nil
 	}
 	return errors.Join(errs...)
+}
+
+func runtimeArchivePath(chromiumDir, rawURL, major, releaseVersion string) string {
+	return filepath.Join(chromiumDir, runtimeArchiveFileName(rawURL, major, releaseVersion))
+}
+
+func replaceFile(srcPath, dstPath string) error {
+	backupPath := dstPath + ".bak"
+	_ = os.Remove(backupPath)
+	hadDst := false
+	if _, err := os.Stat(dstPath); err == nil {
+		hadDst = true
+		if err = os.Rename(dstPath, backupPath); err != nil {
+			return err
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := os.Rename(srcPath, dstPath); err != nil {
+		if hadDst {
+			_ = os.Rename(backupPath, dstPath)
+		}
+		return err
+	}
+	if hadDst {
+		_ = os.Remove(backupPath)
+	}
+	return nil
 }
 
 func runtimeTempLibPath(targetPath string) string {
@@ -242,20 +243,10 @@ func runtimeSelectedSource(configs []runtimeSourceConfig) string {
 	if selected := strings.TrimSpace(os.Getenv("ENERGY_CEF_RUNTIME_SOURCE")); selected != "" {
 		return selected
 	}
-	if selected := selectedRuntimeSource(config.Config.CEFRuntime); selected != "" {
+	if selected := strings.TrimSpace(config.Config.Chromium.Source); selected != "" {
 		return selected
 	}
 	return firstRuntimeSource(configs)
-}
-
-func selectedRuntimeSource(raw json.RawMessage) string {
-	var cfg struct {
-		Source string `json:"source"`
-	}
-	if json.Unmarshal(raw, &cfg) != nil {
-		return ""
-	}
-	return strings.TrimSpace(cfg.Source)
 }
 
 func firstRuntimeSource(configs []runtimeSourceConfig) string {
@@ -359,7 +350,8 @@ func extractRuntimeZip(archivePath, targetPath string) error {
 	return errors.New("runtime zip has no file")
 }
 
-func runtimeArchiveFileName(rawURL, major string, index int) string {
+func runtimeArchiveFileName(rawURL, major, releaseVersion string) string {
+	prefix := runtimeArchivePrefix(releaseVersion, major)
 	u, err := url.Parse(rawURL)
 	if err == nil {
 		name := filepath.Base(u.Path)
@@ -368,12 +360,31 @@ func runtimeArchiveFileName(rawURL, major string, index int) string {
 		}
 		if name != "." && name != "/" && name != "" {
 			if unescaped, unescapeErr := url.PathUnescape(name); unescapeErr == nil {
-				return fmt.Sprintf("%d_%s", index, unescaped)
+				return fmt.Sprintf("%s_%s", prefix, unescaped)
 			}
-			return fmt.Sprintf("%d_%s", index, name)
+			return fmt.Sprintf("%s_%s", prefix, name)
 		}
 	}
-	return fmt.Sprintf("%d_libenergy_%s.zip", index, major)
+	return fmt.Sprintf("%s_libenergy_%s.zip", prefix, major)
+}
+
+func runtimeArchivePrefix(releaseVersion, major string) string {
+	prefix := strings.TrimSpace(releaseVersion)
+	if prefix == "" {
+		prefix = major
+	}
+	replacer := strings.NewReplacer(
+		"/", "_",
+		"\\", "_",
+		":", "_",
+		"*", "_",
+		"?", "_",
+		`"`, "_",
+		"<", "_",
+		">", "_",
+		"|", "_",
+	)
+	return replacer.Replace(prefix)
 }
 
 func runtimeLibName(osName, arch string) string {
@@ -393,12 +404,6 @@ func runtimeLibName(osName, arch string) string {
 	return fmt.Sprintf("libenergy-%s%s.%s", arch, ws, ext)
 }
 
-func runtimeVersionedLibName(libName, major string) string {
-	ext := filepath.Ext(libName)
-	base := strings.TrimSuffix(libName, ext)
-	return base + "-" + major + ext
-}
-
 func runtimeWS(osName string) string {
 	if osName != "linux" {
 		return ""
@@ -410,11 +415,6 @@ func runtimeWS(osName string) string {
 		return libname.UseWS
 	}
 	return "gtk3"
-}
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }
 
 type RuntimeVersion struct {
