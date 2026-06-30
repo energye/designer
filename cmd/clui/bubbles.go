@@ -34,8 +34,20 @@ type bubbleUI struct {
 	state *state
 }
 
-func NewBubble(opt Options, state *state) UI {
-	return &bubbleUI{opt: opt, state: state}
+func NewBubble(opt Options, shared *state) UI {
+	opt = mergeOptions(defaultOptions(), opt)
+	if shared == nil {
+		shared = &state{}
+	}
+	return &bubbleUI{opt: opt, state: shared}
+}
+
+func (u *bubbleUI) run(model tea.Model) (tea.Model, error) {
+	return tea.NewProgram(model, tea.WithInput(u.opt.In), tea.WithOutput(u.opt.Out)).Run()
+}
+
+func (u *bubbleUI) fallback() UI {
+	return NewSimple(u.opt, u.state)
 }
 
 func (u *bubbleUI) Info(args ...any) {
@@ -59,14 +71,9 @@ func (u *bubbleUI) Success(args ...any) {
 }
 
 func (u *bubbleUI) Input(title, def string) (string, error) {
-	model := inputModel{title: title, input: textinput.New()}
-	model.input.SetValue(def)
-	model.input.Focus()
-	model.input.CharLimit = 256
-	model.input.Width = maxInt(bubbleInputMinWidth, len(def)+bubbleInputExtraWidth)
-	result, err := tea.NewProgram(model, tea.WithInput(u.opt.In), tea.WithOutput(u.opt.Out)).Run()
+	result, err := u.run(newInputModel(title, def))
 	if err != nil {
-		return NewSimple(u.opt, u.state).Input(title, def)
+		return u.fallback().Input(title, def)
 	}
 	typed, ok := result.(inputModel)
 	if !ok || typed.canceled {
@@ -83,10 +90,9 @@ func (u *bubbleUI) Select(title string, items []string, def int) (int, error) {
 	if len(items) == 0 {
 		return -1, fmt.Errorf("clui: select has no items")
 	}
-	model := newSelectModel(title, newSelectItems(items), def)
-	result, err := tea.NewProgram(model, tea.WithInput(u.opt.In), tea.WithOutput(u.opt.Out)).Run()
+	result, err := u.run(newSelectModel(title, newSelectItems(items), def))
 	if err != nil {
-		return NewSimple(u.opt, u.state).Select(title, items, def)
+		return u.fallback().Select(title, items, def)
 	}
 	typed, ok := result.(selectModel)
 	if !ok || typed.canceled {
@@ -169,16 +175,25 @@ type inputModel struct {
 	canceled bool
 }
 
+func newInputModel(title, def string) inputModel {
+	input := textinput.New()
+	input.SetValue(def)
+	input.Focus()
+	input.CharLimit = 256
+	input.Width = maxInt(bubbleInputMinWidth, len(def)+bubbleInputExtraWidth)
+	return inputModel{title: title, input: input}
+}
+
 func (m inputModel) Init() tea.Cmd { return textinput.Blink }
 
 func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
+		switch msg.String() {
+		case "enter":
 			return m, tea.Quit
-		case tea.KeyEsc, tea.KeyCtrlC:
+		case "esc", "ctrl+c":
 			m.canceled = true
 			return m, tea.Quit
 		}
@@ -214,11 +229,11 @@ func (m selectModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.list.SetWidth(msg.Width)
 		return m, nil
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEsc, tea.KeyCtrlC:
+		switch msg.String() {
+		case "esc", "ctrl+c":
 			m.canceled = true
 			return m, tea.Quit
-		case tea.KeyEnter:
+		case "enter":
 			if item, ok := m.list.SelectedItem().(selectItem); ok {
 				m.selected = item.index
 			}

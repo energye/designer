@@ -55,6 +55,7 @@ func New(options ...Options) UI {
 }
 
 func NewSimple(opt Options, states ...*state) UI {
+	opt = mergeOptions(defaultOptions(), opt)
 	var shared *state
 	if len(states) > 0 {
 		shared = states[0]
