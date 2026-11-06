@@ -23,6 +23,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -81,7 +82,7 @@ func NewChromiumDirForm() *TChromiumDirForm {
 
 type TChromiumDirForm struct {
 	lcl.TEngForm
-	closing   bool
+	closing   atomic.Bool
 	selectDir lcl.ISelectDirectoryDialog
 	dlState   downloadState
 	dlCancel  context.CancelFunc
@@ -708,11 +709,10 @@ func (m *TChromiumDirForm) isVersionInstalled() bool {
 }
 
 func (m *TChromiumDirForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
-	state := m.currentDownloadState()
-	if state == downloadRunning || state == downloadExtracting {
-		m.cancelInstall()
-	}
-	m.closing = true
+	// 窗口关闭后控件会 CaFree, 无论当前处于哪个状态都要停止后台安装任务,
+	// 并且丢弃所有排队中的 UI 回调, 避免访问已释放的控件。
+	m.cancelInstall()
+	m.closing.Store(true)
 }
 
 func (m *TChromiumDirForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
@@ -743,6 +743,9 @@ func (m *TChromiumDirForm) defaultBtnClick(sender lcl.IObject) {
 
 // confirmBtnClick 确认/下载/停止/继续 按钮
 func (m *TChromiumDirForm) confirmBtnClick(sender lcl.IObject) {
+	if m.closing.Load() {
+		return
+	}
 	m.dlMu.Lock()
 	state := m.dlState
 	m.dlMu.Unlock()
@@ -912,7 +915,7 @@ func (m *TChromiumDirForm) handleInstallProgress(progress cmdcef.Progress) {
 
 func (m *TChromiumDirForm) updateInstallInfo(message string) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if m.closing {
+		if m.closing.Load() {
 			return
 		}
 		state := m.currentDownloadState()
@@ -956,7 +959,7 @@ func (m *TChromiumDirForm) updateInstallProgress(state downloadState, progress c
 		message = fallback
 	}
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if m.closing {
+		if m.closing.Load() {
 			return
 		}
 		currentState := m.currentDownloadState()
@@ -996,6 +999,9 @@ func (m *TChromiumDirForm) pauseDownload() {
 	m.cancelInstall()
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing.Load() {
+			return
+		}
 		m.setDownloadState(downloadPaused)
 		m.statusLabel.SetCaption(metadata.CEFFormStatusLabelCaptionCaptionPaused)
 		m.setVersionControlsEnabled(true)
@@ -1007,6 +1013,9 @@ func (m *TChromiumDirForm) stopExtract() {
 	m.cancelInstall()
 	// 即时反馈: 按钮变为"停止中", 禁用防重复点击
 	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing.Load() {
+			return
+		}
 		m.confirmBtn.SetText(metadata.GI18n.Dict("ChromiumDirFormConfirmBtn.TextStopping"))
 		m.confirmBtn.SetEnabled(false)
 	})
@@ -1033,8 +1042,12 @@ func (m *TChromiumDirForm) installCEF(ctx context.Context, options cmdcef.Instal
 		m.onDownloadError(err.Error())
 		return
 	}
-	m.Version = result.OSArchVersion
 	lcl.RunOnMainThreadAsync(func(id uint32) {
+		// 窗口可能已关闭并 CaFree: 既不能操作控件, 也不该把安装结果当成用户已确认
+		if m.closing.Load() {
+			return
+		}
+		m.Version = result.OSArchVersion
 		m.showInstallCompleted()
 	})
 }
@@ -1049,7 +1062,7 @@ func (m *TChromiumDirForm) showInstallCompleted() {
 
 func (m *TChromiumDirForm) onInstallCanceled() {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
-		if m.closing {
+		if m.closing.Load() {
 			return
 		}
 		state := m.currentDownloadState()
@@ -1069,6 +1082,9 @@ func (m *TChromiumDirForm) onInstallCanceled() {
 func (m *TChromiumDirForm) onDownloadError(msg string) {
 	event.ConsoleWriteError("CEF download error:", msg)
 	lcl.RunOnMainThreadAsync(func(id uint32) {
+		if m.closing.Load() {
+			return
+		}
 		m.resetToIdle()
 		m.statusLabel.SetCaption(metadata.GI18n.Dict("ChromiumDirFormStatusLabel.CaptionFailDownload") +
 			": " + msg)
@@ -1076,6 +1092,9 @@ func (m *TChromiumDirForm) onDownloadError(msg string) {
 }
 
 func (m *TChromiumDirForm) onCompleteBtnClick(sender lcl.IObject) {
+	if m.closing.Load() {
+		return
+	}
 	m.Confirmed = true
 	m.Close()
 }

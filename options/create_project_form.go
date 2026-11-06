@@ -19,7 +19,6 @@ import (
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources"
@@ -35,6 +34,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -65,11 +65,12 @@ func NewCreateProjectForm() *TCreateProjectForm {
 
 type TCreateProjectForm struct {
 	lcl.TEngForm
-	closing     bool
-	goVersionOK bool
-	one         sync.Once
-	box         lcl.IPanel
-	selectDir   lcl.ISelectDirectoryDialog
+	closing       atomic.Bool
+	one           sync.Once
+	box           lcl.IPanel
+	selectDir     lcl.ISelectDirectoryDialog
+	submitted     bool                      // 用户是否点击了创建
+	createOptions *cmdproject.CreateOptions // 关闭前收集到的创建参数, 窗体释放后仍可读取
 
 	// 基础信息部分
 	projNameEdit    lcl.ILabeledEdit
@@ -108,7 +109,7 @@ func (m *TCreateProjectForm) FormCreate(sender lcl.IObject) {
 }
 
 func (m *TCreateProjectForm) OnCloseQuery(sender lcl.IObject, canClose *bool) {
-	m.closing = true
+	m.closing.Store(true)
 }
 
 func (m *TCreateProjectForm) OnClose(sender lcl.IObject, closeAction *types.TCloseAction) {
@@ -311,9 +312,13 @@ func (m *TCreateProjectForm) checkGoVersion() {
 				buf.WriteString(part, " ")
 			}
 			// 支持的最低Go版本
-			m.goVersionOK = compareVersions(version, minGoVersion) == 1
+			goVersionOK := compareVersions(version, minGoVersion) == 1
 			lcl.RunOnMainThreadAsync(func(id uint32) {
-				if m.goVersionOK {
+				// 窗口可能已 CaFree, 不能再去操作已释放的控件
+				if m.closing.Load() {
+					return
+				}
+				if goVersionOK {
 					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/ok_btn_16x16.png"))
 				} else {
 					m.goVersionStatus.SetIconFavoriteFormBytes(resources.Images("button/err_btn_16x16.png"))
@@ -379,22 +384,16 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 		return false
 	})
 
+	// 只收集参数并结束当前模态循环。CEF 版本窗口和实际创建流程由 runCreate
+	// 在 ShowModal 返回之后顺序执行, 避免在按钮事件回调里嵌套模态循环。
 	create := cmdproject.CreateOptions{Name: projectName, Dir: projectDir, GUIRenderFramework: guiRenderFrameworkGUI}
-	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
-		// 弹出 CEF 版本选择/安装窗口
-		chromiumForm := NewChromiumDirForm()
-		// 新项目尚未创建, 不能把当前打开的项目传给安装流程, 否则会改写旧项目的 framework_version
-		chromiumForm.Project = nil
-		chromiumForm.ShowModal()
-		// 用户未点确认或安装未完成, 中止创建
-		if !chromiumForm.Confirmed || chromiumForm.Version == "" ||
-			!config.Config.Chromium.IsCEFInstalled(chromiumForm.Version) {
-			return
-		}
-		create.FrameworkVersion = chromiumForm.Version
-	}
-
+	m.createOptions = &create
+	m.submitted = true
 	m.Close()
+}
+
+// runCreateProject 执行实际的项目创建, 不依赖任何已释放的窗体控件
+func runCreateProject(create cmdproject.CreateOptions) {
 	// 触发文件修改监听事件
 	event.Emit(event.TTrigger{Name: event.ListenFileChange})
 	// 重置设计器

@@ -143,6 +143,8 @@ type CEFRuntimeInfo struct {
 	WS          string      `json:"ws,omitempty"`
 	Source      string      `json:"source,omitempty"`
 	Fingerprint string      `json:"fingerprint,omitempty"` // 自定义参数指纹, 变化后必须重新安装
+	Major       string      `json:"major,omitempty"`       // 安装时的 CEF major, 避免把其它 major 的运行库当成缓存
+	SHA256      string      `json:"sha256,omitempty"`      // 运行库文件哈希, 用于校验完整性而无需加载动态库
 	File        CEFFileInfo `json:"file"`
 }
 

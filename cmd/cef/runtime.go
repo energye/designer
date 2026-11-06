@@ -13,6 +13,8 @@ package cef
 import (
 	"archive/zip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -212,6 +214,12 @@ func runtimeFingerprint(options RuntimeOptions) string {
 	return strings.Join([]string{options.Release, options.Module, options.WS, options.Source}, "|")
 }
 
+// isCachedRuntimeValid 只根据安装清单和文件内容校验缓存。
+//
+// 注意: 绝不能在这里 dlopen/加载 libenergy 运行库。designer 进程启动时已加载
+// ~/.energy/runtime 下的 LCL 库, 而这里的运行库位于 ~/.energy/chromium/{version},
+// 两者是同名但不同的镜像; 二次加载会让 Objective-C 类重复注册 (macOS),
+// 造成 Cocoa 窗口调用崩溃 (SIGILL)。
 func isCachedRuntimeValid(oav, targetPath string, options RuntimeOptions) bool {
 	info, ok := config.Config.Chromium.CEFRuntimeManifest(oav)
 	if !ok || info.Release != options.Release || info.File.Name != filepath.Base(targetPath) {
@@ -237,12 +245,36 @@ func isCachedRuntimeValid(oav, targetPath string, options RuntimeOptions) bool {
 	if err != nil || stat.IsDir() || stat.Size() != info.File.Size {
 		return false
 	}
-	version, err := CEFLibVersion(targetPath)
-	return err == nil && fmt.Sprint(version.Major) == options.Major
+	hash, err := fileSHA256(targetPath)
+	if err != nil {
+		return false
+	}
+	if info.Major == options.Major && info.SHA256 == hash {
+		return true
+	}
+	if info.Major != "" && info.Major != options.Major {
+		return false
+	}
+	if info.SHA256 != "" && info.SHA256 != hash {
+		return false
+	}
+	// 兼容旧清单(未记录 major/哈希): 用 oav 中的 CEF major 确认身份后补写清单,
+	// 避免仅仅为了升级清单就重新下载整个运行库。
+	_, _, version, ok := ParseOSArchVersion(oav)
+	if !ok || MajorVersion(version) != options.Major {
+		return false
+	}
+	info.Major = options.Major
+	info.SHA256 = hash
+	return config.Config.Chromium.SaveCEFRuntimeManifestDetail(oav, info) == nil
 }
 
 func saveRuntimeManifest(oav string, options RuntimeOptions, targetPath string) error {
 	stat, err := os.Stat(targetPath)
+	if err != nil {
+		return err
+	}
+	hash, err := fileSHA256(targetPath)
 	if err != nil {
 		return err
 	}
@@ -252,11 +284,27 @@ func saveRuntimeManifest(oav string, options RuntimeOptions, targetPath string) 
 		WS:          options.WS,
 		Source:      options.Source,
 		Fingerprint: runtimeFingerprint(options),
+		Major:       options.Major,
+		SHA256:      hash,
 		File: config.CEFFileInfo{
 			Name: filepath.Base(targetPath),
 			Size: stat.Size(),
 		},
 	})
+}
+
+// fileSHA256 计算文件内容哈希, 用于在不加载动态库的前提下校验运行库完整性
+func fileSHA256(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	hash := sha256.New()
+	if _, err = io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 func downloadRuntimeLib(ctx context.Context, options RuntimeOptions, targetPath string, onProgress func(Progress)) error {
@@ -281,15 +329,16 @@ func downloadRuntimeLib(ctx context.Context, options RuntimeOptions, targetPath 
 			errs = append(errs, fmt.Errorf("%s: %w", rawURL, err))
 			continue
 		}
-		targetVersion, err := CEFLibVersion(tmpTargetPath)
+		// 只做文件级校验, 不加载动态库读取 CEF 版本: 该运行库与 designer 启动时
+		// 已加载的 LCL 库同名, 二次加载会导致 macOS Objective-C 类重复注册并崩溃。
+		// 下载地址按 options.Major 构造, 版本写入安装清单, 完整性由文件哈希保证。
+		stat, err := os.Stat(tmpTargetPath)
+		if err == nil && (stat.IsDir() || stat.Size() <= 0) {
+			err = errors.New("invalid libenergy file in archive")
+		}
 		if err != nil {
 			_ = os.Remove(tmpTargetPath)
-			errs = append(errs, fmt.Errorf("%s: read libenergy CEF version failed: %w", rawURL, err))
-			continue
-		}
-		if fmt.Sprint(targetVersion.Major) != options.Major {
-			_ = os.Remove(tmpTargetPath)
-			errs = append(errs, fmt.Errorf("%s: libenergy CEF major mismatch: want %s, got %d", rawURL, options.Major, targetVersion.Major))
+			errs = append(errs, fmt.Errorf("%s: %w", rawURL, err))
 			continue
 		}
 		if err := replaceFile(tmpTargetPath, targetPath); err != nil {
@@ -642,13 +691,6 @@ func runtimeLibName(osName, arch, ws string) string {
 		ext = "dll"
 	}
 	return fmt.Sprintf("libenergy-%s%s.%s", arch, ws, ext)
-}
-
-type RuntimeVersion struct {
-	Major   int32
-	Minor   int32
-	Release int32
-	Build   int32
 }
 
 func MajorVersion(version string) string {
