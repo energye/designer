@@ -17,9 +17,11 @@
     "version": "v3.0.1",
     "source": "sourceforge",
     "sources": {
-      "github": [],
+      "github": [
+        "https://github.com/energye/lib/releases/download/{version}/libenergy-{module-}{os}-{arch}{-ws}.zip"
+      ],
       "sourceforge": [
-        "https://sourceforge.net/projects/liblcl/files/{version}/libenergy-{os}-{arch}-{ws}-{major}.zip/download"
+        "https://sourceforge.net/projects/liblcl/files/{version}/libenergy-{module-}{os}-{arch}{-ws}.zip/download"
       ]
     }
   },

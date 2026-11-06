@@ -38,8 +38,17 @@ import (
 
 var (
 	chromiumDirFormWidth  = int32(500)
-	chromiumDirFormHeight = int32(200)
+	chromiumDirFormHeight = int32(270)
+	runtimeWSList         = []string{"auto", "gtk2", "gtk3"}
 )
+
+// i18nText 读取国际化文案; 词条缺失时回退默认值, 避免标签空白
+func i18nText(key, fallback string) string {
+	if text := metadata.GI18n.Dict(key); text != "" {
+		return text
+	}
+	return fallback
+}
 
 // 下载状态
 type downloadState int32
@@ -77,8 +86,9 @@ type TChromiumDirForm struct {
 	dlState   downloadState
 	dlCancel  context.CancelFunc
 	dlMu      sync.Mutex
-	Confirmed bool   // 用户是否点击了"完成"确认按钮
-	Version   string // 已安装完成的 CEF 版本
+	Confirmed bool           // 用户是否点击了"完成"确认按钮
+	Version   string         // 已安装完成的 CEF 版本
+	Project   *bean.TProject // 安装时关联的项目, 创建项目流程中应置为 nil
 
 	fontLbl lcl.IFont
 
@@ -96,6 +106,13 @@ type TChromiumDirForm struct {
 	versionBox   lcl.IComboBox
 	versionList  []string        // 下拉框索引对应的真实版本号
 	installedSet map[string]bool // 已安装版本集合
+
+	// libenergy 运行时库配置
+	runtimeVersionLabel lcl.ILabel // 只读展示配置中的发行版本
+	runtimeSourceBox    lcl.IComboBox
+	runtimeWSBox        lcl.IComboBox
+	assetLabel          lcl.ILabel
+	controlsDisabled    bool // 下载期间禁用配置控件
 
 	// 下载进度
 	progressBar lcl.IProgressBar
@@ -132,12 +149,16 @@ func (m *TChromiumDirForm) FormCreate(sender lcl.IObject) {
 		return gTop
 	}
 
+	m.Project = bean.GProject
 	m.setupDirSection(nextTop)
 	m.setupVersionSection(nextTop)
+	m.setupRuntimeSection(nextTop)
 	m.setupProgressSection(nextTop)
 	m.setupActionButtons(nextTop)
 
 	m.updateConfirmBtnText()
+	m.updateAssetLabel()
+	m.updateRuntimeWSEnabled()
 }
 
 // setupDirSection 创建目录输入区域 (说明文字 + 输入框 + 浏览按钮)
@@ -273,6 +294,130 @@ func (m *TChromiumDirForm) setupVersionSection(nextTop func(int32) int32) {
 	m.populateVersionList()
 }
 
+// setupRuntimeSection 创建 libenergy 运行时库配置区域
+// 三列的 left/width 与 CEF 版本行 (versionBox / osBox / archBox) 完全一致
+func (m *TChromiumDirForm) setupRuntimeSection(nextTop func(int32) int32) {
+	rowTop := nextTop(32)
+
+	runtimeText := lcl.NewLabel(m)
+	runtimeText.SetName("ChromiumDirFormRuntimeText")
+	runtimeText.SetLeft(0)
+	runtimeText.SetTop(rowTop)
+	runtimeText.SetAutoSize(false)
+	runtimeText.SetWidth(96)
+	runtimeText.SetAlignment(types.TaRightJustify)
+	runtimeText.SetFont(m.fontLbl)
+	runtimeText.SetCaption(i18nText("ChromiumDirFormRuntimeText.Caption", "libenergy:"))
+	runtimeText.SetParent(m)
+
+	// 发行版本固定取配置值, 只读展示, 不提供编辑框
+	m.runtimeVersionLabel = lcl.NewLabel(m)
+	m.runtimeVersionLabel.SetName("ChromiumDirFormRuntimeVersionLabel")
+	m.runtimeVersionLabel.SetLeft(100)
+	m.runtimeVersionLabel.SetTop(rowTop)
+	m.runtimeVersionLabel.SetAutoSize(false)
+	m.runtimeVersionLabel.SetWidth(100)
+	m.runtimeVersionLabel.AnchorSideTop().SetControl(runtimeText)
+	m.runtimeVersionLabel.AnchorSideTop().SetSide(types.AsrCenter)
+	releaseVersion := strings.TrimSpace(config.Config.Chromium.RuntimeVersion)
+	if releaseVersion == "" {
+		releaseVersion = cmdcef.RuntimeReleaseVersion()
+	}
+	m.runtimeVersionLabel.SetCaption(releaseVersion)
+	m.runtimeVersionLabel.SetParent(m)
+
+	// 下载源, 与 osBox 同列
+	srcText := lcl.NewLabel(m)
+	srcText.SetName("ChromiumDirFormRuntimeSourceText")
+	srcText.SetLeft(m.runtimeVersionLabel.Left() + m.runtimeVersionLabel.Width() + 10)
+	srcText.SetTop(rowTop)
+	srcText.SetAutoSize(false)
+	srcText.SetWidth(35)
+	srcText.SetFont(m.fontLbl)
+	srcText.SetAlignment(types.TaRightJustify)
+	srcText.SetCaption(i18nText("ChromiumDirFormRuntimeSourceText.Caption", "Src:"))
+	srcText.SetParent(m)
+
+	m.runtimeSourceBox = lcl.NewComboBox(m)
+	m.runtimeSourceBox.SetName("ChromiumDirFormRuntimeSourceBox")
+	m.runtimeSourceBox.SetLeft(srcText.Left() + srcText.Width() + 4)
+	m.runtimeSourceBox.SetTop(rowTop)
+	m.runtimeSourceBox.SetWidth(90)
+	m.runtimeSourceBox.SetReadOnly(true)
+	m.runtimeSourceBox.AnchorSideTop().SetControl(srcText)
+	m.runtimeSourceBox.AnchorSideTop().SetSide(types.AsrCenter)
+	m.runtimeSourceBox.SetStyle(types.CsDropDownList)
+	m.runtimeSourceBox.SetBorderStyle(types.BsSingle)
+	sources := cmdcef.RuntimeSources()
+	if len(sources) == 0 {
+		sources = []string{"sourceforge", "github"}
+	}
+	selectedSource := strings.TrimSpace(config.Config.Chromium.Source)
+	if selectedSource == "" {
+		selectedSource = cmdcef.RuntimeDefaultSource()
+	}
+	if selectedSource == "" {
+		selectedSource = sources[0]
+	}
+	sourceIdx := 0
+	for i, source := range sources {
+		m.runtimeSourceBox.Items().Add(source)
+		if source == selectedSource {
+			sourceIdx = i
+		}
+	}
+	m.runtimeSourceBox.SetItemIndex(int32(sourceIdx))
+	m.runtimeSourceBox.SetOnChange(m.onRuntimeOptionChange)
+	m.runtimeSourceBox.SetParent(m)
+
+	// 窗口系统, 与 archBox 同列; 非 Linux 时禁用
+	wsText := lcl.NewLabel(m)
+	wsText.SetName("ChromiumDirFormRuntimeWSText")
+	wsText.SetLeft(m.runtimeSourceBox.Left() + m.runtimeSourceBox.Width() + 10)
+	wsText.SetTop(rowTop)
+	wsText.SetAutoSize(false)
+	wsText.SetWidth(35)
+	wsText.SetFont(m.fontLbl)
+	wsText.SetAlignment(types.TaRightJustify)
+	wsText.SetCaption(i18nText("ChromiumDirFormRuntimeWSText.Caption", "WS:"))
+	wsText.SetParent(m)
+
+	m.runtimeWSBox = lcl.NewComboBox(m)
+	m.runtimeWSBox.SetName("ChromiumDirFormRuntimeWSBox")
+	m.runtimeWSBox.SetLeft(wsText.Left() + wsText.Width() + 4)
+	m.runtimeWSBox.SetTop(rowTop)
+	m.runtimeWSBox.SetWidth(80)
+	m.runtimeWSBox.SetReadOnly(true)
+	m.runtimeWSBox.AnchorSideTop().SetControl(wsText)
+	m.runtimeWSBox.AnchorSideTop().SetSide(types.AsrCenter)
+	m.runtimeWSBox.SetStyle(types.CsDropDownList)
+	m.runtimeWSBox.SetBorderStyle(types.BsSingle)
+	defaultWS := strings.TrimSpace(config.Config.Chromium.RuntimeWS)
+	if defaultWS == "" {
+		defaultWS = cmdcef.NewRuntimeOptions(cmdcef.LatestVersion(), m.selectedOS(), m.selectedArch(), cmdcef.RuntimeOverride{}).WS
+	}
+	wsIdx := 0
+	for i, ws := range runtimeWSList {
+		m.runtimeWSBox.Items().Add(ws)
+		if ws == defaultWS {
+			wsIdx = i
+		}
+	}
+	m.runtimeWSBox.SetItemIndex(int32(wsIdx))
+	m.runtimeWSBox.SetOnChange(m.onRuntimeOptionChange)
+	m.runtimeWSBox.SetParent(m)
+
+	m.assetLabel = lcl.NewLabel(m)
+	m.assetLabel.SetName("ChromiumDirFormRuntimeAssetLabel")
+	m.assetLabel.SetLeft(100)
+	m.assetLabel.SetTop(nextTop(24))
+	m.assetLabel.SetAutoSize(false)
+	m.assetLabel.SetWidth(370)
+	m.assetLabel.Font().SetColor(colors.RGBToColor(100, 100, 100))
+	m.assetLabel.Font().SetSize(8)
+	m.assetLabel.SetParent(m)
+}
+
 // setupProgressSection 创建下载进度区域 (进度条 + 状态标签)
 func (m *TChromiumDirForm) setupProgressSection(nextTop func(int32) int32) {
 	m.progressBar = lcl.NewProgressBar(m)
@@ -318,6 +463,53 @@ func (m *TChromiumDirForm) setupActionButtons(nextTop func(int32) int32) {
 }
 
 // ==================== OS/ARCH/版本 与 URL ====================
+
+// selectedWS 返回用户选择的窗口系统; 目标平台不是 Linux 时返回空
+func (m *TChromiumDirForm) selectedWS() string {
+	if m.runtimeWSBox == nil || m.selectedOS() != "linux" {
+		return ""
+	}
+	idx := m.runtimeWSBox.ItemIndex()
+	if idx < 0 || int(idx) >= len(runtimeWSList) || runtimeWSList[idx] == "auto" {
+		return ""
+	}
+	return runtimeWSList[idx]
+}
+
+// updateRuntimeWSEnabled 随 OS 下拉框动态切换, 仅选中 Linux 时可编辑
+func (m *TChromiumDirForm) updateRuntimeWSEnabled() {
+	if m.runtimeWSBox == nil {
+		return
+	}
+	m.runtimeWSBox.SetEnabled(!m.controlsDisabled && m.selectedOS() == "linux")
+}
+
+// runtimeOverride 收集界面上的运行时库参数
+// 发行版本固定使用配置值, URL 与 module 同样保持配置值, 均不在此覆盖
+func (m *TChromiumDirForm) runtimeOverride() cmdcef.RuntimeOverride {
+	return cmdcef.RuntimeOverride{
+		Source: strings.TrimSpace(m.runtimeSourceBox.Text()),
+		WS:     m.selectedWS(),
+	}
+}
+
+// onRuntimeOptionChange 配置变化时刷新资源名预览
+func (m *TChromiumDirForm) onRuntimeOptionChange(sender lcl.IObject) {
+	m.updateAssetLabel()
+}
+
+// updateAssetLabel 按当前选项预览将要下载的 libenergy 资源名
+func (m *TChromiumDirForm) updateAssetLabel() {
+	if m.assetLabel == nil || m.runtimeSourceBox == nil || m.runtimeWSBox == nil {
+		return
+	}
+	version := m.selectedVersion()
+	if version == "" {
+		version = cmdcef.LatestVersion()
+	}
+	options := cmdcef.NewRuntimeOptions(version, m.selectedOS(), m.selectedArch(), m.runtimeOverride())
+	m.assetLabel.SetCaption(i18nText("ChromiumDirFormRuntimeAssetLabel.Caption", "Asset:") + " " + options.AssetName())
+}
 
 // selectedOS 返回当前选中的系统名
 func (m *TChromiumDirForm) selectedOS() string {
@@ -413,16 +605,20 @@ func (m *TChromiumDirForm) populateArchListWithDefault(defaultArch string) {
 func (m *TChromiumDirForm) onOSChange(sender lcl.IObject) {
 	m.populateArchList()
 	m.refreshVersionListPreserveSelection()
+	m.updateAssetLabel()
+	m.updateRuntimeWSEnabled()
 }
 
 // onArchChange 架构切换时重建版本列表并更新按钮文字
 func (m *TChromiumDirForm) onArchChange(sender lcl.IObject) {
 	m.refreshVersionListPreserveSelection()
+	m.updateAssetLabel()
 }
 
 // onVersionChange 版本切换时仅更新按钮文字, 不重建列表
 func (m *TChromiumDirForm) onVersionChange(sender lcl.IObject) {
 	m.updateConfirmBtnText()
+	m.updateAssetLabel()
 }
 
 func (m *TChromiumDirForm) refreshVersionListPreserveSelection() {
@@ -602,9 +798,12 @@ func (m *TChromiumDirForm) setInstallControlsEnabled(enabled bool) {
 }
 
 func (m *TChromiumDirForm) setVersionControlsEnabled(enabled bool) {
+	m.controlsDisabled = !enabled
 	m.osBox.SetEnabled(enabled)
 	m.archBox.SetEnabled(enabled)
 	m.versionBox.SetEnabled(enabled)
+	m.runtimeSourceBox.SetEnabled(enabled)
+	m.updateRuntimeWSEnabled()
 }
 
 func (m *TChromiumDirForm) cancelInstall() {
@@ -653,6 +852,19 @@ func (m *TChromiumDirForm) startDownload() {
 		}
 	}
 
+	// 把界面上的配置保存为环境配置, 供后续命令与其它安装流程复用
+	// 发行版本固定使用配置值, runtime_url / runtime_module 属于命名规则, 均不在此覆盖
+	override := m.runtimeOverride()
+	cfg := &config.Config.Chromium
+	cfg.Dir = absDir
+	cfg.RuntimeWS = override.WS
+	if override.Source != "" {
+		cfg.Source = override.Source
+	}
+	config.UpdateConfig()
+	m.updateAssetLabel()
+	event.ConsoleWriteInfo("libenergy runtime asset:", cmdcef.NewRuntimeOptions(version, osName, arch, override).AssetName())
+
 	// 锁定 UI
 	m.setDownloadState(downloadRunning)
 	m.progressBar.SetVisible(true)
@@ -666,12 +878,17 @@ func (m *TChromiumDirForm) startDownload() {
 	m.dlCancel = cancel
 	m.dlMu.Unlock()
 	go m.installCEF(ctx, cmdcef.InstallOptions{
-		Dir:        absDir,
-		Version:    version,
-		OS:         osName,
-		Arch:       arch,
-		Project:    bean.GProject,
-		OnProgress: m.handleInstallProgress,
+		Dir:            absDir,
+		Version:        version,
+		OS:             osName,
+		Arch:           arch,
+		Project:        m.Project,
+		RuntimeVersion: override.Release,
+		RuntimeSource:  override.Source,
+		RuntimeURL:     override.URL,
+		RuntimeModule:  override.Module,
+		RuntimeWS:      override.WS,
+		OnProgress:     m.handleInstallProgress,
 	})
 }
 

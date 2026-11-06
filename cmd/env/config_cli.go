@@ -64,7 +64,11 @@ func RunConfig(args dflag.Args) {
 func runConfig(args dflag.Args, in io.Reader, out, errOut io.Writer) error {
 	configFile := filepath.Join(config.Path(), "config.json")
 	if args.Contains("l") {
-		return listVersions(configFile, args.Get("l"), out)
+		module := strings.TrimSpace(args.Get("l"))
+		if strings.EqualFold(module, "libenergy") {
+			return listRuntimeInfo(configFile, out)
+		}
+		return listVersions(configFile, module, out)
 	}
 	if args.Contains("w") {
 		if len(args.Positionals()) > 0 {
@@ -117,6 +121,96 @@ func extractChromiumConfig(root any) (dir, version string) {
 	return
 }
 
+// extractRuntimeConfig 从配置文件中读取 libenergy 运行时库自定义项
+func extractRuntimeConfig(root any) cef.RuntimeOverride {
+	var result cef.RuntimeOverride
+	rootObj, ok := root.(*orderedObject)
+	if !ok {
+		return result
+	}
+	for _, member := range rootObj.members {
+		if member.key != "chromium" {
+			continue
+		}
+		chromiumObj, ok := member.value.(*orderedObject)
+		if !ok {
+			break
+		}
+		for _, item := range chromiumObj.members {
+			value, _ := item.value.(string)
+			switch item.key {
+			case "source":
+				result.Source = value
+			case "runtime_version":
+				result.Release = value
+			case "runtime_url":
+				result.URL = value
+			case "runtime_module":
+				result.Module = value
+			case "runtime_ws":
+				result.WS = value
+			}
+		}
+	}
+	return result
+}
+
+// syncRuntimeConfig 让进程内配置与磁盘配置保持一致, 供安装流程读取
+func syncRuntimeConfig(root any) cef.RuntimeOverride {
+	override := extractRuntimeConfig(root)
+	cfg := &config.Config.Chromium
+	cfg.Source = override.Source
+	cfg.RuntimeVersion = override.Release
+	cfg.RuntimeURL = override.URL
+	cfg.RuntimeModule = override.Module
+	cfg.RuntimeWS = override.WS
+	return override
+}
+
+// listRuntimeInfo 列出当前 libenergy 运行时库的解析结果与已安装记录
+func listRuntimeInfo(configFile string, out io.Writer) error {
+	root, err := loadJSONFile(configFile)
+	if err != nil {
+		return err
+	}
+	if isDefaultConfigFile(configFile) {
+		root = mergeDefaultConfig(root)
+	}
+	chromiumDir, currentVersion := extractChromiumConfig(root)
+	override := syncRuntimeConfig(root)
+	osName, arch, version, ok := cef.ParseOSArchVersion(currentVersion)
+	if !ok {
+		osName, arch, version = runtime.GOOS, runtime.GOARCH, cef.LatestVersion()
+	}
+	options := cef.NewRuntimeOptions(version, osName, arch, override)
+	fmt.Fprintf(out, "release: %s\n", options.Release)
+	fmt.Fprintf(out, "source: %s\n", options.Source)
+	fmt.Fprintf(out, "module: %s\n", options.Module)
+	fmt.Fprintf(out, "ws: %s\n", options.WS)
+	fmt.Fprintf(out, "asset: %s\n", options.AssetName())
+	for i, downloadURL := range options.DownloadURLs() {
+		fmt.Fprintf(out, "url[%d]: %s\n", i, downloadURL)
+	}
+	chromiumCfg := config.TChromium{Dir: chromiumDir}
+	manifest := chromiumCfg.LoadCEFManifest()
+	var installed []string
+	for oav, entry := range manifest {
+		if entry.Runtime != nil {
+			installed = append(installed, oav)
+		}
+	}
+	sort.Strings(installed)
+	if len(installed) == 0 {
+		fmt.Fprintln(out, "installed: (none)")
+		return nil
+	}
+	for _, oav := range installed {
+		info := manifest[oav].Runtime
+		fmt.Fprintf(out, "installed: %s release=%s module=%s ws=%s file=%s\n", oav, info.Release, info.Module, info.WS, info.File.Name)
+	}
+	return nil
+}
+
 // listVersions lists installed versions for a given module.
 // Currently supports module "cef" which lists directories under the chromium root.
 // Each directory is expected to be named as "os_arch_version".
@@ -127,7 +221,7 @@ func listVersions(configFile, module string, out io.Writer) error {
 		return errors.New("energy env: -l requires a module name, e.g. -l cef")
 	}
 	if module != "cef" {
-		return fmt.Errorf("energy env: unsupported module %q, supported: cef", module)
+		return fmt.Errorf("energy env: unsupported module %q, supported: cef, libenergy", module)
 	}
 	root, err := loadJSONFile(configFile)
 	if err != nil {
@@ -420,7 +514,18 @@ func mergeMissingObject(dst, defaults any) {
 }
 
 func canCreateConfigPath(configFile, path string) bool {
-	return isDefaultConfigFile(configFile) && path == "chromium.source"
+	if !isDefaultConfigFile(configFile) {
+		return false
+	}
+	switch path {
+	case "chromium.source",
+		"chromium.runtime_version",
+		"chromium.runtime_url",
+		"chromium.runtime_module",
+		"chromium.runtime_ws":
+		return true
+	}
+	return false
 }
 
 func isDefaultConfigFile(configFile string) bool {
@@ -443,6 +548,7 @@ func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Wr
 	}
 	chromiumDir, _ := extractChromiumConfig(root)
 	config.Config.Chromium.Dir = chromiumDir
+	override := syncRuntimeConfig(root)
 	oav := value
 	if _, _, _, ok := cef.ParseOSArchVersion(oav); !ok {
 		resolved, err := resolveChromiumVersion(root, value, in, out)
@@ -470,10 +576,15 @@ func useOrInstallChromiumVersion(root any, value string, in io.Reader, out io.Wr
 	ui := cliUI(in, out, out)
 	progressSink := clui.NewProgressSink(ui)
 	_, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
-		Dir:     chromiumDir,
-		Version: version,
-		OS:      osName,
-		Arch:    arch,
+		Dir:            chromiumDir,
+		Version:        version,
+		OS:             osName,
+		Arch:           arch,
+		RuntimeVersion: override.Release,
+		RuntimeSource:  override.Source,
+		RuntimeURL:     override.URL,
+		RuntimeModule:  override.Module,
+		RuntimeWS:      override.WS,
 		OnProgress: func(progress cef.Progress) {
 			progressSink.Update(progress.Message, progress.Current, progress.Total)
 		},

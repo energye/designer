@@ -383,6 +383,8 @@ func (m *TCreateProjectForm) createClick(sender lcl.IObject) {
 	if guiRenderFrameworkGUI == bean.GUIRenderFramework_CEF {
 		// 弹出 CEF 版本选择/安装窗口
 		chromiumForm := NewChromiumDirForm()
+		// 新项目尚未创建, 不能把当前打开的项目传给安装流程, 否则会改写旧项目的 framework_version
+		chromiumForm.Project = nil
 		chromiumForm.ShowModal()
 		// 用户未点确认或安装未完成, 中止创建
 		if !chromiumForm.Confirmed || chromiumForm.Version == "" ||

@@ -55,6 +55,36 @@ type InstallOptions struct {
 	Arch       string
 	Project    *bean.TProject
 	OnProgress func(Progress)
+
+	// libenergy 运行时库自定义参数, 为空时使用 ~/.energy/config.json 中的配置
+	RuntimeVersion string
+	RuntimeSource  string
+	RuntimeURL     string
+	RuntimeModule  string
+	RuntimeWS      string
+}
+
+func (o InstallOptions) RuntimeOverride() RuntimeOverride {
+	return RuntimeOverride{
+		Release: o.RuntimeVersion,
+		Source:  o.RuntimeSource,
+		URL:     o.RuntimeURL,
+		Module:  o.RuntimeModule,
+		WS:      o.RuntimeWS,
+	}
+}
+
+// RuntimeOptions 返回本次安装使用的运行时库参数, 可用于界面预览与校验
+func (o InstallOptions) RuntimeOptions() RuntimeOptions {
+	osName := o.OS
+	if osName == "" {
+		osName = runtime.GOOS
+	}
+	arch := o.Arch
+	if arch == "" {
+		arch = runtime.GOARCH
+	}
+	return NewRuntimeOptions(o.Version, osName, arch, o.RuntimeOverride())
 }
 
 type InstallResult struct {
@@ -247,7 +277,7 @@ func EnsureInstalled(ctx context.Context, options InstallOptions) (*InstallResul
 			return nil, err
 		}
 	}
-	if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
+	if err = useInstalledWithProgress(ctx, oav, options, options.OnProgress); err != nil {
 		return nil, err
 	}
 	return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), ArchivePath: archivePath, Installed: true}, nil
@@ -263,7 +293,7 @@ func Install(ctx context.Context, options InstallOptions) (*InstallResult, error
 	if err != nil {
 		return nil, err
 	}
-	if err = useInstalledWithProgress(ctx, oav, options.Project, options.OnProgress); err != nil {
+	if err = useInstalledWithProgress(ctx, oav, options, options.OnProgress); err != nil {
 		return nil, err
 	}
 	return &InstallResult{OSArchVersion: oav, Dir: config.Config.Chromium.CEFVersionDir(oav), ArchivePath: archivePath, Installed: true}, nil
@@ -347,15 +377,16 @@ func normalizeInstallOptions(options InstallOptions, useLatestVersion, useConfig
 	return options, OSArchVersion(options.OS, options.Arch, options.Version), nil
 }
 
-func useInstalledWithProgress(ctx context.Context, oav string, project *bean.TProject, onProgress func(Progress)) error {
+func useInstalledWithProgress(ctx context.Context, oav string, options InstallOptions, onProgress func(Progress)) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if err := ensureRuntimeForCEF(ctx, oav, onProgress); err != nil {
+	applyRuntimeOptionsToConfig(options)
+	if err := ensureRuntimeForCEF(ctx, oav, options.RuntimeOverride(), onProgress); err != nil {
 		return err
 	}
 	config.Config.Chromium.Version = oav
-	if project != nil && project.GUIRenderFramework == bean.GUIRenderFramework_CEF {
+	if project := options.Project; project != nil && project.GUIRenderFramework == bean.GUIRenderFramework_CEF {
 		project.FrameworkVersion = oav
 		if bean.GProject == project {
 			if err := project.Save(); err != nil {
@@ -365,6 +396,26 @@ func useInstalledWithProgress(ctx context.Context, oav string, project *bean.TPr
 	}
 	config.UpdateConfig()
 	return nil
+}
+
+// applyRuntimeOptionsToConfig 把本次显式指定的运行库参数持久化到用户配置
+func applyRuntimeOptionsToConfig(options InstallOptions) {
+	cfg := &config.Config.Chromium
+	if value := strings.TrimSpace(options.RuntimeVersion); value != "" {
+		cfg.RuntimeVersion = value
+	}
+	if value := strings.TrimSpace(options.RuntimeSource); value != "" {
+		cfg.Source = value
+	}
+	if value := strings.TrimSpace(options.RuntimeURL); value != "" {
+		cfg.RuntimeURL = value
+	}
+	if value := strings.TrimSpace(options.RuntimeModule); value != "" {
+		cfg.RuntimeModule = value
+	}
+	if value := strings.TrimSpace(options.RuntimeWS); value != "" {
+		cfg.RuntimeWS = value
+	}
 }
 
 func ExtractTarBz2(ctx context.Context, archivePath, destDir string, onProgress func(Progress)) ([]config.CEFFileInfo, error) {

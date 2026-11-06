@@ -60,6 +60,14 @@ func RunInit(args dflag.Args, defaultPath string) {
 
 	frameworkVersion := ""
 	if framework == bean.GUIRenderFramework_CEF {
+		osName := argValue(args, "os")
+		if osName == "" {
+			osName = runtime.GOOS
+		}
+		arch := argValue(args, "arch")
+		if arch == "" {
+			arch = runtime.GOARCH
+		}
 		version := argValue(args, "cef-version")
 		if version == "" {
 			versions := cef.Versions()
@@ -69,27 +77,39 @@ func RunInit(args dflag.Args, defaultPath string) {
 				return
 			}
 			version = versions[idx]
+		} else if o, a, v, ok := cef.ParseOSArchVersion(version); ok {
+			if !args.Contains("os") {
+				osName = o
+			}
+			if !args.Contains("arch") {
+				arch = a
+			}
+			version = v
 		}
-		osName := argValue(args, "os")
-		if osName == "" {
-			osName = runtime.GOOS
+		resolved := cef.ResolveConfiguredVersion(version)
+		if resolved == "" {
+			console.Error("unsupported CEF version:", version)
+			return
 		}
-		arch := argValue(args, "arch")
-		if arch == "" {
-			arch = runtime.GOARCH
+		version = resolved
+		installOptions := cef.InstallOptions{
+			Dir:            argValue(args, "cef-dir"),
+			Version:        version,
+			OS:             osName,
+			Arch:           arch,
+			RuntimeVersion: argValue(args, "libenergy-version", "runtime-version"),
+			RuntimeSource:  argValue(args, "libenergy-source", "runtime-source"),
+			RuntimeURL:     argValue(args, "libenergy-url", "runtime-url"),
+			RuntimeModule:  argValue(args, "libenergy-module", "runtime-module"),
+			RuntimeWS:      argValue(args, "ws", "libenergy-ws"),
 		}
-		cefDir := argValue(args, "cef-dir")
 		console.Info("Preparing CEF:", version, osName, arch)
+		console.Info("libenergy runtime asset:", installOptions.RuntimeOptions().AssetName())
 		progressSink := clui.NewProgressSink(console)
-		result, err := cef.EnsureInstalled(context.Background(), cef.InstallOptions{
-			Dir:     cefDir,
-			Version: version,
-			OS:      osName,
-			Arch:    arch,
-			OnProgress: func(progress cef.Progress) {
-				progressSink.Update(progress.Message, progress.Current, progress.Total)
-			},
-		})
+		installOptions.OnProgress = func(progress cef.Progress) {
+			progressSink.Update(progress.Message, progress.Current, progress.Total)
+		}
+		result, err := cef.EnsureInstalled(context.Background(), installOptions)
 		progressSink.Finish()
 		if err != nil {
 			console.Error(err.Error())

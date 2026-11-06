@@ -90,6 +90,18 @@ energy init [-name <project-name>] [-path <project-dir>] [-ui <LCL|WV|CEF>]
 | `-arch` | CEF 目标架构：`amd64`、`386`、`arm64`、`arm` | 当前架构 |
 | `-cef-dir` | CEF 安装目录 | `~/.energy/chromium` |
 
+`-cef-version` 也支持完整版本 `127.3.5` 与 `os_arch_version` 格式 `linux_amd64_127.3.5`。
+
+创建 CEF 项目时可同时自定义 libenergy 运行时库：
+
+| 参数 | 说明 | 默认值 |
+|---|---|---|
+| `-libenergy-version` | 运行时库发行版本，如 `v3.0.1` | 内嵌配置的版本 |
+| `-libenergy-source` | 下载源 `sourceforge` / `github` | `sourceforge` |
+| `-libenergy-module` | 模块段模板，如 `cef{major}`、`cef{major}-webview`、`-`（无模块） | `cef{major}` |
+| `-libenergy-url` | 自定义下载地址模板，多个地址用 `,` 或 `;` 分隔 | 空 |
+| `-ws` | Linux 窗口系统 `gtk2` / `gtk3` | 自动判断，默认 `gtk3` |
+
 示例：
 
 ```bash
@@ -107,6 +119,9 @@ energy init -name cefdemo -ui CEF -cef-version 127
 
 # 指定 CEF 目录
 energy init -name cefdemo -ui CEF -cef-version 127 -cef-dir /opt/energy/chromium
+
+# 指定运行时库发行版本、下载源与 Linux 窗口系统
+energy init -name cefdemo -ui CEF -cef-version 127 -libenergy-version v3.0.1 -libenergy-source sourceforge -ws gtk3
 ```
 
 ## energy run
@@ -250,7 +265,7 @@ energy env -w chromium.dir=/home/user/.energy/chromium
 # 修改代理
 energy env -w proxy=http://127.0.0.1:7890
 
-# 修改下载源
+# 修改 libenergy 下载源
 energy env -w chromium.source=sourceforge
 ```
 
@@ -276,6 +291,14 @@ energy env -l cef
 * linux_amd64_127.3.5
   linux_amd64_147.0.14
 ```
+
+查看 libenergy 运行时库的解析结果与已安装记录：
+
+```bash
+energy env -l libenergy
+```
+
+输出包含发行版本、下载源、模块名、窗口系统、将要下载的资源名、全部候选地址，以及每个 CEF 版本目录下已安装的运行时库。
 
 ### 安装或切换 CEF
 
@@ -307,36 +330,84 @@ linux_amd64_127.3.5
 darwin_arm64_147.0.14
 ```
 
-### 切换下载源
+### 自定义 libenergy 运行时库
 
-切换 libenergy 下载源：
+自 `v3.0.1` 起，运行时库资源按下述规则命名（参考 `github.com/energye/lib` 的 release）：
+
+```text
+libenergy-{module-}{os}-{arch}{-ws}.zip
+```
+
+`module` 和 `ws` 都是可选段，模板把**连字符归属到占位符本身**，让可选段成为原子单位：
+
+| 占位符 | 类型 | 有值时 | 无值时 |
+|---|---|---|---|
+| `{module-}` | 可选段，连字符在右 | `cef109-` | 空 |
+| `{-ws}` | 可选段，连字符在左 | `-gtk3` | 空 |
+| `{module}` | 纯值 | `cef109` | 空 |
+| `{ws}` | 纯值 | `gtk3` | 空 |
+| `{os}` | 必填 | `linux` | — |
+| `{arch}` | 必填 | `amd64` | — |
+
+值不存在时，整个占位符连同它的连字符一起消失，因此不会拼出 `libenergy--linux...` 或结尾多余的 `-`，也无需在展开后折叠重复连字符。`{module}` / `{ws}` 是不带连字符的纯值，适合放在目录名、日志或查询参数里；只有拼资源名时才用 `{module-}` / `{-ws}`。
+
+四种组合：
+
+| module | ws | 结果 |
+|---|---|---|
+| `cef109` | `gtk3` | `libenergy-cef109-linux-amd64-gtk3.zip` |
+| `cef127` | 无 | `libenergy-cef127-windows-386.zip` |
+| 无 | `gtk2` | `libenergy-linux-arm64-gtk2.zip` |
+| 无 | 无 | `libenergy-darwin-arm64.zip` |
+
+命名规则固定，模板统一使用 `{module-}` 与 `{-ws}` 两个可选段；不再兼容把连字符写在模板里的旧式写法（例如 `libenergy-{module}-{os}-{arch}-{ws}.zip`），也不会在展开后自动清理多余连字符。界面只提供下载源与 Linux 窗口系统两个可选项，发行版本固定使用配置值，仅作只读展示；窗口系统下拉框随系统选择动态启用，仅 Linux 可选。
+
+以下配置项都可用 `energy env -w` 持久化：
+
+| 配置 | 说明 |
+|---|---|
+| `chromium.source` | 下载源 `sourceforge`（默认）或 `github` |
+| `chromium.runtime_version` | 发行版本，如 `v3.0.1` |
+| `chromium.runtime_ws` | Linux 窗口系统 `gtk2` / `gtk3`，空为自动判断 |
+| `chromium.runtime_module` | 高级：模块段模板，默认 `cef{major}`，`-` 表示无模块；命名规则固定，通常无需修改 |
+| `chromium.runtime_url` | 高级：自定义地址模板，优先级最高，多个用 `,` 或 `;` 分隔；命名规则固定，通常无需修改 |
 
 ```bash
+# 使用指定发行版本与下载源
+energy env -w chromium.runtime_version=v3.0.2
 energy env -w chromium.source=sourceforge
-```
 
-临时指定下载源：
+# 高级：自定义模块段（webview 变体）
+energy env -w chromium.runtime_module='cef{major}-webview'
 
-```bash
-ENERGY_CEF_RUNTIME_SOURCE=sourceforge energy env -w chromium.version=127
-```
+# 高级：自定义下载地址（仍需使用固定的可选段占位符）
+energy env -w chromium.runtime_url='https://example.com/{version}/libenergy-{module-}{os}-{arch}{-ws}.zip'
 
-临时指定自定义下载地址模板：
-
-```bash
-ENERGY_CEF_RUNTIME_URL='https://example.com/{version}/libenergy-{os}-{arch}-{ws}-{major}.zip' \
+# 安装 / 切换 CEF 时应用以上配置
 energy env -w chromium.version=127
 ```
 
-下载地址模板支持：
+临时指定下载源或地址：
+
+```bash
+ENERGY_CEF_RUNTIME_SOURCE=sourceforge energy env -w chromium.version=127
+ENERGY_CEF_RUNTIME_URL='https://example.com/{version}/libenergy-{module-}{os}-{arch}{-ws}.zip' energy env -w chromium.version=127
+```
+
+下载地址模板支持的占位符：
 
 | 占位符 | 说明 |
 |---|---|
 | `{version}` | libenergy 发行版本 |
 | `{major}` | CEF major，例如 `127` |
-| `{os}` | 系统，例如 `windows`、`linux`、`darwin` |
-| `{arch}` | 架构，例如 `amd64`、`arm64` |
-| `{ws}` | Linux 使用，通常为 `gtk2` 或 `gtk3` |
+| `{module-}` | 可选段 `cef127-`，无模块时为空；拼资源名推荐 |
+| `{-ws}` | 可选段 `-gtk3` / `-gtk2`，非 Linux 时为空；拼资源名推荐 |
+| `{module}` | 纯值 `cef127`，无模块时为空 |
+| `{ws}` | 纯值 `gtk3`，非 Linux 时为空（不带连字符） |
+| `{os}` | 系统 |
+| `{arch}` | 架构 |
+
+自定义项变化后，运行库缓存校验会自动失效并重新安装匹配的资源。
 
 Linux 下可临时指定 GTK 运行时：
 
@@ -388,8 +459,8 @@ energy env -l cef
 # 切换到 CEF 147
 energy env -w chromium.version=147
 
-# 设置 libenergy 下载源
-energy env -w chromium.source=sourceforge
+# 切换到备用下载源
+energy env -w chromium.source=github
 ```
 
 ## 常见问题

@@ -50,7 +50,10 @@ func main() {
 		Long: `energy init, Create a new ENERGY project
     -name <project-name>
     -path <project-directory>
-    -ui <LCL|WV|CEF>`,
+    -ui <LCL|WV|CEF>
+    -cef-version <cef-version>, -os <os>, -arch <arch>, -cef-dir <dir>
+    -libenergy-version <release>, -libenergy-source <source>
+    -libenergy-url <url-template>, -libenergy-module <module>, -ws <gtk2|gtk3>`,
 		Run: func(args dflag.Args) {
 			project.RunInit(args, projectPath(args))
 		},
@@ -99,7 +102,9 @@ func main() {
     energy env
     energy env <key|json.path>
     energy env -w <key|json.path>=<value>
-    energy env -l <module>, List installed versions for a module (e.g. cef)`,
+    energy env -l cef, List installed CEF versions
+    energy env -l libenergy, Show resolved libenergy asset, sources and installed runtimes
+    chromium.runtime_version / runtime_url / runtime_module / runtime_ws / source are customizable`,
 		Run: func(args dflag.Args) {
 			env.RunConfig(args)
 		},

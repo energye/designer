@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/energye/designer/pkg/config"
 )
 
 func writeTestConfig(t *testing.T) string {
@@ -494,6 +496,131 @@ func TestWriteConfigFuzzyChromiumVersionNoInstalledDir(t *testing.T) {
 	}
 	if formatValue(got) != "127" {
 		t.Fatalf("expected raw value 127, got %q", formatValue(got))
+	}
+}
+
+func TestExtractRuntimeConfig(t *testing.T) {
+	decoder := json.NewDecoder(strings.NewReader(`{
+		"chromium": {
+			"source": "sourceforge",
+			"runtime_version": "v3.0.2",
+			"runtime_url": "https://example.com/{module}.zip",
+			"runtime_module": "cef{major}-webview",
+			"runtime_ws": "gtk2"
+		}
+	}`))
+	root, err := decodeOrderedValue(decoder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	override := extractRuntimeConfig(root)
+	if override.Source != "sourceforge" || override.Release != "v3.0.2" ||
+		override.URL != "https://example.com/{module}.zip" ||
+		override.Module != "cef{major}-webview" || override.WS != "gtk2" {
+		t.Fatalf("unexpected runtime override: %#v", override)
+	}
+}
+
+func TestListRuntimeInfoUsesNewAssetName(t *testing.T) {
+	oldChromium := config.Config.Chromium
+	oldURL := os.Getenv("ENERGY_CEF_RUNTIME_URL")
+	oldSource := os.Getenv("ENERGY_CEF_RUNTIME_SOURCE")
+	defer func() {
+		config.Config.Chromium = oldChromium
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_URL", oldURL)
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_SOURCE", oldSource)
+	}()
+	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_URL")
+	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_SOURCE")
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "",
+			"version": "linux_amd64_127.3.5",
+			"source": "github",
+			"runtime_version": "",
+			"runtime_url": "",
+			"runtime_module": "",
+			"runtime_ws": "gtk3"
+		}
+	}`
+	if err := os.WriteFile(configFile, []byte(data), 0644); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := listRuntimeInfo(configFile, &out); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	for _, want := range []string{
+		"asset: libenergy-cef127-linux-amd64-gtk3.zip",
+		"url[0]: https://github.com/energye/lib/releases/download/v3.0.1/libenergy-cef127-linux-amd64-gtk3.zip",
+		"installed: (none)",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("listRuntimeInfo missing %q in:\n%s", want, got)
+		}
+	}
+}
+
+func TestListRuntimeInfoShowsEffectiveSourceFromEnv(t *testing.T) {
+	oldChromium := config.Config.Chromium
+	oldURL := os.Getenv("ENERGY_CEF_RUNTIME_URL")
+	oldSource := os.Getenv("ENERGY_CEF_RUNTIME_SOURCE")
+	defer func() {
+		config.Config.Chromium = oldChromium
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_URL", oldURL)
+		_ = os.Setenv("ENERGY_CEF_RUNTIME_SOURCE", oldSource)
+	}()
+	_ = os.Unsetenv("ENERGY_CEF_RUNTIME_URL")
+	_ = os.Setenv("ENERGY_CEF_RUNTIME_SOURCE", "github")
+
+	configFile := filepath.Join(t.TempDir(), "config.json")
+	data := `{
+		"chromium": {
+			"dir": "",
+			"version": "linux_amd64_127.3.5",
+			"source": "sourceforge",
+			"runtime_version": "",
+			"runtime_url": "",
+			"runtime_module": "",
+			"runtime_ws": ""
+		}
+	}`
+	if err := os.WriteFile(configFile, []byte(data), 0644); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := listRuntimeInfo(configFile, &out); err != nil {
+		t.Fatal(err)
+	}
+	got := out.String()
+	for _, want := range []string{
+		"source: github",
+		"url[0]: https://github.com/energye/lib/releases/download/v3.0.1/libenergy-cef127-linux-amd64-gtk3.zip",
+	} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("listRuntimeInfo missing %q in:\n%s", want, got)
+		}
+	}
+}
+
+func TestCanCreateRuntimeConfigPaths(t *testing.T) {
+	defaultFile := filepath.Join(config.Path(), "config.json")
+	for _, path := range []string{
+		"chromium.source",
+		"chromium.runtime_version",
+		"chromium.runtime_url",
+		"chromium.runtime_module",
+		"chromium.runtime_ws",
+	} {
+		if !canCreateConfigPath(defaultFile, path) {
+			t.Fatalf("path %q should be creatable", path)
+		}
+	}
+	if canCreateConfigPath(defaultFile, "chromium.unknown") {
+		t.Fatal("unknown path should not be creatable")
 	}
 }
 

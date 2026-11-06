@@ -108,7 +108,13 @@ type TEnv struct {
 type TChromium struct {
 	Dir     string `json:"dir"`     // CEF 根目录, 默认 ~/.energy/chromium
 	Version string `json:"version"` // 当前使用的 CEF 版本, 格式: os_arch_version
-	Source  string `json:"source"`  // libenergy 运行时库下载源
+	Source  string `json:"source"`  // libenergy 运行时库下载源: github / sourceforge / 自定义源名
+
+	// 以下为 libenergy 运行时库自定义配置, 均可通过 energy env -w chromium.<key>=<value> 修改
+	RuntimeVersion string `json:"runtime_version"` // libenergy 发行版本, 如 v3.0.1, 为空时使用内嵌配置
+	RuntimeURL     string `json:"runtime_url"`     // 自定义下载地址模板, 多个地址用 , 或 ; 分隔
+	RuntimeModule  string `json:"runtime_module"`  // 模块名, 默认 cef{major}; "-" 表示无模块前缀
+	RuntimeWS      string `json:"runtime_ws"`      // Linux 窗口系统 gtk2 / gtk3, 为空时自动判断
 }
 
 // DefaultDir CEF 默认目录
@@ -129,9 +135,15 @@ type CEFFileInfo struct {
 	Size int64  `json:"size"`
 }
 
+// CEFRuntimeInfo 已安装的 libenergy 运行时库信息
+// Module/WS/Source 参与缓存有效性判断, 用户改变自定义配置后会重新安装
 type CEFRuntimeInfo struct {
-	Release string      `json:"release"`
-	File    CEFFileInfo `json:"file"`
+	Release     string      `json:"release"`
+	Module      string      `json:"module,omitempty"`
+	WS          string      `json:"ws,omitempty"`
+	Source      string      `json:"source,omitempty"`
+	Fingerprint string      `json:"fingerprint,omitempty"` // 自定义参数指纹, 变化后必须重新安装
+	File        CEFFileInfo `json:"file"`
 }
 
 type CEFManifestEntry struct {
@@ -185,9 +197,15 @@ func (m *TChromium) SaveCEFManifest(osArchVersion string, files []CEFFileInfo) e
 }
 
 func (m *TChromium) SaveCEFRuntimeManifest(osArchVersion, release string, file CEFFileInfo) error {
+	return m.SaveCEFRuntimeManifestDetail(osArchVersion, CEFRuntimeInfo{Release: release, File: file})
+}
+
+// SaveCEFRuntimeManifestDetail 写入完整的运行时库安装信息
+func (m *TChromium) SaveCEFRuntimeManifestDetail(osArchVersion string, info CEFRuntimeInfo) error {
 	manifest := m.LoadCEFManifest()
 	entry := manifest[osArchVersion]
-	entry.Runtime = &CEFRuntimeInfo{Release: release, File: file}
+	copyInfo := info
+	entry.Runtime = &copyInfo
 	manifest[osArchVersion] = entry
 	return m.saveCEFManifest(manifest)
 }

@@ -15,6 +15,7 @@ package options
 
 import (
 	"errors"
+	cmdcef "github.com/energye/designer/cmd/cef"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/options/bean"
@@ -30,12 +31,14 @@ import (
 	"github.com/energye/lcl/types/colors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
 var (
 	envFormWidth   = int32(555)
-	envFormHeight  = int32(120)
+	envFormHeight  = int32(170)
+	envRuntimeWS   = []string{"auto", "gtk2", "gtk3"}
 	supportedLangs = []struct {
 		code string
 		name string
@@ -89,6 +92,12 @@ type TEnvForm struct {
 
 	currentLang  string
 	langComboBox lcl.IComboBox
+
+	// libenergy 运行时库配置
+	runtimeVersionLabel lcl.ILabel // 只读展示配置中的发行版本
+	runtimeSourceBox    lcl.IComboBox
+	runtimeWSBox        lcl.IComboBox
+	runtimeAssetLabel   lcl.ILabel
 
 	// 操作按钮
 	cancelBtn *wg.TButton
@@ -190,8 +199,91 @@ func (m *TEnvForm) FormCreate(sender lcl.IObject) {
 		m.langComboBox.SetOnChange(m.onLangChange)
 	}
 
+	// libenergy 运行时库自定义配置
 	{
-		cancelBtnRect := types.TRect{Left: 400, Top: nextTop(45)}
+		rowATop := nextTop(30)
+		runtimeLabel := lcl.NewLabel(m)
+		runtimeLabel.SetLeft(10)
+		runtimeLabel.SetTop(rowATop + 4)
+		runtimeLabel.SetCaption(i18nText("EnvFormRuntimeText.Caption", "libenergy:"))
+		runtimeLabel.SetParent(m)
+
+		// 发行版本固定取配置值, 只读展示, 不提供编辑框
+		m.runtimeVersionLabel = lcl.NewLabel(m)
+		m.runtimeVersionLabel.SetLeft(80)
+		m.runtimeVersionLabel.SetTop(rowATop + 4)
+		m.runtimeVersionLabel.SetAutoSize(false)
+		m.runtimeVersionLabel.SetWidth(90)
+		releaseVersion := strings.TrimSpace(config.Config.Chromium.RuntimeVersion)
+		if releaseVersion == "" {
+			releaseVersion = cmdcef.RuntimeReleaseVersion()
+		}
+		m.runtimeVersionLabel.SetCaption(releaseVersion)
+		m.runtimeVersionLabel.SetParent(m)
+
+		m.runtimeSourceBox = lcl.NewComboBox(m)
+		m.runtimeSourceBox.SetLeft(175)
+		m.runtimeSourceBox.SetTop(rowATop)
+		m.runtimeSourceBox.SetWidth(110)
+		m.runtimeSourceBox.SetStyle(types.CsDropDownList)
+		m.runtimeSourceBox.SetBorderStyle(types.BsSingle)
+		sources := cmdcef.RuntimeSources()
+		if len(sources) == 0 {
+			sources = []string{"sourceforge", "github"}
+		}
+		selectedSource := strings.TrimSpace(config.Config.Chromium.Source)
+		if selectedSource == "" {
+			selectedSource = cmdcef.RuntimeDefaultSource()
+		}
+		if selectedSource == "" {
+			selectedSource = sources[0]
+		}
+		sourceIdx := 0
+		for i, source := range sources {
+			m.runtimeSourceBox.Items().Add(source)
+			if source == selectedSource {
+				sourceIdx = i
+			}
+		}
+		m.runtimeSourceBox.SetItemIndex(int32(sourceIdx))
+		m.runtimeSourceBox.SetOnChange(m.onRuntimeOptionChange)
+		m.runtimeSourceBox.SetParent(m)
+
+		m.runtimeWSBox = lcl.NewComboBox(m)
+		m.runtimeWSBox.SetLeft(290)
+		m.runtimeWSBox.SetTop(rowATop)
+		m.runtimeWSBox.SetWidth(85)
+		m.runtimeWSBox.SetStyle(types.CsDropDownList)
+		m.runtimeWSBox.SetBorderStyle(types.BsSingle)
+		defaultWS := strings.TrimSpace(config.Config.Chromium.RuntimeWS)
+		if defaultWS == "" {
+			defaultWS = cmdcef.NewRuntimeOptions(cmdcef.LatestVersion(), runtime.GOOS, runtime.GOARCH, cmdcef.RuntimeOverride{}).WS
+		}
+		wsIdx := 0
+		for i, ws := range envRuntimeWS {
+			m.runtimeWSBox.Items().Add(ws)
+			if ws == defaultWS {
+				wsIdx = i
+			}
+		}
+		m.runtimeWSBox.SetItemIndex(int32(wsIdx))
+		m.runtimeWSBox.SetOnChange(m.onRuntimeOptionChange)
+		m.runtimeWSBox.SetParent(m)
+		m.runtimeWSBox.SetEnabled(runtime.GOOS == "linux")
+
+		m.runtimeAssetLabel = lcl.NewLabel(m)
+		m.runtimeAssetLabel.SetLeft(80)
+		m.runtimeAssetLabel.SetTop(nextTop(24))
+		m.runtimeAssetLabel.SetAutoSize(false)
+		m.runtimeAssetLabel.SetWidth(415)
+		m.runtimeAssetLabel.Font().SetSize(8)
+		m.runtimeAssetLabel.Font().SetColor(colors.RGBToColor(100, 100, 100))
+		m.runtimeAssetLabel.SetParent(m)
+		m.updateRuntimeAssetLabel()
+	}
+
+	{
+		cancelBtnRect := types.TRect{Left: 400, Top: nextTop(30)}
 		cancelBtnRect.SetWidth(60)
 		cancelBtnRect.SetHeight(25)
 		m.cancelBtn = wg.NewButton(m)
@@ -240,6 +332,36 @@ func (m *TEnvForm) UpdateBtnText() {
 	m.saveBtn.SetText(metadata.GI18n.Dict("EnvFormSaveBtn.Caption"))
 }
 
+func (m *TEnvForm) runtimeOverride() cmdcef.RuntimeOverride {
+	ws := ""
+	if runtime.GOOS == "linux" {
+		if idx := m.runtimeWSBox.ItemIndex(); idx > 0 && int(idx) < len(envRuntimeWS) {
+			ws = envRuntimeWS[idx]
+		}
+	}
+	return cmdcef.RuntimeOverride{
+		Source: strings.TrimSpace(m.runtimeSourceBox.Text()),
+		WS:     ws,
+	}
+}
+
+func (m *TEnvForm) onRuntimeOptionChange(sender lcl.IObject) {
+	m.updateRuntimeAssetLabel()
+}
+
+// updateRuntimeAssetLabel 预览当前配置对应的 libenergy 资源名
+func (m *TEnvForm) updateRuntimeAssetLabel() {
+	if m.runtimeAssetLabel == nil {
+		return
+	}
+	osName, arch, version, ok := cmdcef.ParseOSArchVersion(config.Config.Chromium.Version)
+	if !ok {
+		osName, arch, version = runtime.GOOS, runtime.GOARCH, cmdcef.LatestVersion()
+	}
+	options := cmdcef.NewRuntimeOptions(version, osName, arch, m.runtimeOverride())
+	m.runtimeAssetLabel.SetCaption(i18nText("EnvFormRuntimeAssetLabel.Caption", "Asset:") + " " + options.AssetName())
+}
+
 func (m *TEnvForm) saveClick(sender lcl.IObject) {
 	goRoot := strings.TrimSpace(m.goRootBox.Text())
 	event.ConsoleWriteInfo("Environment Configuration - Save", goRoot)
@@ -253,6 +375,14 @@ func (m *TEnvForm) saveClick(sender lcl.IObject) {
 			return
 		}
 	}
+	// 发行版本固定使用配置值, runtime_url / runtime_module 属于命名规则, 均不在此覆盖
+	override := m.runtimeOverride()
+	cfg := &config.Config.Chromium
+	cfg.RuntimeWS = override.WS
+	if override.Source != "" {
+		cfg.Source = override.Source
+	}
+	m.updateRuntimeAssetLabel()
 	config.UpdateConfig()
 	event.ConsoleWriteInfo("Environment Configuration - Save-Completed")
 }

@@ -26,6 +26,26 @@ func TestLoadCEFManifestSupportsOldFormat(t *testing.T) {
 	}
 }
 
+func TestSaveCEFRuntimeManifestDetailPersistsFingerprint(t *testing.T) {
+	chromium := TChromium{Dir: t.TempDir()}
+	oav := "linux_amd64_127.3.5"
+	info := CEFRuntimeInfo{
+		Release:     "v3.0.1",
+		Module:      "cef127",
+		WS:          "gtk3",
+		Source:      "github",
+		Fingerprint: "v3.0.1|cef127|gtk3|github",
+		File:        CEFFileInfo{Name: "libenergy-amd64-gtk3.so", Size: 456},
+	}
+	if err := chromium.SaveCEFRuntimeManifestDetail(oav, info); err != nil {
+		t.Fatal(err)
+	}
+	entry := chromium.LoadCEFManifest()[oav]
+	if entry.Runtime == nil || entry.Runtime.Fingerprint != info.Fingerprint || entry.Runtime.Module != "cef127" {
+		t.Fatalf("runtime detail not persisted: %#v", entry.Runtime)
+	}
+}
+
 func TestSaveCEFRuntimeManifestPreservesCEFFiles(t *testing.T) {
 	chromium := TChromium{Dir: t.TempDir()}
 	oav := "linux_amd64_127.3.5"
