@@ -109,31 +109,44 @@ func (m *TAppWindow) FormCreate(sender lcl.IObject) {
 	logs.Window = m // 用于调试, 窗口指针问题
 	logs.Info("Designer FormCreate")
 	cfg := config.DesignerConfig
-	if cfgWindowRect := cfg.WindowLayout.WindowBoundsRect; cfgWindowRect.Top == 0 && cfgWindowRect.Left == 0 &&
-		cfgWindowRect.Right == 0 && cfgWindowRect.Bottom == 0 {
-		cfg.WindowLayout.WindowState = types.WsMaximized
+	windowLayout := &cfg.WindowLayout
+	windowRect := windowLayout.WindowBoundsRect
+	if windowRect.Top == 0 && windowRect.Left == 0 &&
+		windowRect.Right == 0 && windowRect.Bottom == 0 {
+		windowLayout.WindowState = types.WsMaximized
 	} else {
-		if cfg.WindowLayout.WindowBoundsRect.Width() <= 400 {
-			cfg.WindowLayout.WindowBoundsRect.SetWidth(400)
+		if windowRect.Width() <= 400 {
+			windowRect.SetWidth(400)
 		}
-		if cfg.WindowLayout.WindowBoundsRect.Height() <= 200 {
-			cfg.WindowLayout.WindowBoundsRect.SetHeight(200)
+		if windowRect.Height() <= 200 {
+			windowRect.SetHeight(200)
 		}
+		// 上次保存的窗口位置可能在已移除的显示器上或超出当前屏幕范围,
+		// 重置位置让窗口显示在鼠标所在的显示器
+		if !m.isWindowRectOnScreen(windowRect) {
+			windowRect = types.Rect(0, 0, windowRect.Width(), windowRect.Height())
+		}
+		windowLayout.WindowBoundsRect = windowRect
 	}
 	// 属性
 	m.SetCaption(cfg.Title + " " + cfg.Version)
 	m.SetDoubleBuffered(true)
-	m.SetBoundsRect(cfg.WindowLayout.WindowBoundsRect)
+	m.SetBoundsRect(windowRect)
 	m.SetColor(bgLightColor)
 	constra := m.Constraints()
 	constra.SetMinWidth(400)
 	constra.SetMinHeight(200)
-	if cfg.WindowLayout.WindowBoundsRect.Left == 0 && cfg.WindowLayout.WindowBoundsRect.Top == 0 {
+	if windowRect.Left == 0 && windowRect.Top == 0 {
 		// 窗口显示在鼠标所在的窗口
 		m.showInMonitor()
 	}
-	if cfg.WindowLayout.WindowState != types.WsNormal {
-		m.SetWindowState(cfg.WindowLayout.WindowState)
+	// 不恢复上次的最小化状态, 避免启动后只有任务栏图标
+	windowState := windowLayout.WindowState
+	if windowState == types.WsMinimized {
+		windowState = types.WsNormal
+	}
+	if windowState != types.WsNormal {
+		m.SetWindowState(windowState)
 	}
 
 	m.initAllImageList()
@@ -256,10 +269,15 @@ func (m *TAppWindow) handleClose() {
 	if windowLayout.ContentLayout == nil {
 		windowLayout.ContentLayout = &config.StorageContentLayout{}
 	}
-	if m.WindowState() == types.WsNormal {
+	windowState := m.WindowState()
+	if windowState == types.WsNormal {
 		windowLayout.WindowBoundsRect = br
+	} else if windowState == types.WsMinimized {
+		// 最小化状态不保存, 避免下次启动时窗口只有任务栏图标
+		// 同时不保存最小化时的无效窗口坐标
+		windowState = types.WsNormal
 	}
-	windowLayout.WindowState = m.WindowState()
+	windowLayout.WindowState = windowState
 	windowLayout.ContentLayout.WidgetPanelWidth = widgetPanelWidth
 	windowLayout.ContentLayout.ProjectPanelWidth = projectPanelWidth
 	windowLayout.ContentLayout.InspectorPanelWidth = inspectorPanelWidth

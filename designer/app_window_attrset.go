@@ -17,6 +17,7 @@ import (
 	"github.com/energye/designer/resources"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/tool"
+	"github.com/energye/lcl/types"
 )
 
 // 设置窗口图标
@@ -33,6 +34,17 @@ func (m *TAppWindow) setWindowIcon() {
 			stream.Free()
 		}
 	}
+}
+
+// isWindowRectOnScreen 判断窗口矩形是否与当前任一显示器的工作区相交
+// 用于处理显示器被移除、分辨率或缩放变化后, 上次保存的窗口位置完全在屏幕外的情况
+func (m *TAppWindow) isWindowRectOnScreen(rect types.TRect) bool {
+	for i := int32(0); i < lcl.Screen.MonitorCount(); i++ {
+		if lcl.Screen.Monitors(i).WorkareaRect().IntersectsWith(rect) {
+			return true
+		}
+	}
+	return false
 }
 
 // 窗口显示在鼠标所在的窗口
