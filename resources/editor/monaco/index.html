@@ -20,6 +20,52 @@
             user-select: none;
             flex-shrink: 0;
         }
+        #gopls-status-bar {
+            display: none;
+            flex-shrink: 0;
+            padding: 4px 12px;
+            background: #5a1f1f;
+            color: #ffd0d0;
+            font-size: 12px;
+            font-family: Consolas, 'Courier New', monospace;
+            border-bottom: 1px solid #8a3030;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #gopls-status-bar.show { display: block; }
+        #conflict-bar {
+            display: none;
+            flex-shrink: 0;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            background: #5a3a00;
+            color: #ffe0a0;
+            font-size: 12px;
+            font-family: Consolas, 'Courier New', monospace;
+            border-bottom: 1px solid #8a6000;
+        }
+        #conflict-bar.show { display: flex; }
+        #conflict-message {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        #conflict-bar button {
+            flex-shrink: 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: inherit;
+            padding: 3px 10px;
+            background: rgba(255,255,255,0.12);
+            color: inherit;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 3px;
+        }
+        #conflict-bar button:hover { background: rgba(255,255,255,0.25); }
         #container { flex: 1; min-height: 0; }
         .toast {
             position: fixed; top: 20px; right: 20px;
@@ -33,6 +79,12 @@
 </head>
 <body>
 <div id="file-path-bar"></div>
+<div id="gopls-status-bar"></div>
+<div id="conflict-bar">
+    <span id="conflict-message"></span>
+    <button id="conflict-reload" type="button">重新加载（放弃我的修改）</button>
+    <button id="conflict-keep" type="button">保留我的修改</button>
+</div>
 <div id="container"></div>
 <div id="toast" class="toast"></div>
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/energy/v3/ipc"
-	"github.com/energye/lcl/lcl"
 )
 
 type JSDefinition struct {
@@ -42,7 +41,8 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 
 		plcClient := editor.PLSClient()
 		if plcClient == nil {
-			context.Result("null")
+			emitPLSResponse(params.RequestID, "gopls-definition-response", "null")
+			context.Result("")
 			return
 		}
 
@@ -52,18 +52,14 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 			fileURI := editor.FilePathToURI(params.File)
 			locations, err := plcClient.Definition(fileURI, params.Line, params.Column)
 			if err != nil || len(locations) == 0 {
-				lcl.RunOnMainThreadAsync(func(id uint32) {
-					ipc.Emit("gopls-definition-response", params.RequestID, "null")
-				})
+				emitPLSResponse(params.RequestID, "gopls-definition-response", "null")
 				return
 			}
 
 			loc := locations[0]
 			filePath := editor.URIToFilePath(loc.URI)
 			if filePath == "" {
-				lcl.RunOnMainThreadAsync(func(id uint32) {
-					ipc.Emit("gopls-definition-response", params.RequestID, "null")
-				})
+				emitPLSResponse(params.RequestID, "gopls-definition-response", "null")
 				return
 			}
 
@@ -76,9 +72,7 @@ func (m *TWebviewEditor) initDefinitionIPC() {
 			}
 
 			respData, _ := json.Marshal(result)
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				ipc.Emit("gopls-definition-response", params.RequestID, string(respData))
-			})
+			emitPLSResponse(params.RequestID, "gopls-definition-response", string(respData))
 		}()
 	})
 

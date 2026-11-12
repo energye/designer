@@ -87,11 +87,8 @@ func (m *CodeEditorTab) onHide(sender lcl.IObject) {
 // onClose 代码编辑器标签关闭事件
 func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	*canClose = true
-	if plsClient := editor.PLSClient(); plsClient != nil {
-		fileURI := editor.FilePathToURI(m.filePath)
-		_ = plsClient.DidClose(fileURI)
-	}
-	// 在 Monaco 前端关闭文件
+	// 不再直接调 DidClose：CloseFileInEditor 会让前端走 gopls-didClose，
+	// 与 didOpen/didChange 一起排入同一条 FIFO 队列，避免绕过串行化后顺序颠倒。
 	editor.CloseFileInEditor(m.filePath)
 	// Linux: 不需要手动切换, 非设计窗体代码编辑器 tab 关闭后，窗体也一同被关闭
 	if gFromEditor != nil && tool.IsWindows {
@@ -119,7 +116,7 @@ func (m *CodeEditorTab) initEditor() {
 		}
 		webview.SetOnGoToDefinition(goToDefinition)
 	} else {
-		if gFromEditor.Type() == editor.EtWebview && m.wvWindowParent == nil {
+		if m.wvWindowParent == nil {
 			m.wvWindowParent = webview.NewWebviewWindowParent(designer.tab)
 		}
 	}

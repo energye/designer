@@ -73,6 +73,17 @@ func (fm *FileManager) SetDirty(filePath string, isDirty bool) {
 	}
 }
 
+// IsDirty 线程安全地读取文件的脏状态。
+func (fm *FileManager) IsDirty(filePath string) bool {
+	fm.lock.RLock()
+	defer fm.lock.RUnlock()
+
+	if state, exists := fm.files[filePath]; exists {
+		return state.IsDirty
+	}
+	return false
+}
+
 func (fm *FileManager) UpdateModTime(filePath string, modTime time.Time) {
 	fm.lock.Lock()
 	defer fm.lock.Unlock()

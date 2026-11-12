@@ -6,14 +6,26 @@ let currentFilePath = '';
 let saveTimeout = null;
 let applyingEdit = false;
 let organizeImportsTimeout = null;
-let pendingOrganizeSave = null;
+// 保存 / 请求按 reqID 存 Map：旧实现用单个变量，连续请求会互相覆盖，
+// 先发出的 Promise 永远不 resolve，直到超时才被丢弃。
+let pendingOrganizeSave = new Map();
 let files = new Map();
 let currentDiagnostics = new Map();
 let definitionRequestID = 0;
-let pendingDefinition = null;
+let pendingDefinition = new Map();
 let formattingRequestID = 0;
-let pendingFormatting = null;
+let pendingFormatting = new Map();
 let saveInProgress = false;
+// gopls 首次索引期间由 Go 侧推送，决定 pending 是否延长等待。
+let plsIndexing = false;
+
+function hasActiveManualSave() {
+    let active = false;
+    pendingOrganizeSave.forEach(function (v) {
+        if (v.phase === 'organize') active = true;
+    });
+    return active;
+}
 
 require.config({paths: {vs: './vs'}});
 require(['vs/editor/editor.main'], function (monaco) {
@@ -72,18 +84,25 @@ require(['vs/editor/editor.main'], function (monaco) {
             if (!model) return;
             let filePath = getFilePathByModel(model);
             if (!filePath) return;
-
-            definitionRequestID++;
-            let reqID = definitionRequestID;
-            pendingDefinition = {reqID: reqID, sourceFile: filePath};
-
-            ipc.emit('gopls-definition', [{
-                requestID: reqID, file: filePath,
-                line: position.lineNumber - 1, column: position.column - 1
-            }]);
+            requestDefinition(filePath, position.lineNumber - 1, position.column - 1);
         }
     });
 });
+
+// 请求 gopls 定义位置；hover 里的定义链接和 Ctrl+Click 共用。
+function requestDefinition(filePath, line, column) {
+    definitionRequestID++;
+    let reqID = definitionRequestID;
+    pendingDefinition.set(reqID, {sourceFile: filePath});
+    schedulePLSTimeout(function () { return pendingDefinition.has(reqID); }, function () {
+        pendingDefinition.delete(reqID);
+    });
+
+    ipc.emit('gopls-definition', [{
+        requestID: reqID, file: filePath,
+        line: line, column: column
+    }]);
+}
 
 // Helper: create Monaco model URI from file path
 function modelUri(path) {
@@ -100,7 +119,11 @@ function requestFormatting(filePath, callback) {
 
     formattingRequestID++;
     let reqID = formattingRequestID;
-    pendingFormatting = {reqID: reqID, callback: callback};
+    pendingFormatting.set(reqID, {callback: callback});
+    schedulePLSTimeout(function () { return pendingFormatting.has(reqID); }, function () {
+        pendingFormatting.delete(reqID);
+        callback([]);
+    });
 
     ipc.emit('gopls-formatting', [{
         requestID: reqID, file: filePath
@@ -113,23 +136,23 @@ function requestFormatting(filePath, callback) {
 function manualSave() {
     if (!currentFilePath || !editor) return;
     let info = files.get(currentFilePath);
-    if (!info) return;
+    if (!info || info.readOnly) return;
 
     // If a previous save is stuck (e.g. pendingOrganizeSave was overwritten),
     // allow a new manual save to proceed
     if (saveInProgress) {
-        if (pendingOrganizeSave && pendingOrganizeSave.phase === 'organize') {
+        if (hasActiveManualSave()) {
             return; // active save in progress, wait
         }
         // Stuck state - reset and allow new save
         saveInProgress = false;
-        pendingOrganizeSave = null;
+        pendingOrganizeSave.clear();
     }
 
     saveInProgress = true;
     clearTimeout(saveTimeout);
     clearTimeout(organizeImportsTimeout);
-    pendingOrganizeSave = null;
+    pendingOrganizeSave.clear();
 
     let filePath = currentFilePath;
     let model = getModelByFilePath(filePath);
@@ -142,7 +165,11 @@ function manualSave() {
     let fullRange = model.getFullModelRange();
     codeActionRequestID++;
     let organizeReqID = codeActionRequestID;
-    pendingOrganizeSave = {filePath: filePath, reqID: organizeReqID, phase: 'organize'};
+    pendingOrganizeSave.set(organizeReqID, {filePath: filePath, phase: 'organize'});
+    schedulePLSTimeout(function () { return pendingOrganizeSave.has(organizeReqID); }, function () {
+        pendingOrganizeSave.delete(organizeReqID);
+        saveInProgress = false;
+    });
 
     ipc.emit('gopls-codeAction', [{
         requestID: organizeReqID, file: filePath,

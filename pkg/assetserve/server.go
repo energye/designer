@@ -157,7 +157,7 @@ func (m *httpServer) serve(addr string, handler http.Handler) {
 }
 
 func (m *httpServer) graceShutdown(server *http.Server) {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM)
 	s := <-c
 	println("notify signal", s.String())

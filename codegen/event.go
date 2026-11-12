@@ -15,6 +15,7 @@ package codegen
 
 import (
 	"github.com/energye/designer/designer"
+	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 )
@@ -27,6 +28,14 @@ func Init() {
 		if payload, ok := trigger.Payload.(event.TPayload); ok {
 			uiGenData, ok := payload.Data.(designer.TUIGenerationData)
 			if ok {
+				// 生成会整文件覆盖 .go 源码。有未保存内容时绝不写盘，
+				// 先让编辑器按当前 model 保存，保存完成后重放本次生成。
+				if !editor.AllowGenerate(func() {
+					event.Emit(trigger)
+				}) {
+					event.ConsoleWriteWarn("代码编辑器有未保存内容：已先自动保存，保存完成后继续生成代码")
+					return
+				}
 				switch payload.Type {
 				case event.CodeGenUI:
 					// 根据UI布局文件生成代码

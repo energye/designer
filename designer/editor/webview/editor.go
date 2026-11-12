@@ -14,6 +14,15 @@
 package webview
 
 import (
+	"context"
+	"errors"
+	"net"
+	"net/http"
+	"os"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/gopls"
 	"github.com/energye/designer/pkg/assetserve"
@@ -25,10 +34,6 @@ import (
 	"github.com/energye/energy/v3/wv"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
-	"os"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 type IWebviewEditor interface {
@@ -47,42 +52,83 @@ type TWebviewEditor struct {
 	fileManager         *editor.FileManager
 	checkTimer          *time.Ticker
 	stopChan            chan struct{}
+	stopOnce            sync.Once
 	canLoadChan         chan error
 	initialized         bool
 	refd                atomic.Bool
+	assetsOrigin        string
 }
 
 var (
-	wvInitOnce sync.Once
-	gWVApp     *wv.Application
+	// WebView 运行时是进程级全局状态，只启动一次。
+	wvAppOnce sync.Once
+	gWVApp    *wv.Application
+
+	// Monaco 资源服务单独管理，Stop 时关闭，下次 Init 可重新启动。
+	assetsMu      sync.Mutex
+	gAssetsServer *http.Server
+	gAssetsPort   int
 )
 
-func Init() {
-	wvInitOnce.Do(func() {
-		server := assetserve.New()
-		server.PORT = 22022
-		server.AssetsFSName = "monaco"
-		server.Assets = reseditor.Assets
-		go server.StartHttpServer()
-
+// Init 启动 WebView 运行时与 Monaco 资源服务，返回资源服务端口。
+func Init() int {
+	wvAppOnce.Do(func() {
 		gWVApp = wv.Init()
-		//gWVApp.SetLocalLoad(application.LocalLoad{
-		//	Scheme:     "energy",
-		//	Domain:     "designer",
-		//	ResRootDir: "monaco",
-		//	FS:         reseditor.Assets,
-		//})
 		gWVApp.SetOptions(application.Options{
-			//Linux: application.Linux{HardwareGPU: application.HGPUDisable}, // VM WARE
-			Linux: application.Linux{HardwareGPU: application.HGPUEnable}, // GPU Device
+			Linux: application.Linux{HardwareGPU: application.HGPUEnable},
 		})
 		gWVApp.Start()
 	})
+
+	assetsMu.Lock()
+	defer assetsMu.Unlock()
+	if gAssetsServer != nil {
+		return gAssetsPort
+	}
+
+	asset := assetserve.New()
+	asset.AssetsFSName = "monaco"
+	asset.Assets = reseditor.Assets
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		logs.Error("monaco assets server listen failed:", err)
+		return 0
+	}
+	server := &http.Server{Handler: asset}
+	go func() {
+		if err := server.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logs.Error("monaco assets server stopped:", err)
+		}
+	}()
+	gAssetsServer = server
+	gAssetsPort = ln.Addr().(*net.TCPAddr).Port
+	return gAssetsPort
+}
+
+// StopAssetsServer 关闭 Monaco 资源服务；可在下次 Init 时重新拉起。
+func StopAssetsServer() {
+	assetsMu.Lock()
+	server := gAssetsServer
+	gAssetsServer = nil
+	gAssetsPort = 0
+	assetsMu.Unlock()
+	if server == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		_ = server.Close()
+	}
+}
+
+func monacoURL(port int) string {
+	return monacoAssetsOrigin(port) + "/index.html"
 }
 
 func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
-	Init()
-	editor.InitPLS() // TODO 功能未完善
+	port := Init()
+	editor.InitPLS()
 	m := &TWebviewEditor{
 		fileManager: editor.NewFileManager(),
 		stopChan:    make(chan struct{}),
@@ -91,13 +137,16 @@ func NewWebviewEditor(owner lcl.IWinControl) editor.IEditor {
 	m.WVEditor.SetCaption("")
 	m.WVEditor.SetAlign(types.AlClient)
 	m.WVEditor.SetName("WVEditor")
-	//m.LoadURL("energy://designer/index.html")
-	//m.LoadURL("http://localhost:22022/test.html")
-	m.LoadURL("http://localhost:22022/index.html")
+	m.assetsOrigin = monacoAssetsOrigin(port)
+	m.LoadURL(monacoURL(port))
 	m.WVEditor.SetOnLoadChange(func(url, title string, load core.TLoadChange) {
 		if load == core.LcFinish {
 			m.initialized = true
 			m.sendCanLoadSignal()
+			// 页面加载完成后补推一次 gopls 状态，覆盖「状态上报早于页面就绪」的情况。
+			ok, reason := editor.PLSStatus()
+			ipc.Emit("gopls-status", ok, reason)
+			ipc.Emit("gopls-indexing", editor.PLSIndexing())
 		}
 	})
 	m.PlatformPreProcess()
@@ -145,10 +194,6 @@ func (m *TWebviewEditor) sendCanLoadSignal() {
 	case m.canLoadChan <- nil:
 	default:
 	}
-}
-
-func (m *TWebviewEditor) Type() editor.EditType {
-	return editor.EtWebview
 }
 
 func (m *TWebviewEditor) OpenFile(filePath string, readOnly ...bool) {
@@ -201,15 +246,16 @@ func (m *TWebviewEditor) checkFileChanges() {
 	}
 
 	for _, filePath := range changedFiles {
-		state, _ := m.fileManager.GetFileState(filePath)
+		isDirty := m.fileManager.IsDirty(filePath)
 
 		fi, err := os.Stat(filePath)
 		if err == nil {
+			// 同步基准，避免同一变更每秒重复通知；冲突的取舍交给前端决定。
 			m.fileManager.UpdateModTime(filePath, fi.ModTime())
 			editor.UpdateSavedModTime(filePath)
 		}
 
-		if state != nil && state.IsDirty {
+		if isDirty {
 			logs.Debug("文件有未保存修改且被外部变更:", filePath)
 			lcl.RunOnMainThreadAsync(func(id uint32) {
 				ipc.Emit("file-conflict-detected", filePath)
@@ -223,12 +269,21 @@ func (m *TWebviewEditor) checkFileChanges() {
 	}
 }
 
+// Stop 幂等地释放本实例占用的资源。WebView 运行时本身是进程级的，
+// 不在这里销毁；资源服务与 gopls 会在下次创建编辑器时重新拉起。
 func (m *TWebviewEditor) Stop() {
-	m.PlatformClose()
-	ipc.UnRegisterProcessMessage(m.WVEditor)
-	if m.checkTimer != nil {
-		m.checkTimer.Stop()
+	m.stopOnce.Do(func() {
+		m.PlatformClose()
+		ipc.UnRegisterProcessMessage(m.WVEditor)
+		if m.checkTimer != nil {
+			m.checkTimer.Stop()
+		}
 		close(m.stopChan)
-	}
-	editor.StopFormFileWatcher()
+		editor.StopFormFileWatcher()
+		editor.StopPLS()
+		StopAssetsServer()
+		if editor.GetCurrentEditor() == m {
+			editor.SetCurrentEditor(nil)
+		}
+	})
 }

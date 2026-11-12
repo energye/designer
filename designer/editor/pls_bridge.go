@@ -14,27 +14,107 @@
 package editor
 
 import (
-	"github.com/energye/designer/options/bean"
-	"github.com/energye/designer/pkg/tool"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/tool"
 )
 
+// URIToFilePath 把 gopls 回传的 file URI 还原成本地路径。
+// 必须走 url.Parse 解码 %XX（中文、空格、# 等），否则前端按 filePath
+// 查 Monaco model 会静默丢弃诊断与跳转结果。Windows 盘符统一大写。
 func URIToFilePath(uri string) string {
-	if tool.IsWindows {
-		path := strings.TrimPrefix(uri, "file:///")
-		return strings.ReplaceAll(path, "/", "\\")
-	}
-	return strings.TrimPrefix(uri, "file://")
+	return uriToFilePath(uri, tool.IsWindows)
 }
 
-func FilePathToURI(filePath string) string {
-	uri := filepath.ToSlash(filePath)
-	if tool.IsWindows {
-		return "file:///" + uri
+func uriToFilePath(uri string, windows bool) string {
+	if uri == "" {
+		return ""
 	}
-	return "file://" + uri
+	if !strings.HasPrefix(strings.ToLower(uri), "file://") {
+		// 少数实现会直接回传本地路径。
+		return nativeFilePath(uri, windows)
+	}
+	u, err := url.Parse(uri)
+	if err != nil {
+		return ""
+	}
+	p := u.Path
+	if p == "" {
+		p = u.Opaque
+	}
+	if p == "" {
+		return ""
+	}
+	return nativeFilePath(p, windows)
+}
+
+func nativeFilePath(p string, windows bool) string {
+	p = strings.ReplaceAll(p, "\\", "/")
+	if !windows {
+		return p
+	}
+	p = strings.TrimPrefix(p, "/")
+	p = strings.ReplaceAll(p, "/", "\\")
+	if len(p) >= 2 && p[1] == ':' && isASCIILetter(p[0]) {
+		p = strings.ToUpper(p[:1]) + p[1:]
+	}
+	return p
+}
+
+// FilePathToURI 按 RFC 8089 生成 file URI：路径分隔符、盘符大小写与
+// 特殊字符全部由 url.URL 统一处理，保证与 gopls 回传的 URI 可互转。
+func FilePathToURI(filePath string) string {
+	return filePathToURI(filePath, tool.IsWindows)
+}
+
+func filePathToURI(filePath string, windows bool) string {
+	p := filePath
+	if windows {
+		p = strings.ReplaceAll(p, "\\", "/")
+	} else {
+		p = filepath.ToSlash(p)
+	}
+	// LSP/gopls 在 Windows 上使用小写盘符，主动归一避免同一文件被当成两份文档。
+	if windows && len(p) >= 2 && p[1] == ':' && isASCIILetter(p[0]) {
+		p = strings.ToLower(p[:1]) + p[1:]
+	}
+	if !strings.HasPrefix(p, "/") {
+		p = "/" + p
+	}
+	return (&url.URL{Scheme: "file", Path: p}).String()
+}
+
+// CanonicalPathKey 生成路径比较用的 key，与前端 normalizePathKey 保持一致。
+// 用于诊断/CodeAction 结果和文档版本表的匹配，忽略盘符大小写与斜杠差异。
+func CanonicalPathKey(filePath string) string {
+	return canonicalPathKey(filePath, tool.IsWindows)
+}
+
+func canonicalPathKey(p string, windows bool) string {
+	p = strings.ReplaceAll(p, "\\", "/")
+	if strings.HasPrefix(strings.ToLower(p), "file://") {
+		if u, err := url.Parse(p); err == nil {
+			p = u.Path
+			if windows && len(p) >= 3 && p[0] == '/' && p[2] == ':' {
+				p = p[1:]
+			}
+		}
+	}
+	if len(p) >= 2 && p[1] == ':' && isASCIILetter(p[0]) {
+		p = strings.ToLower(p[:1]) + p[1:]
+	}
+	for strings.Contains(p, "//") {
+		p = strings.ReplaceAll(p, "//", "/")
+	}
+	return p
+}
+
+func isASCIILetter(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 }
 
 // IsFileReadOnly checks if a file should be opened as read-only.

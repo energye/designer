@@ -18,11 +18,11 @@ import (
 	"github.com/energye/lcl/lcl"
 )
 
+// EditType 编辑器工厂标识。当前只有 Webview + Monaco 一种后端。
 type EditType int
 
 const (
 	EtWebview = iota
-	EtSynEdit
 )
 
 // LSPService defines the interface for Language Server Protocol operations.
@@ -41,7 +41,6 @@ type LSPService interface {
 }
 
 type IEditor interface {
-	Type() EditType
 	OpenFile(filePath string, readOnly ...bool)
 	CloseFile(filePath string)
 	SaveCurrentFile()
@@ -49,6 +48,9 @@ type IEditor interface {
 	Stop()
 }
 
+// editorFactories 由 webview 包在 init 中注册。
+// 保留工厂注册而不是直接构造：webview 依赖 editor，editor 不能反向
+// import webview（循环依赖）。
 var editorFactories = map[EditType]func(lcl.IWinControl) IEditor{}
 
 // RegisterEditorFactory 注册编辑器工厂函数，由子包 init() 调用
@@ -56,12 +58,9 @@ func RegisterEditorFactory(et EditType, factory func(lcl.IWinControl) IEditor) {
 	editorFactories[et] = factory
 }
 
-func NewEditor(owner lcl.IWinControl, editType ...EditType) IEditor {
-	var et EditType = EtWebview
-	if len(editType) > 0 {
-		et = editType[0]
-	}
-	factory, ok := editorFactories[et]
+// NewEditor 创建唯一的 Webview + Monaco 编辑器实例。
+func NewEditor(owner lcl.IWinControl) IEditor {
+	factory, ok := editorFactories[EtWebview]
 	if !ok {
 		return nil
 	}
