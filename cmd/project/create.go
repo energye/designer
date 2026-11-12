@@ -279,7 +279,7 @@ func createProjectDir() error {
 			return err
 		}
 		files = append(files,
-			createFile{appRoot, "main.go", buildTemplateData(projecttpl.RunLCLCodeTemplate, &data)},
+			createFile{appRoot, "main.go", buildTemplateData(projecttpl.RunCEFCodeTemplate, &data)},
 			createFile{webPath, "index.html", buildTemplateData(projecttpl.WebIndexHTMLTemplate, &data)},
 		)
 	}

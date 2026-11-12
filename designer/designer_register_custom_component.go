@@ -56,3 +56,52 @@ func NewDesignerWebview(owner lcl.IComponent) *TDesignerWebview {
 	m.SetBorderStyleToBorderStyle(types.BsSingle)
 	return m
 }
+
+// TDesignerChromium CEF 浏览器组件设计时占位组件
+// 实际 CEF 组件在代码生成时替换为 cef.IEmbeddedBrowser
+type TDesignerChromium struct {
+	lcl.ICustomPanel
+	defaultURL string
+}
+
+func (m *TDesignerChromium) DefaultURL() string {
+	return m.defaultURL
+}
+
+func (m *TDesignerChromium) SetDefaultURL(url string) {
+	m.defaultURL = url
+}
+
+func (m *TDesignerChromium) Published() (props []lcl.ComponentProperties) {
+	propStrList := tool.NewArray[string]()
+	propStrList.Add(`{"name":"Align","value":"alCustom","kind":"tkEnumeration","type":"TAlign","options":"alNone,alTop,alBottom,alLeft,alRight,alClient,alCustom"}`)
+	propStrList.Add(`{"name":"Anchors","value":"akTop,akLeft","kind":"tkSet","type":"TAnchors","options":"akTop,akLeft,akRight,akBottom"}`)
+	propStrList.Add(`{"name":"Caption","value":"` + m.Caption() + `","kind":"tkAString","type":"TTranslateString","options":""}`)
+	propStrList.Add(`{"name":"DefaultURL","value":"` + m.DefaultURL() + `","kind":"tkAString","type":"string","options":""}`)
+	propStrList.Add(`{"name":"Width","value":"170","kind":"tkInteger","type":"LongInt","options":""}`)
+	propStrList.Add(`{"name":"Height","value":"50","kind":"tkInteger","type":"LongInt","options":""}`)
+	propStrList.Add(`{"name":"Top","value":"0","kind":"tkInteger","type":"LongInt","options":""}`)
+	propStrList.Add(`{"name":"Left","value":"0","kind":"tkInteger","type":"LongInt","options":""}`)
+	propStrList.Add(`{"name":"Name","value":"` + m.Name() + `","kind":"tkAString","type":"AnsiString","options":""}`)
+
+	props = make([]lcl.ComponentProperties, propStrList.Len())
+	for i, prop := range propStrList.Values() {
+		var propItem lcl.ComponentProperties
+		if err := json.Unmarshal([]byte(prop), &propItem); err == nil {
+			props[i] = propItem
+		}
+	}
+	return
+}
+
+// NewDesignerChromium 创建 CEF 浏览器设计时占位组件
+func NewDesignerChromium(owner lcl.IComponent) *TDesignerChromium {
+	m := &TDesignerChromium{}
+	m.ICustomPanel = lcl.NewCustomPanel(owner)
+	m.SetParentColor(true)
+	m.SetParentDoubleBuffered(true)
+	m.SetBevelInner(types.BvNone)
+	m.SetBevelOuter(types.BvNone)
+	m.SetBorderStyleToBorderStyle(types.BsSingle)
+	return m
+}

@@ -1,8 +1,10 @@
 package project
 
 import (
+	projecttpl "github.com/energye/designer/internal/templates/project"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -43,6 +45,21 @@ func TestResolveCreateDirCreatesProjectDirWhenNameDiffers(t *testing.T) {
 		t.Fatal(err)
 	} else if !info.IsDir() {
 		t.Fatalf("%q is not a directory", want)
+	}
+}
+
+func TestRunCEFCodeTemplate(t *testing.T) {
+	code := buildTemplateData(projecttpl.RunCEFCodeTemplate, map[string]string{"Name": "cefcodegen"})
+	for _, want := range []string{
+		`"github.com/energye/energy/v3/cef"`,
+		"cefApp := cef.Init()",
+		"forms := make([]cef.IAppWindow, 0, len(app.Forms))",
+		"cef.Run(forms...)",
+		`"cefcodegen/app"`,
+	} {
+		if !strings.Contains(code, want) {
+			t.Fatalf("CEF main template missing %q:\n%s", want, code)
+		}
 	}
 }
 

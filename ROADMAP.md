@@ -92,7 +92,7 @@
       - ❄️ 在画布上的按键和快捷键失灵, 添加 DesignFormOnKeyDown 和配合菜单事件处理. 已有解决方案
 - ✅ Linux: 安装包制作
 - ✅ Linux-其它: 尝试安装包集成离线依赖, 和依赖检查自动安装, 使用 AppImage
-- ❌ 组件 CEF: 增加 CEF 组件集成, 联动 energy
+- ✅ 组件 CEF: 增加 CEF 组件集成, 联动 energy
 - ✅ 系统通知 windows: 增加 windows 系统系统通知, 联动 energy
 - ✅ 系统通知 linux: 增加 linux 系统系统通知, 联动 energy
 - ❌ 组件 TFrame: 增加 TFrame 设计功能

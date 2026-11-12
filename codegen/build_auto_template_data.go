@@ -48,7 +48,8 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 	data.Imports.Add(lcl)
 	isLCL := tool.Equal(projBean.GProject.GUIRenderFramework, projBean.GUIRenderFramework_LCL)
 	isWV := tool.Equal(projBean.GProject.GUIRenderFramework, projBean.GUIRenderFramework_WV)
-	if isWV {
+	isCEF := tool.Equal(projBean.GProject.GUIRenderFramework, projBean.GUIRenderFramework_CEF)
+	if isWV || isCEF {
 		data.Imports.Add(energyWindow)
 		data.Imports.Add(lclTypes)
 	}
@@ -59,6 +60,8 @@ func generateAutoCode(formTab *designer.FormTab, component *bean.TUIComponent) e
 		codeTemplate = codegentpl.LCLAutoCodeTemplate
 	} else if isWV {
 		codeTemplate = codegentpl.WVAutoCodeTemplate
+	} else if isCEF {
+		codeTemplate = codegentpl.CEFAutoCodeTemplate
 	}
 
 	// 解析模板

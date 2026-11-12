@@ -79,6 +79,16 @@ func NewEnergyCustomVisualRegisterComponent(func_, asFunc any) *TRegisterCompone
 	return NewRegisterComponent(func_, asFunc, consts.CtCustomVisual, consts.ModWVEnergy)
 }
 
+// NewEnergyCEFCustomVisualRegisterComponent 创建一个新的 energy CEF 自定义视觉注册组件
+// 该函数用于注册 CEF 浏览器相关组件
+//
+//   - func_ - 要注册的函数对象，通常为组件的构造函数或初始化函数
+//   - asFunc - 作为函数使用的对象，用于类型转换或接口实现
+//   - *TRegisterComponent - 返回注册组件的指针，用于后续的组件管理操作
+func NewEnergyCEFCustomVisualRegisterComponent(func_, asFunc any) *TRegisterComponent {
+	return NewRegisterComponent(func_, asFunc, consts.CtCustomVisual, consts.ModCEFEnergy)
+}
+
 // NewLCLNonVisualRegisterComponent 创建一个新的非可视化组件注册器
 // 该函数用于创建一个专门用于注册非可视化组件的注册器实例
 //
@@ -216,5 +226,6 @@ func initRegisterComponent() {
 	AddRegisterComponent("TSynCssSyn", NewLCLNonVisualRegisterComponent(lcl.TSynCssSynClass, lcl.AsSynCssSyn))
 
 	// Web组件
+	AddRegisterComponent("TChromium", NewEnergyCEFCustomVisualRegisterComponent(NewDesignerChromium, nil))
 	AddRegisterComponent("TWebview", NewEnergyCustomVisualRegisterComponent(NewDesignerWebview, nil))
 }

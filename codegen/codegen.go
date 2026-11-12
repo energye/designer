@@ -81,7 +81,12 @@ func (m *TComponentData) GoIntfName() string {
 	case consts.ModWVEnergy:
 		intfName = "wv.I" + tool.RemoveT(m.ClassName)
 	case consts.ModCEFEnergy:
-		intfName = "cef.I" + tool.RemoveT(m.ClassName)
+		if m.ClassName == "TChromium" {
+			// CEF 嵌入式浏览器组件
+			intfName = "cef.IEmbeddedBrowser"
+		} else {
+			intfName = "cef.I" + tool.RemoveT(m.ClassName)
+		}
 	}
 	return intfName
 }
@@ -97,7 +102,12 @@ func (m *TComponentData) GoNewObject() string {
 	case consts.ModWVEnergy:
 		newObject.WriteString("wv.New", tool.RemoveT(m.ClassName), "(m)", "\n")
 	case consts.ModCEFEnergy:
-		newObject.WriteString("cef.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+		if m.ClassName == "TChromium" {
+			// CEF 嵌入式浏览器组件
+			newObject.WriteString("cef.NewEmbeddedBrowser(m)", "\n")
+		} else {
+			newObject.WriteString("cef.New", tool.RemoveT(m.ClassName), "(m)", "\n")
+		}
 	}
 	return newObject.String()
 }
@@ -106,7 +116,7 @@ func (m *TComponentData) GoNewObject() string {
 func (m *TComponentData) GoSetObjectParent() string {
 	newObject := tool.Buffer{}
 	switch m.Type {
-	case consts.CtVisual:
+	case consts.CtVisual, consts.CtCustomVisual:
 		// 组件所属父类
 		parentName := ""
 		if m.Parent != nil {
@@ -122,6 +132,15 @@ func (m *TComponentData) GoSetObjectParent() string {
 		newObject.WriteString("m.", m.GoFieldName(), ".SetParent(", parentName, ")", "\n")
 	}
 	return newObject.String()
+}
+
+// 模板调用函数 - 设置 WV/CEF 浏览器所属窗口
+func (m *TComponentData) GoSetWindow() string {
+	switch m.Mod {
+	case consts.ModWVEnergy, consts.ModCEFEnergy:
+		return "m." + m.GoFieldName() + ".SetWindow(m)\n"
+	}
+	return ""
 }
 
 // 模板调用函数 - 返回组件字段名

@@ -84,6 +84,7 @@ func (m *T{{$Form.Form.Name}}) initComponents() {
 		{{end -}}
 	{{end -}}
 		{{$comp.GoSetObjectParent}}
+		{{$comp.GoSetWindow}}
 	{{end -}}
 }
 `

@@ -227,5 +227,21 @@ func main() {
 ### CEF 框架
 
 ```go
-暂时未添加
+func main() {
+    cefApp := cef.Init()
+    cefApp.SetOptions(application.Options{DefaultURL: "fs://energy/index.html"})
+    forms := make([]cef.IAppWindow, 0, len(app.Forms))
+    for _, form := range app.Forms {
+        forms = append(forms, form)
+    }
+    cef.Run(forms...)
+}
+```
+
+`TChromium` 组件生成代码：
+
+```go
+m.Chromium1 = cef.NewEmbeddedBrowser(m)
+m.Chromium1.SetParent(m)
+m.Chromium1.SetWindow(m)
 ```
