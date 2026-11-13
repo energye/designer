@@ -184,6 +184,9 @@ func (m *FormTab) selectComponents(comps []*TDesigningComponent, primary *TDesig
 		}
 	}
 	m.syncSelectionFrames()
+	if m.formDesignPage != nil && m.formDesignPage.alignBar != nil {
+		m.formDesignPage.alignBar.updateState()
+	}
 	if syncTree {
 		ProjectTreeSyncSelection(m)
 	}

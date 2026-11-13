@@ -61,6 +61,8 @@ type TFormDesignPage struct {
 
 	formDesignScroll lcl.IScrollBox // 设计窗体滚动条
 
+	alignBar *designerAlignBar // 对齐/分布工具栏
+
 	formTab *FormTab
 
 	rulerTop        lcl.IPaintBox
@@ -143,6 +145,9 @@ func NewFormDesignPage(formTab *FormTab) *TFormDesignPage {
 	m.rulerTop.SetAlign(types.AlTop)
 	m.rulerTop.SetHeight(designerRulerSize)
 	m.rulerTop.SetOnPaint(func(sender lcl.IObject) { m.paintRuler(true) })
+
+	// 对齐/分布工具栏位于标尺上方，只在设计页显示。
+	m.alignBar = newDesignerAlignBar(m)
 
 	m.rulerLeft = lcl.NewPaintBox(formTab.mainPage)
 	m.rulerLeft.SetParent(m.formDesignPage)
