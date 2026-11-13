@@ -32,6 +32,13 @@ type TComponentMenu struct {
 	copy             lcl.IMenuItem  // 复制
 	paste            lcl.IMenuItem  // 粘贴
 	delete           lcl.IMenuItem  // 删除
+
+	alignMenu       lcl.IMenuItem   // 对齐子菜单
+	alignItems      []lcl.IMenuItem // 对齐菜单项
+	sameSizeMenu    lcl.IMenuItem   // 同尺寸子菜单
+	sameSizeItems   []lcl.IMenuItem // 同尺寸菜单项
+	distributeMenu  lcl.IMenuItem   // 分布子菜单
+	distributeItems []lcl.IMenuItem // 分布菜单项
 }
 
 func (m *TComponentMenu) Free() {
@@ -43,6 +50,24 @@ func (m *TComponentMenu) Free() {
 	m.copy.SetOnClick(nil)
 	m.paste.SetOnClick(nil)
 	m.delete.SetOnClick(nil)
+	if m.treePopupMenu != nil {
+		m.treePopupMenu.SetOnPopup(nil)
+	}
+	for _, item := range m.alignItems {
+		if item != nil {
+			item.SetOnClick(nil)
+		}
+	}
+	for _, item := range m.sameSizeItems {
+		if item != nil {
+			item.SetOnClick(nil)
+		}
+	}
+	for _, item := range m.distributeItems {
+		if item != nil {
+			item.SetOnClick(nil)
+		}
+	}
 }
 
 // 返回当前选中组件
@@ -52,6 +77,63 @@ func (m *TComponentMenu) ComponentTreeSelectComponent() *TDesigningComponent {
 		return TreeNodeDataToDesigningComponent(node.Data())
 	}
 	return nil
+}
+
+// selectedFormTab 返回右键选中组件所属的设计页。
+func (m *TComponentMenu) selectedFormTab() *FormTab {
+	comp := m.ComponentTreeSelectComponent()
+	if comp == nil || comp.FormTab == nil {
+		return nil
+	}
+	return comp.FormTab
+}
+
+func setMenuItemsEnabled(items []lcl.IMenuItem, enabled bool) {
+	for _, item := range items {
+		if item != nil {
+			item.SetEnabled(enabled)
+		}
+	}
+}
+
+// OnPopup 弹出前按当前选中数量刷新对齐菜单可用状态。
+func (m *TComponentMenu) OnPopup(sender lcl.IObject) {
+	count := 0
+	if formTab := m.selectedFormTab(); formTab != nil {
+		count = len(formTab.alignableSelectedComponents())
+	}
+	alignEnabled := count >= 2
+	distEnabled := count >= 3
+	if m.alignMenu != nil {
+		m.alignMenu.SetEnabled(alignEnabled)
+	}
+	if m.sameSizeMenu != nil {
+		m.sameSizeMenu.SetEnabled(alignEnabled)
+	}
+	if m.distributeMenu != nil {
+		m.distributeMenu.SetEnabled(distEnabled)
+	}
+	setMenuItemsEnabled(m.alignItems, alignEnabled)
+	setMenuItemsEnabled(m.sameSizeItems, alignEnabled)
+	setMenuItemsEnabled(m.distributeItems, distEnabled)
+}
+
+func (m *TComponentMenu) alignSelected(kind designerAlignKind) {
+	if formTab := m.selectedFormTab(); formTab != nil {
+		formTab.AlignSelected(kind)
+	}
+}
+
+func (m *TComponentMenu) sameSizeSelected(kind designerSameSizeKind) {
+	if formTab := m.selectedFormTab(); formTab != nil {
+		formTab.SameSizeSelected(kind)
+	}
+}
+
+func (m *TComponentMenu) distributeSelected(horizontal bool) {
+	if formTab := m.selectedFormTab(); formTab != nil {
+		formTab.DistributeSelected(horizontal)
+	}
 }
 
 // 移动到最顶层
@@ -192,6 +274,47 @@ func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	line.SetCaption("-")
 	menuItems.Add(line)
 
+	newSubMenu := func(caption string) lcl.IMenuItem {
+		item := lcl.NewMenuItem(owner)
+		item.SetCaption(caption)
+		menuItems.Add(item)
+		return item
+	}
+	newSubItem := func(parent lcl.IMenuItem, caption string, onClick lcl.TNotifyEvent) lcl.IMenuItem {
+		item := lcl.NewMenuItem(owner)
+		item.SetCaption(caption)
+		item.SetOnClick(onClick)
+		parent.Add(item)
+		return item
+	}
+
+	menu.alignMenu = newSubMenu("对齐")
+	menu.alignItems = []lcl.IMenuItem{
+		newSubItem(menu.alignMenu, "左对齐", func(lcl.IObject) { menu.alignSelected(designerAlignLeft) }),
+		newSubItem(menu.alignMenu, "水平居中", func(lcl.IObject) { menu.alignSelected(designerAlignHCenter) }),
+		newSubItem(menu.alignMenu, "右对齐", func(lcl.IObject) { menu.alignSelected(designerAlignRight) }),
+		newSubItem(menu.alignMenu, "上对齐", func(lcl.IObject) { menu.alignSelected(designerAlignTop) }),
+		newSubItem(menu.alignMenu, "垂直居中", func(lcl.IObject) { menu.alignSelected(designerAlignVCenter) }),
+		newSubItem(menu.alignMenu, "下对齐", func(lcl.IObject) { menu.alignSelected(designerAlignBottom) }),
+	}
+
+	menu.sameSizeMenu = newSubMenu("同尺寸")
+	menu.sameSizeItems = []lcl.IMenuItem{
+		newSubItem(menu.sameSizeMenu, "同宽", func(lcl.IObject) { menu.sameSizeSelected(designerSameWidth) }),
+		newSubItem(menu.sameSizeMenu, "同高", func(lcl.IObject) { menu.sameSizeSelected(designerSameHeight) }),
+		newSubItem(menu.sameSizeMenu, "同尺寸", func(lcl.IObject) { menu.sameSizeSelected(designerSameSize) }),
+	}
+
+	menu.distributeMenu = newSubMenu("分布")
+	menu.distributeItems = []lcl.IMenuItem{
+		newSubItem(menu.distributeMenu, "水平分布", func(lcl.IObject) { menu.distributeSelected(true) }),
+		newSubItem(menu.distributeMenu, "垂直分布", func(lcl.IObject) { menu.distributeSelected(false) }),
+	}
+
+	lineAlign := lcl.NewMenuItem(owner)
+	lineAlign.SetCaption("-")
+	menuItems.Add(lineAlign)
+
 	cut := lcl.NewMenuItem(owner)
 	cut.SetCaption("剪切")
 	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
@@ -223,5 +346,7 @@ func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	menu.delete = delete
 	menuItems.Add(delete)
 
+	menu.treePopupMenu.SetOnPopup(menu.OnPopup)
+	menu.OnPopup(nil)
 	return menu
 }
