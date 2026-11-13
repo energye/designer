@@ -47,7 +47,6 @@ type TDesigningComponent struct {
 	drag            *drag                     // 拖拽控制
 	PropertyList    []*vtedit.TEditNodeData   // 数据 组件属性
 	EventList       []*vtedit.TEditNodeData   // 数据 组件事件
-	IsDesign        bool                      // 组件是否正在设计
 	ComponentType   consts.ComponentType      // 组件类型
 	node            lcl.ITreeNode             // 查看器 组件树节点对象
 	page            lcl.IPageControl          // 查看器 属性页和事件页
@@ -251,7 +250,10 @@ func (m *TDesigningComponent) OnMouseMove(sender lcl.IObject, shift types.TShift
 // 设计组件鼠标按下事件
 func (m *TDesigningComponent) OnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if button == types.MbRight {
-		m.SetSelected()
+		// 右键选择组件并同步属性面板/组件树
+		if m.FormTab != nil && !m.FormTab.IsComponentSelected(m) {
+			m.FormTab.SwitchComponentEditing(m)
+		}
 	} else {
 		m.drag.OnMouseDown(m, button, shift, X, Y)
 	}
@@ -788,11 +790,19 @@ func (m *TDesigningComponent) FindNodeDataByNamePaths(property uiBean.TProperty)
 }
 
 func (m *TDesigningComponent) HideDesignHelpers() {
-	m.drag.Hide()
-	m.page.Hide()
+	if m.drag != nil {
+		m.drag.Hide()
+	}
+	if m.page != nil && m.page.IsValid() {
+		m.page.Hide()
+	}
 }
 
 func (m *TDesigningComponent) ShowDesignHelpers() {
-	m.drag.Show()
-	m.page.Show()
+	if m.drag != nil {
+		m.drag.Show()
+	}
+	if m.page != nil && m.page.IsValid() {
+		m.page.Show()
+	}
 }

@@ -63,17 +63,100 @@ func (m *ContentLayoutProject) TreeOnContextPopup(sender lcl.IObject, mousePos t
 	m.tree.SetPopupMenu(m.srcFileMenu.treePopupMenu)
 }
 
+// 树选择与画布选择互相同步时的重入保护
+var gTreeSelectionSyncing bool
+
 // 组件树鼠标按下事件
 func (m *ContentLayoutProject) TreeOnMouseDown(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if button == types.MbRight {
 		selectNode := ProjectTreeGetNodeAt(X, Y)
-		if selectNode != nil && selectNode.IsValid() {
-			ProjectTreeSetSelected(selectNode)
+		if selectNode != nil && selectNode.IsValid() && !treeNodeInSelection(m.tree, selectNode) {
+			// 右键点击未选中节点时切换为单选，点击已选中节点保留多选
+			gTreeSelectionSyncing = true
+			m.tree.ClearSelection(false)
+			m.tree.SetSelected(selectNode)
+			gTreeSelectionSyncing = false
+			m.syncCanvasFromTree()
 		}
-	} else if button == types.MbLeft {
-		selectNode := ProjectTreeGetNodeAt(X, Y)
-		ProjectTreeSetSelected(selectNode)
-		m.TreeOnChange(sender, selectNode)
+	}
+}
+
+// 组件树鼠标抬起事件：原生多选处理完成后同步到画布
+func (m *ContentLayoutProject) TreeOnMouseUp(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	if button != types.MbLeft || gTreeSelectionSyncing {
+		return
+	}
+	m.syncCanvasFromTree()
+}
+
+func treeNodeInSelection(tree lcl.ITreeView, node lcl.ITreeNode) bool {
+	if tree == nil || node == nil || !node.IsValid() {
+		return false
+	}
+	for i := int32(0); i < int32(tree.SelectionCount()); i++ {
+		item := tree.Selections(i)
+		if item != nil && item.IsValid() && item.Instance() == node.Instance() {
+			return true
+		}
+	}
+	return false
+}
+
+// syncCanvasFromTree 将组件树的多选状态同步到画布
+func (m *ContentLayoutProject) syncCanvasFromTree() {
+	primaryNode := ProjectTreeSelectNode()
+	if primaryNode == nil || !primaryNode.IsValid() {
+		return
+	}
+	primaryComp := TreeNodeDataToDesigningComponent(primaryNode.Data())
+	if primaryComp == nil || primaryComp.FormTab == nil {
+		// 源码文件节点：保持原有打开文件行为
+		m.TreeOnChange(nil, primaryNode)
+		return
+	}
+	tree := m.tree
+	formTab := primaryComp.FormTab
+	comps := make([]*TDesigningComponent, 0, tree.SelectionCount())
+	for i := int32(0); i < int32(tree.SelectionCount()); i++ {
+		node := tree.Selections(i)
+		if node == nil || !node.IsValid() {
+			continue
+		}
+		comp := TreeNodeDataToDesigningComponent(node.Data())
+		if comp == nil || comp.FormTab != formTab {
+			continue
+		}
+		comps = append(comps, comp)
+	}
+	if len(comps) == 0 {
+		comps = append(comps, primaryComp)
+	}
+	formTab.SelectComponents(comps, primaryComp)
+}
+
+// ProjectTreeSyncSelection 将画布选中集合同步到项目树（调用方必须位于 UI 线程）
+func ProjectTreeSyncSelection(formTab *FormTab) {
+	if formTab == nil || gTreeSelectionSyncing || MainWindow.contentLayout == nil {
+		return
+	}
+	tree := MainWindow.contentLayout.layoutProject.tree
+	if tree == nil || !tree.IsValid() {
+		return
+	}
+	gTreeSelectionSyncing = true
+	defer func() {
+		gTreeSelectionSyncing = false
+	}()
+	tree.BeginUpdate()
+	defer tree.EndUpdate()
+	tree.ClearSelection(false)
+	for _, comp := range formTab.SelectedComponents() {
+		if comp.node != nil && comp.node.IsValid() {
+			comp.node.SetMultiSelected(true)
+		}
+	}
+	if primary := formTab.PrimarySelected(); primary != nil && primary.node != nil && primary.node.IsValid() {
+		tree.SetSelected(primary.node)
 	}
 }
 

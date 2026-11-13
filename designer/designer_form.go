@@ -65,9 +65,12 @@ func (m *FormTab) NewFormDesigner() {
 	designerForm.SetKeyPreview(true)
 	designerForm.SetOnKeyDown(m.DesignFormOnKeyDown)
 	designerForm.SetOnKeyUp(m.DesignFormOnKeyUp)
-	// 拖拽过程中失去焦点(如 Alt+Tab)时收不到鼠标抬起事件，避免对齐线残留。
+	// 拖拽过程中失去焦点(如 Alt+Tab)时收不到鼠标抬起事件，避免对齐线/框选残留。
 	designerForm.SetOnDeactivate(func(sender lcl.IObject) {
 		m.hideGuides()
+		if m.formDesigner != nil {
+			m.formDesigner.bandCancel()
+		}
 	})
 
 	designerForm.Show()
@@ -101,6 +104,7 @@ func (m *FormTab) NewFormDesigner() {
 }
 
 const (
+	designerKeyA      = 65
 	designerKeyMenu   = 18
 	designerKeyEscape = 27
 	designerKeyLeft   = 37
@@ -131,43 +135,107 @@ func (m *FormTab) DesignFormOnKeyUp(sender lcl.IObject, key *types.Word, shift t
 
 // handleDesignKey 处理设计态常用快捷键；返回 true 表示已消费。
 func (m *FormTab) handleDesignKey(keyCode int32, shift types.TShiftState) bool {
-	comp := m.FindDesignComponent(m.FormRoot)
 	switch keyCode {
 	case designerKeyDelete:
-		if comp == nil || comp == m.FormRoot || comp.ComponentType == consts.CtForm {
-			return false
-		}
-		DeleteDesignComponent(comp)
-		return true
+		return m.DeleteSelectedComponents()
 	case designerKeyLeft, designerKeyUp, designerKeyRight, designerKeyDown:
-		if comp == nil || comp == m.FormRoot {
+		comps := m.movableSelectedComponents()
+		if len(comps) == 0 {
 			return false
 		}
 		step := int32(1)
 		if shift.In(types.SsShift) {
 			step = int32(designerGridSize)
 		}
-		br := comp.BoundsRect()
-		left, top := br.Left, br.Top
+		dx, dy := int32(0), int32(0)
 		switch keyCode {
 		case designerKeyLeft:
-			left -= step
+			dx = -step
 		case designerKeyRight:
-			left += step
+			dx = step
 		case designerKeyUp:
-			top -= step
+			dy = -step
 		case designerKeyDown:
-			top += step
+			dy = step
 		}
-		comp.SetBounds(left, top, br.Width(), br.Height())
-		actual := comp.BoundsRect()
-		comp.UpdateNodeDataPoint(actual.Left, actual.Top)
+		for _, comp := range comps {
+			br := comp.BoundsRect()
+			comp.SetBounds(br.Left+dx, br.Top+dy, br.Width(), br.Height())
+			actual := comp.BoundsRect()
+			comp.UpdateNodeDataPoint(actual.Left, actual.Top)
+		}
+		m.syncSelectionFrames()
 		return true
 	case designerKeyEscape:
 		m.SwitchComponentEditing(m.FormRoot)
 		return true
+	case designerKeyA:
+		if shift.In(types.SsCtrl) {
+			m.SelectAllComponents()
+			return true
+		}
 	}
 	return false
+}
+
+// movableSelectedComponents 返回可移动的选中组件（排除窗体根、非可视和被选中祖先的子组件）
+func (m *FormTab) movableSelectedComponents() []*TDesigningComponent {
+	var result []*TDesigningComponent
+	for _, comp := range m.SelectedComponents() {
+		if comp == m.FormRoot || comp.ComponentType == consts.CtForm || comp.ComponentType == consts.CtNonVisual {
+			continue
+		}
+		if m.HasSelectedAncestor(comp) {
+			continue
+		}
+		result = append(result, comp)
+	}
+	return result
+}
+
+// DeleteSelectedComponents 删除所有选中组件并更新布局
+func (m *FormTab) DeleteSelectedComponents() bool {
+	targets := m.movableSelectedComponents()
+	if len(targets) == 0 {
+		return false
+	}
+	targetSet := make(map[*TDesigningComponent]struct{}, len(targets))
+	for _, comp := range targets {
+		targetSet[comp] = struct{}{}
+	}
+	// 只删除未被其它待删组件包含的组件，避免父组件释放后访问子组件
+	var top []*TDesigningComponent
+	for _, comp := range targets {
+		contained := false
+		for parent := comp.parent; parent != nil; parent = parent.parent {
+			if _, ok := targetSet[parent]; ok {
+				contained = true
+				break
+			}
+		}
+		if !contained {
+			top = append(top, comp)
+		}
+	}
+	m.ClearSelection()
+	parents := make(map[*TDesigningComponent]struct{})
+	for _, comp := range top {
+		if comp.parent == nil {
+			continue
+		}
+		parents[comp.parent] = struct{}{}
+		comp.Remove()
+	}
+	for parent := range parents {
+		triggerUIGeneration(parent, nil, event.CodeGenUI)
+	}
+	// 单选删除后保持原有行为：选中父容器
+	if len(parents) == 1 {
+		for parent := range parents {
+			m.SwitchComponentEditing(parent)
+		}
+	}
+	return true
 }
 
 // DeleteDesignComponent 删除设计组件并更新布局。
@@ -176,6 +244,10 @@ func DeleteDesignComponent(comp *TDesigningComponent) {
 		return
 	}
 	parent := comp.parent
+	formTab := comp.FormTab
+	if formTab != nil {
+		formTab.RemoveComponentFromSelection(comp)
+	}
 	parent.FormTab.SwitchComponentEditing(parent)
 	comp.Remove()
 	triggerUIGeneration(parent, nil, event.CodeGenUI)

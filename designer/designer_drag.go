@@ -51,6 +51,14 @@ type drag struct {
 	// 对齐目标缓存，拖动过程中复用避免频繁分配
 	alignXs []designerAlignTarget
 	alignYs []designerAlignTarget
+	// 多选拖动时其余选中组件的起始边界
+	groupItems []dragGroupItem
+}
+
+type dragGroupItem struct {
+	comp          *TDesigningComponent
+	left, top     int32
+	width, height int32
 }
 
 func (m *drag) Free() {
@@ -64,6 +72,7 @@ func (m *drag) Free() {
 	m.rightTop = nil
 	m.leftBottom = nil
 	m.rightBottom = nil
+	m.groupItems = nil
 }
 
 func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
@@ -595,23 +604,60 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 			newLeft = snapDesignerGrid(newLeft)
 			newTop = snapDesignerGrid(newTop)
 		}
-		sender.SetBounds(newLeft, newTop, br.Width(), br.Height())
+		// 若当前组件本身位于某个被选中祖先内，直接移动它会让祖先和它各移动一次。
+		// 这种情况改为移动组内祖先，子组件跟随祖先移动。
+		senderHasSelectedAncestor := sender.FormTab != nil && sender.FormTab.HasSelectedAncestor(sender)
+		var actual types.TRect
+		if !senderHasSelectedAncestor {
+			sender.SetBounds(newLeft, newTop, br.Width(), br.Height())
+			// SetBounds 可能被父容器夹紧，属性以控件最终边界为准。
+			actual = sender.BoundsRect()
+		}
+		if len(m.groupItems) > 0 {
+			dx, dy := newLeft-m.dcl, newTop-m.dct
+			if !senderHasSelectedAncestor {
+				dx, dy = actual.Left-m.dcl, actual.Top-m.dct
+			}
+			var anchor *dragGroupItem
+			if senderHasSelectedAncestor {
+				for i := range m.groupItems {
+					if sender.FormTab.IsComponentAncestor(m.groupItems[i].comp, sender) {
+						anchor = &m.groupItems[i]
+						break
+					}
+				}
+			}
+			if anchor != nil {
+				anchor.comp.SetBounds(anchor.left+dx, anchor.top+dy, anchor.width, anchor.height)
+				anchorActual := anchor.comp.BoundsRect()
+				dx, dy = anchorActual.Left-anchor.left, anchorActual.Top-anchor.top
+			}
+			for _, item := range m.groupItems {
+				if anchor != nil && item.comp == anchor.comp {
+					continue
+				}
+				item.comp.SetBounds(item.left+dx, item.top+dy, item.width, item.height)
+			}
+		}
+		if senderHasSelectedAncestor {
+			actual = sender.BoundsRect()
+		}
 		if sender.FormTab != nil {
 			var guidesV, guidesH []designerGuide
 			if hitV {
-				guidesV = append(guidesV, guideFor(newTop, br.Height(), matchV))
+				guidesV = append(guidesV, guideFor(actual.Top, actual.Height(), matchV))
 			}
 			if hitH {
-				guidesH = append(guidesH, guideFor(newLeft, br.Width(), matchH))
+				guidesH = append(guidesH, guideFor(actual.Left, actual.Width(), matchH))
 			}
 			if len(guidesV) > 0 || len(guidesH) > 0 {
 				sender.FormTab.showGuides(guidesV, guidesH, targets.origin)
 			} else {
 				sender.FormTab.hideGuides()
 			}
+			// 主选组件移动时，其子组件（非主选）也会跟随移动，选中边框需要同步刷新。
+			sender.FormTab.syncSelectionFrames()
 		}
-		// SetBounds 可能被父容器夹紧，属性以控件最终边界为准。
-		actual := sender.BoundsRect()
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
 		message.Follow(msgContent)
 		sender.SetStatusText(actual.Left, actual.Top, actual.Width(), actual.Height())
@@ -625,21 +671,40 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 	m.relation.mustComponentPropertyPage()
 	m.mustDS()
 	if !sender.FormTab.placeComponent(sender, X, Y) {
+		formTab := sender.FormTab
+		if sender.ComponentType != consts.CtForm {
+			// Ctrl 切换选中, Shift 追加选中; 无修饰键时保持已有多选否则单选
+			if shift.In(types.SsCtrl) {
+				if !formTab.ToggleComponentSelection(sender) {
+					return
+				}
+			} else if shift.In(types.SsShift) {
+				formTab.AddComponentSelection(sender)
+			} else if !formTab.IsComponentSelected(sender) || len(formTab.SelectedComponents()) <= 1 {
+				formTab.SwitchComponentEditing(sender)
+			} else {
+				formTab.SelectComponents(formTab.SelectedComponents(), sender)
+			}
+		}
 		m.isDown = true
-		sender.FormTab.hideGuides()
+		// 记录多选拖动组，拖动时整组同 delta 位移
+		m.groupItems = m.groupItems[:0]
+		if selected := formTab.SelectedComponents(); len(selected) > 1 && formTab.IsComponentSelected(sender) && sender.ComponentType != consts.CtForm {
+			for _, comp := range selected {
+				if comp == sender || formTab.HasSelectedAncestor(comp) {
+					continue
+				}
+				br := comp.BoundsRect()
+				m.groupItems = append(m.groupItems, dragGroupItem{comp: comp, left: br.Left, top: br.Top, width: br.Width(), height: br.Height()})
+			}
+		}
+		formTab.hideGuides()
 		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		point := lcl.Mouse.CursorPos()
 		m.dx, m.dy = point.X, point.Y
 		br := sender.BoundsRect()
 		m.dcl = br.Left
 		m.dct = br.Top
-		// 更新设计查看器的属性信息
-		sender.FormTab.SwitchComponentEditing(sender)
-		// 更新设计查看器的组件树信息
-		go lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 设置选中状态
-			sender.SetSelected()
-		})
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 		message.Follow(msgContent)
 		sender.DragBegin()
@@ -653,6 +718,14 @@ func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton,
 		// 只有真正发生过拖动才补写最终坐标，普通点击不触发 UI 生成。
 		br := sender.BoundsRect()
 		sender.UpdateNodeDataPoint(br.Left, br.Top)
+		if len(m.groupItems) > 0 {
+			for _, item := range m.groupItems {
+				actual := item.comp.BoundsRect()
+				item.comp.UpdateNodeDataPoint(actual.Left, actual.Top)
+			}
+			m.groupItems = m.groupItems[:0]
+		}
+		sender.FormTab.syncSelectionFrames()
 		sender.FormTab.hideGuides()
 		m.isDown = false
 	}

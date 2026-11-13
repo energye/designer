@@ -71,10 +71,11 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	m.tree.Font().SetHeight(-11)
 	m.tree.SetImages(imageComponents.ImageList50())
 	//m.tree.SetImages(imageComponents.ImageList100())
-	//m.tree.SetMultiSelect(true) // 多选控制
+	m.tree.SetMultiSelect(true) // 多选控制
 	//m.tree.SetOnChange(m.TreeOnChange)
 	m.tree.SetOnExpanding(m.TreeOnExpanding)
 	m.tree.SetOnMouseDown(m.TreeOnMouseDown)
+	m.tree.SetOnMouseUp(m.TreeOnMouseUp)
 	m.tree.SetOnContextPopup(m.TreeOnContextPopup)
 	//m.tree.SetOnAdvancedCustomDrawItem(m.TreeOnAdvancedCustomDrawItem)
 	//m.CreateComponentMenu()

@@ -35,6 +35,7 @@ type TEngFormDesigner struct {
 	MouseDownPos       types.TPoint
 	MouseUpPos         types.TPoint
 	LastMouseMovePos   types.TPoint
+	band               designerBand
 }
 
 // 创建一个窗体设计器
@@ -118,8 +119,15 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
 	m.MouseDownPos = m.GetMousePos() // int32(*message.XPos()), int32(*message.YPos())
 	m.MouseDownComponent = m.GetComponentAtPos(m.MouseDownPos.X, m.MouseDownPos.Y)
+	shift, button := m.GetMouseMsgShift(message)
+	if button == types.MbLeft && SelectedComponent() == nil &&
+		(m.MouseDownComponent == nil || m.MouseDownComponent.ComponentType == consts.CtForm) {
+		// 空白画布按下：开始框选候选，单击在抬起时选中窗体
+		m.bandBegin(m.MouseDownPos)
+		*message.Result() = 1
+		return
+	}
 	if m.MouseDownComponent != nil {
-		shift, button := m.GetMouseMsgShift(message)
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		m.MouseDownComponent.OnMouseDown(sender, button, shift, x, y)
 	}
@@ -128,13 +136,19 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 
 func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseUp", message.Msg, sender.ToString())
+	shift, button := m.GetMouseMsgShift(message)
+	if button == types.MbLeft && m.band.down {
+		m.bandEnd(m.GetMousePos())
+		*message.Result() = 1
+		m.MouseDownComponent = nil
+		return
+	}
 	control := m.MouseDownComponent
 	if control == nil {
 		m.MouseUpPos = m.GetMousePos()
 		control = m.GetComponentAtPos(m.MouseUpPos.X, m.MouseUpPos.Y)
 	}
 	if control != nil {
-		shift, button := m.GetMouseMsgShift(message)
 		x, y := int32(*message.XPos()), int32(*message.YPos())
 		control.OnMouseUp(sender, button, shift, x, y)
 	}
@@ -145,6 +159,16 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseMove", message.Msg, message, sender.ToString())
 	m.MouseMoveComponent = m.MouseDownComponent
+	if m.band.down {
+		if message.Keys&consts.MK_LBUTTON == 0 {
+			// 鼠标按键已在窗口外释放，按当前位置结束框选
+			m.bandEnd(m.GetMousePos())
+		} else {
+			m.bandUpdate(m.GetMousePos())
+		}
+		*message.Result() = 1
+		return
+	}
 	if m.MouseMoveComponent != nil {
 		shift, _ := m.GetMouseMsgShift(message)
 		x, y := int32(*message.XPos()), int32(*message.YPos())
@@ -202,7 +226,7 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 	}
 	switch message.Msg {
 	case messages.LM_LBUTTONUP, messages.LM_LBUTTONDBLCLK, messages.LM_LBUTTONTRIPLECLK, messages.LM_LBUTTONQUADCLK:
-		shift = shift.Include(types.SsShift)
+		// 左键状态由 button 返回，SsShift 仅表示真实 Shift 键，避免普通点击被当成 Shift+点击。
 		button = types.MbLeft
 	case messages.LM_MBUTTONUP, messages.LM_MBUTTONDBLCLK, messages.LM_MBUTTONTRIPLECLK, messages.LM_MBUTTONQUADCLK:
 		shift = shift.Include(types.SsMiddle)
@@ -218,7 +242,6 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 			shift = shift.Include(types.SsRight)
 			button = types.MbRight
 		} else if message.Keys&consts.MK_LBUTTON != 0 {
-			shift = shift.Include(types.SsShift)
 			button = types.MbLeft
 		} else if message.Keys&consts.MK_XBUTTON1 != 0 {
 			shift = shift.Include(types.SsExtra1)

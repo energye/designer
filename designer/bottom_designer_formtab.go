@@ -63,6 +63,11 @@ type FormTab struct {
 	guideV   []lcl.IPanel // 垂直对齐线
 	guideH   []lcl.IPanel // 水平对齐线
 	guideBox uintptr      // 对齐线所属设计画布实例
+
+	selected    map[*TDesigningComponent]struct{} // 当前选中组件集合
+	primary     *TDesigningComponent              // 主选中组件（拖拽控制点/属性面板）
+	selFrames   []*designerSelectionFrame         // 非主选组件的选中边框
+	selFrameBox uintptr                           // 选中边框所属设计画布实例
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
@@ -129,73 +134,28 @@ func (m *FormTab) RemoveComponentFormList(instance uintptr) {
 	m.formDesigner.RemoveComponentFormList(instance)
 }
 
-// 隐藏其它设计的组件 drag, 对象查看器属性和事件
-func (m *FormTab) HideOtherDesignHelpers(target *TDesigningComponent) {
-	var iterable func(component *TDesigningComponent)
-	iterable = func(component *TDesigningComponent) {
-		if component.IsDesign && target != component {
-			component.IsDesign = false // 标记为非设计状态
-			component.HideDesignHelpers()
-		}
-		for _, child := range component.Child {
-			iterable(child)
-		}
-	}
-	iterable(m.FormRoot)
-}
-
-// 隐藏所有下在设计的组件 drag, 对象查看器属性和事件
+// 隐藏所有正在设计的组件的 drag 控制点、属性面板和选中边框
 func (m *FormTab) HideAllDesignHelpers() {
-	var iterable func(component *TDesigningComponent)
-	iterable = func(component *TDesigningComponent) {
-		if component.IsDesign {
-			component.IsDesign = false // 标记为非设计状态
-			component.HideDesignHelpers()
-		}
-		for _, child := range component.Child {
-			iterable(child)
-		}
+	for comp := range m.selected {
+		comp.HideDesignHelpers()
 	}
-	iterable(m.FormRoot)
+	m.hideSelectionFrames()
 }
 
-// 查找当前设计窗体正在设计的组件
+// 查找当前设计窗体正在设计的组件（主选中）
 func (m *FormTab) FindDesignComponent(component *TDesigningComponent) *TDesigningComponent {
-	if component == nil {
+	if m.primary == nil || m.primary.FormTab != m {
 		return nil
 	}
-	if component.IsDesign {
-		return component
-	}
-	for _, child := range component.Child {
-		designComp := m.FindDesignComponent(child)
-		if designComp != nil {
-			return designComp
-		}
-	}
-	return nil
+	return m.primary
 }
 
-// 切换组件到设计状态
+// 切换组件到设计状态（单选）
 func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
-	targetComp.mustComponentPropertyPage()
-	targetComp.drag.mustDS()
-	m.HideOtherDesignHelpers(targetComp)
-	targetComp.IsDesign = true
-	if m.State == FtsHide {
-		designer.tab.HideAllActivated()
-		m.ShowTabPage()
+	if targetComp == nil {
+		return
 	}
-	if !m.IsDesigner {
-		// 切换到设计窗体
-		designer.tab.HideAllActivated()
-		designer.ActiveFormTab(m)
-	}
-	// helper 显示位置
-	targetComp.ShowDesignHelpers()
-	// 加载属性到属性列表
-	targetComp.LoadPropertyToInspector()
-	m.formDesigner.Form.SetFocus()
+	m.selectComponents([]*TDesigningComponent{targetComp}, targetComp, true)
 }
 
 // 放置设计组件到设计面板或父组件容器
@@ -263,6 +223,9 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	}
 	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
 	m.hideGuides()
+	if m.formDesigner != nil {
+		m.formDesigner.bandCancel()
+	}
 	if m.formDesignPage != nil {
 		m.formDesignPage.stopRulerSync()
 	}
@@ -271,10 +234,12 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 	if designComp == nil {
 		designComp = m.FormRoot
 	}
-	// 隐藏所有设计组件
-	m.HideOtherDesignHelpers(designComp)
+	// 隐藏所有设计组件的控制点和选中边框，选择状态保留以便切回时恢复
+	m.HideAllDesignHelpers()
 	// 隐藏掉对象查看器 tab page, 属性列表和事件列表
-	designComp.page.SetVisible(false)
+	if designComp.page != nil && designComp.page.IsValid() {
+		designComp.page.SetVisible(false)
+	}
 	m.mainPage.Button().Font().SetColor(colors.ClBlack)
 }
 
@@ -295,7 +260,9 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		designComp = m.FormRoot
 	}
 	// 显示掉对象查看器 tab page, 属性列表和事件列表
-	designComp.page.SetVisible(true)
+	if designComp.page != nil && designComp.page.IsValid() {
+		designComp.page.SetVisible(true)
+	}
 	// 切换设计窗体代码编辑器
 	m.formDesignPage.ActiveCodeEditorTab()
 
@@ -317,17 +284,21 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 			}
 		}
 		if isComponentNode {
-			// 确保节点被选中
-			ProjectTreeSetSelected(designComp.node)
-			// 确保组件 helper 能正确显示, 因为选中已选中的节点不会再触发选中事件
-			m.SwitchComponentEditing(designComp)
+			// 恢复项目树选中状态（含多选）
+			ProjectTreeSyncSelection(m)
+		}
+		// 恢复组件 helper；源码文件节点选中时不动树节点选中。
+		// 切回窗体时恢复完整选择集合，避免多选被收敛成主选单选。
+		comps := m.SelectedComponents()
+		primary := m.primary
+		if len(comps) == 0 {
+			comps = []*TDesigningComponent{designComp}
+			primary = designComp
+		}
+		m.selectComponents(comps, primary, false)
+		if isComponentNode {
 			// 聚焦设计窗体
 			m.formDesigner.Form.SetFocus()
-		} else {
-			// 源码文件节点选中时, 只显示组件 helper 不切换树节点选中
-			m.HideOtherDesignHelpers(designComp)
-			designComp.IsDesign = true
-			designComp.ShowDesignHelpers()
 		}
 	})
 }
@@ -404,6 +375,9 @@ func (m *FormTab) Remove() {
 	m.hideGuides()
 	m.guideV, m.guideH = nil, nil
 	m.guideBox = 0
+	m.selected = nil
+	m.primary = nil
+	m.selFrames, m.selFrameBox = nil, 0
 	m.freeGridTile()
 	m.designerBox = nil
 	if m.formDesignPage != nil {
