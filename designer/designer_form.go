@@ -75,7 +75,12 @@ func (m *FormTab) NewFormDesigner() {
 	designerFormBox.SetAlign(types.AlClient)
 	designerFormBox.SetBevelOuter(types.BvNone)
 	designerFormBox.SetColor(colors.ClForm)
+	designerFormBox.SetDoubleBuffered(true)
 	designerFormBox.SetParent(designerForm)
+	// 网格只画在设计画布背景一层，用固定瓦片平铺，拖动/缩放时无需重建。
+	m.designerBox = designerFormBox
+	m.gridVisible = true
+	m.designerOnPaint(designerFormBox)
 
 	// 设计面板
 	m.FormRoot.originObject = designerForm

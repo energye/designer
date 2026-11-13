@@ -15,6 +15,8 @@ package designer
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/dast"
@@ -23,7 +25,6 @@ import (
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
-	"strings"
 )
 
 // 设计器面板
@@ -37,12 +38,24 @@ const (
 	FtsShow
 )
 
+const (
+	designerGridSize     = 8
+	designerGridTileSize = 512
+)
+
+var designerGridColor = colors.RGBToColor(205, 205, 205)
+
 // 设计窗体的 tab
 type FormTab struct {
 	Id         int          // 唯一索引, 关联 forms key: index
 	IsDesigner bool         // 当前设计窗体 Form 是否正在设计, 当显示和隐藏时设置值
 	State      FormTabState //
 	mainPage   *wg.TPage    // tab sheet
+
+	designerBox   lcl.ICustomControl // 设计画布背景，网格绘制目标
+	gridVisible   bool               // 是否显示网格
+	gridTile      lcl.IBitmap        // 固定大小网格瓦片，按需平铺绘制
+	gridTileColor types.TColor
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
@@ -374,6 +387,8 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 
 // 删除当前表单
 func (m *FormTab) Remove() {
+	m.freeGridTile()
+	m.designerBox = nil
 	m.State = FtsClose
 	m.mainPage.Close()
 }
@@ -406,26 +421,91 @@ func (m *FormTab) GetComponentCaptionName(component string) string {
 
 func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
 	control.SetOnPaint(func(sender lcl.IObject) {
-		// 绘制网格
 		m.drawGrid(control)
 	})
 }
 
-// 绘制风格线
+// drawGrid 每帧把固定大小的网格瓦片平铺到画布。
+// 瓦片与画布尺寸无关，拖动/缩放控件时无需重建，三平台都走 LCL Canvas。
 func (m *FormTab) drawGrid(control lcl.ICustomControl) {
-	//logs.Debug("drawGrid")
-	gridSize := 9 // 小刻度
-	formRoot := control
-	canvas := formRoot.Canvas()
-	canvas.PenToPen().SetColor(colors.ClBlack)
-	width, height := formRoot.Width(), formRoot.Height()
-	for i := 1; i < int(width)/gridSize; i++ {
-		x := int32(i * gridSize)
-		for j := 1; j < int(height)/gridSize; j++ {
-			y := int32(j * gridSize)
-			canvas.SetPixels(x, y, colors.ClBlack)
+	if !m.gridVisible || control == nil {
+		return
+	}
+	canvas := control.Canvas()
+	if canvas == nil || !canvas.IsValid() {
+		return
+	}
+	m.ensureGridTile(control.Color())
+	if m.gridTile == nil {
+		return
+	}
+	w, h := control.ClientWidth(), control.ClientHeight()
+	tileSize := int32(designerGridTileSize)
+
+	// 只平铺当前重绘区域；ClipRect 无效时回退整张画布。
+	left, top, right, bottom := int32(0), int32(0), w, h
+	clip := canvas.ClipRect()
+	if clip.Right > clip.Left && clip.Bottom > clip.Top {
+		if clip.Left > left {
+			left = clip.Left
+		}
+		if clip.Top > top {
+			top = clip.Top
+		}
+		if clip.Right < right {
+			right = clip.Right
+		}
+		if clip.Bottom < bottom {
+			bottom = clip.Bottom
 		}
 	}
+	if right <= left || bottom <= top {
+		return
+	}
+
+	// 起点按瓦片对齐，避免局部重绘时网格错位。
+	startX := left / tileSize * tileSize
+	startY := top / tileSize * tileSize
+	for y := startY; y < bottom; y += tileSize {
+		for x := startX; x < right; x += tileSize {
+			canvas.DrawWithIntX2Graphic(x, y, m.gridTile)
+		}
+	}
+}
+
+func (m *FormTab) ensureGridTile(color types.TColor) {
+	if m.gridTile != nil && m.gridTileColor == color {
+		return
+	}
+	m.freeGridTile()
+	bmp := lcl.NewBitmap()
+	bmp.SetSize(designerGridTileSize, designerGridTileSize)
+	canvas := bmp.Canvas()
+	canvas.BrushToBrush().SetColor(color)
+	canvas.FillRectWithRect(types.Rect(0, 0, designerGridTileSize, designerGridTileSize))
+	pen := canvas.PenToPen()
+	pen.SetColor(designerGridColor)
+	pen.SetWidth(1)
+	pen.SetStyle(types.PsSolid)
+	// 不画右/下边界线，相邻瓦片从 0 开始绘制，保证接缝只有一条线。
+	for x := int32(0); x < designerGridTileSize; x += designerGridSize {
+		canvas.MoveToWithIntX2(x, 0)
+		canvas.LineToWithIntX2(x, designerGridTileSize-1)
+	}
+	for y := int32(0); y < designerGridTileSize; y += designerGridSize {
+		canvas.MoveToWithIntX2(0, y)
+		canvas.LineToWithIntX2(designerGridTileSize-1, y)
+	}
+	m.gridTile = bmp
+	m.gridTileColor = color
+}
+
+func (m *FormTab) freeGridTile() {
+	if m.gridTile != nil {
+		m.gridTile.Free()
+		m.gridTile = nil
+	}
+	m.gridTileColor = 0
 }
 
 // 添加窗体表单根节点
