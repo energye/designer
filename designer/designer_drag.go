@@ -48,6 +48,9 @@ type drag struct {
 	rightTop           lcl.IPanel
 	leftBottom         lcl.IPanel
 	rightBottom        lcl.IPanel
+	// 对齐目标缓存，拖动过程中复用避免频繁分配
+	alignXs []designerAlignTarget
+	alignYs []designerAlignTarget
 }
 
 func (m *drag) Free() {
@@ -126,7 +129,43 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				bottom += dy
 				moveRight, moveBottom = true, true
 			}
-			if m.snapGridEnabled(shift) {
+			targets := m.alignmentTargets(m.relation)
+			alignEnabled := !altHeld() && !shift.In(types.SsAlt)
+			gridEnabled := m.snapGridEnabled(shift)
+			var matchV, matchH designerAlignTarget
+			hitV, hitH := false, false
+			if alignEnabled {
+				if moveLeft {
+					if edge, target, hit := snapEdgeToTargets(left, targets.xs, designerAlignThreshold); hit {
+						left = edge
+						matchV, hitV = target, true
+					} else if gridEnabled {
+						left = snapDesignerGrid(left)
+					}
+				} else if moveRight {
+					if edge, target, hit := snapEdgeToTargets(right, targets.xs, designerAlignThreshold); hit {
+						right = edge
+						matchV, hitV = target, true
+					} else if gridEnabled {
+						right = snapDesignerGrid(right)
+					}
+				}
+				if moveTop {
+					if edge, target, hit := snapEdgeToTargets(top, targets.ys, designerAlignThreshold); hit {
+						top = edge
+						matchH, hitH = target, true
+					} else if gridEnabled {
+						top = snapDesignerGrid(top)
+					}
+				} else if moveBottom {
+					if edge, target, hit := snapEdgeToTargets(bottom, targets.ys, designerAlignThreshold); hit {
+						bottom = edge
+						matchH, hitH = target, true
+					} else if gridEnabled {
+						bottom = snapDesignerGrid(bottom)
+					}
+				}
+			} else if gridEnabled {
 				if moveLeft {
 					left = snapDesignerGrid(left)
 				}
@@ -141,19 +180,44 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				}
 			}
 			minSize := int32(designerGridSize)
+			clampedX, clampedY := false, false
 			if moveLeft && right-left < minSize {
 				left = right - minSize
+				clampedX = true
 			}
 			if moveRight && right-left < minSize {
 				right = left + minSize
+				clampedX = true
 			}
 			if moveTop && bottom-top < minSize {
 				top = bottom - minSize
+				clampedY = true
 			}
 			if moveBottom && bottom-top < minSize {
 				bottom = top + minSize
+				clampedY = true
+			}
+			if clampedX {
+				hitV = false
+			}
+			if clampedY {
+				hitH = false
 			}
 			m.relation.SetBounds(left, top, right-left, bottom-top)
+			if m.relation.FormTab != nil {
+				var guidesV, guidesH []designerGuide
+				if hitV {
+					guidesV = append(guidesV, guideFor(top, bottom-top, matchV))
+				}
+				if hitH {
+					guidesH = append(guidesH, guideFor(left, right-left, matchH))
+				}
+				if len(guidesV) > 0 || len(guidesH) > 0 {
+					m.relation.FormTab.showGuides(guidesV, guidesH, targets.origin)
+				} else {
+					m.relation.FormTab.hideGuides()
+				}
+			}
 			br := m.relation.BoundsRect()
 			m.relation.UpdateNodeDataBounds(br)
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
@@ -170,6 +234,9 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		br := m.relation.BoundsRect()
 		m.dcx, m.dcy, m.dcw, m.dch = br.Left, br.Top, br.Width(), br.Height()
 		m.isDown = true
+		if m.relation.FormTab != nil {
+			m.relation.FormTab.hideGuides()
+		}
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcx, m.dcy, m.dcw, m.dch)
 		message.Follow(msgContent)
 		m.relation.DragBegin()
@@ -183,11 +250,137 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		}
 		m.isDown = false
 		message.FollowHide()
+		if m.relation.FormTab != nil {
+			m.relation.FormTab.hideGuides()
+		}
 		br := m.relation.BoundsRect()
 		m.relation.UpdateNodeDataBounds(br)
 		m.relation.DragEnd()
 	})
 	return pnl
+}
+
+const designerAlignThreshold = 5
+
+// designerAlignTarget 单个对齐目标。
+// pos 为吸附坐标；from/to 为对齐对象沿另一轴的显示范围，用于绘制局部对齐线。
+type designerAlignTarget struct {
+	pos      int32
+	from, to int32
+}
+
+// designerAlignment 某父容器内的对齐目标（父边/中心 + 兄弟控件边/中心）。
+type designerAlignment struct {
+	xs     []designerAlignTarget
+	ys     []designerAlignTarget
+	origin types.TPoint // 父容器客户区 -> 设计画布客户区偏移
+}
+
+// snapEdgeToTargets 找到最近的对齐目标；命中时返回目标坐标。
+func snapEdgeToTargets(edge int32, targets []designerAlignTarget, threshold int32) (newEdge int32, matched designerAlignTarget, hit bool) {
+	newEdge = edge
+	bestDelta := threshold + 1
+	for _, target := range targets {
+		delta := target.pos - edge
+		if delta < 0 {
+			delta = -delta
+		}
+		if delta <= threshold && delta < bestDelta {
+			bestDelta = delta
+			newEdge = target.pos
+			matched = target
+			hit = true
+		}
+	}
+	return
+}
+
+// snapMoveAxis 用矩形的起点/中心/终点匹配对齐目标，返回吸附后的起点。
+func snapMoveAxis(start, size int32, targets []designerAlignTarget, threshold int32) (newStart int32, matched designerAlignTarget, hit bool) {
+	newStart = start
+	anchors := [3]int32{start, start + size/2, start + size}
+	bestDelta := threshold + 1
+	for _, anchor := range anchors {
+		for _, target := range targets {
+			delta := target.pos - anchor
+			if delta < 0 {
+				delta = -delta
+			}
+			if delta <= threshold && delta < bestDelta {
+				bestDelta = delta
+				newStart = start + (target.pos - anchor)
+				matched = target
+				hit = true
+			}
+		}
+	}
+	return
+}
+
+// guideFor 生成对齐线：绘制范围为拖动控件与对齐目标的联合区间。
+func guideFor(start, size int32, target designerAlignTarget) designerGuide {
+	guide := designerGuide{pos: target.pos, from: target.from, to: target.to}
+	if start < guide.from {
+		guide.from = start
+	}
+	if start+size > guide.to {
+		guide.to = start + size
+	}
+	return guide
+}
+
+func (m *drag) alignmentTargets(comp *TDesigningComponent) designerAlignment {
+	var result designerAlignment
+	if comp == nil || comp.parent == nil {
+		return result
+	}
+	parent := comp.parent
+	parentObj := parent.object
+	if parentObj == nil || !parentObj.IsValid() {
+		return result
+	}
+	width, height := parentObj.ClientWidth(), parentObj.ClientHeight()
+	result.xs = m.alignXs[:0]
+	result.ys = m.alignYs[:0]
+	// 父容器参考线贯穿整个父容器。
+	result.xs = append(result.xs,
+		designerAlignTarget{pos: 0, from: 0, to: height},
+		designerAlignTarget{pos: width / 2, from: 0, to: height},
+		designerAlignTarget{pos: width, from: 0, to: height})
+	result.ys = append(result.ys,
+		designerAlignTarget{pos: 0, from: 0, to: width},
+		designerAlignTarget{pos: height / 2, from: 0, to: width},
+		designerAlignTarget{pos: height, from: 0, to: width})
+	for _, sibling := range parent.Child {
+		if sibling == nil || sibling == comp || sibling.ComponentType == consts.CtNonVisual {
+			continue
+		}
+		control := sibling.Control()
+		if control == nil || !control.IsValid() || !control.Visible() {
+			continue
+		}
+		br := sibling.BoundsRect()
+		if br.Width() <= 0 || br.Height() <= 0 {
+			continue
+		}
+		result.xs = append(result.xs,
+			designerAlignTarget{pos: br.Left, from: br.Top, to: br.Bottom},
+			designerAlignTarget{pos: br.Left + br.Width()/2, from: br.Top, to: br.Bottom},
+			designerAlignTarget{pos: br.Left + br.Width(), from: br.Top, to: br.Bottom})
+		result.ys = append(result.ys,
+			designerAlignTarget{pos: br.Top, from: br.Left, to: br.Right},
+			designerAlignTarget{pos: br.Top + br.Height()/2, from: br.Left, to: br.Right},
+			designerAlignTarget{pos: br.Top + br.Height(), from: br.Left, to: br.Right})
+	}
+	if comp.FormTab != nil {
+		box := comp.FormTab.designerBox
+		if box != nil && box.IsValid() && box.Instance() != parentObj.Instance() {
+			po, bo := parentObj.ClientOrigin(), box.ClientOrigin()
+			result.origin = types.TPoint{X: po.X - bo.X, Y: po.Y - bo.Y}
+		}
+	}
+	m.alignXs, m.alignYs = result.xs, result.ys
+	return result
 }
 
 // snapDesignerGrid 四舍五入到设计网格。
@@ -380,11 +573,43 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		point := lcl.Mouse.CursorPos()
 		newLeft := m.dcl + point.X - m.dx
 		newTop := m.dct + point.Y - m.dy
-		if m.snapGridEnabled(shift) {
+		targets := m.alignmentTargets(sender)
+		alignEnabled := !altHeld() && !shift.In(types.SsAlt)
+		gridEnabled := m.snapGridEnabled(shift)
+		var matchV, matchH designerAlignTarget
+		hitV, hitH := false, false
+		if alignEnabled {
+			if v, target, hit := snapMoveAxis(newLeft, br.Width(), targets.xs, designerAlignThreshold); hit {
+				newLeft = v
+				matchV, hitV = target, true
+			} else if gridEnabled {
+				newLeft = snapDesignerGrid(newLeft)
+			}
+			if v, target, hit := snapMoveAxis(newTop, br.Height(), targets.ys, designerAlignThreshold); hit {
+				newTop = v
+				matchH, hitH = target, true
+			} else if gridEnabled {
+				newTop = snapDesignerGrid(newTop)
+			}
+		} else if gridEnabled {
 			newLeft = snapDesignerGrid(newLeft)
 			newTop = snapDesignerGrid(newTop)
 		}
 		sender.SetBounds(newLeft, newTop, br.Width(), br.Height())
+		if sender.FormTab != nil {
+			var guidesV, guidesH []designerGuide
+			if hitV {
+				guidesV = append(guidesV, guideFor(newTop, br.Height(), matchV))
+			}
+			if hitH {
+				guidesH = append(guidesH, guideFor(newLeft, br.Width(), matchH))
+			}
+			if len(guidesV) > 0 || len(guidesH) > 0 {
+				sender.FormTab.showGuides(guidesV, guidesH, targets.origin)
+			} else {
+				sender.FormTab.hideGuides()
+			}
+		}
 		// SetBounds 可能被父容器夹紧，属性以控件最终边界为准。
 		actual := sender.BoundsRect()
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
@@ -401,6 +626,7 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 	m.mustDS()
 	if !sender.FormTab.placeComponent(sender, X, Y) {
 		m.isDown = true
+		sender.FormTab.hideGuides()
 		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		point := lcl.Mouse.CursorPos()
 		m.dx, m.dy = point.X, point.Y
@@ -427,6 +653,7 @@ func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton,
 		// 只有真正发生过拖动才补写最终坐标，普通点击不触发 UI 生成。
 		br := sender.BoundsRect()
 		sender.UpdateNodeDataPoint(br.Left, br.Top)
+		sender.FormTab.hideGuides()
 		m.isDown = false
 	}
 	message.FollowHide()

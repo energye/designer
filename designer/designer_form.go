@@ -65,6 +65,10 @@ func (m *FormTab) NewFormDesigner() {
 	designerForm.SetKeyPreview(true)
 	designerForm.SetOnKeyDown(m.DesignFormOnKeyDown)
 	designerForm.SetOnKeyUp(m.DesignFormOnKeyUp)
+	// 拖拽过程中失去焦点(如 Alt+Tab)时收不到鼠标抬起事件，避免对齐线残留。
+	designerForm.SetOnDeactivate(func(sender lcl.IObject) {
+		m.hideGuides()
+	})
 
 	designerForm.Show()
 

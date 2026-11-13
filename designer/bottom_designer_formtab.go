@@ -43,7 +43,10 @@ const (
 	designerGridTileSize = 512
 )
 
-var designerGridColor = colors.RGBToColor(205, 205, 205)
+var (
+	designerGridColor  = colors.RGBToColor(205, 205, 205)
+	designerGuideColor = colors.RGBToColor(255, 80, 80)
+)
 
 // 设计窗体的 tab
 type FormTab struct {
@@ -56,6 +59,10 @@ type FormTab struct {
 	gridVisible   bool               // 是否显示网格
 	gridTile      lcl.IBitmap        // 固定大小网格瓦片，按需平铺绘制
 	gridTileColor types.TColor
+
+	guideV   []lcl.IPanel // 垂直对齐线
+	guideH   []lcl.IPanel // 水平对齐线
+	guideBox uintptr      // 对齐线所属设计画布实例
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
@@ -255,6 +262,7 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
+	m.hideGuides()
 	if m.formDesignPage != nil {
 		m.formDesignPage.stopRulerSync()
 	}
@@ -393,6 +401,9 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 
 // 删除当前表单
 func (m *FormTab) Remove() {
+	m.hideGuides()
+	m.guideV, m.guideH = nil, nil
+	m.guideBox = 0
 	m.freeGridTile()
 	m.designerBox = nil
 	if m.formDesignPage != nil {
@@ -515,6 +526,129 @@ func (m *FormTab) freeGridTile() {
 		m.gridTile = nil
 	}
 	m.gridTileColor = 0
+}
+
+// ensureGuidePanels 按需创建对齐线面板（1px，父级为设计画布，显示在控件之上）。
+// 创建时尺寸置零并先隐藏，避免面板默认尺寸(170x50)在画布左上角闪现。
+func (m *FormTab) ensureGuidePanels() bool {
+	box := m.designerBox
+	if box == nil || !box.IsValid() {
+		return false
+	}
+	if m.guideBox == box.Instance() && len(m.guideV) == 2 && len(m.guideH) == 2 &&
+		m.guideV[0].IsValid() && m.guideV[1].IsValid() && m.guideH[0].IsValid() && m.guideH[1].IsValid() {
+		return true
+	}
+	m.guideV, m.guideH = nil, nil
+	m.guideBox = box.Instance()
+	newPanel := func() lcl.IPanel {
+		p := lcl.NewPanel(box)
+		p.SetBounds(0, 0, 0, 0)
+		p.SetVisible(false)
+		p.SetEnabled(false) // 不接收鼠标消息，避免遮挡画布操作
+		p.SetBevelOuter(types.BvNone)
+		p.SetColor(designerGuideColor)
+		p.SetParent(box)
+		return p
+	}
+	for i := 0; i < 2; i++ {
+		m.guideV = append(m.guideV, newPanel())
+		m.guideH = append(m.guideH, newPanel())
+	}
+	return true
+}
+
+// designerGuide 对齐线：pos 为吸附坐标，from/to 为沿另一轴的显示范围（拖动控件父容器客户区坐标）。
+type designerGuide struct {
+	pos      int32
+	from, to int32
+}
+
+func (m *FormTab) hideGuidePanel(p lcl.IPanel) {
+	if p == nil || !p.IsValid() {
+		return
+	}
+	if p.Visible() {
+		p.SetVisible(false)
+	}
+	p.SetBounds(0, 0, 0, 0)
+}
+
+// showGuides 显示对齐线；origin 为拖动控件父容器客户区到设计画布的偏移。
+// 每条线只绘制在"拖动控件与对齐目标"的联合范围内，避免贯穿整个画布压在无关控件上。
+func (m *FormTab) showGuides(vertical, horizontal []designerGuide, origin types.TPoint) {
+	if !m.ensureGuidePanels() {
+		return
+	}
+	box := m.designerBox
+	w, h := box.ClientWidth(), box.ClientHeight()
+	for i, p := range m.guideV {
+		if i >= len(vertical) || w <= 0 || h <= 0 {
+			m.hideGuidePanel(p)
+			continue
+		}
+		g := vertical[i]
+		x := origin.X + g.pos
+		if x == w {
+			x = w - 1 // 右边缘对齐线落在画布最后一个像素列
+		}
+		y1, y2 := origin.Y+g.from, origin.Y+g.to
+		if x < 0 || x >= w {
+			m.hideGuidePanel(p)
+			continue
+		}
+		if y1 < 0 {
+			y1 = 0
+		}
+		if y2 > h {
+			y2 = h
+		}
+		if y2-y1 < 1 {
+			m.hideGuidePanel(p)
+			continue
+		}
+		p.SetBounds(x, y1, 1, y2-y1)
+		p.BringToFront()
+		p.SetVisible(true)
+	}
+	for i, p := range m.guideH {
+		if i >= len(horizontal) || w <= 0 || h <= 0 {
+			m.hideGuidePanel(p)
+			continue
+		}
+		g := horizontal[i]
+		y := origin.Y + g.pos
+		if y == h {
+			y = h - 1 // 底边缘对齐线落在画布最后一个像素行
+		}
+		x1, x2 := origin.X+g.from, origin.X+g.to
+		if y < 0 || y >= h {
+			m.hideGuidePanel(p)
+			continue
+		}
+		if x1 < 0 {
+			x1 = 0
+		}
+		if x2 > w {
+			x2 = w
+		}
+		if x2-x1 < 1 {
+			m.hideGuidePanel(p)
+			continue
+		}
+		p.SetBounds(x1, y, x2-x1, 1)
+		p.BringToFront()
+		p.SetVisible(true)
+	}
+}
+
+func (m *FormTab) hideGuides() {
+	for _, p := range m.guideV {
+		m.hideGuidePanel(p)
+	}
+	for _, p := range m.guideH {
+		m.hideGuidePanel(p)
+	}
 }
 
 // 添加窗体表单根节点

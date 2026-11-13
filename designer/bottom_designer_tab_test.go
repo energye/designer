@@ -99,3 +99,52 @@ func TestRulerClosedGuards(t *testing.T) {
 	page.closeRuler()
 	page.closeRuler()
 }
+
+func TestSnapEdgeToTargets(t *testing.T) {
+	targets := []designerAlignTarget{
+		{pos: 100, from: 10, to: 40},
+		{pos: 200, from: 0, to: 20},
+	}
+	edge, target, hit := snapEdgeToTargets(103, targets, designerAlignThreshold)
+	if !hit || edge != 100 || target.pos != 100 || target.from != 10 || target.to != 40 {
+		t.Fatalf("edge snap failed: edge=%d target=%+v hit=%v", edge, target, hit)
+	}
+	edge, _, hit = snapEdgeToTargets(110, targets, designerAlignThreshold)
+	if hit || edge != 110 {
+		t.Fatalf("超出阈值不应吸附: edge=%d hit=%v", edge, hit)
+	}
+}
+
+func TestSnapMoveAxis(t *testing.T) {
+	target := func(pos int32) []designerAlignTarget {
+		return []designerAlignTarget{{pos: pos, from: 0, to: 10}}
+	}
+	// 左边对齐
+	start, matched, hit := snapMoveAxis(98, 50, target(100), designerAlignThreshold)
+	if !hit || start != 100 || matched.pos != 100 {
+		t.Fatalf("左边吸附失败: start=%d matched=%+v", start, matched)
+	}
+	// 右边对齐
+	start, matched, hit = snapMoveAxis(100, 50, target(150), designerAlignThreshold)
+	if !hit || start != 100 || matched.pos != 150 {
+		t.Fatalf("右边吸附失败: start=%d matched=%+v", start, matched)
+	}
+	// 中心对齐
+	start, matched, hit = snapMoveAxis(100, 50, target(127), designerAlignThreshold)
+	if !hit || start != 102 || matched.pos != 127 {
+		t.Fatalf("中心吸附失败: start=%d matched=%+v", start, matched)
+	}
+}
+
+func TestGuideFor(t *testing.T) {
+	// 拖动控件 [20,80] 与目标 [10,40] 取联合区间
+	guide := guideFor(20, 60, designerAlignTarget{pos: 100, from: 10, to: 40})
+	if guide.pos != 100 || guide.from != 10 || guide.to != 80 {
+		t.Fatalf("联合区间错误: %+v", guide)
+	}
+	// 拖动控件 [0,20] 与目标 [10,40] 取联合区间
+	guide = guideFor(0, 20, designerAlignTarget{pos: 5, from: 10, to: 40})
+	if guide.from != 0 || guide.to != 40 {
+		t.Fatalf("联合区间错误: %+v", guide)
+	}
+}
