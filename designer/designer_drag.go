@@ -91,42 +91,69 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	//_, _, _, _ = dcx, dcy, dcw, dch
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
 		if m.isDown {
+			dx := X - m.dx
+			dy := Y - m.dy
+			left, top := m.dcx, m.dcy
+			right, bottom := m.dcx+m.dcw, m.dcy+m.dch
+			moveLeft, moveTop, moveRight, moveBottom := false, false, false, false
 			switch d {
 			case consts.DLeft:
-				x := X - m.dx
-				w := m.dcw - x
-				m.relation.SetBounds(m.dcx+x, m.dcy, w, m.dch)
+				left += dx
+				moveLeft = true
 			case consts.DTop:
-				y := Y - m.dy
-				h := m.dch - y
-				m.relation.SetBounds(m.dcx, m.dcy+y, m.dcw, h)
+				top += dy
+				moveTop = true
 			case consts.DRight:
-				x := X - m.dx
-				m.relation.SetBounds(m.dcx, m.dcy, m.dcw+x, m.dch)
+				right += dx
+				moveRight = true
 			case consts.DBottom:
-				y := Y - m.dy
-				m.relation.SetBounds(m.dcx, m.dcy, m.dcw, m.dch+y)
+				bottom += dy
+				moveBottom = true
 			case consts.DLeftTop:
-				x := X - m.dx
-				w := m.dcw - x
-				y := Y - m.dy
-				h := m.dch - y
-				m.relation.SetBounds(m.dcx+x, m.dcy+y, w, h)
+				left += dx
+				top += dy
+				moveLeft, moveTop = true, true
 			case consts.DRightTop:
-				y := Y - m.dy
-				h := m.dch - y
-				x := X - m.dx
-				m.relation.SetBounds(m.dcx, m.dcy+y, m.dcw+x, h)
+				right += dx
+				top += dy
+				moveRight, moveTop = true, true
 			case consts.DLeftBottom:
-				x := X - m.dx
-				w := m.dcw - x
-				y := Y - m.dy
-				m.relation.SetBounds(m.dcx+x, m.dcy, w, m.dch+y)
+				left += dx
+				bottom += dy
+				moveLeft, moveBottom = true, true
 			case consts.DRightBottom:
-				x := X - m.dx
-				y := Y - m.dy
-				m.relation.SetBounds(m.dcx, m.dcy, m.dcw+x, m.dch+y)
+				right += dx
+				bottom += dy
+				moveRight, moveBottom = true, true
 			}
+			if m.snapGridEnabled(shift) {
+				if moveLeft {
+					left = snapDesignerGrid(left)
+				}
+				if moveTop {
+					top = snapDesignerGrid(top)
+				}
+				if moveRight {
+					right = snapDesignerGrid(right)
+				}
+				if moveBottom {
+					bottom = snapDesignerGrid(bottom)
+				}
+			}
+			minSize := int32(designerGridSize)
+			if moveLeft && right-left < minSize {
+				left = right - minSize
+			}
+			if moveRight && right-left < minSize {
+				right = left + minSize
+			}
+			if moveTop && bottom-top < minSize {
+				top = bottom - minSize
+			}
+			if moveBottom && bottom-top < minSize {
+				bottom = top + minSize
+			}
+			m.relation.SetBounds(left, top, right-left, bottom-top)
 			br := m.relation.BoundsRect()
 			m.relation.UpdateNodeDataBounds(br)
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
@@ -161,6 +188,23 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		m.relation.DragEnd()
 	})
 	return pnl
+}
+
+// snapDesignerGrid 四舍五入到设计网格。
+func snapDesignerGrid(v int32) int32 {
+	grid := int32(designerGridSize)
+	if v >= 0 {
+		return (v + grid/2) / grid * grid
+	}
+	return -((-v + grid/2) / grid * grid)
+}
+
+// snapGridEnabled 网格显示时启用吸附，按住 Alt 临时关闭。
+func (m *drag) snapGridEnabled(shift types.TShiftState) bool {
+	if m.relation == nil || m.relation.FormTab == nil {
+		return false
+	}
+	return m.relation.FormTab.gridVisible && !shift.In(types.SsAlt)
 }
 
 func newDrag(owner lcl.IWinControl, ds consts.DragShowStatus) *drag {
@@ -336,6 +380,10 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		point := lcl.Mouse.CursorPos()
 		newLeft := m.dcl + point.X - m.dx
 		newTop := m.dct + point.Y - m.dy
+		if m.snapGridEnabled(shift) {
+			newLeft = snapDesignerGrid(newLeft)
+			newTop = snapDesignerGrid(newTop)
+		}
 		sender.SetBounds(newLeft, newTop, br.Width(), br.Height())
 		// SetBounds 可能被父容器夹紧，属性以控件最终边界为准。
 		actual := sender.BoundsRect()

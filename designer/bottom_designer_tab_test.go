@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/energye/energy/v3/lcl/wg"
+	"github.com/energye/lcl/types"
 )
 
 func TestFormTabNeedsRestore(t *testing.T) {
@@ -44,5 +45,34 @@ func TestHiddenFormTabForPage(t *testing.T) {
 	}
 	if got := hiddenFormTabForPage(forms, nil); got != nil {
 		t.Fatalf("nil 页不应命中, got %v", got)
+	}
+}
+
+func TestSnapDesignerGrid(t *testing.T) {
+	cases := []struct {
+		in, want int32
+	}{
+		{0, 0}, {3, 0}, {4, 8}, {8, 8}, {13, 16},
+		{-3, 0}, {-4, -8}, {-13, -16},
+	}
+	for _, c := range cases {
+		if got := snapDesignerGrid(c.in); got != c.want {
+			t.Fatalf("snapDesignerGrid(%d) = %d, want %d", c.in, got, c.want)
+		}
+	}
+}
+
+func TestSnapGridEnabled(t *testing.T) {
+	formTab := &FormTab{gridVisible: true}
+	d := &drag{relation: &TDesigningComponent{FormTab: formTab}}
+	if !d.snapGridEnabled(0) {
+		t.Fatal("网格显示时应启用吸附")
+	}
+	if d.snapGridEnabled(types.NewSet(types.SsAlt)) {
+		t.Fatal("Alt 应临时关闭吸附")
+	}
+	formTab.gridVisible = false
+	if d.snapGridEnabled(0) {
+		t.Fatal("网格隐藏时不应吸附")
 	}
 }
