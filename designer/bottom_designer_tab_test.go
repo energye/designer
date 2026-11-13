@@ -3,6 +3,7 @@ package designer
 import (
 	"testing"
 
+	"github.com/energye/designer/consts"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/types"
 )
@@ -74,5 +75,17 @@ func TestSnapGridEnabled(t *testing.T) {
 	formTab.gridVisible = false
 	if d.snapGridEnabled(0) {
 		t.Fatal("网格隐藏时不应吸附")
+	}
+}
+
+func TestGetMouseMsgShiftAlt(t *testing.T) {
+	d := &TEngFormDesigner{}
+	shift, _ := d.GetMouseMsgShift(&types.TLMMouse{Keys: consts.MK_ALT})
+	if !shift.In(types.SsAlt) {
+		t.Fatal("Alt 键应写入 ShiftState")
+	}
+	shift, _ = d.GetMouseMsgShift(&types.TLMMouse{Keys: consts.MK_ALT | consts.MK_CONTROL})
+	if !shift.In(types.SsAlt) || !shift.In(types.SsCtrl) {
+		t.Fatal("Alt+Ctrl 组合应同时生效")
 	}
 }

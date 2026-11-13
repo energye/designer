@@ -204,7 +204,7 @@ func (m *drag) snapGridEnabled(shift types.TShiftState) bool {
 	if m.relation == nil || m.relation.FormTab == nil {
 		return false
 	}
-	return m.relation.FormTab.gridVisible && !shift.In(types.SsAlt)
+	return m.relation.FormTab.gridVisible && !shift.In(types.SsAlt) && !altHeld()
 }
 
 func newDrag(owner lcl.IWinControl, ds consts.DragShowStatus) *drag {

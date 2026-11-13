@@ -197,6 +197,9 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 	if message.Keys&consts.MK_CONTROL == consts.MK_CONTROL {
 		shift = shift.Include(types.SsCtrl)
 	}
+	if message.Keys&consts.MK_ALT == consts.MK_ALT {
+		shift = shift.Include(types.SsAlt)
+	}
 	switch message.Msg {
 	case messages.LM_LBUTTONUP, messages.LM_LBUTTONDBLCLK, messages.LM_LBUTTONTRIPLECLK, messages.LM_LBUTTONQUADCLK:
 		shift = shift.Include(types.SsShift)
@@ -278,9 +281,9 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
 			m.popupMenu(sender, contextMenu)
 		case messages.CN_KEYDOWN, messages.CN_SYSKEYDOWN:
-			key := (*types.TLMKey)(unsafe.Pointer(dispatchMsg))
-			println("IsDesignMsg KEYDOWN", message.Msg, sender.ToString(), sender.Name(), "key:", key.Msg, key.CharCode, key.KeyData)
-			message.Result = 1
+			// 不再在这里无条件吞掉按键：设计快捷键由 DesignFormOnKeyDown 处理，
+			// 其余按键交给菜单快捷键，避免“有时好用有时不好用”。
+			result = false
 		case messages.CN_KEYUP, messages.CN_SYSKEYUP:
 			//println("IsDesignMsg KEYUP", message.Msg, sender.ToString(), sender.Name())
 			//case messages.LM_HSCROLL, messages.LM_VSCROLL:

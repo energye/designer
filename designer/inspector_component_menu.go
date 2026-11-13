@@ -15,7 +15,6 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
-	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 )
@@ -148,15 +147,8 @@ func (m *TComponentMenu) OnPaste(sender lcl.IObject) {
 func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil && comp.ComponentType != consts.CtForm {
-		parent := comp.parent
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 在删除之前先切换编辑父节组件
-			parent.FormTab.SwitchComponentEditing(parent)
-			logs.Debug("组件菜单-删除 组件名:", comp.Name())
-			comp.Remove() // 删除当前组件
-		})
-		// 删除控件
-		triggerUIGeneration(parent, nil, event.CodeGenUI) // 更新布局文件
+		logs.Debug("组件菜单-删除 组件名:", comp.Name())
+		DeleteDesignComponent(comp)
 	}
 }
 

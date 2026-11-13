@@ -15,6 +15,7 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/event"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/lcl"
@@ -63,6 +64,7 @@ func (m *FormTab) NewFormDesigner() {
 
 	designerForm.SetKeyPreview(true)
 	designerForm.SetOnKeyDown(m.DesignFormOnKeyDown)
+	designerForm.SetOnKeyUp(m.DesignFormOnKeyUp)
 
 	designerForm.Show()
 
@@ -94,10 +96,83 @@ func (m *FormTab) NewFormDesigner() {
 	m.FormRoot.drag.SetRelation(m.FormRoot)
 }
 
+const (
+	designerKeyMenu   = 18
+	designerKeyEscape = 27
+	designerKeyLeft   = 37
+	designerKeyUp     = 38
+	designerKeyRight  = 39
+	designerKeyDown   = 40
+	designerKeyDelete = 46
+)
+
 func (m *FormTab) DesignFormOnKeyDown(sender lcl.IObject, key *types.Word, shift types.TShiftState) {
-	a := m.FindDesignComponent(m.FormRoot)
-	if a == nil {
-		a = m.FormRoot
+	if key == nil {
+		return
 	}
-	println("[Designer Ctrl + KeyDown] key:", *key, "shift:", shift, shift.In(types.SsCtrl), "Form:", m.FormRoot.Name(), "Component:", a.Name())
+	if int32(*key) == designerKeyMenu || shift.In(types.SsAlt) {
+		designerAltDown.Store(true)
+	}
+	m.handleDesignKey(int32(*key), shift)
+}
+
+func (m *FormTab) DesignFormOnKeyUp(sender lcl.IObject, key *types.Word, shift types.TShiftState) {
+	if key == nil {
+		return
+	}
+	if int32(*key) == designerKeyMenu || !shift.In(types.SsAlt) {
+		designerAltDown.Store(false)
+	}
+}
+
+// handleDesignKey 处理设计态常用快捷键；返回 true 表示已消费。
+func (m *FormTab) handleDesignKey(keyCode int32, shift types.TShiftState) bool {
+	comp := m.FindDesignComponent(m.FormRoot)
+	switch keyCode {
+	case designerKeyDelete:
+		if comp == nil || comp == m.FormRoot || comp.ComponentType == consts.CtForm {
+			return false
+		}
+		DeleteDesignComponent(comp)
+		return true
+	case designerKeyLeft, designerKeyUp, designerKeyRight, designerKeyDown:
+		if comp == nil || comp == m.FormRoot {
+			return false
+		}
+		step := int32(1)
+		if shift.In(types.SsShift) {
+			step = int32(designerGridSize)
+		}
+		br := comp.BoundsRect()
+		left, top := br.Left, br.Top
+		switch keyCode {
+		case designerKeyLeft:
+			left -= step
+		case designerKeyRight:
+			left += step
+		case designerKeyUp:
+			top -= step
+		case designerKeyDown:
+			top += step
+		}
+		comp.SetBounds(left, top, br.Width(), br.Height())
+		actual := comp.BoundsRect()
+		comp.UpdateNodeDataPoint(actual.Left, actual.Top)
+		return true
+	case designerKeyEscape:
+		m.SwitchComponentEditing(m.FormRoot)
+		return true
+	}
+	return false
+}
+
+// DeleteDesignComponent 删除设计组件并更新布局。
+func DeleteDesignComponent(comp *TDesigningComponent) {
+	if comp == nil || comp.parent == nil || comp.ComponentType == consts.CtForm {
+		return
+	}
+	parent := comp.parent
+	parent.FormTab.SwitchComponentEditing(parent)
+	comp.Remove()
+	triggerUIGeneration(parent, nil, event.CodeGenUI)
 }
