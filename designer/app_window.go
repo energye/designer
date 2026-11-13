@@ -246,6 +246,11 @@ func (m *TAppWindow) handleClose() {
 	logs.Info("closeHandle")
 	m.closing = true
 
+	// 先停止标尺轮询，之后才能安全销毁设计页面。
+	lcl.RunOnMainThreadSync(func() {
+		StopAllRulers()
+	})
+
 	// 收集窗口布局信息
 	// 收集窗口信息
 	br := m.BoundsRect()

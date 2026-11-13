@@ -70,6 +70,7 @@ type TFormDesignPage struct {
 	rulerTopLen     int32
 	rulerLeftLen    int32
 	rulerStop       chan struct{}
+	rulerClosed     bool
 	lastRulerX      int32
 	lastRulerY      int32
 	lastRulerW      int32
@@ -432,7 +433,7 @@ func (m *TFormDesignPage) freeRulerBitmaps() {
 
 // startRulerSync 启动轻量滚动同步：仅滚动位置/窗体尺寸变化时重绘标尺。
 func (m *TFormDesignPage) startRulerSync() {
-	if m.rulerStop != nil {
+	if m.rulerClosed || m.rulerStop != nil {
 		return
 	}
 	stop := make(chan struct{})
@@ -461,14 +462,22 @@ func (m *TFormDesignPage) stopRulerSync() {
 	}
 }
 
-// closeRuler 释放标尺资源；停止后已排队的 UI 回调会因 rulerStop=nil 直接返回。
+// closeRuler 释放标尺资源；关闭标志先置位，已排队的回调不会再访问页面/窗体。
 func (m *TFormDesignPage) closeRuler() {
+	if m.rulerClosed {
+		return
+	}
+	m.rulerClosed = true
 	m.stopRulerSync()
 	m.freeRulerBitmaps()
+	m.rulerTop, m.rulerLeft = nil, nil
 	m.formTab = nil
 }
 
 func (m *TFormDesignPage) invalidateRulers() {
+	if m.rulerClosed {
+		return
+	}
 	if m.rulerTop != nil && m.rulerTop.IsValid() {
 		m.rulerTop.Invalidate()
 	}
@@ -478,7 +487,10 @@ func (m *TFormDesignPage) invalidateRulers() {
 }
 
 func (m *TFormDesignPage) syncRulers() {
-	if m.rulerStop == nil || m.formTab == nil || m.formTab.mainPage == nil || !m.formTab.mainPage.Visible() {
+	if m.rulerClosed || m.rulerStop == nil {
+		return
+	}
+	if m.formTab == nil || m.formTab.mainPage == nil || !m.formTab.mainPage.Visible() {
 		return
 	}
 	if m.formDesignPage == nil || !m.formDesignPage.Visible() {

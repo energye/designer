@@ -85,6 +85,19 @@ func (m *Designer) createTabMenu() {
 	//m.page.SetPopupMenu(m.tabMenu)
 }
 
+// StopAllRulers 停止所有窗体标尺。应用关闭/重置时必须先于页面销毁调用，
+// 否则已排队的轮询回调会访问已释放的 LCL 控件。
+func StopAllRulers() {
+	if designer == nil {
+		return
+	}
+	for _, form := range designer.designerForms {
+		if form != nil && form.formDesignPage != nil {
+			form.formDesignPage.closeRuler()
+		}
+	}
+}
+
 // ResetDesigner 重置设计器
 // 新建项目时/重新打开项目时调用
 // 打开设计窗体不调用
@@ -92,6 +105,7 @@ func ResetDesigner() {
 	if designer == nil {
 		return
 	}
+	StopAllRulers()
 	// 关闭所有已打开的代码编辑器标签
 	for filePath, tab := range designer.codeEditorTabs {
 		editor.CloseFileInEditor(filePath)

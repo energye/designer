@@ -89,3 +89,13 @@ func TestGetMouseMsgShiftAlt(t *testing.T) {
 		t.Fatal("Alt+Ctrl 组合应同时生效")
 	}
 }
+
+func TestRulerClosedGuards(t *testing.T) {
+	page := &TFormDesignPage{rulerClosed: true}
+	// 关闭后这些入口必须直接返回，不能访问已释放的 LCL 页面/窗体。
+	page.syncRulers()
+	page.invalidateRulers()
+	page.startRulerSync()
+	page.closeRuler()
+	page.closeRuler()
+}
