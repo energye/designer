@@ -255,6 +255,9 @@ func (m *FormTab) tabSheetOnHide(sender lcl.IObject) {
 		return
 	}
 	logs.Debug("Designer PageControl FormTab Hide:", m.Id, "name:", m.FormRoot.Name())
+	if m.formDesignPage != nil {
+		m.formDesignPage.stopRulerSync()
+	}
 	m.IsDesigner = false
 	designComp := m.FindDesignComponent(m.FormRoot)
 	if designComp == nil {
@@ -275,6 +278,9 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	}
 	logs.Debug("Designer PageControl FormTab Show id:", m.Id, "name:", m.FormRoot.Name())
 
+	if m.formDesignPage != nil {
+		m.formDesignPage.startRulerSync()
+	}
 	m.IsDesigner = true
 	designComp := m.FindDesignComponent(m.FormRoot)
 	if designComp == nil {
@@ -389,6 +395,9 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 func (m *FormTab) Remove() {
 	m.freeGridTile()
 	m.designerBox = nil
+	if m.formDesignPage != nil {
+		m.formDesignPage.closeRuler()
+	}
 	m.State = FtsClose
 	m.mainPage.Close()
 }
