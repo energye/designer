@@ -222,7 +222,7 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 	des.tab.EnableScrollButton(false)
 	des.tab.SetParent(m.designerPanel)
 
-	//des.tab.SetOnChange(m.tabOnChange)
+	des.tab.SetOnChange(des.tabOnChange)
 
 	des.defaultTip = wg.NewButton(des.tab)
 	des.defaultTip.SetDisabledColor(colors.RGBToColor(204, 232, 255), colors.RGBToColor(204, 232, 255))

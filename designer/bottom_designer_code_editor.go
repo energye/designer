@@ -102,9 +102,10 @@ func (m *CodeEditorTab) onClose(page *wg.TPage, canClose *bool) {
 	}
 	// 从列表中移除
 	delete(designer.codeEditorTabs, m.filePath)
-	if len(designer.tab.Pages()) == 0 {
-		designer.tab.EnableScrollButton(false)
-	}
+	// 当前页在 onClose 之后才真正移除，延后一拍再按剩余可见页签刷新。
+	lcl.RunOnMainThreadAsync(func(id uint32) {
+		refreshTabScrollButtons()
+	})
 }
 
 // initEditor 确保共享编辑器实例存在, 并创建窗口父容器

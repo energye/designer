@@ -314,12 +314,19 @@ func (m *FormTab) HideTabPage() {
 }
 
 func (m *FormTab) ShowTabPage() {
+	// 先置状态再激活：SetActive 会同步触发 OnShow，回调里据此避免重复恢复。
+	m.State = FtsShow
 	m.mainPage.Button().Show()
 	m.mainPage.SetVisible(true)
 	m.mainPage.SetActive(true)
-	designer.tab.EnableScrollButton(true)
+	refreshTabScrollButtons()
 	designer.tab.RecalculatePosition()
-	m.State = FtsShow
+}
+
+// formTabNeedsRestore 隐藏状态的窗体页必须走 ShowTabPage 才能恢复顶部页签按钮；
+// 只调 SetActive(true) 会出现「内容可见但没有 tab 标题」的半隐藏状态。
+func formTabNeedsRestore(state FormTabState) bool {
+	return state == FtsHide
 }
 
 func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
@@ -330,9 +337,10 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 		m.recover = nil
 		// 在设计器列表删除当前窗体
 		delete(designer.designerForms, m.Id)
-		if len(designer.tab.Pages()) == 0 {
-			designer.tab.EnableScrollButton(false)
-		}
+		// 当前页在 onClose 之后才真正移除，延后一拍再刷新滚动按钮。
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			refreshTabScrollButtons()
+		})
 	} else {
 		*canClose = false
 		var (
@@ -359,17 +367,8 @@ func (m *FormTab) tabSheetOnClose(page *wg.TPage, canClose *bool) {
 			designer.tab.HideAllActivated()
 			designer.ActiveFormTab(activeOtherForm)
 		}
-		// 禁用滚动按钮, 因为没有激活的窗体
-		activeCount := 0
-		for _, formTab := range designer.designerForms {
-			if formTab.mainPage.Button().Visible() {
-				activeCount++
-				break
-			}
-		}
-		if activeCount == 0 {
-			designer.tab.EnableScrollButton(false)
-		}
+		// 代码页或其它窗体页仍可能可见，按所有可见页签刷新滚动按钮。
+		refreshTabScrollButtons()
 	}
 }
 

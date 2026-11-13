@@ -238,8 +238,59 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	}
 	// 设为设计窗体
 	tab.IsDesigner = true
+	// 隐藏过的窗体页签必须连顶部按钮一起恢复，否则只会显示内容区。
+	if formTabNeedsRestore(tab.State) {
+		tab.ShowTabPage()
+		return
+	}
 	// 激活当前 tab
 	tab.mainPage.SetActive(true)
+}
+
+// tabOnChange 兜底：关闭代码页时 tab 库会自动激活下一页（SetActive 不显示按钮），
+// 若选中的是隐藏窗体页，这里补一次 ShowTabPage，避免再次出现无标题页签。
+func (m *Designer) tabOnChange(sender lcl.IObject) {
+	page, ok := sender.(*wg.TPage)
+	if !ok {
+		return
+	}
+	if formTab := hiddenFormTabForPage(m.designerForms, page); formTab != nil {
+		formTab.ShowTabPage()
+	}
+}
+
+// hasVisibleTabPage 是否还有可见页签（窗体页或代码页）。
+func hasVisibleTabPage() bool {
+	if designer == nil || designer.tab == nil {
+		return false
+	}
+	for _, page := range designer.tab.Pages() {
+		if page.Button().Visible() {
+			return true
+		}
+	}
+	return false
+}
+
+// refreshTabScrollButtons 按当前可见页签刷新 tab 左右滚动按钮。
+func refreshTabScrollButtons() {
+	if designer == nil || designer.tab == nil {
+		return
+	}
+	designer.tab.EnableScrollButton(hasVisibleTabPage())
+}
+
+// hiddenFormTabForPage 找出被自动激活、但仍处于隐藏状态的窗体页。
+func hiddenFormTabForPage(forms map[int]*FormTab, page *wg.TPage) *FormTab {
+	if page == nil {
+		return nil
+	}
+	for _, formTab := range forms {
+		if formTab != nil && formTab.mainPage == page && formTabNeedsRestore(formTab.State) {
+			return formTab
+		}
+	}
+	return nil
 }
 
 // GetFormTab 获取指定窗体
