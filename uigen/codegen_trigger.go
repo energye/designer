@@ -20,14 +20,6 @@ import (
 
 // 生成回调事件
 
-// 触发Go代码生成事件
-func triggerCodeGeneration(uiGenData designer.TUIGenerationData, type_ event.Type) {
-	event.Emit(event.TTrigger{Name: event.GenCode, Payload: event.TPayload{
-		Type: type_,
-		Data: uiGenData,
-	}})
-}
-
 // 触发项目更新, 更新 Form 信息
 func triggerProjectUpdate(formTab *designer.FormTab) {
 	event.Emit(event.TTrigger{Name: event.Project, Payload: event.TPayload{

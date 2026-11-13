@@ -108,6 +108,36 @@ func AllowGenerate(resume func()) bool {
 	return false
 }
 
+// CancelPendingGenerates 丢弃排队的代码生成重放。
+// 构建前会基于最新 UI 统一 flush，不再需要旧请求重放。
+func CancelPendingGenerates() {
+	gateMu.Lock()
+	pendingGenerates = nil
+	if gateTimer != nil {
+		gateTimer.Stop()
+		gateTimer = nil
+	}
+	gateSeq++
+	gateMu.Unlock()
+}
+
+// SaveAllAndWait 请求前端保存全部脏文件并等待完成。
+// 构建/运行前使用，避免 build 读到旧内容；必须在非 UI 线程调用。
+func SaveAllAndWait(timeout time.Duration) bool {
+	if !HasDirtyFiles() {
+		return true
+	}
+	emitSaveAll(0)
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		time.Sleep(50 * time.Millisecond)
+		if !HasDirtyFiles() {
+			return true
+		}
+	}
+	return !HasDirtyFiles()
+}
+
 // NotifyFileSaved 由 save-file 在保存成功后调用。
 // 只有当 Go 侧确认已无脏文件时，才重放排队的代码生成。
 func NotifyFileSaved() {

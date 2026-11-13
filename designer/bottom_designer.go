@@ -293,6 +293,21 @@ func hiddenFormTabForPage(forms map[int]*FormTab, page *wg.TPage) *FormTab {
 	return nil
 }
 
+// FormTabs 返回当前打开的窗体页快照（含隐藏页，不含已关闭页）。
+// 仅供 UI 线程调用，构建前 flush 依赖该快照遍历实时组件树。
+func FormTabs() []*FormTab {
+	if designer == nil {
+		return nil
+	}
+	forms := make([]*FormTab, 0, len(designer.designerForms))
+	for _, formTab := range designer.designerForms {
+		if formTab != nil && formTab.State != FtsClose {
+			forms = append(forms, formTab)
+		}
+	}
+	return forms
+}
+
 // GetFormTab 获取指定窗体
 //
 //	formId - 窗体ID

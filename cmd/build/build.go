@@ -27,8 +27,16 @@ import (
 	"strings"
 )
 
+// Prepare 构建前准备钩子。由上层注册（保存编辑器、落盘待生成的 UI），
+// 返回 false 取消本次构建；CLI 构建场景保持 nil。
+var Prepare func() bool
+
 // Run 执行构建命令的入口函数
 func Run(ctx context.Context) bool {
+	if Prepare != nil && !Prepare() {
+		event.ConsoleWriteError("构建前准备失败，已取消构建")
+		return false
+	}
 	event.ConsoleWriteInfo("CMD-build-run")
 	goos := lib.GOOS()
 	if goos == "windows" {

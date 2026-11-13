@@ -15,6 +15,7 @@ package main
 
 import (
 	_ "github.com/energye/designer/app"
+	"github.com/energye/designer/cmd/build"
 	"github.com/energye/designer/codegen"
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/event"
@@ -84,6 +85,8 @@ func init() {
 	uigen.Init()
 	// 初始化代码生成引擎
 	codegen.Init()
+	// 构建/运行前保存编辑器并同步落盘 UI 生成
+	build.Prepare = uigen.PrepareForBuild
 	// 初始化设计器核心功能
 	designer.Init()
 

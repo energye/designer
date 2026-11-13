@@ -57,6 +57,48 @@ func newTestEditor(t *testing.T, names ...string) (*FileManager, []string, func(
 	return fm, paths, cleanup
 }
 
+func TestCancelPendingGenerates_DropsReplay(t *testing.T) {
+	fm, paths, cleanup := newTestEditor(t, "a.go")
+	defer cleanup()
+	fm.SetDirty(paths[0], true)
+
+	replayed := 0
+	if AllowGenerate(func() { replayed++ }) {
+		t.Fatal("脏文件存在时不应立即生成")
+	}
+	CancelPendingGenerates()
+	fm.SetDirty(paths[0], false)
+	NotifyFileSaved()
+	time.Sleep(20 * time.Millisecond)
+	if replayed != 0 {
+		t.Fatalf("取消后不应重放, got %d", replayed)
+	}
+}
+
+func TestSaveAllAndWait_NoDirty(t *testing.T) {
+	_, _, cleanup := newTestEditor(t, "a.go")
+	defer cleanup()
+
+	if !SaveAllAndWait(10 * time.Millisecond) {
+		t.Fatal("无脏文件应立即返回 true")
+	}
+}
+
+func TestSaveAllAndWait_EmitsSaveAllAndTimesOut(t *testing.T) {
+	fm, paths, cleanup := newTestEditor(t, "a.go")
+	defer cleanup()
+	fm.SetDirty(paths[0], true)
+
+	emitted := 0
+	emitSaveAll = func(uint64) { emitted++ }
+	if SaveAllAndWait(10 * time.Millisecond) {
+		t.Fatal("脏文件未保存时应超时返回 false")
+	}
+	if emitted != 1 {
+		t.Fatalf("应只请求一次 save-all, got %d", emitted)
+	}
+}
+
 func TestHasDirtyFiles_NoEditor(t *testing.T) {
 	SetCurrentEditor(nil)
 	resetGateForTest()

@@ -14,6 +14,8 @@
 package codegen
 
 import (
+	"sync"
+
 	"github.com/energye/designer/designer"
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/event"
@@ -22,40 +24,48 @@ import (
 
 // Go代码生成
 
+// generateMu 串行化代码生成：事件队列、构建前 flush 可能并发触发，
+// 同时写 xxx.ui.go / xxx.go 会产生半成品文件。
+var generateMu sync.Mutex
+
+// Generate 同步执行一次代码生成。生成会整文件覆盖 .go 源码，
+// 编辑器有未保存内容时先挂起，保存完成后自动重放。
+func Generate(uiGenData designer.TUIGenerationData, type_ event.Type) {
+	if !editor.AllowGenerate(func() {
+		Generate(uiGenData, type_)
+	}) {
+		event.ConsoleWriteWarn("代码编辑器有未保存内容：已先自动保存，保存完成后继续生成代码")
+		return
+	}
+
+	generateMu.Lock()
+	defer generateMu.Unlock()
+	switch type_ {
+	case event.CodeGenUI:
+		// 根据UI布局文件生成代码
+		if err := runGenerateCode(uiGenData); err != nil {
+			logs.Error("代码生成错误-UI布局:", err.Error())
+		}
+	case event.CodeGenEvent:
+		// 更新用户代码-绑定事件
+		if err := runUpdateEvent(uiGenData); err != nil {
+			logs.Error("代码生成错误-绑定事件:", err.Error())
+		}
+	case event.CodeGenSelf:
+		// 更新用户代码-自引用（当窗体名被修改时）
+		if err := runUpdateSelf(uiGenData); err != nil {
+			logs.Error("代码生成错误-自引用:", err.Error())
+		}
+	}
+}
+
 func Init() {
 	// 代码生成事件监听
 	event.On(event.GenCode, func(trigger event.TTrigger) {
 		if payload, ok := trigger.Payload.(event.TPayload); ok {
 			uiGenData, ok := payload.Data.(designer.TUIGenerationData)
 			if ok {
-				// 生成会整文件覆盖 .go 源码。有未保存内容时绝不写盘，
-				// 先让编辑器按当前 model 保存，保存完成后重放本次生成。
-				if !editor.AllowGenerate(func() {
-					event.Emit(trigger)
-				}) {
-					event.ConsoleWriteWarn("代码编辑器有未保存内容：已先自动保存，保存完成后继续生成代码")
-					return
-				}
-				switch payload.Type {
-				case event.CodeGenUI:
-					// 根据UI布局文件生成代码
-					err := runGenerateCode(uiGenData)
-					if err != nil {
-						logs.Error("代码生成错误-UI布局:", err.Error())
-					}
-				case event.CodeGenEvent:
-					// 更新用户代码-绑定事件
-					err := runUpdateEvent(uiGenData)
-					if err != nil {
-						logs.Error("代码生成错误-绑定事件:", err.Error())
-					}
-				case event.CodeGenSelf:
-					// 更新用户代码-自引用（当窗体名被修改时）
-					err := runUpdateSelf(uiGenData)
-					if err != nil {
-						logs.Error("代码生成错误-自引用:", err.Error())
-					}
-				}
+				Generate(uiGenData, payload.Type)
 			}
 		}
 	}, func() {

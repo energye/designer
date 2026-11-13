@@ -128,7 +128,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				m.relation.SetBounds(m.dcx, m.dcy, m.dcw+x, m.dch+y)
 			}
 			br := m.relation.BoundsRect()
-			go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
+			m.relation.UpdateNodeDataBounds(br)
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
 			m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
@@ -157,7 +157,7 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		m.isDown = false
 		message.FollowHide()
 		br := m.relation.BoundsRect()
-		go m.relation.UpdateNodeDataSize(br.Width(), br.Height())
+		m.relation.UpdateNodeDataBounds(br)
 		m.relation.DragEnd()
 	})
 	return pnl
@@ -334,13 +334,15 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		m.Hide()
 		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		point := lcl.Mouse.CursorPos()
-		x := point.X - m.dx
-		y := point.Y - m.dy
-		sender.SetBounds(m.dcl+x, m.dct+y, br.Width(), br.Height())
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcl+x, m.dct+y, br.Width(), br.Height())
+		newLeft := m.dcl + point.X - m.dx
+		newTop := m.dct + point.Y - m.dy
+		sender.SetBounds(newLeft, newTop, br.Width(), br.Height())
+		// SetBounds 可能被父容器夹紧，属性以控件最终边界为准。
+		actual := sender.BoundsRect()
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
 		message.Follow(msgContent)
-		sender.SetStatusText(m.dcl+x, m.dct+y, br.Width(), br.Height())
-		go sender.UpdateNodeDataPoint(br.Left, br.Top)
+		sender.SetStatusText(actual.Left, actual.Top, actual.Width(), actual.Height())
+		sender.UpdateNodeDataPoint(actual.Left, actual.Top)
 	}
 }
 
@@ -374,10 +376,11 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if m.isDown {
 		m.Show()
+		// 只有真正发生过拖动才补写最终坐标，普通点击不触发 UI 生成。
+		br := sender.BoundsRect()
+		sender.UpdateNodeDataPoint(br.Left, br.Top)
+		m.isDown = false
 	}
-	br := sender.BoundsRect()
-	go sender.UpdateNodeDataPoint(br.Left, br.Top)
-	m.isDown = false
 	message.FollowHide()
 	sender.DragEnd()
 }

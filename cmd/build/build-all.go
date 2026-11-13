@@ -11,6 +11,10 @@ import (
 // 该函数会检查全局项目实例的有效性，并根据构建选项处理 CGO 环境变量的配置，
 // 以支持在禁用 CGO 的情况下构建其他平台的目标。
 func RunAll(ctx context.Context) {
+	if Prepare != nil && !Prepare() {
+		event.ConsoleWriteError("构建前准备失败，已取消构建")
+		return
+	}
 	proj := bean.GProject
 	if proj == nil {
 		event.ConsoleWriteError("Build-All - project GProject is nil")

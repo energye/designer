@@ -267,40 +267,112 @@ func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseB
 	}
 }
 
-// 更新节点数据, Left Top
+// 更新节点数据, Left Top。
+// 必须在 UI 线程按鼠标事件顺序调用：属性列表是 UI 文件序列化的数据源，
+// 异步或乱序写入会让 .ui 捕获到旧的坐标。
 func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 	if m.page == nil {
 		return
 	}
 	var (
-		top  *vtedit.TEditNodeData
 		left *vtedit.TEditNodeData
+		top  *vtedit.TEditNodeData
 	)
 	for _, prop := range m.PropertyList {
 		switch prop.Name() {
 		case "Left":
-			top = prop
-		case "Top":
 			left = prop
+		case "Top":
+			top = prop
 		}
-		if top != nil && left != nil {
+		if left != nil && top != nil {
 			break
 		}
 	}
-	if top != nil && left != nil {
-		// 更新坐标
+	if left == nil || top == nil {
+		return
+	}
+	left.SetEditValue(x)
+	top.SetEditValue(y)
+	m.propertyTree.InvalidateNode(left.AffiliatedNode)
+	m.propertyTree.InvalidateNode(top.AffiliatedNode)
+	triggerUIGeneration(m, nil, event.CodeGenUI)
+}
+
+// SyncSizeToProperties 仅同步宽高，不触发 UI 生成。
+// 窗体页 flush 只用它：设计画布中的 Left/Top 不是运行时窗口位置，不能一起回写。
+func (m *TDesigningComponent) SyncSizeToProperties(w, h int32) bool {
+	if m.page == nil {
+		return false
+	}
+	var width, height *vtedit.TEditNodeData
+	for _, prop := range m.PropertyList {
+		switch prop.Name() {
+		case "Width":
+			width = prop
+		case "Height":
+			height = prop
+		}
+	}
+	if width == nil || height == nil {
+		return false
+	}
+	width.SetEditValue(w)
+	height.SetEditValue(h)
+	m.propertyTree.InvalidateNode(width.AffiliatedNode)
+	m.propertyTree.InvalidateNode(height.AffiliatedNode)
+	return true
+}
+
+// SyncBoundsToProperties 把控件实时边界同步到属性列表，不触发 UI 生成。
+// 构建前 flush 用它兜底：快速释放/丢失 MouseUp 时，属性可能落后于控件真实边界。
+func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
+	if m.page == nil {
+		return false
+	}
+	var (
+		left, top     *vtedit.TEditNodeData
+		width, height *vtedit.TEditNodeData
+	)
+	for _, prop := range m.PropertyList {
+		switch prop.Name() {
+		case "Left":
+			left = prop
+		case "Top":
+			top = prop
+		case "Width":
+			width = prop
+		case "Height":
+			height = prop
+		}
+	}
+	changed := false
+	if left != nil && top != nil {
+		left.SetEditValue(br.Left)
+		top.SetEditValue(br.Top)
+		m.propertyTree.InvalidateNode(left.AffiliatedNode)
+		m.propertyTree.InvalidateNode(top.AffiliatedNode)
+		changed = true
+	}
+	if width != nil && height != nil {
+		width.SetEditValue(br.Width())
+		height.SetEditValue(br.Height())
+		m.propertyTree.InvalidateNode(width.AffiliatedNode)
+		m.propertyTree.InvalidateNode(height.AffiliatedNode)
+		changed = true
+	}
+	return changed
+}
+
+// 更新节点数据, Left/Top/Width/Height。
+// 从左侧/上侧拖拽缩放时控件位置也会变化，必须与宽高一起写回属性列表。
+func (m *TDesigningComponent) UpdateNodeDataBounds(br types.TRect) {
+	if m.SyncBoundsToProperties(br) {
 		triggerUIGeneration(m, nil, event.CodeGenUI)
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			// 同步更新属性列表
-			top.SetEditValue(x)
-			m.propertyTree.InvalidateNode(top.AffiliatedNode)
-			left.SetEditValue(y)
-			m.propertyTree.InvalidateNode(left.AffiliatedNode)
-		})
 	}
 }
 
-// 更新节点数据, Width Height
+// 更新节点数据, Width Height。同样要求 UI 线程按事件顺序调用。
 func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 	var (
 		width  *vtedit.TEditNodeData
@@ -317,16 +389,14 @@ func (m *TDesigningComponent) UpdateNodeDataSize(w, h int32) {
 			break
 		}
 	}
-	if width != nil && height != nil {
-		// 更新宽高
-		triggerUIGeneration(m, nil, event.CodeGenUI)
-		lcl.RunOnMainThreadAsync(func(id uint32) {
-			width.SetEditValue(w)
-			m.propertyTree.InvalidateNode(width.AffiliatedNode)
-			height.SetEditValue(h)
-			m.propertyTree.InvalidateNode(height.AffiliatedNode)
-		})
+	if width == nil || height == nil {
+		return
 	}
+	width.SetEditValue(w)
+	height.SetEditValue(h)
+	m.propertyTree.InvalidateNode(width.AffiliatedNode)
+	m.propertyTree.InvalidateNode(height.AffiliatedNode)
+	triggerUIGeneration(m, nil, event.CodeGenUI)
 }
 
 // 设置对象实例
