@@ -83,7 +83,10 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		// object
 		class := results[0].(uintptr)
 		instance := api.NewInstanceByComponentClass(class)
-		SetComponentDesignMode(instance)
+		// 设计模式标志延迟到属性恢复完成后统一开启 (EnableDeferredDesignMode):
+		// 设计模式下每次真实 bounds 变更都走组件消息通知路径, 单次 20ms+,
+		// 恢复 100 组件布局时是秒级开销; 延迟开启后恢复走快速路径。
+		deferredDesignInstances = append(deferredDesignInstances, instance)
 		return instance
 	}
 

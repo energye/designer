@@ -64,10 +64,10 @@ type FormTab struct {
 	guideH   []lcl.IPanel // 水平对齐线
 	guideBox uintptr      // 对齐线所属设计画布实例
 
-	selected    map[*TDesigningComponent]struct{} // 当前选中组件集合
-	primary     *TDesigningComponent              // 主选中组件（拖拽控制点/属性面板）
-	selFrames   []*designerSelectionFrame         // 非主选组件的选中边框
-	selFrameBox uintptr                           // 选中边框所属设计画布实例
+	selected map[*TDesigningComponent]struct{} // 当前选中组件集合
+	primary  *TDesigningComponent              // 主选中组件（拖拽控制点/属性面板）
+	// selectionDragActive 拖动期间为 true：暂停绘制次选边框，拖动结束统一恢复。
+	selectionDragActive bool
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
@@ -172,6 +172,8 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 		m.SwitchComponentEditing(m.FormRoot)
 
 		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
+			// 交互放置的组件立即开启设计模式
+			EnableDeferredDesignMode()
 			// 创建设计组件
 			newDesComp.SetParent(owner)
 			newDesComp.FormTab.SwitchComponentEditing(newDesComp)
@@ -270,6 +272,11 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.mainPage.Button().Font().SetColor(0xD47800)
 		m.RecoverComponentPropertyValue()
+		// 延迟设计模式: 属性恢复完成后统一开启设计模式
+		EnableDeferredDesignMode()
+		if perfDiag {
+			perfBenchAfterRecover(m)
+		}
 		// 在当前选中的是组件节点时才切换选中, 保持源码文件节点选中状态
 		selectedNode := ProjectTreeSelectNode()
 		if selectedNode == nil || !selectedNode.IsValid() {
@@ -377,7 +384,7 @@ func (m *FormTab) Remove() {
 	m.guideBox = 0
 	m.selected = nil
 	m.primary = nil
-	m.selFrames, m.selFrameBox = nil, 0
+	m.selectionDragActive = false
 	m.freeGridTile()
 	m.designerBox = nil
 	if m.formDesignPage != nil {
@@ -416,6 +423,8 @@ func (m *FormTab) GetComponentCaptionName(component string) string {
 func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
 	control.SetOnPaint(func(sender lcl.IObject) {
 		m.drawGrid(control)
+		// 次选组件的选中边框与网格在同一画布绘制, 刷新只需一次 Invalidate
+		m.paintSelectionFrames(control)
 	})
 }
 

@@ -14,7 +14,11 @@
 package designer
 
 import (
+	"runtime"
+	"strings"
+
 	"github.com/energye/designer/event"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/vtedit"
 )
 
@@ -30,6 +34,20 @@ import (
 func triggerUIGeneration(component *TDesigningComponent, nodeData *vtedit.TEditNodeData, type_ event.Type) {
 	if component == nil {
 		return
+	}
+	if perfDiag {
+		stack := make([]uintptr, 12)
+		runtime.Callers(2, stack)
+		frames := runtime.CallersFrames(stack)
+		var names []string
+		for i := 0; i < 6; i++ {
+			frame, more := frames.Next()
+			names = append(names, frame.Function)
+			if !more {
+				break
+			}
+		}
+		logs.Info("PERF uigen trigger", strings.Join(names, " <- "))
 	}
 	payload := event.TPayload{Type: type_, Data: TUIGenerationData{Component: component, NodeData: nodeData}}
 	event.Emit(event.TTrigger{Name: event.GenUI, Payload: payload})

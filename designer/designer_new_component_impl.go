@@ -28,6 +28,7 @@ import (
 	"github.com/energye/lcl/types"
 	"sort"
 	"strings"
+	"time"
 )
 
 // 设计组件实现
@@ -79,6 +80,27 @@ func SetComponentDesignMode(component uintptr) {
 	api.SetComponentInlineMode(component, true)
 	api.SetComponentDesignInstanceMode(component, true)
 	api.SetWidgetSetDesigning(component)
+}
+
+// StripComponentDesignMode 临时移除组件实例的设计模式标志。
+// 设计模式下组件每次真实 bounds 变更都走组件消息通知路径(单次 20ms+),
+// 多选整组拖动每步要对 N 个组件 SetBounds, 临时摘除次选组件的设计模式
+// 让拖动走快速路径; 拖动结束由 RestoreComponentDesignMode 统一恢复。
+func StripComponentDesignMode(component uintptr) {
+	if component == 0 {
+		return
+	}
+	api.SetComponentDesignMode(component, false)
+	api.SetComponentInlineMode(component, false)
+	api.SetComponentDesignInstanceMode(component, false)
+}
+
+// RestoreComponentDesignMode 恢复被 StripComponentDesignMode 摘除的设计模式
+func RestoreComponentDesignMode(component uintptr) {
+	if component == 0 {
+		return
+	}
+	SetComponentDesignMode(component)
 }
 
 func (m *TDesigningComponent) Free() {
@@ -164,6 +186,25 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	m.initComponentPropertyTreeEvent()
 	// 初始化组件事件树事件
 	m.initComponentEventTreeEvent()
+}
+
+// deferredDesignInstances 创建时未开启设计模式的组件实例列表。
+// 设计模式下每次真实 bounds 变更都走组件消息通知路径(单次 20ms+),
+// 恢复布局时逐组件逐属性设置坐标是秒级开销, 因此创建阶段不开启设计模式,
+// 由 EnableDeferredDesignMode 在属性恢复完成后统一开启。
+var deferredDesignInstances []uintptr
+
+// EnableDeferredDesignMode 为延迟设置设计模式的组件统一开启设计模式
+func EnableDeferredDesignMode() {
+	perfStart := time.Now()
+	for _, instance := range deferredDesignInstances {
+		SetComponentDesignMode(instance)
+	}
+	instances := len(deferredDesignInstances)
+	deferredDesignInstances = nil
+	if perfDiag && instances > 0 {
+		logs.Info("PERF EnableDeferredDesignMode instances:", instances, "cost:", time.Since(perfStart))
+	}
 }
 
 // 创建可视组件
@@ -269,13 +310,13 @@ func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseB
 	}
 }
 
-// 更新节点数据, Left Top。
+// SyncPointToProperties 更新 Left/Top 属性但不触发 UI 生成。
+// 拖动过程中用它实时刷新属性面板，松开鼠标后再统一触发一次落盘。
 // 必须在 UI 线程按鼠标事件顺序调用：属性列表是 UI 文件序列化的数据源，
 // 异步或乱序写入会让 .ui 捕获到旧的坐标。
-func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
-	if m.page == nil {
-		return
-	}
+// 注意: 属性列表(PropertyList)是序列化数据源, 组件从未成为主选时 page 为空,
+// 此时仍必须写属性数据, 只跳过属性面板刷新, 否则整组拖动会丢失非主选组件坐标。
+func (m *TDesigningComponent) SyncPointToProperties(x, y int32) bool {
 	var (
 		left *vtedit.TEditNodeData
 		top  *vtedit.TEditNodeData
@@ -292,21 +333,29 @@ func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
 		}
 	}
 	if left == nil || top == nil {
-		return
+		return false
 	}
 	left.SetEditValue(x)
 	top.SetEditValue(y)
-	m.propertyTree.InvalidateNode(left.AffiliatedNode)
-	m.propertyTree.InvalidateNode(top.AffiliatedNode)
-	triggerUIGeneration(m, nil, event.CodeGenUI)
+	if m.propertyTree != nil && m.propertyTree.IsValid() {
+		m.propertyTree.InvalidateNode(left.AffiliatedNode)
+		m.propertyTree.InvalidateNode(top.AffiliatedNode)
+	}
+	return true
+}
+
+// 更新节点数据, Left Top，并触发 UI 生成。
+// 只在操作结束时调用，避免拖动过程中反复写 .ui。
+func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
+	if m.SyncPointToProperties(x, y) {
+		triggerUIGeneration(m, nil, event.CodeGenUI)
+	}
 }
 
 // SyncSizeToProperties 仅同步宽高，不触发 UI 生成。
 // 窗体页 flush 只用它：设计画布中的 Left/Top 不是运行时窗口位置，不能一起回写。
+// 与 SyncPointToProperties 相同: page 为空时仍写属性数据, 只跳过面板刷新。
 func (m *TDesigningComponent) SyncSizeToProperties(w, h int32) bool {
-	if m.page == nil {
-		return false
-	}
 	var width, height *vtedit.TEditNodeData
 	for _, prop := range m.PropertyList {
 		switch prop.Name() {
@@ -321,17 +370,17 @@ func (m *TDesigningComponent) SyncSizeToProperties(w, h int32) bool {
 	}
 	width.SetEditValue(w)
 	height.SetEditValue(h)
-	m.propertyTree.InvalidateNode(width.AffiliatedNode)
-	m.propertyTree.InvalidateNode(height.AffiliatedNode)
+	if m.propertyTree != nil && m.propertyTree.IsValid() {
+		m.propertyTree.InvalidateNode(width.AffiliatedNode)
+		m.propertyTree.InvalidateNode(height.AffiliatedNode)
+	}
 	return true
 }
 
 // SyncBoundsToProperties 把控件实时边界同步到属性列表，不触发 UI 生成。
 // 构建前 flush 用它兜底：快速释放/丢失 MouseUp 时，属性可能落后于控件真实边界。
+// 与 SyncPointToProperties 相同: page 为空时仍写属性数据, 只跳过面板刷新。
 func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
-	if m.page == nil {
-		return false
-	}
 	var (
 		left, top     *vtedit.TEditNodeData
 		width, height *vtedit.TEditNodeData
@@ -348,19 +397,24 @@ func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
 			height = prop
 		}
 	}
+	treeValid := m.propertyTree != nil && m.propertyTree.IsValid()
 	changed := false
 	if left != nil && top != nil {
 		left.SetEditValue(br.Left)
 		top.SetEditValue(br.Top)
-		m.propertyTree.InvalidateNode(left.AffiliatedNode)
-		m.propertyTree.InvalidateNode(top.AffiliatedNode)
+		if treeValid {
+			m.propertyTree.InvalidateNode(left.AffiliatedNode)
+			m.propertyTree.InvalidateNode(top.AffiliatedNode)
+		}
 		changed = true
 	}
 	if width != nil && height != nil {
 		width.SetEditValue(br.Width())
 		height.SetEditValue(br.Height())
-		m.propertyTree.InvalidateNode(width.AffiliatedNode)
-		m.propertyTree.InvalidateNode(height.AffiliatedNode)
+		if treeValid {
+			m.propertyTree.InvalidateNode(width.AffiliatedNode)
+			m.propertyTree.InvalidateNode(height.AffiliatedNode)
+		}
 		changed = true
 	}
 	return changed
@@ -517,7 +571,9 @@ func (m *TDesigningComponent) SetVisible(v bool) {
 func (m *TDesigningComponent) GetProps() {
 	// 属性列表为空时获取属性列表
 	if m.PropertyList == nil {
+		perfMethodsStart := time.Now()
 		methods := tool.GetObjectMethodNames(m.originObject)
+		perfMethodsCost := time.Since(perfMethodsStart)
 		if methods == nil {
 			logs.Error("获取当前组件对象属性错误, 获取对象方法列表为空, 组件名:", m.Name())
 		}
@@ -530,12 +586,21 @@ func (m *TDesigningComponent) GetProps() {
 			configCompProp  = config.ComponentProperty
 			tempPropertyMap = make(map[string]struct{}) // 用于下面判断
 		)
+		perfEnumStart := time.Now()
 		if customComp, ok := m.originObject.(lcl.ICustomComponent); ok {
 			properties = customComp.Published()
 		} else {
 			properties = lcl.DesigningComponent().GetComponentProperties(m.Component())
 		}
+		perfEnumCost := time.Since(perfEnumStart)
+		perfLoopStart := time.Now()
 		logs.Debug("GetProps LoadComponent Count:", len(properties), "ClassName:", className, "Mod:", m.Mod())
+		if perfDiag {
+			defer func() {
+				logs.Info("PERF getProps", className, "methods:", perfMethodsCost,
+					"enum:", perfEnumCost, "build:", time.Since(perfLoopStart))
+			}()
+		}
 		for _, prop := range properties {
 			if config.ComponentProperty.IsExclude(prop.Name) {
 				continue

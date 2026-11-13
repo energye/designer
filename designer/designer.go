@@ -118,6 +118,10 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
 	m.MouseDownPos = m.GetMousePos() // int32(*message.XPos()), int32(*message.YPos())
+	// 上一次按下的 MouseUp 可能被缩放控制点截获, 先兜底结束残留的移动拖拽状态
+	if m.MouseDownComponent != nil && m.MouseDownComponent.drag != nil {
+		m.MouseDownComponent.drag.cancelStaleDrag()
+	}
 	m.MouseDownComponent = m.GetComponentAtPos(m.MouseDownPos.X, m.MouseDownPos.Y)
 	shift, button := m.GetMouseMsgShift(message)
 	if button == types.MbLeft && SelectedComponent() == nil &&
@@ -159,6 +163,17 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseMove", message.Msg, message, sender.ToString())
 	m.MouseMoveComponent = m.MouseDownComponent
+	// 左键已不在按下状态: 上一次 MouseUp 可能被缩放控制点截获,
+	// 兜底结束残留的移动拖拽, 避免后续 mousemove 驱动陈旧拖拽移动整组组件。
+	if m.MouseDownComponent != nil && message.Keys&consts.MK_LBUTTON == 0 {
+		if m.MouseDownComponent.drag != nil {
+			m.MouseDownComponent.drag.cancelStaleDrag()
+		}
+		m.MouseDownComponent = nil
+		m.MouseMoveComponent = nil
+		*message.Result() = 1
+		return
+	}
 	if m.band.down {
 		if message.Keys&consts.MK_LBUTTON == 0 {
 			// 鼠标按键已在窗口外释放，按当前位置结束框选

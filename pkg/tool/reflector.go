@@ -19,6 +19,7 @@ import (
 	"github.com/energye/lcl/lcl"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 // TMethod 存储方法信息
@@ -28,14 +29,27 @@ type TMethod struct {
 	Level      int    // 等级, 0~[1...] 数字越小表示优先级高
 }
 
+// 方法名列表按类型缓存: 同一组件类的所有实例共享同一个 Go 包装类型,
+// 反射收集数百个方法的开销不需要每个实例重复 (100 组件恢复可节省数百毫秒)。
+var (
+	methodNamesCacheMu sync.Mutex
+	methodNamesCache   = make(map[reflect.Type]*ArrayMap[string, *TMethod])
+)
+
 // GetAllMethods 获取结构体及其嵌入结构体的所有导出方法
 func methodNames(t reflect.Type) *ArrayMap[string, *TMethod] {
+	methodNamesCacheMu.Lock()
+	defer methodNamesCacheMu.Unlock()
+	if methods, ok := methodNamesCache[t]; ok {
+		return methods
+	}
 	methods := NewArrayMap[string, *TMethod]()
 	collectMethods(t, 0, methods)
 	if t.Kind() != reflect.Ptr {
 		ptrType := reflect.PtrTo(t)
 		collectMethods(ptrType, 0, methods)
 	}
+	methodNamesCache[t] = methods
 	return methods
 }
 

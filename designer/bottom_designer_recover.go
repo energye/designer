@@ -24,8 +24,13 @@ import (
 	"github.com/energye/lcl/lcl"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 )
+
+// PERF 诊断开关 (临时): DESIGNER_PERF=1 时输出恢复各阶段耗时
+var perfDiag = os.Getenv("DESIGNER_PERF") != ""
 
 // 恢复 FormTab
 // 从 UI 布局文件恢复
@@ -45,17 +50,24 @@ type TRecoverForm struct {
 //	恢复当前设计窗体的所有设计组件对象
 //	创建设计组件对象并添加到项目管理树节点, 不恢复组件属性值
 func (m *FormTab) RecoverComponentTree() {
+	perfTreeStart := time.Now()
+	var perfCreateCost time.Duration
+	var perfCreateCount int
 	ProjectTreeBeginUpdate()
 	defer ProjectTreeEndUpdate()
 
 	var createTree func(childList []uiBean.TUIComponent, parent *TDesigningComponent)
 	createTree = func(childList []uiBean.TUIComponent, parent *TDesigningComponent) {
 		for _, child := range childList {
-			if newDesComp := GetDesignerComponent(parent.FormTab, 0, 0, child.ClassName); newDesComp != nil {
+			perfStart := time.Now()
+			newDesComp := GetDesignerComponent(parent.FormTab, 0, 0, child.ClassName)
+			perfCreateCost += time.Since(perfStart)
+			perfCreateCount++
+			if newDesComp != nil {
 				newDesComp.RecoverProperty = child.Properties
 				// 设置组件节点关联
 				newDesComp.SetParent(parent)
-				// 添加到项目管理树
+				// 添加到项目管理树节点
 				parent.AddChild(newDesComp)
 				// 恢复子组件
 				createTree(child.Child, newDesComp)
@@ -67,16 +79,23 @@ func (m *FormTab) RecoverComponentTree() {
 	m.AddFormNode()
 	// 创建子节点
 	createTree(m.recover.components, m.FormRoot)
+	if perfDiag {
+		logs.Info("PERF RecoverComponentTree components:", perfCreateCount,
+			"createCost:", perfCreateCost, "total:", time.Since(perfTreeStart))
+	}
 }
 
 // 恢复设计窗体组件属性值
 func (m *FormTab) RecoverComponentPropertyValue() {
+	perfStart := time.Now()
+	var perfCount int
 	var iterateCreate func(childList []*TDesigningComponent)
 	iterateCreate = func(childList []*TDesigningComponent) {
 		for _, child := range childList {
 			if child.RecoverProperty != nil {
 				recoverDesignerComponentProperty(child)
 				child.RecoverProperty = nil
+				perfCount++
 			}
 			iterateCreate(child.Child)
 		}
@@ -86,16 +105,30 @@ func (m *FormTab) RecoverComponentPropertyValue() {
 		m.FormRoot.RecoverProperty = nil
 	}
 	iterateCreate(m.FormRoot.Child)
+	if perfDiag {
+		logs.Info("PERF RecoverComponentPropertyValue components:", perfCount, "cost:", time.Since(perfStart))
+	}
 }
 
 // 恢复设计的组件属性
 // 1. 调用 api 设置属性
 // 2. 组件属性列表对应的属性Edit值
+// Left/Top/Width/Height 几何属性合并为一次 SetBounds 直调:
+// 设计模式下逐个属性 setter 走组件消息通知路径, 每次调用约 20-90ms;
+// 而组件对象的 SetBounds 为快速路径, 100 组件布局恢复可从 10s+ 降到 1s 内。
 func recoverDesignerComponentProperty(component *TDesigningComponent) {
 	if component == nil || component.RecoverProperty == nil {
 		return
 	}
+	perfStart := time.Now()
 	component.GetProps()
+	perfGetProps := time.Since(perfStart)
+	perfCallStart := time.Now()
+	var (
+		geoLeft, geoTop, geoWidth, geoHeight int32
+		hasLeft, hasTop, hasWidth, hasHeight bool
+		applyGeo                             bool
+	)
 	propertyList := component.RecoverProperty
 	for _, property := range propertyList {
 		propNodeData := component.FindNodeDataByNamePaths(property)
@@ -109,13 +142,96 @@ func recoverDesignerComponentProperty(component *TDesigningComponent) {
 			}
 			// 设置属性值
 			propNodeData.SetEditValue(property.Value)
-			// 更新 api
-			component.recoverCallAPI(property.Name, propNodeData)
-			if component.ComponentType == consts.CtNonVisual {
-				component.objectNonWrap.TextFollowShow()
+			// 几何属性收集后统一走 SetBounds 快速路径, 不逐个调用属性 setter
+			propName := strings.ToLower(property.Name)
+			geoHandled := false
+			if component.ComponentType == consts.CtVisual {
+				switch propName {
+				case "left":
+					geoLeft, hasLeft = anyToInt32(property.Value), true
+					geoHandled = true
+				case "top":
+					geoTop, hasTop = anyToInt32(property.Value), true
+					geoHandled = true
+				case "width":
+					geoWidth, hasWidth = anyToInt32(property.Value), true
+					geoHandled = true
+				case "height":
+					geoHeight, hasHeight = anyToInt32(property.Value), true
+					geoHandled = true
+				}
+			} else if component.ComponentType == consts.CtForm && (propName == "width" || propName == "height") {
+				// 窗体位置由设计器管理, 只合并宽高
+				if propName == "width" {
+					geoWidth, hasWidth = anyToInt32(property.Value), true
+				} else {
+					geoHeight, hasHeight = anyToInt32(property.Value), true
+				}
+				geoHandled = true
+			}
+			if geoHandled {
+				applyGeo = true
+			} else {
+				// 更新 api
+				perfPropStart := time.Now()
+				component.recoverCallAPI(property.Name, propNodeData)
+				if perfDiag && time.Since(perfPropStart) > time.Millisecond {
+					logs.Info("PERF prop slow", component.Name(), property.Name, time.Since(perfPropStart))
+				}
+				if component.ComponentType == consts.CtNonVisual {
+					component.objectNonWrap.TextFollowShow()
+				}
 			}
 		}
 	}
+	if applyGeo {
+		perfPropStart := time.Now()
+		br := component.Control().BoundsRect()
+		l, t, w, h := br.Left, br.Top, br.Width(), br.Height()
+		if hasLeft {
+			l = geoLeft
+		}
+		if hasTop {
+			t = geoTop
+		}
+		if hasWidth {
+			w = geoWidth
+		}
+		if hasHeight {
+			h = geoHeight
+		}
+		component.SetBounds(l, t, w, h)
+		if perfDiag && time.Since(perfPropStart) > time.Millisecond {
+			logs.Info("PERF geo slow", component.Name(), time.Since(perfPropStart))
+		}
+	}
+	if perfDiag {
+		logs.Info("PERF recoverProp", component.Name(), "getProps:", perfGetProps,
+			"props:", len(propertyList), "callAPI:", time.Since(perfCallStart))
+	}
+}
+
+// anyToInt32 将布局文件中的数值属性值转为 int32
+func anyToInt32(v any) int32 {
+	switch x := v.(type) {
+	case float64:
+		return int32(x)
+	case float32:
+		return int32(x)
+	case int:
+		return int32(x)
+	case int64:
+		return int32(x)
+	case int32:
+		return x
+	case uint:
+		return int32(x)
+	case string:
+		if i, err := tool.StrToInt32(x); err == nil {
+			return i
+		}
+	}
+	return 0
 }
 
 // RecoverDesignerFormTab 恢复设计窗体, 非线程安全
@@ -196,4 +312,58 @@ func RecoverDesignerFormTab(path string, project *projBean.TProject, loadUIForm 
 			}
 		})
 	}
+}
+
+// PERF 诊断 (临时): 恢复完成后对首个可视组件做基准测试,
+// 对比恢复期间与恢复后的单次调用成本。
+func perfBenchAfterRecover(m *FormTab) {
+	var first *TDesigningComponent
+	var walk func(c *TDesigningComponent)
+	walk = func(c *TDesigningComponent) {
+		if first != nil {
+			return
+		}
+		for _, ch := range c.Child {
+			if ch.ComponentType == consts.CtVisual {
+				first = ch
+				return
+			}
+			walk(ch)
+		}
+	}
+	if m.FormRoot != nil {
+		walk(m.FormRoot)
+	}
+	if first == nil || first.Control() == nil {
+		return
+	}
+	bench := func(name string, fn func()) {
+		fn()
+		var total time.Duration
+		for i := 0; i < 10; i++ {
+			t := time.Now()
+			fn()
+			total += time.Since(t)
+		}
+		logs.Info("PERF bench", name, "avg:", total/10)
+	}
+	ctrl := first.Control()
+	// 基准操作必须自恢复, 否则会污染组件的真实位置/尺寸/标题
+	bench("SetCaption", func() {
+		orig := ctrl.Caption()
+		ctrl.SetCaption("B")
+		ctrl.SetCaption(orig)
+	})
+	bench("SetHeight", func() {
+		h := ctrl.Height()
+		ctrl.SetHeight(h + 1)
+		ctrl.SetHeight(h)
+	})
+	bench("SetLeft", func() {
+		l := ctrl.Left()
+		ctrl.SetLeft(l + 1)
+		ctrl.SetLeft(l)
+	})
+	bench("SetBounds", func() { ctrl.SetBounds(ctrl.Left(), ctrl.Top(), ctrl.Width(), ctrl.Height()) })
+	bench("BoundsRect读", func() { _ = ctrl.BoundsRect() })
 }

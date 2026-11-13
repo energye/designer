@@ -15,23 +15,22 @@
 package designer
 
 import (
+	"time"
+
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
 )
 
 // 设计 - 画布选择模型
-// 主选中组件显示拖拽控制点和属性面板，其余选中组件显示 1px 蓝色边框。
+// 主选中组件显示拖拽控制点和属性面板，其余选中组件的 1px 蓝色边框
+// 由设计画布 OnPaint 直接绘制。不再为每个次选组件创建 4 个覆盖面板:
+// 选中数量很大时, 每次刷新对数百个面板做 SetBounds/BringToFront/SetVisible
+// 会拖垮 UI 线程 (98 个次选组件实测 4-10 秒), 画布绘制只需一次 Invalidate。
 
 var designerSelectionColor = colors.RGBToColor(0, 125, 255)
-
-type designerSelectionFrame struct {
-	top    lcl.IPanel
-	bottom lcl.IPanel
-	left   lcl.IPanel
-	right  lcl.IPanel
-}
 
 func newOverlayPanel(box lcl.IWinControl, color types.TColor) lcl.IPanel {
 	p := lcl.NewPanel(box)
@@ -44,47 +43,47 @@ func newOverlayPanel(box lcl.IWinControl, color types.TColor) lcl.IPanel {
 	return p
 }
 
-func newDesignerSelectionFrame(box lcl.IWinControl) *designerSelectionFrame {
-	return &designerSelectionFrame{
-		top:    newOverlayPanel(box, designerSelectionColor),
-		bottom: newOverlayPanel(box, designerSelectionColor),
-		left:   newOverlayPanel(box, designerSelectionColor),
-		right:  newOverlayPanel(box, designerSelectionColor),
+// secondaryFrameRects 返回非主选组件相对于设计画布的边界矩形列表
+func (m *FormTab) secondaryFrameRects() []types.TRect {
+	if m.formDesigner == nil {
+		return nil
 	}
+	var rects []types.TRect
+	for _, comp := range m.SelectedComponents() {
+		if comp == m.primary || comp == m.FormRoot || comp.ComponentType == consts.CtNonVisual {
+			continue
+		}
+		control := comp.Control()
+		if control == nil || !control.IsValid() {
+			continue
+		}
+		rects = append(rects, m.formDesigner.GetRelativeBounds(comp))
+	}
+	return rects
 }
 
-func (f *designerSelectionFrame) valid() bool {
-	return f != nil && f.top.IsValid() && f.bottom.IsValid() && f.left.IsValid() && f.right.IsValid()
-}
-
-// show 绘制在组件外侧，避免盖住控件自身边框。
-func (f *designerSelectionFrame) show(r types.TRect) {
-	l, t, w, h := r.Left, r.Top, r.Width(), r.Height()
-	panels := []struct {
-		p          lcl.IPanel
-		x, y, w, h int32
-	}{
-		{f.top, l - 1, t - 1, w + 2, 1},
-		{f.bottom, l - 1, t + h, w + 2, 1},
-		{f.left, l - 1, t, 1, h},
-		{f.right, l + w, t, 1, h},
-	}
-	for _, item := range panels {
-		item.p.SetBounds(item.x, item.y, item.w, item.h)
-		item.p.BringToFront()
-		item.p.SetVisible(true)
-	}
-}
-
-func (f *designerSelectionFrame) hide() {
-	if !f.valid() {
+// paintSelectionFrames 在设计画布上绘制非主选组件的选中边框。
+// 边框绘制在组件外侧 1px, 不会被组件自身窗口覆盖。
+func (m *FormTab) paintSelectionFrames(control lcl.ICustomControl) {
+	if m.selectionDragActive || control == nil || !control.IsValid() || m.formDesigner == nil {
 		return
 	}
-	for _, p := range []lcl.IPanel{f.top, f.bottom, f.left, f.right} {
-		if p.Visible() {
-			p.SetVisible(false)
-		}
-		p.SetBounds(0, 0, 0, 0)
+	canvas := control.Canvas()
+	if canvas == nil || !canvas.IsValid() {
+		return
+	}
+	rects := m.secondaryFrameRects()
+	if len(rects) == 0 {
+		return
+	}
+	brush := canvas.BrushToBrush()
+	brush.SetColor(designerSelectionColor)
+	for _, r := range rects {
+		l, t, w, h := r.Left, r.Top, r.Width(), r.Height()
+		canvas.FillRectWithRect(types.Rect(l-1, t-1, l+w+1, t))     // top
+		canvas.FillRectWithRect(types.Rect(l-1, t+h, l+w+1, t+h+1)) // bottom
+		canvas.FillRectWithRect(types.Rect(l-1, t, l, t+h))         // left
+		canvas.FillRectWithRect(types.Rect(l+w, t, l+w+1, t+h))     // right
 	}
 }
 
@@ -314,43 +313,47 @@ func (m *FormTab) IsComponentAncestor(ancestor, comp *TDesigningComponent) bool 
 	return false
 }
 
-// syncSelectionFrames 按当前选择刷新非主选组件的选中边框
+// beginSelectionDrag 拖动开始时暂停绘制次选边框。
+// 拖动中组件逐帧移动，边框跟随绘制会在画布残留旧位置色带；拖动结束统一恢复。
+func (m *FormTab) beginSelectionDrag() {
+	if m.selectionDragActive {
+		return
+	}
+	m.selectionDragActive = true
+	if box := m.designerBox; box != nil && box.IsValid() {
+		perfStart := time.Now()
+		box.Invalidate()
+		logs.Debug("PERF beginSelectionDrag cost:", time.Since(perfStart))
+	}
+}
+
+// endSelectionDrag 拖动结束后统一恢复一次边框绘制。
+func (m *FormTab) endSelectionDrag() {
+	if !m.selectionDragActive {
+		return
+	}
+	m.selectionDragActive = false
+	m.syncSelectionFrames()
+}
+
+// syncSelectionFrames 按当前选择刷新非主选组件的选中边框。
+// 边框在设计画布 OnPaint 中按实时选中状态绘制, 这里只需失效画布触发一次重绘。
 func (m *FormTab) syncSelectionFrames() {
+	if m.selectionDragActive {
+		return
+	}
+	perfStart := time.Now()
 	box := m.designerBox
 	if box == nil || !box.IsValid() || m.formDesigner == nil {
 		return
 	}
-	var secondary []*TDesigningComponent
-	for _, comp := range m.SelectedComponents() {
-		if comp == m.primary || comp == m.FormRoot || comp.ComponentType == consts.CtNonVisual {
-			continue
-		}
-		secondary = append(secondary, comp)
-	}
-	if m.selFrameBox != box.Instance() {
-		m.selFrames = nil
-		m.selFrameBox = box.Instance()
-	}
-	for len(m.selFrames) < len(secondary) {
-		m.selFrames = append(m.selFrames, newDesignerSelectionFrame(box))
-	}
-	for i, frame := range m.selFrames {
-		if i >= len(secondary) || !frame.valid() {
-			frame.hide()
-			continue
-		}
-		control := secondary[i].Control()
-		if control == nil || !control.IsValid() {
-			frame.hide()
-			continue
-		}
-		frame.show(m.formDesigner.GetRelativeBounds(secondary[i]))
-	}
+	box.Invalidate()
+	logs.Debug("PERF syncSelectionFrames invalidate cost:", time.Since(perfStart))
 }
 
-// hideSelectionFrames 隐藏所有选中边框
+// hideSelectionFrames 清除画布上已绘制的选中边框
 func (m *FormTab) hideSelectionFrames() {
-	for _, frame := range m.selFrames {
-		frame.hide()
+	if box := m.designerBox; box != nil && box.IsValid() {
+		box.Invalidate()
 	}
 }

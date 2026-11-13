@@ -15,6 +15,8 @@ package designer
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/message"
@@ -39,6 +41,8 @@ type drag struct {
 	dcl, dct           int32                 // 拖拽控制
 	dcx, dcy, dcw, dch int32                 // 拖拽控制
 	isDown             bool                  // 拖拽控制
+	resizeDown         bool                  // 缩放控制点按下中(独立于 isDown, 避免与移动拖拽状态串扰)
+	moved              bool                  // 本次按下是否真的改变了组件边界
 	owner              lcl.IWinControl       // 拖拽控制所属组件, 非空表示未创建 ds(拖拽控制)空表示创建过
 	left               lcl.IPanel
 	top                lcl.IPanel
@@ -56,9 +60,37 @@ type drag struct {
 }
 
 type dragGroupItem struct {
-	comp          *TDesigningComponent
-	left, top     int32
-	width, height int32
+	comp           *TDesigningComponent
+	left, top      int32
+	width, height  int32
+	designStripped bool // 拖动期间被临时摘除设计模式, 结束时恢复
+}
+
+// restoreGroupDesignModes 恢复拖动期间被摘除设计模式的组件。
+// mouseup 可能被缩放控制点面板截获而走不到 OnMouseUp, 必须在所有结束路径上恢复。
+func (m *drag) restoreGroupDesignModes() {
+	for i := range m.groupItems {
+		if m.groupItems[i].designStripped {
+			RestoreComponentDesignMode(m.groupItems[i].comp.Instance())
+			m.groupItems[i].designStripped = false
+		}
+	}
+}
+
+// cancelStaleDrag 结束可能残留的移动拖拽状态。
+// MouseUp 被缩放控制点截获时 OnMouseUp 不会执行, isDown/groupItems/设计模式摘除
+// 会一直残留, 后续 mousemove 会驱动陈旧拖拽移动整组组件。
+func (m *drag) cancelStaleDrag() {
+	if !m.isDown {
+		return
+	}
+	m.restoreGroupDesignModes()
+	m.groupItems = m.groupItems[:0]
+	m.moved = false
+	m.isDown = false
+	if m.relation != nil && m.relation.FormTab != nil {
+		m.relation.FormTab.endSelectionDrag()
+	}
 }
 
 func (m *drag) Free() {
@@ -102,7 +134,10 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 	//_, _ = dx, dy
 	//_, _, _, _ = dcx, dcy, dcw, dch
 	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-		if m.isDown {
+		// 只响应缩放控制点自身发起的按下: 移动拖拽(组件按下)也复用本结构体,
+		// 若光标下的面板在按下后出现(组件刚成为主选), 系统会补发 WM_MOUSEMOVE,
+		// 用移动拖拽的状态做缩放计算会把组件乱缩放并在抬起时误写 .ui。
+		if m.resizeDown {
 			dx := X - m.dx
 			dy := Y - m.dy
 			left, top := m.dcx, m.dcy
@@ -228,7 +263,11 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 				}
 			}
 			br := m.relation.BoundsRect()
-			m.relation.UpdateNodeDataBounds(br)
+			if !m.moved && (br.Left != m.dcx || br.Top != m.dcy || br.Width() != m.dcw || br.Height() != m.dch) {
+				m.moved = true
+			}
+			// 缩放中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
+			m.relation.SyncBoundsToProperties(br)
 			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 			message.Follow(msgContent)
 			m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
@@ -242,7 +281,8 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		m.dx, m.dy = X, Y
 		br := m.relation.BoundsRect()
 		m.dcx, m.dcy, m.dcw, m.dch = br.Left, br.Top, br.Width(), br.Height()
-		m.isDown = true
+		m.resizeDown = true
+		m.moved = false
 		if m.relation.FormTab != nil {
 			m.relation.FormTab.hideGuides()
 		}
@@ -257,13 +297,23 @@ func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) 
 		} else {
 			m.Follow()
 		}
-		m.isDown = false
+		// 不清 m.isDown/m.moved: 那是移动拖拽的状态, 可能仍等待其自身的 MouseUp 收尾。
 		message.FollowHide()
 		if m.relation.FormTab != nil {
 			m.relation.FormTab.hideGuides()
 		}
-		br := m.relation.BoundsRect()
-		m.relation.UpdateNodeDataBounds(br)
+		// 只有真正由缩放控制点发起的按下才走缩放写回, 单纯点击控制点不做落盘。
+		if m.resizeDown {
+			if m.moved {
+				br := m.relation.BoundsRect()
+				m.relation.UpdateNodeDataBounds(br)
+			}
+			m.resizeDown = false
+		}
+		m.moved = false
+		// 多选拖动的按下可能被本次抬起截获(组件刚成为主选时控制点出现在光标下),
+		// 此时 move-drag 的 OnMouseUp 不会执行, 在这里兜底恢复被摘除的设计模式。
+		m.restoreGroupDesignModes()
 		m.relation.DragEnd()
 	})
 	return pnl
@@ -577,6 +627,10 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 	//Width: %v Height: %v`, sender.TreeName(), br.Left, br.Top, br.Width(), br.Height())
 	//message.Follow(hint)
 	if m.isDown && sender.ComponentType != consts.CtForm {
+		perfStart := time.Now()
+		defer func() {
+			logs.Debug("PERF OnMouseMove group:", len(m.groupItems), "cost:", time.Since(perfStart))
+		}()
 		m.Hide()
 		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
 		point := lcl.Mouse.CursorPos()
@@ -642,6 +696,20 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		if senderHasSelectedAncestor {
 			actual = sender.BoundsRect()
 		}
+		// 记录是否真的发生位移：普通点击（含网格吸附后回到原位）不应触发写盘。
+		if !m.moved {
+			if actual.Left != m.dcl || actual.Top != m.dct {
+				m.moved = true
+			} else {
+				for i := range m.groupItems {
+					cur := m.groupItems[i].comp.BoundsRect()
+					if cur.Left != m.groupItems[i].left || cur.Top != m.groupItems[i].top {
+						m.moved = true
+						break
+					}
+				}
+			}
+		}
 		if sender.FormTab != nil {
 			var guidesV, guidesH []designerGuide
 			if hitV {
@@ -655,13 +723,15 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 			} else {
 				sender.FormTab.hideGuides()
 			}
-			// 主选组件移动时，其子组件（非主选）也会跟随移动，选中边框需要同步刷新。
-			sender.FormTab.syncSelectionFrames()
+			// 大量选中时每步刷新数百个边框面板会拖垮 UI 线程：
+			// 拖动期间隐藏次选边框，MouseUp 时统一恢复一次。
+			sender.FormTab.beginSelectionDrag()
 		}
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
 		message.Follow(msgContent)
 		sender.SetStatusText(actual.Left, actual.Top, actual.Width(), actual.Height())
-		sender.UpdateNodeDataPoint(actual.Left, actual.Top)
+		// 拖动中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
+		sender.SyncPointToProperties(actual.Left, actual.Top)
 	}
 }
 
@@ -687,6 +757,9 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 			}
 		}
 		m.isDown = true
+		m.moved = false
+		// 恢复上一次未正常结束拖动遗留的摘除状态, 再重建多选拖动组
+		m.restoreGroupDesignModes()
 		// 记录多选拖动组，拖动时整组同 delta 位移
 		m.groupItems = m.groupItems[:0]
 		if selected := formTab.SelectedComponents(); len(selected) > 1 && formTab.IsComponentSelected(sender) && sender.ComponentType != consts.CtForm {
@@ -696,6 +769,15 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 				}
 				br := comp.BoundsRect()
 				m.groupItems = append(m.groupItems, dragGroupItem{comp: comp, left: br.Left, top: br.Top, width: br.Width(), height: br.Height()})
+			}
+			// 设计模式下组件真实 bounds 变更每次要走消息通知路径(20ms+),
+			// 整组拖动时摘除次选组件的设计模式走快速路径。
+			// 主选组件保留设计模式: 拖动中的鼠标消息依赖它路由。
+			for i := range m.groupItems {
+				if instance := m.groupItems[i].comp.Instance(); instance != 0 {
+					StripComponentDesignMode(instance)
+					m.groupItems[i].designStripped = true
+				}
 			}
 		}
 		formTab.hideGuides()
@@ -714,20 +796,30 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 // 设计组件鼠标抬起事件
 func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	if m.isDown {
+		perfStart := time.Now()
+		defer func() {
+			logs.Debug("PERF OnMouseUp cost:", time.Since(perfStart))
+		}()
 		m.Show()
+		m.isDown = false
+		// 恢复拖动期间被摘除设计模式的次选组件
+		m.restoreGroupDesignModes()
 		// 只有真正发生过拖动才补写最终坐标，普通点击不触发 UI 生成。
-		br := sender.BoundsRect()
-		sender.UpdateNodeDataPoint(br.Left, br.Top)
-		if len(m.groupItems) > 0 {
+		if m.moved {
+			br := sender.BoundsRect()
+			sender.UpdateNodeDataPoint(br.Left, br.Top)
 			for _, item := range m.groupItems {
 				actual := item.comp.BoundsRect()
 				item.comp.UpdateNodeDataPoint(actual.Left, actual.Top)
 			}
-			m.groupItems = m.groupItems[:0]
 		}
-		sender.FormTab.syncSelectionFrames()
-		sender.FormTab.hideGuides()
-		m.isDown = false
+		m.groupItems = m.groupItems[:0]
+		m.moved = false
+		if sender.FormTab != nil {
+			// 拖动期间隐藏的次选边框在结束时统一恢复一次。
+			sender.FormTab.endSelectionDrag()
+			sender.FormTab.hideGuides()
+		}
 	}
 	message.FollowHide()
 	sender.DragEnd()
