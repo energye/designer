@@ -43,6 +43,15 @@ type TProjectSrcTree struct {
 	pathNodes   map[string]lcl.ITreeNode
 	pathIsDir   map[string]bool
 	snapshots   map[string]string
+	dirCache    map[string]srcDirCache
+}
+
+// srcDirCache 目录列表缓存: 目录 mtime 未变化时复用上次读取结果,
+// 避免每秒轮询对所有已加载目录重复 ReadDir
+type srcDirCache struct {
+	modTime  time.Time
+	entries  []TProjectSrcEntry
+	snapshot string
 }
 
 type TProjectSrcEntry struct {
@@ -61,15 +70,21 @@ func (m *TProjectSrcTree) scanProjectSrc() {
 	}
 	m.ensureProject(projectPath)
 
-	rootHasChildren := m.hasVisibleChildren(projectPath)
 	loadedDirs := m.snapshotLoadedDirs(projectPath)
-	dirEntries := make(map[string][]TProjectSrcEntry)
-	dirSnapshots := make(map[string]string)
+	dirEntries := make(map[string][]TProjectSrcEntry, len(loadedDirs))
+	dirSnapshots := make(map[string]string, len(loadedDirs))
 	for _, dir := range loadedDirs {
 		entries, snapshot := m.readDirEntries(dir)
 		dirEntries[dir] = entries
 		dirSnapshots[dir] = snapshot
 	}
+	// 根目录可能不在 loadedDirs 中(首次扫描), 补充读取
+	if _, ok := dirEntries[projectPath]; !ok {
+		entries, snapshot := m.readDirEntries(projectPath)
+		dirEntries[projectPath] = entries
+		dirSnapshots[projectPath] = snapshot
+	}
+	rootHasChildren := len(dirEntries[projectPath]) > 0
 
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		if projectSrcRootPath() != projectPath {
@@ -131,6 +146,7 @@ func (m *TProjectSrcTree) reset() {
 	m.pathNodes = nil
 	m.pathIsDir = nil
 	m.snapshots = nil
+	m.dirCache = nil
 	m.lock.Unlock()
 }
 
@@ -147,6 +163,7 @@ func (m *TProjectSrcTree) ensureProject(projectPath string) {
 	m.pathNodes = make(map[string]lcl.ITreeNode)
 	m.pathIsDir = make(map[string]bool)
 	m.snapshots = make(map[string]string)
+	m.dirCache = make(map[string]srcDirCache)
 }
 
 func (m *TProjectSrcTree) snapshotLoadedDirs(projectPath string) []string {
@@ -165,6 +182,16 @@ func (m *TProjectSrcTree) snapshotLoadedDirs(projectPath string) []string {
 
 func (m *TProjectSrcTree) readDirEntries(dir string) ([]TProjectSrcEntry, string) {
 	dir = filepath.Clean(dir)
+	// mtime 未变化时复用缓存, 轮询期间不再重复读盘
+	info, statErr := os.Stat(dir)
+	if statErr == nil {
+		m.lock.Lock()
+		cached, has := m.dirCache[dir]
+		m.lock.Unlock()
+		if has && info.ModTime().Equal(cached.modTime) {
+			return cached.entries, cached.snapshot
+		}
+	}
 	dirItems, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, ""
@@ -207,7 +234,13 @@ func (m *TProjectSrcTree) readDirEntries(dir string) ([]TProjectSrcEntry, string
 		snapshot.WriteString(entry.Path)
 		snapshot.WriteByte('\n')
 	}
-	return entries, snapshot.String()
+	snapshotStr := snapshot.String()
+	if statErr == nil {
+		m.lock.Lock()
+		m.dirCache[dir] = srcDirCache{modTime: info.ModTime(), entries: entries, snapshot: snapshotStr}
+		m.lock.Unlock()
+	}
+	return entries, snapshotStr
 }
 
 func (m *TProjectSrcTree) isHiddenSrcEntry(name string) bool {
@@ -353,6 +386,7 @@ func (m *TProjectSrcTree) removePathMappings(path string, includeSelf bool) {
 			delete(m.pathIsDir, currentPath)
 			delete(m.snapshots, currentPath)
 			delete(m.loadedDirs, currentPath)
+			delete(m.dirCache, currentPath)
 			if node != nil {
 				delete(m.nodePaths, node.Instance())
 			}

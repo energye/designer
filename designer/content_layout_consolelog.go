@@ -15,7 +15,6 @@ package designer
 
 import (
 	"github.com/energye/designer/pkg/tool"
-	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"strings"
@@ -23,15 +22,9 @@ import (
 )
 
 type ContentLayoutConsoleLog struct {
-	tab *wg.TTab
+	panel lcl.IPanel // 所属面板, 隐藏时跳过滚动刷新
 
-	popupMenu lcl.IPopupMenu
-
-	designer     lcl.ISynEdit // 设计器日志
-	designerPage *wg.TPage    // 设计器日志
-
-	build     lcl.ISynEdit // 构建输出日志
-	buildPage *wg.TPage    // 构建输出日志
+	designer lcl.ISynEdit // 设计器日志
 }
 
 func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog {
@@ -81,6 +74,7 @@ func initContentLayoutConsoleLog(owner *ContentLayout) *ContentLayoutConsoleLog 
 		font.SetQuality(types.FqAntialiased)
 	}
 	m.designer.SetParent(owner.consoleLogPanel)
+	m.panel = owner.consoleLogPanel
 
 	m.CreatePopupMenu()
 	return m
@@ -94,18 +88,15 @@ func (m *ContentLayoutConsoleLog) WriteDesignerLog(s ...string) {
 	for _, text := range s {
 		text = "[" + time.Now().Format("15:04:05.000") + "] " + text
 		lines.Add(text)
-		m.TrimLines(lines, 500)
 	}
-	m.designer.SetLeftChar(1)
-	m.designer.SetTopLine(m.designer.Lines().Count())
-}
-
-func (m *ContentLayoutConsoleLog) TrimLines(lines lcl.IStrings, maxLines int32) {
-	if m == nil || m.designer == nil {
-		return
-	}
-	if lines.Count() > maxLines {
+	// 循环删到上限, 日志突发多条时一次性裁剪到位
+	for lines.Count() > 500 {
 		lines.Delete(0)
+	}
+	// 面板隐藏时只记录日志, 跳过滚动刷新避免无效重绘
+	if m.panel != nil && m.panel.Visible() {
+		m.designer.SetLeftChar(1)
+		m.designer.SetTopLine(m.designer.Lines().Count())
 	}
 }
 
@@ -118,7 +109,6 @@ func (m *ContentLayoutConsoleLog) ClearConsole() {
 
 func (m *ContentLayoutConsoleLog) CreatePopupMenu() {
 	popupMenu := lcl.NewPopupMenu(m.designer)
-	m.popupMenu = popupMenu
 
 	copyItem := lcl.NewMenuItem(m.designer)
 	copyItem.SetCaption("复制")

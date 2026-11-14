@@ -116,6 +116,11 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 	font.SetStyle(types.NewSet(types.FsBold))
 	title.SetParent(m.topBox)
 
+	// 标题栏 X 关闭按钮
+	initPanelCloseButton(m.topBox, func() {
+		owner.setWidgetPanelVisible(false)
+	})
+
 	m.tree = lcl.NewTreeView(owner.widgetPanel)
 	m.tree.SetAutoExpand(true)
 	m.tree.SetReadOnly(true)
@@ -145,14 +150,26 @@ func initContentLayoutWidget(owner *ContentLayout) *ContentLayoutWidget {
 			return
 		}
 		n := m.tree.GetNodeAt(x, y)
-		if n != nil && hoverNode != n {
-			hoverNode = n
-			m.tree.Invalidate()
-		} else {
-			hoverNode = nil
+		// GetNodeAt 每次返回新的包装对象, 用实例指针比较, 避免同一节点误判为变化
+		nInst := uintptr(0)
+		if n != nil && n.IsValid() {
+			nInst = n.Instance()
 		}
+		hoverInst := uintptr(0)
+		if hoverNode != nil && hoverNode.IsValid() {
+			hoverInst = hoverNode.Instance()
+		}
+		if nInst == hoverInst {
+			return
+		}
+		hoverNode = n
+		// 树控件未提供节点级重绘, 仅在 hover 跨节点时整树重绘
+		m.tree.Invalidate()
 	})
 	m.tree.SetOnMouseLeave(func(sender lcl.IObject) {
+		if hoverNode == nil {
+			return
+		}
 		hoverNode = nil
 		m.tree.Invalidate()
 	})

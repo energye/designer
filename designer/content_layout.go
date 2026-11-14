@@ -16,6 +16,7 @@ package designer
 import (
 	"github.com/energye/designer/pkg/config"
 	"github.com/energye/designer/pkg/tool"
+	"github.com/energye/designer/resources"
 	"github.com/energye/energy/v3/lcl/wg"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
@@ -254,6 +255,78 @@ func (m *ContentLayout) initFromDesignerLayout() *Designer {
 
 func (m *ContentLayout) setStatusCenterText(s string) {
 	m.contentStatusCenter.SetText(s)
+}
+
+// initPanelCloseButton 在面板标题栏右侧创建 X 关闭按钮
+func initPanelCloseButton(topBox lcl.IWinControl, onClose func()) *wg.TButton {
+	btn := wg.NewButton(topBox)
+	btn.SetIconCloseFormBytes(resources.Images("button/close.png"))
+	btn.SetIconCloseHighlightFormBytes(resources.Images("button/close_highlight.png"))
+	btn.SetOnCloseClick(func(sender lcl.IObject) {
+		onClose()
+	})
+	btn.SetWidth(24)
+	btn.SetHeight(24)
+	btn.SetAlpha(0) // 无背景, 仅显示图标, 悬停切换高亮图标
+	btn.SetRadius(6)
+	btn.SetAlign(types.AlRight)
+	btn.SetParent(topBox)
+	btn.SetBorderDirections(types.NewSet())
+	return btn
+}
+
+// 以下四个方法: 切换面板显隐并同步视图菜单勾选状态,
+// 供视图菜单与面板 X 关闭按钮共用
+
+func (m *ContentLayout) setWidgetPanelVisible(visible bool) {
+	if m.widgetPanel != nil {
+		m.widgetPanel.SetVisible(visible)
+	}
+	if m.widgetSplitter != nil {
+		m.widgetSplitter.SetVisible(visible)
+	}
+	if MainWindow.mainMenu != nil && MainWindow.mainMenu.viewWidgets != nil {
+		MainWindow.mainMenu.viewWidgets.SetChecked(visible)
+	}
+}
+
+func (m *ContentLayout) setProjectPanelVisible(visible bool) {
+	if m.projectPanel != nil {
+		m.projectPanel.SetVisible(visible)
+	}
+	if m.projectSplitter != nil {
+		m.projectSplitter.SetVisible(visible)
+	}
+	if MainWindow.mainMenu != nil && MainWindow.mainMenu.viewProject != nil {
+		MainWindow.mainMenu.viewProject.SetChecked(visible)
+	}
+}
+
+func (m *ContentLayout) setInspectorPanelVisible(visible bool) {
+	if m.inspectorPanel != nil {
+		m.inspectorPanel.SetVisible(visible)
+	}
+	if m.inspectorSplitter != nil {
+		lcl.RunOnMainThreadAsync(func(id uint32) {
+			// 运行在 async ui 线程 Splitter 否则显示位置不对
+			m.inspectorSplitter.SetVisible(visible)
+		})
+	}
+	if MainWindow.mainMenu != nil && MainWindow.mainMenu.viewInspector != nil {
+		MainWindow.mainMenu.viewInspector.SetChecked(visible)
+	}
+}
+
+func (m *ContentLayout) setConsoleLogPanelVisible(visible bool) {
+	if m.consoleLogPanel != nil {
+		m.consoleLogPanel.SetVisible(visible)
+	}
+	if m.consoleLogSplitter != nil {
+		m.consoleLogSplitter.SetVisible(visible)
+	}
+	if MainWindow.mainMenu != nil && MainWindow.mainMenu.viewConsole != nil {
+		MainWindow.mainMenu.viewConsole.SetChecked(visible)
+	}
 }
 
 func (m *ContentLayout) setStatusRightText(s string) {

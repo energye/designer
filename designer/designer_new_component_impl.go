@@ -120,6 +120,9 @@ func (m *TDesigningComponent) Free() {
 
 	m.FormTab = nil
 	m.parent = nil
+	if gInspectorTarget == m {
+		gInspectorTarget = nil
+	}
 	for _, child := range m.Child {
 		child.Free()
 	}
@@ -500,6 +503,9 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 	m.loadPropertyList()
 	// 加载事件列表
 	m.loadEventList()
+
+	// 更新检查器目标组件, 按当前搜索词应用过滤
+	inspectorSetTarget(m)
 
 	m.SwitchDefaultTreeTabPage()
 

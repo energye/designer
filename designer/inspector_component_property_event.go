@@ -39,10 +39,8 @@ func (m *TDesigningComponent) initComponentPropertyTreeEvent() {
 	})
 	tree.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X, Y int32) {
 		node := tree.GetNodeAtWithIntX2(X, Y)
-		if data := vtedit.GetPropertyNodeData(node); data != nil {
-			// todo 文档处理
-			//fmt.Println("SetOnMouseMove", X, Y, data.AffiliatedComponent.GetClassName(), data.Name())
-		}
+		// 悬停属性节点, 底部文档面板显示属性信息
+		InspectorShowPropertyDoc(vtedit.GetPropertyNodeData(node))
 	})
 	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
 		tree.GetMaxColumnWidth(column, false)
@@ -231,6 +229,11 @@ func (m *TDesigningComponent) initComponentEventTreeEvent() {
 	})
 	tree.SetOnMouseWheel(func(sender lcl.IObject, shift types.TShiftState, wheelDelta int32, mousePos types.TPoint, handled *bool) {
 		tree.UpdateScrollBars(true)
+	})
+	tree.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X, Y int32) {
+		node := tree.GetNodeAtWithIntX2(X, Y)
+		// 悬停事件节点, 底部文档面板显示事件信息
+		InspectorShowPropertyDoc(vtedit.GetPropertyNodeData(node))
 	})
 	tree.SetOnColumnResize(func(sender lcl.IVTHeader, column int32) {
 		tree.GetMaxColumnWidth(column, false)

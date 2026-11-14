@@ -42,6 +42,10 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	borderSpacing.SetTop(3)
 	borderSpacing.SetBottom(3)
 	m.searchEdit.SetParent(owner.inspectorPanel)
+	m.searchEdit.SetOnChange(func(sender lcl.IObject) {
+		// 属性/事件树为 LazVirtualStringTree, 通过 IsVisible 手动过滤
+		m.applyFilter()
+	})
 
 	m.topBox = lcl.NewPanel(owner.inspectorPanel)
 	m.topBox.SetBorderStyleToBorderStyle(types.BsNone)
@@ -60,6 +64,11 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	font.SetStyle(types.NewSet(types.FsBold))
 	title.SetParent(m.topBox)
 
+	// 标题栏 X 关闭按钮
+	initPanelCloseButton(m.topBox, func() {
+		owner.setInspectorPanelVisible(false)
+	})
+
 	m.box = lcl.NewPanel(owner.inspectorPanel)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetDoubleBuffered(true)
@@ -76,12 +85,25 @@ func initContentLayoutInspector(owner *ContentLayout) *ContentLayoutInspector {
 	m.docSplitter.SetParent(owner.inspectorPanel)
 	m.doc = lcl.NewMemo(owner.inspectorPanel)
 	m.doc.SetBorderStyle(types.BsNone)
-	//m.doc.SetReadOnly(true)
+	m.doc.SetReadOnly(true)
+	m.doc.SetHeight(76)
 	//m.doc.Constraints().SetMinHeight(10)
-	m.doc.SetVisible(false) // 还未使用
+	m.doc.SetVisible(false) // 显示检查器目标组件后启用
 	m.doc.SetAlign(types.AlBottom)
 	m.doc.SetScrollBars(types.SsAutoBoth)
 	m.doc.SetParent(owner.inspectorPanel)
 
 	return m
+}
+
+// setDocVisible 显示/隐藏属性文档面板
+func (m *ContentLayoutInspector) setDocVisible(visible bool) {
+	if m == nil || m.doc == nil || !m.doc.IsValid() {
+		return
+	}
+	if m.doc.Visible() == visible {
+		return
+	}
+	m.doc.SetVisible(visible)
+	m.docSplitter.SetVisible(visible)
 }

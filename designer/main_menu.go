@@ -297,10 +297,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewWidgets.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+C"))
 	m.viewWidgets.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
-			checked := !m.viewWidgets.Checked()
-			m.viewWidgets.SetChecked(checked)
-			MainWindow.contentLayout.widgetPanel.SetVisible(checked)
-			MainWindow.contentLayout.widgetSplitter.SetVisible(checked)
+			MainWindow.contentLayout.setWidgetPanelVisible(!m.viewWidgets.Checked())
 		}
 	})
 	m.view.Add(m.viewWidgets)
@@ -312,10 +309,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewProject.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+P"))
 	m.viewProject.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
-			checked := !m.viewProject.Checked()
-			m.viewProject.SetChecked(checked)
-			MainWindow.contentLayout.projectPanel.SetVisible(checked)
-			MainWindow.contentLayout.projectSplitter.SetVisible(checked)
+			MainWindow.contentLayout.setProjectPanelVisible(!m.viewProject.Checked())
 		}
 	})
 	m.view.Add(m.viewProject)
@@ -327,13 +321,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewInspector.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+O"))
 	m.viewInspector.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
-			checked := !m.viewInspector.Checked()
-			m.viewInspector.SetChecked(checked)
-			lcl.RunOnMainThreadAsync(func(id uint32) {
-				// 运行在 async ui 线程 Splitter 否则显示位置不对
-				MainWindow.contentLayout.inspectorPanel.SetVisible(checked)
-				MainWindow.contentLayout.inspectorSplitter.SetVisible(checked)
-			})
+			MainWindow.contentLayout.setInspectorPanelVisible(!m.viewInspector.Checked())
 		}
 	})
 	m.view.Add(m.viewInspector)
@@ -345,10 +333,7 @@ func (m *TMainMenu) viewMenu(owner lcl.IComponent) {
 	m.viewConsole.SetShortCut(api.TextToShortCut(platformControl() + "+Alt+L"))
 	m.viewConsole.SetOnClick(func(sender lcl.IObject) {
 		if MainWindow.contentLayout != nil {
-			checked := !m.viewConsole.Checked()
-			m.viewConsole.SetChecked(checked)
-			MainWindow.contentLayout.consoleLogPanel.SetVisible(checked)
-			MainWindow.contentLayout.consoleLogSplitter.SetVisible(checked)
+			MainWindow.contentLayout.setConsoleLogPanelVisible(!m.viewConsole.Checked())
 		}
 	})
 	m.view.Add(m.viewConsole)

@@ -50,6 +50,11 @@ func initContentLayoutProject(owner *ContentLayout) *ContentLayoutProject {
 	font.SetStyle(types.NewSet(types.FsBold))
 	title.SetParent(m.topBox)
 
+	// 标题栏 X 关闭按钮
+	initPanelCloseButton(m.topBox, func() {
+		owner.setProjectPanelVisible(false)
+	})
+
 	m.box = lcl.NewPanel(owner.projectPanel)
 	m.box.SetBevelOuter(types.BvNone)
 	m.box.SetDoubleBuffered(true)
