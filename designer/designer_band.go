@@ -27,6 +27,7 @@ const designerBandThreshold = 4
 type designerBand struct {
 	down        bool
 	active      bool
+	shown       bool // 面板已置顶显示, 拖动期间无需重复设置 Z 序与可见性
 	start       types.TPoint
 	panels      [4]lcl.IPanel
 	boxInstance uintptr
@@ -65,6 +66,7 @@ func (m *TEngFormDesigner) bandHide() {
 		}
 		p.SetBounds(0, 0, 0, 0)
 	}
+	m.band.shown = false
 }
 
 // bandUpdate 更新框选矩形；位移小于阈值时不显示
@@ -107,9 +109,15 @@ func (m *TEngFormDesigner) bandUpdate(current types.TPoint) {
 	for i, p := range m.band.panels {
 		b := bounds[i]
 		p.SetBounds(b[0], b[1], b[2], b[3])
-		p.BringToFront()
-		p.SetVisible(true)
+		if !m.band.shown {
+			// Z 序与可见性只在首次显示时设置: 拖动期间 Z 序不变,
+			// 每次 mousemove 重复 BringToFront 会触发 z 序变更与
+			// 被遮挡区域的重排重绘, 是框选卡顿的主要原因
+			p.BringToFront()
+			p.SetVisible(true)
+		}
 	}
+	m.band.shown = true
 }
 
 // bandEnd 结束框选并应用选择；未产生拖动时视为点击空白画布

@@ -61,13 +61,50 @@ type dragGroupItem struct {
 	designStripped bool // 拖动期间被临时摘除设计模式, 结束时恢复
 }
 
+// groupClassNames 返回多选拖动组内组件类名(诊断用)
+func (m *drag) groupClassNames() []string {
+	names := make([]string, 0, len(m.groupItems))
+	for i := range m.groupItems {
+		names = append(names, m.groupItems[i].comp.ClassName())
+	}
+	return names
+}
+
+// flushParentRepaints 同步冲刷拖动组件父窗口的待重绘脏区。
+// 窗口位移只会把旧位置的暴露区域排入父窗口重绘队列(异步),
+// 拖动过程中队列持续繁忙(设计模式通知/覆盖层/属性刷新), 重绘被推迟,
+// 高对比背景的控件(如白底输入框)旧图像滞留可见(残影);
+// Update 只处理已排队的脏区, 不做全量重绘, 把补绘提前到本帧完成。
+func (m *drag) flushParentRepaints() {
+	for i := range m.groupItems {
+		p := m.groupItems[i].comp.parent
+		if p != nil && p.object != nil && p.object.IsValid() {
+			p.object.Update()
+		}
+	}
+	r := m.relation
+	if r != nil && r.parent != nil && r.parent.object != nil && r.parent.object.IsValid() {
+		r.parent.object.Update()
+	}
+}
+
 // restoreGroupDesignModes 恢复拖动期间被摘除设计模式的组件。
 // mouseup 可能被缩放控制点面板截获而走不到 OnMouseUp, 必须在所有结束路径上恢复。
 func (m *drag) restoreGroupDesignModes() {
+	restored := false
 	for i := range m.groupItems {
 		if m.groupItems[i].designStripped {
 			RestoreComponentDesignMode(m.groupItems[i].comp.Instance())
 			m.groupItems[i].designStripped = false
+			restored = true
+		}
+	}
+	if restored && m.relation != nil && m.relation.FormTab != nil {
+		// 设计模式切换改变组件的渲染路径, 恢复后必须强制重绘,
+		// 否则组件保持拖动期间的旧渲染状态(参见 EnableDeferredDesignMode),
+		// 表现为旧位置残影/视觉上未跟随移动
+		if box := m.relation.FormTab.designerBox; box != nil && box.IsValid() {
+			box.Invalidate()
 		}
 	}
 }
@@ -311,6 +348,10 @@ func (m *drag) applyResize(shift types.TShiftState, X, Y int32) {
 	}
 	m.lastResizeL, m.lastResizeT, m.lastResizeR, m.lastResizeB = left, top, right, bottom
 	m.relation.SetBounds(left, top, right-left, bottom-top)
+	// 缩放位移同样冲刷父窗口暴露区域, 避免拖尾
+	if p := m.relation.parent; p != nil && p.object != nil && p.object.IsValid() {
+		p.object.Update()
+	}
 	if m.relation.FormTab != nil {
 		var guidesV, guidesH []designerGuide
 		if hitV {
@@ -586,6 +627,8 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 				item.comp.SetBounds(item.left+dx, item.top+dy, item.width, item.height)
 			}
 		}
+		// 位移后同步冲刷父窗口暴露区域, 消除拖动残影(单选/多选共用)
+		m.flushParentRepaints()
 		if senderHasSelectedAncestor {
 			actual = sender.BoundsRect()
 		}
@@ -677,6 +720,15 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 					StripComponentDesignMode(instance)
 					m.groupItems[i].designStripped = true
 				}
+				// 摘除切换了渲染路径, 强制重绘一次,
+				// 避免拖动首个帧保留设计模式的旧渲染状态(残影来源之一)
+				if ctrl := m.groupItems[i].comp.Control(); ctrl != nil && ctrl.IsValid() {
+					ctrl.Invalidate()
+				}
+			}
+			if perfDiag {
+				logs.Info("PERF groupDrag primary:", sender.ClassName(),
+					"items:", fmt.Sprintf("%v", m.groupClassNames()))
 			}
 		}
 		formTab.hideGuides()
