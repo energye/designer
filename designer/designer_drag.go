@@ -86,6 +86,8 @@ func (m *drag) cancelStaleDrag() {
 	m.resizeDir = -1
 	atomic.StoreInt32(&overlayCursorResize, -1)
 	resetOverlayCursor()
+	// 拖拽中可能带着坐标信息气泡(Mouse 移动/缩放展示), 随残留状态一并隐藏
+	message.FollowHide()
 	if m.relation != nil && m.relation.FormTab != nil {
 		m.relation.FormTab.endSelectionDrag()
 		m.relation.FormTab.hideGuides()
