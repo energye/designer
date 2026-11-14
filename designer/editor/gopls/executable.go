@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/energye/lcl/tool/command"
 )
 
 // GoplsPathEnv 允许用户显式指定 gopls 可执行文件路径。
@@ -28,7 +30,10 @@ func goEnvValue(name string) string {
 	}
 	goEnvOnce.Do(func() {
 		goEnvCache = make(map[string]string)
-		out, err := exec.Command("go", "env", "-json").Output()
+		goEnvCMD := exec.Command("go", "env", "-json")
+		// go 是控制台程序, 隐藏子进程命令行窗口
+		goEnvCMD.SysProcAttr = command.HideWindow(true)
+		out, err := goEnvCMD.Output()
 		if err != nil {
 			return
 		}

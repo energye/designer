@@ -15,46 +15,41 @@ package designer
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/message"
-	"github.com/energye/lcl/lcl"
-	"github.com/energye/lcl/tool"
 	"github.com/energye/lcl/types"
-	"github.com/energye/lcl/types/colors"
 )
 
 // 拖拽控制
 
 var dragBorder int32 = 6
 
-// 最小移动距离阈值
-const minDistance = 4
-
 // 拖拽控制
+// 缩放控制点绘制在页签级覆盖层(玻璃层, 见 designer_overlay.go):
+// 普通组件(DsAll)与窗体根节点(DsRightBottom)的控制点/次选边框都在覆盖层上,
+// 置顶于所有设计组件之上 —— 被覆盖组件的锚点可见可操作; 鼠标事件里按
+// dragHandleAt 命中测试, 不为任何组件创建锚点子窗口。
+// 无窗口区域平台(Cocoa)回退容器画布绘制(paintContainerOverlays)。
 type drag struct {
 	relation           *TDesigningComponent  // 关联设计的组件
 	ds                 consts.DragShowStatus // 显示方向
-	dx, dy             int32                 // 拖拽控制
-	dcl, dct           int32                 // 拖拽控制
-	dcx, dcy, dcw, dch int32                 // 拖拽控制
-	isDown             bool                  // 拖拽控制
-	resizeDown         bool                  // 缩放控制点按下中(独立于 isDown, 避免与移动拖拽状态串扰)
+	resizeDir          int                   // 缩放方向(consts.DLeft..DRightBottom), -1 表示非缩放
+	dx, dy             int32                 // 缩放起始鼠标位置(相对设计窗体)
+	dcl, dct           int32                 // 移动拖拽起始组件位置
+	dcx, dcy, dcw, dch int32                 // 缩放起始组件边界
+	isDown             bool                  // 移动拖拽按下中
 	moved              bool                  // 本次按下是否真的改变了组件边界
-	owner              lcl.IWinControl       // 拖拽控制所属组件, 非空表示未创建 ds(拖拽控制)空表示创建过
-	left               lcl.IPanel
-	top                lcl.IPanel
-	right              lcl.IPanel
-	bottom             lcl.IPanel
-	leftTop            lcl.IPanel
-	rightTop           lcl.IPanel
-	leftBottom         lcl.IPanel
-	rightBottom        lcl.IPanel
 	// 对齐目标缓存，拖动过程中复用避免频繁分配
 	alignXs []designerAlignTarget
 	alignYs []designerAlignTarget
+	// 移动节流: 上次应用的位置(吸附后), 网格步进内跳过整组 SetBounds
+	lastMoveX, lastMoveY int32
+	// 缩放节流: 上次应用的边界
+	lastResizeL, lastResizeT, lastResizeR, lastResizeB int32
 	// 多选拖动时其余选中组件的起始边界
 	groupItems []dragGroupItem
 }
@@ -81,242 +76,264 @@ func (m *drag) restoreGroupDesignModes() {
 // MouseUp 被缩放控制点截获时 OnMouseUp 不会执行, isDown/groupItems/设计模式摘除
 // 会一直残留, 后续 mousemove 会驱动陈旧拖拽移动整组组件。
 func (m *drag) cancelStaleDrag() {
-	if !m.isDown {
+	if !m.isDown && m.resizeDir < 0 {
 		return
 	}
 	m.restoreGroupDesignModes()
 	m.groupItems = m.groupItems[:0]
 	m.moved = false
 	m.isDown = false
+	m.resizeDir = -1
+	atomic.StoreInt32(&overlayCursorResize, -1)
+	resetOverlayCursor()
 	if m.relation != nil && m.relation.FormTab != nil {
 		m.relation.FormTab.endSelectionDrag()
+		m.relation.FormTab.hideGuides()
 	}
 }
 
 func (m *drag) Free() {
 	m.relation = nil
-	m.owner = nil
-	m.left = nil
-	m.top = nil
-	m.right = nil
-	m.bottom = nil
-	m.leftTop = nil
-	m.rightTop = nil
-	m.leftBottom = nil
-	m.rightBottom = nil
+	m.resizeDir = -1
 	m.groupItems = nil
 }
 
-func (m *drag) newDragPanel(owner lcl.IWinControl, cursor types.TCursor, d int) lcl.IPanel {
-	pnl := lcl.NewPanel(owner)
-	pnl.SetWidth(dragBorder)
-	pnl.SetHeight(dragBorder)
-	pnl.SetBevelOuter(types.BvNone)
-	pnl.SetDoubleBuffered(true)
-	pnl.SetColor(colors.ClBlack)
-	pnl.SetVisible(false)
-	//pnl.SetTag(uintptr(tag))
-	pnl.SetShowHint(true)
-	pnl.SetCursor(cursor)
-	hint := ""
-	switch cursor {
-	case types.CrSizeWE:
-		hint = "WE"
-	case types.CrSizeNS:
-		hint = "NS"
-	case types.CrSizeNWSE:
-		hint = "NWSE"
-	case types.CrSizeNESW:
-		hint = "NESW"
+// dragHandleRect 单个缩放控制点: 方向 + 矩形(父容器客户区坐标)
+type dragHandleRect struct {
+	dir  int
+	rect types.TRect
+}
+
+// resizeCursor 返回缩放方向对应的光标
+func resizeCursor(dir int) types.TCursor {
+	switch dir {
+	case consts.DLeft, consts.DRight:
+		return types.CrSizeWE
+	case consts.DTop, consts.DBottom:
+		return types.CrSizeNS
+	case consts.DLeftTop, consts.DRightBottom:
+		return types.CrSizeNWSE
+	case consts.DRightTop, consts.DLeftBottom:
+		return types.CrSizeNESW
 	}
-	pnl.SetHint(hint)
-	pnl.SetParent(owner)
-	//_, _ = dx, dy
-	//_, _, _, _ = dcx, dcy, dcw, dch
-	pnl.SetOnMouseMove(func(sender lcl.IObject, shift types.TShiftState, X int32, Y int32) {
-		// 只响应缩放控制点自身发起的按下: 移动拖拽(组件按下)也复用本结构体,
-		// 若光标下的面板在按下后出现(组件刚成为主选), 系统会补发 WM_MOUSEMOVE,
-		// 用移动拖拽的状态做缩放计算会把组件乱缩放并在抬起时误写 .ui。
-		if m.resizeDown {
-			dx := X - m.dx
-			dy := Y - m.dy
-			left, top := m.dcx, m.dcy
-			right, bottom := m.dcx+m.dcw, m.dcy+m.dch
-			moveLeft, moveTop, moveRight, moveBottom := false, false, false, false
-			switch d {
-			case consts.DLeft:
-				left += dx
-				moveLeft = true
-			case consts.DTop:
-				top += dy
-				moveTop = true
-			case consts.DRight:
-				right += dx
-				moveRight = true
-			case consts.DBottom:
-				bottom += dy
-				moveBottom = true
-			case consts.DLeftTop:
-				left += dx
-				top += dy
-				moveLeft, moveTop = true, true
-			case consts.DRightTop:
-				right += dx
-				top += dy
-				moveRight, moveTop = true, true
-			case consts.DLeftBottom:
-				left += dx
-				bottom += dy
-				moveLeft, moveBottom = true, true
-			case consts.DRightBottom:
-				right += dx
-				bottom += dy
-				moveRight, moveBottom = true, true
-			}
-			targets := m.alignmentTargets(m.relation)
-			alignEnabled := !altHeld() && !shift.In(types.SsAlt)
-			gridEnabled := m.snapGridEnabled(shift)
-			var matchV, matchH designerAlignTarget
-			hitV, hitH := false, false
-			if alignEnabled {
-				if moveLeft {
-					if edge, target, hit := snapEdgeToTargets(left, targets.xs, designerAlignThreshold); hit {
-						left = edge
-						matchV, hitV = target, true
-					} else if gridEnabled {
-						left = snapDesignerGrid(left)
-					}
-				} else if moveRight {
-					if edge, target, hit := snapEdgeToTargets(right, targets.xs, designerAlignThreshold); hit {
-						right = edge
-						matchV, hitV = target, true
-					} else if gridEnabled {
-						right = snapDesignerGrid(right)
-					}
-				}
-				if moveTop {
-					if edge, target, hit := snapEdgeToTargets(top, targets.ys, designerAlignThreshold); hit {
-						top = edge
-						matchH, hitH = target, true
-					} else if gridEnabled {
-						top = snapDesignerGrid(top)
-					}
-				} else if moveBottom {
-					if edge, target, hit := snapEdgeToTargets(bottom, targets.ys, designerAlignThreshold); hit {
-						bottom = edge
-						matchH, hitH = target, true
-					} else if gridEnabled {
-						bottom = snapDesignerGrid(bottom)
-					}
-				}
+	return types.CrDefault
+}
+
+// handleRects 计算关联组件的缩放控制点矩形(父容器客户区坐标)。
+// 控制点绘制在组件外侧 1px 起, 完全不与组件窗口重叠。
+func (m *drag) handleRects() []dragHandleRect {
+	if m.relation == nil {
+		return nil
+	}
+	control := m.relation.Control()
+	if control == nil || !control.IsValid() {
+		return nil
+	}
+	br := control.BoundsRect()
+	x, y, w, h := br.Left, br.Top, br.Width(), br.Height()
+	db := dragBorder
+	var dirs []int
+	if m.ds == consts.DsAll {
+		// 角控制点优先命中(小尺寸组件时角与边可能重叠)
+		dirs = []int{consts.DLeftTop, consts.DRightTop, consts.DLeftBottom, consts.DRightBottom,
+			consts.DLeft, consts.DTop, consts.DRight, consts.DBottom}
+	} else {
+		dirs = []int{consts.DRightBottom, consts.DRight, consts.DBottom}
+	}
+	rects := make([]dragHandleRect, 0, len(dirs))
+	for _, dir := range dirs {
+		var r types.TRect
+		switch dir {
+		case consts.DLeft:
+			r = types.Rect(x-db, y+h/2-db, x, y+h/2+db)
+		case consts.DTop:
+			r = types.Rect(x+w/2-db, y-db, x+w/2+db, y)
+		case consts.DRight:
+			r = types.Rect(x+w, y+h/2-db, x+w+db, y+h/2+db)
+		case consts.DBottom:
+			r = types.Rect(x+w/2-db, y+h, x+w/2+db, y+h+db)
+		case consts.DLeftTop:
+			r = types.Rect(x-db, y-db, x, y)
+		case consts.DRightTop:
+			r = types.Rect(x+w, y-db, x+w+db, y)
+		case consts.DLeftBottom:
+			r = types.Rect(x-db, y+h, x, y+h+db)
+		case consts.DRightBottom:
+			r = types.Rect(x+w, y+h, x+w+db, y+h+db)
+		}
+		rects = append(rects, dragHandleRect{dir: dir, rect: r})
+	}
+	return rects
+}
+
+// beginResize 从画布控制点命中开始缩放, pos 为设计窗体客户区坐标
+func (m *drag) beginResize(dir int, pos types.TPoint) {
+	if m.relation == nil {
+		return
+	}
+	logs.Debug("PERF beginResize dir:", dir, "pos:", pos.X, pos.Y)
+	m.resizeDir = dir
+	atomic.StoreInt32(&overlayCursorResize, int32(dir))
+	m.dx, m.dy = pos.X, pos.Y
+	br := m.relation.BoundsRect()
+	m.dcx, m.dcy, m.dcw, m.dch = br.Left, br.Top, br.Width(), br.Height()
+	m.lastResizeL, m.lastResizeT, m.lastResizeR, m.lastResizeB = br.Left, br.Top, br.Right, br.Bottom
+	m.isDown = false
+	m.moved = false
+	if m.relation.FormTab != nil {
+		m.relation.FormTab.hideGuides()
+	}
+	msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcx, m.dcy, m.dcw, m.dch)
+	message.Follow(msgContent)
+	m.relation.DragBegin()
+}
+
+// applyResize 缩放中: 按方向调整组件边界(含对齐吸附/网格吸附/最小尺寸)。
+// X/Y 为设计画布客户区坐标(消息坐标换算, 与组件边界同一坐标系)。
+func (m *drag) applyResize(shift types.TShiftState, X, Y int32) {
+	if m.relation == nil || m.relation.FormTab == nil {
+		return
+	}
+	dx := X - m.dx
+	dy := Y - m.dy
+	left, top := m.dcx, m.dcy
+	right, bottom := m.dcx+m.dcw, m.dcy+m.dch
+	moveLeft, moveTop, moveRight, moveBottom := false, false, false, false
+	switch m.resizeDir {
+	case consts.DLeft:
+		left += dx
+		moveLeft = true
+	case consts.DTop:
+		top += dy
+		moveTop = true
+	case consts.DRight:
+		right += dx
+		moveRight = true
+	case consts.DBottom:
+		bottom += dy
+		moveBottom = true
+	case consts.DLeftTop:
+		left += dx
+		top += dy
+		moveLeft, moveTop = true, true
+	case consts.DRightTop:
+		right += dx
+		top += dy
+		moveRight, moveTop = true, true
+	case consts.DLeftBottom:
+		left += dx
+		bottom += dy
+		moveLeft, moveBottom = true, true
+	case consts.DRightBottom:
+		right += dx
+		bottom += dy
+		moveRight, moveBottom = true, true
+	}
+	targets := m.alignmentTargets(m.relation)
+	alignEnabled := !altHeld() && !shift.In(types.SsAlt)
+	gridEnabled := m.snapGridEnabled(shift)
+	var matchV, matchH designerAlignTarget
+	hitV, hitH := false, false
+	if alignEnabled {
+		if moveLeft {
+			if edge, target, hit := snapEdgeToTargets(left, targets.xs, designerAlignThreshold); hit {
+				left = edge
+				matchV, hitV = target, true
 			} else if gridEnabled {
-				if moveLeft {
-					left = snapDesignerGrid(left)
-				}
-				if moveTop {
-					top = snapDesignerGrid(top)
-				}
-				if moveRight {
-					right = snapDesignerGrid(right)
-				}
-				if moveBottom {
-					bottom = snapDesignerGrid(bottom)
-				}
+				left = snapDesignerGrid(left)
 			}
-			minSize := int32(designerGridSize)
-			clampedX, clampedY := false, false
-			if moveLeft && right-left < minSize {
-				left = right - minSize
-				clampedX = true
+		} else if moveRight {
+			if edge, target, hit := snapEdgeToTargets(right, targets.xs, designerAlignThreshold); hit {
+				right = edge
+				matchV, hitV = target, true
+			} else if gridEnabled {
+				right = snapDesignerGrid(right)
 			}
-			if moveRight && right-left < minSize {
-				right = left + minSize
-				clampedX = true
-			}
-			if moveTop && bottom-top < minSize {
-				top = bottom - minSize
-				clampedY = true
-			}
-			if moveBottom && bottom-top < minSize {
-				bottom = top + minSize
-				clampedY = true
-			}
-			if clampedX {
-				hitV = false
-			}
-			if clampedY {
-				hitH = false
-			}
-			m.relation.SetBounds(left, top, right-left, bottom-top)
-			if m.relation.FormTab != nil {
-				var guidesV, guidesH []designerGuide
-				if hitV {
-					guidesV = append(guidesV, guideFor(top, bottom-top, matchV))
-				}
-				if hitH {
-					guidesH = append(guidesH, guideFor(left, right-left, matchH))
-				}
-				if len(guidesV) > 0 || len(guidesH) > 0 {
-					m.relation.FormTab.showGuides(guidesV, guidesH, targets.origin)
-				} else {
-					m.relation.FormTab.hideGuides()
-				}
-			}
-			br := m.relation.BoundsRect()
-			if !m.moved && (br.Left != m.dcx || br.Top != m.dcy || br.Width() != m.dcw || br.Height() != m.dch) {
-				m.moved = true
-			}
-			// 缩放中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
-			m.relation.SyncBoundsToProperties(br)
-			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
-			message.Follow(msgContent)
-			m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
 		}
-	})
-	pnl.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-		logs.Debug("DRAG OnMouseDown direction:", d)
-		if tool.IsWindows() {
-			m.Hide()
+		if moveTop {
+			if edge, target, hit := snapEdgeToTargets(top, targets.ys, designerAlignThreshold); hit {
+				top = edge
+				matchH, hitH = target, true
+			} else if gridEnabled {
+				top = snapDesignerGrid(top)
+			}
+		} else if moveBottom {
+			if edge, target, hit := snapEdgeToTargets(bottom, targets.ys, designerAlignThreshold); hit {
+				bottom = edge
+				matchH, hitH = target, true
+			} else if gridEnabled {
+				bottom = snapDesignerGrid(bottom)
+			}
 		}
-		m.dx, m.dy = X, Y
-		br := m.relation.BoundsRect()
-		m.dcx, m.dcy, m.dcw, m.dch = br.Left, br.Top, br.Width(), br.Height()
-		m.resizeDown = true
-		m.moved = false
-		if m.relation.FormTab != nil {
-			m.relation.FormTab.hideGuides()
+	} else if gridEnabled {
+		if moveLeft {
+			left = snapDesignerGrid(left)
 		}
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", m.dcx, m.dcy, m.dcw, m.dch)
-		message.Follow(msgContent)
-		m.relation.DragBegin()
-	})
-	pnl.SetOnMouseUp(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
-		logs.Debug("DRAG OnMouseUP direction:", d)
-		if tool.IsWindows() {
-			m.Show()
+		if moveTop {
+			top = snapDesignerGrid(top)
+		}
+		if moveRight {
+			right = snapDesignerGrid(right)
+		}
+		if moveBottom {
+			bottom = snapDesignerGrid(bottom)
+		}
+	}
+	minSize := int32(designerGridSize)
+	clampedX, clampedY := false, false
+	if moveLeft && right-left < minSize {
+		left = right - minSize
+		clampedX = true
+	}
+	if moveRight && right-left < minSize {
+		right = left + minSize
+		clampedX = true
+	}
+	if moveTop && bottom-top < minSize {
+		top = bottom - minSize
+		clampedY = true
+	}
+	if moveBottom && bottom-top < minSize {
+		bottom = top + minSize
+		clampedY = true
+	}
+	if clampedX {
+		hitV = false
+	}
+	if clampedY {
+		hitH = false
+	}
+	// 步进内: 边界未变化时跳过本次事件(整组/单组件 SetBounds 代价高)
+	if m.lastResizeL == left && m.lastResizeT == top && m.lastResizeR == right && m.lastResizeB == bottom {
+		return
+	}
+	m.lastResizeL, m.lastResizeT, m.lastResizeR, m.lastResizeB = left, top, right, bottom
+	m.relation.SetBounds(left, top, right-left, bottom-top)
+	if m.relation.FormTab != nil {
+		var guidesV, guidesH []designerGuide
+		if hitV {
+			guidesV = append(guidesV, guideFor(top, bottom-top, matchV))
+		}
+		if hitH {
+			guidesH = append(guidesH, guideFor(left, right-left, matchH))
+		}
+		if len(guidesV) > 0 || len(guidesH) > 0 {
+			m.relation.FormTab.showGuides(guidesV, guidesH, targets.origin)
 		} else {
-			m.Follow()
-		}
-		// 不清 m.isDown/m.moved: 那是移动拖拽的状态, 可能仍等待其自身的 MouseUp 收尾。
-		message.FollowHide()
-		if m.relation.FormTab != nil {
 			m.relation.FormTab.hideGuides()
 		}
-		// 只有真正由缩放控制点发起的按下才走缩放写回, 单纯点击控制点不做落盘。
-		if m.resizeDown {
-			if m.moved {
-				br := m.relation.BoundsRect()
-				m.relation.UpdateNodeDataBounds(br)
-			}
-			m.resizeDown = false
-		}
-		m.moved = false
-		// 多选拖动的按下可能被本次抬起截获(组件刚成为主选时控制点出现在光标下),
-		// 此时 move-drag 的 OnMouseUp 不会执行, 在这里兜底恢复被摘除的设计模式。
-		m.restoreGroupDesignModes()
-		m.relation.DragEnd()
-	})
-	return pnl
+	}
+	br := m.relation.BoundsRect()
+	if !m.moved && (br.Left != m.dcx || br.Top != m.dcy || br.Width() != m.dcw || br.Height() != m.dch) {
+		m.moved = true
+	}
+	// 缩放中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
+	m.relation.SyncBoundsToProperties(br)
+	// 覆盖层窗口(锚点绘制于其上)跟随主选组件边界更新区域与重绘
+	m.relation.FormTab.updateOverlayPane()
+	msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+	message.Follow(msgContent)
+	m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
 }
 
 const designerAlignThreshold = 5
@@ -459,34 +476,11 @@ func (m *drag) snapGridEnabled(shift types.TShiftState) bool {
 	return m.relation.FormTab.gridVisible && !shift.In(types.SsAlt) && !altHeld()
 }
 
-func newDrag(owner lcl.IWinControl, ds consts.DragShowStatus) *drag {
+func newDrag(ds consts.DragShowStatus) *drag {
 	m := new(drag)
 	m.ds = ds
-	m.owner = owner
+	m.resizeDir = -1
 	return m
-}
-
-// mustDS 初始化拖拽面板控件
-// 根据拖拽敏感度设置为 drag 结构创建拖拽面板，用于不同方向的调整大小操作
-func (m *drag) mustDS() {
-	if m.owner == nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left = m.newDragPanel(m.owner, types.CrSizeWE, consts.DLeft)
-		m.top = m.newDragPanel(m.owner, types.CrSizeNS, consts.DTop)
-		m.right = m.newDragPanel(m.owner, types.CrSizeWE, consts.DRight)
-		m.bottom = m.newDragPanel(m.owner, types.CrSizeNS, consts.DBottom)
-		m.leftTop = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DLeftTop)
-		m.rightTop = m.newDragPanel(m.owner, types.CrSizeNESW, consts.DRightTop)
-		m.leftBottom = m.newDragPanel(m.owner, types.CrSizeNESW, consts.DLeftBottom)
-		m.rightBottom = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DRightBottom)
-	} else {
-		m.right = m.newDragPanel(m.owner, types.CrSizeWE, consts.DRight)
-		m.bottom = m.newDragPanel(m.owner, types.CrSizeNS, consts.DBottom)
-		m.rightBottom = m.newDragPanel(m.owner, types.CrSizeNWSE, consts.DRightBottom)
-	}
-	m.owner = nil
 }
 
 // 设置关联组件
@@ -494,118 +488,6 @@ func (m *drag) SetRelation(relation *TDesigningComponent) {
 	m.relation = relation
 }
 
-// 隐藏所有
-func (m *drag) Hide() {
-	if m.owner != nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left.SetVisible(false)
-		m.top.SetVisible(false)
-		m.right.SetVisible(false)
-		m.bottom.SetVisible(false)
-		m.leftTop.SetVisible(false)
-		m.rightTop.SetVisible(false)
-		m.leftBottom.SetVisible(false)
-		m.rightBottom.SetVisible(false)
-	} else {
-		m.right.SetVisible(false)
-		m.bottom.SetVisible(false)
-		m.rightBottom.SetVisible(false)
-	}
-}
-
-// 显示
-func (m *drag) Show() {
-	if m.owner != nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left.SetVisible(true)
-		m.top.SetVisible(true)
-		m.right.SetVisible(true)
-		m.bottom.SetVisible(true)
-		m.leftTop.SetVisible(true)
-		m.rightTop.SetVisible(true)
-		m.leftBottom.SetVisible(true)
-		m.rightBottom.SetVisible(true)
-	} else {
-		m.right.SetVisible(true)
-		m.bottom.SetVisible(true)
-		m.rightBottom.SetVisible(true)
-	}
-	m.BringToFront()
-	m.Follow()
-}
-
-func (m *drag) BringToFront() {
-	if m.owner != nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left.BringToFront()
-		m.top.BringToFront()
-		m.right.BringToFront()
-		m.bottom.BringToFront()
-		m.leftTop.BringToFront()
-		m.rightTop.BringToFront()
-		m.leftBottom.BringToFront()
-		m.rightBottom.BringToFront()
-	} else {
-		m.right.BringToFront()
-		m.bottom.BringToFront()
-		m.rightBottom.BringToFront()
-	}
-}
-
-func (m *drag) SetParent(value lcl.IWinControl) {
-	if m.owner != nil {
-		return
-	}
-	if m.ds == consts.DsAll {
-		m.left.SetParent(value)
-		m.top.SetParent(value)
-		m.right.SetParent(value)
-		m.bottom.SetParent(value)
-		m.leftTop.SetParent(value)
-		m.rightTop.SetParent(value)
-		m.leftBottom.SetParent(value)
-		m.rightBottom.SetParent(value)
-	} else {
-		m.right.SetParent(value)
-		m.bottom.SetParent(value)
-		m.rightBottom.SetParent(value)
-	}
-}
-
-// 跟随关联组件
-func (m *drag) Follow() {
-	if m.owner != nil {
-		return
-	}
-	if m.relation != nil {
-		br := m.relation.BoundsRect()
-		// 转换为 form tab 的坐标
-		point := m.GetTopLeft(m.relation)
-		x, y := point.X, point.Y
-		width, height := br.Width(), br.Height()
-		db := dragBorder / 2
-		if m.ds == consts.DsAll {
-			m.left.SetBounds(x-db, y+(height/2)-db, dragBorder, dragBorder)
-			m.top.SetBounds(x+(width/2)-db, y-db, dragBorder, dragBorder)
-			m.right.SetBounds(x+width-db, y+(height/2)-db, dragBorder, dragBorder)
-			m.bottom.SetBounds(x+(width/2)-db, y+height-db, dragBorder, dragBorder)
-			m.leftTop.SetBounds(x-db, y-db, dragBorder, dragBorder)
-			m.rightTop.SetBounds(x+width-db, y-db, dragBorder, dragBorder)
-			m.rightBottom.SetBounds(x+width-db, y+height-db, dragBorder, dragBorder)
-			m.leftBottom.SetBounds(x-db, y+height-db, dragBorder, dragBorder)
-		} else {
-			m.right.SetBounds(x+width-db, y+(height/2)-db, dragBorder, dragBorder)
-			m.bottom.SetBounds(x+(width/2)-db, y+height-db, dragBorder, dragBorder)
-			m.rightBottom.SetBounds(x+width-db, y+height-db, dragBorder, dragBorder)
-		}
-	}
-}
 func (m *drag) GetTopLeft(component *TDesigningComponent) (result types.TPoint) {
 	form := m.relation.FormTab.FormRoot
 	parent := component.Parent()
@@ -621,6 +503,11 @@ func (m *drag) GetTopLeft(component *TDesigningComponent) (result types.TPoint) 
 
 // 设计组件鼠标移动
 func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState, X int32, Y int32) {
+	// 缩放中: 控制点命中后由 applyResize 处理 (X/Y 为设计画布坐标)
+	if m.resizeDir >= 0 {
+		m.applyResize(shift, X, Y)
+		return
+	}
 	br := sender.BoundsRect()
 	//hint := fmt.Sprintf(`%v
 	//Left: %v Top: %v
@@ -631,11 +518,9 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 		defer func() {
 			logs.Debug("PERF OnMouseMove group:", len(m.groupItems), "cost:", time.Since(perfStart))
 		}()
-		m.Hide()
-		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
-		point := lcl.Mouse.CursorPos()
-		newLeft := m.dcl + point.X - m.dx
-		newTop := m.dct + point.Y - m.dy
+		// X/Y 已是设计画布坐标(设计钩子换算), 直接用于移动计算
+		newLeft := m.dcl + X - m.dx
+		newTop := m.dct + Y - m.dy
 		targets := m.alignmentTargets(sender)
 		alignEnabled := !altHeld() && !shift.In(types.SsAlt)
 		gridEnabled := m.snapGridEnabled(shift)
@@ -658,6 +543,12 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 			newLeft = snapDesignerGrid(newLeft)
 			newTop = snapDesignerGrid(newTop)
 		}
+		// 网格/吸附步进内: 目标位置未变化时跳过本次事件,
+		// 避免鼠标每移动 1px 都触发整组组件 SetBounds(多选拖动卡顿根因)。
+		if m.lastMoveX == newLeft && m.lastMoveY == newTop {
+			return
+		}
+		m.lastMoveX, m.lastMoveY = newLeft, newTop
 		// 若当前组件本身位于某个被选中祖先内，直接移动它会让祖先和它各移动一次。
 		// 这种情况改为移动组内祖先，子组件跟随祖先移动。
 		senderHasSelectedAncestor := sender.FormTab != nil && sender.FormTab.HasSelectedAncestor(sender)
@@ -739,8 +630,14 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
 	m.relation.mustComponentPropertyPage()
-	m.mustDS()
-	if !sender.FormTab.placeComponent(sender, X, Y) {
+	// placeComponent 需要点击点相对组件父容器客户区的坐标: 画布坐标减去组件画布偏移
+	px, py := X, Y
+	if sctrl := sender.Control(); sctrl != nil && sctrl.IsValid() {
+		off := sender.FormTab.overlayOffset(sender, sender.FormTab.FormRoot)
+		px -= off.X
+		py -= off.Y
+	}
+	if !sender.FormTab.placeComponent(sender, px, py) {
 		formTab := sender.FormTab
 		if sender.ComponentType != consts.CtForm {
 			// Ctrl 切换选中, Shift 追加选中; 无修饰键时保持已有多选否则单选
@@ -781,26 +678,53 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 			}
 		}
 		formTab.hideGuides()
-		//point := sender.ClientToParent(types.TPoint{X: X, Y: Y}, sender.FormTab.FormRoot.object)
-		point := lcl.Mouse.CursorPos()
-		m.dx, m.dy = point.X, point.Y
+		// X/Y 为设计画布坐标(设计钩子换算), 记录按下位置用于拖动计算
+		m.dx, m.dy = X, Y
 		br := sender.BoundsRect()
 		m.dcl = br.Left
 		m.dct = br.Top
+		m.lastMoveX, m.lastMoveY = br.Left, br.Top
 		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
 		message.Follow(msgContent)
 		sender.DragBegin()
 	}
 }
 
+// finishResize 缩放结束(画布控制点与窗体控制点面板共用):
+// 只有真正改变过边界才写回属性并触发生成。
+func (m *drag) finishResize() {
+	if m.resizeDir < 0 {
+		logs.Debug("PERF finishResize skipped: resizeDir < 0")
+		return
+	}
+	logs.Debug("PERF finishResize dir:", m.resizeDir, "moved:", m.moved)
+	if m.moved {
+		br := m.relation.BoundsRect()
+		m.relation.UpdateNodeDataBounds(br)
+	}
+	m.resizeDir = -1
+	m.moved = false
+	atomic.StoreInt32(&overlayCursorResize, -1)
+	resetOverlayCursor()
+	if m.relation.FormTab != nil {
+		m.relation.FormTab.hideGuides()
+		m.relation.FormTab.endSelectionDrag()
+	}
+	message.FollowHide()
+	m.relation.DragEnd()
+}
+
 // 设计组件鼠标抬起事件
 func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
+	if m.resizeDir >= 0 {
+		m.finishResize()
+		return
+	}
 	if m.isDown {
 		perfStart := time.Now()
 		defer func() {
 			logs.Debug("PERF OnMouseUp cost:", time.Since(perfStart))
 		}()
-		m.Show()
 		m.isDown = false
 		// 恢复拖动期间被摘除设计模式的次选组件
 		m.restoreGroupDesignModes()

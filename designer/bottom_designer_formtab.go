@@ -68,6 +68,9 @@ type FormTab struct {
 	primary  *TDesigningComponent              // 主选中组件（拖拽控制点/属性面板）
 	// selectionDragActive 拖动期间为 true：暂停绘制次选边框，拖动结束统一恢复。
 	selectionDragActive bool
+	// overlayPane 覆盖层(玻璃层): 禁用的置顶面板, 绘制锚点/边框(区域外穿透),
+	// 每页签一个窗口, 任意组件数量/多组锚点不增加窗口。见 designer_overlay.go。
+	overlayPane lcl.IPanel
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
@@ -173,7 +176,7 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 
 		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
 			// 交互放置的组件立即开启设计模式
-			EnableDeferredDesignMode()
+			EnableDeferredDesignMode(m)
 			// 创建设计组件
 			newDesComp.SetParent(owner)
 			newDesComp.FormTab.SwitchComponentEditing(newDesComp)
@@ -273,7 +276,7 @@ func (m *FormTab) tabSheetOnShow(sender lcl.IObject) {
 		m.mainPage.Button().Font().SetColor(0xD47800)
 		m.RecoverComponentPropertyValue()
 		// 延迟设计模式: 属性恢复完成后统一开启设计模式
-		EnableDeferredDesignMode()
+		EnableDeferredDesignMode(m)
 		if perfDiag {
 			perfBenchAfterRecover(m)
 		}
@@ -423,8 +426,8 @@ func (m *FormTab) GetComponentCaptionName(component string) string {
 func (m *FormTab) designerOnPaint(control lcl.ICustomControl) {
 	control.SetOnPaint(func(sender lcl.IObject) {
 		m.drawGrid(control)
-		// 次选组件的选中边框与网格在同一画布绘制, 刷新只需一次 Invalidate
-		m.paintSelectionFrames(control)
+		// 次选边框与主选控制点绘制在页签级覆盖层(玻璃层)上,
+		// 画布自身仅负责网格(无窗口区域平台回退 paintContainerOverlays)。
 	})
 }
 

@@ -109,7 +109,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.SetName(designerForm.GetComponentCaptionName(compName))
 		comp.SetName(m.Name())
 		setBaseProp(comp, x, y)
-		m.drag = newDrag(designerForm.formDesignPage.formDesignScroll, consts.DsAll)
+		m.drag = newDrag(consts.DsAll)
 		m.drag.SetRelation(m)
 		return m
 	case consts.CtNonVisual:
@@ -124,7 +124,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.SetName(designerForm.GetComponentCaptionName(compName))
 		comp.SetName(m.Name())
 		SetDesignMode(m.objectNonWrap.icon)
-		m.drag = newDrag(designerForm.formDesignPage.formDesignScroll, consts.DsAll)
+		m.drag = newDrag(consts.DsAll)
 		m.drag.SetRelation(m)
 		m.objectNonWrap.SetImage()
 		return m
@@ -165,7 +165,7 @@ func GetDesignerComponent(designerForm *FormTab, x, y int32, className string) *
 		m.SetName(designerForm.GetComponentCaptionName(compName))
 		object.SetName(m.Name())
 		setBaseProp(object, x, y)
-		m.drag = newDrag(designerForm.formDesignPage.formDesignScroll, consts.DsAll)
+		m.drag = newDrag(consts.DsAll)
 		m.drag.SetRelation(m)
 		return m
 	}

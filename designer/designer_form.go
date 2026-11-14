@@ -99,8 +99,7 @@ func (m *FormTab) NewFormDesigner() {
 	formDesigner.AddComponentToList(m.FormRoot)
 
 	// 窗体拖拽
-	m.FormRoot.drag = newDrag(m.formDesignPage.formDesignScroll, consts.DsRightBottom)
-	m.FormRoot.drag.mustDS()
+	m.FormRoot.drag = newDrag(consts.DsRightBottom)
 	m.FormRoot.drag.SetRelation(m.FormRoot)
 }
 

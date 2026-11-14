@@ -34,6 +34,19 @@ var (
 	LogPath  string
 )
 
+// splitWriter 每个输出独立写入: 某一路失效(如宿主环境关闭了 stdout)时
+// 另一路仍能继续记录, 避免整体静默。
+type splitWriter struct {
+	writers []io.Writer
+}
+
+func (w *splitWriter) Write(p []byte) (int, error) {
+	for _, writer := range w.writers {
+		_, _ = writer.Write(p)
+	}
+	return len(p), nil
+}
+
 func init() {
 	getLogFilePath := func() string {
 		homeDir, _ := os.UserHomeDir()
@@ -51,15 +64,14 @@ func init() {
 	}
 	LogPath = getLogFilePath()
 	file, err := os.OpenFile(LogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		myLogger = logger.New(logger.Config{Level: logger.DebugLevel, Output: os.Stdout})
-	} else {
-		multiWriter := io.MultiWriter(os.Stdout, file)
-		myLogger = logger.New(logger.Config{
-			Level:  logger.DebugLevel,
-			Output: multiWriter,
-		})
+	writers := []io.Writer{os.Stdout}
+	if err == nil {
+		writers = append(writers, file)
 	}
+	myLogger = logger.New(logger.Config{
+		Level:  logger.DebugLevel,
+		Output: &splitWriter{writers: writers},
+	})
 	api.SetOnReleaseCallback(func() {
 		if file != nil {
 			_ = file.Close()

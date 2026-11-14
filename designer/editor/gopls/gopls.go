@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/energye/designer/pkg/logs"
+	"github.com/energye/lcl/tool/command"
 )
 
 // 请求超时与前端 pls_bridge.js 的常量成对约束：
@@ -68,6 +69,8 @@ func NewPLSClient(workspaceDir string) (*PLSClient, error) {
 	}
 	cmd := exec.Command(exe)
 	cmd.Dir = workspaceDir
+	// gopls 是控制台程序, 不隐藏会弹出命令行窗口并盖在主程序上
+	cmd.SysProcAttr = command.HideWindow(true)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

@@ -194,14 +194,36 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 // 由 EnableDeferredDesignMode 在属性恢复完成后统一开启。
 var deferredDesignInstances []uintptr
 
-// EnableDeferredDesignMode 为延迟设置设计模式的组件统一开启设计模式
-func EnableDeferredDesignMode() {
+// EnableDeferredDesignMode 为延迟设置设计模式的组件统一开启设计模式。
+// 设计模式切换改变组件的消息处理与渲染路径, 开启后失效设计画布与组件窗口,
+// 强制按设计模式重绘, 否则组件可能保持旧渲染状态不显示。
+func EnableDeferredDesignMode(formTab *FormTab) {
 	perfStart := time.Now()
 	for _, instance := range deferredDesignInstances {
 		SetComponentDesignMode(instance)
 	}
 	instances := len(deferredDesignInstances)
 	deferredDesignInstances = nil
+	if formTab != nil && instances > 0 {
+		if box := formTab.designerBox; box != nil && box.IsValid() {
+			box.Invalidate()
+		}
+		var walk func(comp *TDesigningComponent)
+		walk = func(comp *TDesigningComponent) {
+			for _, child := range comp.Child {
+				if child == nil {
+					continue
+				}
+				if ctrl := child.Control(); ctrl != nil && ctrl.IsValid() {
+					ctrl.Invalidate()
+				}
+				walk(child)
+			}
+		}
+		if formTab.FormRoot != nil {
+			walk(formTab.FormRoot)
+		}
+	}
 	if perfDiag && instances > 0 {
 		logs.Info("PERF EnableDeferredDesignMode instances:", instances, "cost:", time.Since(perfStart))
 	}
@@ -855,18 +877,12 @@ func (m *TDesigningComponent) FindNodeDataByNamePaths(property uiBean.TProperty)
 }
 
 func (m *TDesigningComponent) HideDesignHelpers() {
-	if m.drag != nil {
-		m.drag.Hide()
-	}
 	if m.page != nil && m.page.IsValid() {
 		m.page.Hide()
 	}
 }
 
 func (m *TDesigningComponent) ShowDesignHelpers() {
-	if m.drag != nil {
-		m.drag.Show()
-	}
 	if m.page != nil && m.page.IsValid() {
 		m.page.Show()
 	}

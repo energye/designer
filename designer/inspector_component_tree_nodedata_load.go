@@ -109,5 +109,6 @@ func (m *TDesigningComponent) Order(changeLevel consts.ChangeLevel) {
 	//		println("ControlIndex:", parent.GetControlIndex(child), child.Name())
 	//	}
 	//}
+	// 覆盖层(锚点/边框)绘制在置顶覆盖层上, 与组件 Z 序无关
 	triggerUIGeneration(m, nil, event.CodeGenUI)
 }

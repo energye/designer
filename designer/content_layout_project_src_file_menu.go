@@ -22,6 +22,7 @@ import (
 	"github.com/energye/designer/options/bean"
 	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/lcl"
+	"github.com/energye/lcl/tool/command"
 )
 
 // 源码文件右键菜单
@@ -236,6 +237,8 @@ func openFileWithDefaultApp(filePath string) {
 		cmd = exec.Command("xdg-open", filePath)
 	}
 	if cmd != nil {
+		// 隐藏子进程命令行窗口(cmd/open/xdg-open 均为控制台程序)
+		cmd.SysProcAttr = command.HideWindow(true)
 		cmd.Start()
 	}
 }

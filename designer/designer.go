@@ -15,10 +15,12 @@ package designer
 
 import (
 	"github.com/energye/designer/consts"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/lcl/api"
 	"github.com/energye/lcl/api/misc"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
+	"github.com/energye/lcl/types/colors"
 	"github.com/energye/lcl/types/messages"
 	"unsafe"
 )
@@ -109,18 +111,75 @@ func (m *TEngFormDesigner) RemoveComponentFormList(instance uintptr) {
 
 // message
 
-func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) {
-	//logs.Debug("Design Msg setCursor", message.Msg, sender.ToString())
-	//lcl.Screen.SetCursor(types.CrDefault)
-	//message.Result = 1
+// setCursor 设计模式 LM_SETCURSOR: 命中缩放控制点→设置缩放光标;
+// 未命中→恢复默认箭头。必须显式管理: LCL 对设计模式窗口跳过默认
+// 光标流程(WindowProcHelper.HandleSetCursor 的 csDesigning 分支),
+// 且不为 WM_SETCURSOR 调 DefWindowProc(类光标), 不接管则光标停留。
+// 光标经 Screen 全局立即生效(见 setOverlayCursor 注释),
+// 残留由 overlayCursorGuard(OnUserInput)兜底复位。
+// 始终返回 true(接管本消息, 阻止默认流程)。
+func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) bool {
+	formTab := m.formTab()
+	if formTab == nil {
+		return true
+	}
+	if comp := m.MouseDownComponent; comp != nil && comp.drag != nil && comp.drag.resizeDir >= 0 {
+		// 缩放过程中固定缩放光标
+		setOverlayCursor(comp.drag.resizeDir)
+		message.Result = 1
+		return true
+	}
+	if comp, dir, ok := formTab.dragHandleAt(m.GetMousePos()); ok && comp.drag != nil {
+		setOverlayCursor(dir)
+		message.Result = 1
+		return true
+	}
+	resetOverlayCursor()
+	message.Result = 1
+	return true
+}
+
+// formTab 返回设计器所属的设计窗体
+func (m *TEngFormDesigner) formTab() *FormTab {
+	if m.LookupRoot == nil {
+		return nil
+	}
+	return m.LookupRoot.FormTab
+}
+
+// messagePosToCanvas 将鼠标消息坐标(相对发送者控件客户区)换算为设计画布客户区坐标。
+// 换算 = 发送者客户区原点 - 画布客户区原点 + 消息坐标, 两者同为 LCL 坐标体系,
+// DPI 缩放/滚动位置下保持一致; 对任意发送者(组件/画布/滚动容器)均正确。
+func (m *TEngFormDesigner) messagePosToCanvas(sender lcl.IControl, X, Y int32) types.TPoint {
+	var so, co types.TPoint
+	if sender != nil && sender.IsValid() {
+		so = sender.ClientOrigin()
+	}
+	if root := m.LookupRoot; root != nil && root.Control() != nil && root.Control().IsValid() {
+		co = root.Control().ClientOrigin()
+	}
+	return types.TPoint{X: so.X - co.X + X, Y: so.Y - co.Y + Y}
 }
 
 func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMouse) {
 	//logs.Debug("Designer message mouseDown", message.Msg, sender.ToString(), message)
-	m.MouseDownPos = m.GetMousePos() // int32(*message.XPos()), int32(*message.YPos())
+	m.MouseDownPos = m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos()))
 	// 上一次按下的 MouseUp 可能被缩放控制点截获, 先兜底结束残留的移动拖拽状态
 	if m.MouseDownComponent != nil && m.MouseDownComponent.drag != nil {
 		m.MouseDownComponent.drag.cancelStaleDrag()
+	}
+	// 缩放控制点命中(控制点绘制在组件外侧画布上, 命中优先于组件):
+	// 只响应左键, 右键仍走组件菜单流程。
+	if formTab := m.formTab(); formTab != nil && message.Msg == messages.LM_LBUTTONDOWN {
+		comp, dir, hit := formTab.dragHandleAt(m.MouseDownPos)
+		logs.Debug("PERF mouseDown handleHit:", hit, "dir:", dir, "pos:", m.MouseDownPos.X, m.MouseDownPos.Y,
+			"sender:", sender.Name(), sender.ClassName())
+		if hit && comp.drag != nil {
+			m.MouseDownComponent = comp
+			comp.drag.beginResize(dir, m.MouseDownPos)
+			*message.Result() = 1
+			return
+		}
 	}
 	m.MouseDownComponent = m.GetComponentAtPos(m.MouseDownPos.X, m.MouseDownPos.Y)
 	shift, button := m.GetMouseMsgShift(message)
@@ -132,8 +191,10 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 		return
 	}
 	if m.MouseDownComponent != nil {
-		x, y := int32(*message.XPos()), int32(*message.YPos())
-		m.MouseDownComponent.OnMouseDown(sender, button, shift, x, y)
+		// 统一传递设计画布坐标: 与 mouseMove/组件边界(BoundsRect)同一坐标系,
+		// 避免按下(发送者相对坐标)与移动(画布坐标)混用导致组件跳位。
+		pos := m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos()))
+		m.MouseDownComponent.OnMouseDown(sender, button, shift, pos.X, pos.Y)
 	}
 	*message.Result() = 1
 }
@@ -142,14 +203,14 @@ func (m *TEngFormDesigner) mouseUp(sender lcl.IControl, message *types.TLMMouse)
 	//logs.Debug("Designer message mouseUp", message.Msg, sender.ToString())
 	shift, button := m.GetMouseMsgShift(message)
 	if button == types.MbLeft && m.band.down {
-		m.bandEnd(m.GetMousePos())
+		m.bandEnd(m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos())))
 		*message.Result() = 1
 		m.MouseDownComponent = nil
 		return
 	}
 	control := m.MouseDownComponent
 	if control == nil {
-		m.MouseUpPos = m.GetMousePos()
+		m.MouseUpPos = m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos()))
 		control = m.GetComponentAtPos(m.MouseUpPos.X, m.MouseUpPos.Y)
 	}
 	if control != nil {
@@ -175,19 +236,20 @@ func (m *TEngFormDesigner) mouseMove(sender lcl.IControl, message *types.TLMMous
 		return
 	}
 	if m.band.down {
+		bandPos := m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos()))
 		if message.Keys&consts.MK_LBUTTON == 0 {
 			// 鼠标按键已在窗口外释放，按当前位置结束框选
-			m.bandEnd(m.GetMousePos())
+			m.bandEnd(bandPos)
 		} else {
-			m.bandUpdate(m.GetMousePos())
+			m.bandUpdate(bandPos)
 		}
 		*message.Result() = 1
 		return
 	}
 	if m.MouseMoveComponent != nil {
 		shift, _ := m.GetMouseMsgShift(message)
-		x, y := int32(*message.XPos()), int32(*message.YPos())
-		m.MouseMoveComponent.OnMouseMove(sender, shift, x, y)
+		pos := m.messagePosToCanvas(sender, int32(*message.XPos()), int32(*message.YPos()))
+		m.MouseMoveComponent.OnMouseMove(sender, shift, pos.X, pos.Y)
 	}
 	*message.Result() = 1
 }
@@ -277,6 +339,81 @@ func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift type
 	return
 }
 
+// paintContainerOverlays 在每个设计模式组件自身绘制完成后叠加覆盖层:
+//   - 次选组件的选中边框
+//   - 主选组件的缩放控制点(仅画布控制点; 窗体根节点为窗体外侧面板, handleRects 为空)
+//
+// 绘制面 = 组件所属容器的画布 + 与覆盖层矩形重叠的其它组件表面(补丁):
+// 解决 Z 序遮挡 —— 被前面组件覆盖的后面的组件, 其锚点/边框绘制在前面的组件表面,
+// 依旧可见可命中(命中测试见 dragHandleAt, 优先于选中前面的组件)。
+// Z 序由绘制顺序自然解析: 最上层的组件最后绘制, 补丁最终落在最上层表面。
+// 每个表面重绘时自动重画补丁; 几何变化后由 invalidateOverlaySurfaces 失效相关表面。
+func (m *TEngFormDesigner) paintContainerOverlays(sender lcl.IControl, paint *types.TLMPaint) {
+	if paint == nil || paint.DC == 0 {
+		return
+	}
+	formTab := m.formTab()
+	if formTab == nil || formTab.selectionDragActive {
+		return
+	}
+	comp := formTab.GetComponentFormList(sender.Instance())
+	if comp == nil {
+		return
+	}
+	primary := formTab.PrimarySelected()
+	secondary := formTab.overlaySecondary()
+	if primary == nil && len(secondary) == 0 {
+		return
+	}
+	ctrl := comp.Control()
+	if ctrl == nil || !ctrl.IsValid() {
+		return
+	}
+	canvas := m.canvas
+	if canvas == nil || !canvas.IsValid() {
+		logs.Debug("PERF paintOverlays canvas invalid")
+		return
+	}
+	// 本组件客户区矩形(过滤不相交的覆盖层)
+	cw, ch := ctrl.ClientWidth(), ctrl.ClientHeight()
+	canvas.SetHandle(paint.DC)
+	brush := canvas.BrushToBrush()
+	brush.SetColor(designerSelectionColor)
+	for _, x := range secondary {
+		xctrl := x.Control()
+		if xctrl == nil || !xctrl.IsValid() {
+			continue
+		}
+		br := xctrl.BoundsRect()
+		off := formTab.overlayOffset(x, comp)
+		l, t := br.Left+off.X, br.Top+off.Y
+		w, h := br.Width(), br.Height()
+		if l >= cw || t >= ch || l+w <= 0 || t+h <= 0 {
+			continue
+		}
+		canvas.FillRectWithRect(types.Rect(l-1, t-1, l+w+1, t))     // top
+		canvas.FillRectWithRect(types.Rect(l-1, t+h, l+w+1, t+h+1)) // bottom
+		canvas.FillRectWithRect(types.Rect(l-1, t, l, t+h))         // left
+		canvas.FillRectWithRect(types.Rect(l+w, t, l+w+1, t+h))     // right
+	}
+	if primary != nil && primary.drag != nil {
+		rects := primary.drag.handleRects()
+		if len(rects) > 0 {
+			off := formTab.overlayOffset(primary, comp)
+			brush.SetColor(colors.ClBlack)
+			for _, item := range rects {
+				l, t := item.rect.Left+off.X, item.rect.Top+off.Y
+				w, h := item.rect.Width(), item.rect.Height()
+				if l >= cw || t >= ch || l+w <= 0 || t+h <= 0 {
+					continue
+				}
+				canvas.FillRectWithRect(types.Rect(l, t, l+w, t+h))
+			}
+		}
+	}
+	canvas.SetHandle(0)
+}
+
 // on event
 
 func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
@@ -291,7 +428,11 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 			paint := *(*types.TLMPaint)(unsafe.Pointer(dispatchMsg))
 			pintPtr := uintptr(unsafe.Pointer(&paint))
 			sender.Dispatch(&pintPtr)
-			//m.paint(sender, &paint)
+			// 覆盖层平台(Win32/GTK2/Qt5): 锚点/边框绘制在置顶覆盖层上, 无需画布补丁。
+			// 其余平台(Cocoa 无窗口区域实现): 容器画布绘制回退。
+			if !overlayPaneSupported() {
+				m.paintContainerOverlays(sender, &paint)
+			}
 		case messages.LM_LBUTTONDOWN, messages.LM_RBUTTONDOWN, messages.LM_LBUTTONDBLCLK:
 			key := (*types.TLMMouse)(unsafe.Pointer(dispatchMsg))
 			m.mouseDown(sender, key)
@@ -313,7 +454,10 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 		case messages.LM_CLOSEQUERY:
 			//logs.Debug("IsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 		case messages.LM_SETCURSOR:
-			m.setCursor(sender, message)
+			// 未命中控制点: 交给 LCL 默认光标流程(控件 Cursor 属性恢复箭头)
+			if !m.setCursor(sender, message) {
+				result = false
+			}
 		case messages.LM_CONTEXTMENU:
 			//println("IsDesignMsg CONTEXTMENU", message.Msg, sender.ToString(), sender.Name())
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))
@@ -506,4 +650,19 @@ func Init() {
 	//dependmod.InitDependencyModule()
 	// 提取所有启用的框架
 	//frameworks.ExtractFrameworks()
+}
+
+// initGlobalCursorGuard 注册锚点缩放光标残留兜底(需在 lcl.Application
+// 初始化后调用)。双通道复位: OnUserInput 每次用户输入即时复位(先于
+// 控件事件); 定时器 120ms 轮询覆盖不派发用户输入事件的窗口路径
+// (部分应用面板的鼠标移动不触发 OnUserInput)。
+func initGlobalCursorGuard() {
+	lcl.Application.SetOnUserInput(func(_ lcl.IObject, _ uint32) {
+		overlayCursorRestore()
+	})
+	cursorTimer := lcl.NewTimer(nil)
+	cursorTimer.SetInterval(120)
+	cursorTimer.SetOnTimer(func(lcl.IObject) {
+		overlayCursorRestore()
+	})
 }

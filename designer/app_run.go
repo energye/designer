@@ -35,6 +35,8 @@ func Run() {
 	logs.Println("TID:", api.MainThreadId(), "ENERGY Designer RUN")
 	//locales.SwitchLCLLang("de")
 	lcl.Application.Initialize()
+	// 锚点缩放光标残留兜底(需在 Application 初始化后注册)
+	initGlobalCursorGuard()
 	lcl.Application.SetTitle(config.DesignerConfig.Title)
 	lcl.Application.SetMainFormOnTaskBar(true)
 	lcl.Application.SetScaled(true)

@@ -291,10 +291,6 @@ func (m *FormTab) applyDesignerBounds(changes []designerBoundsChange) {
 	if !changed {
 		return
 	}
-	if m.primary != nil && m.primary.drag != nil {
-		m.primary.drag.Follow()
-		m.primary.drag.BringToFront()
-	}
 	m.syncSelectionFrames()
 	triggerUIGeneration(first, nil, event.CodeGenUI)
 	if m.formDesigner.Form.IsValid() {
