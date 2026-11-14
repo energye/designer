@@ -267,8 +267,12 @@ func initPanelCloseButton(topBox lcl.IWinControl, onClose func()) *wg.TButton {
 	})
 	btn.SetWidth(24)
 	btn.SetHeight(24)
-	btn.SetAlpha(0) // 无背景, 仅显示图标, 悬停切换高亮图标
-	btn.SetRadius(6)
+	// 背景与父面板一致, 仅显示关闭图标(悬停切换高亮图标)
+	bg := topBox.Color()
+	btn.SetDefaultColor(bg, bg)
+	btn.SetEnterColor(bg, bg)
+	btn.SetDownColor(bg, bg)
+	btn.SetRadius(0)
 	btn.SetAlign(types.AlRight)
 	btn.SetParent(topBox)
 	btn.SetBorderDirections(types.NewSet())
@@ -348,7 +352,16 @@ func SetStatusRightText(s string) {
 func (m *ContentLayout) boxReAlign() {
 	if !switchAutoContentLayoutAlign {
 		windowBr := MainWindow.ClientRect()
-		m.box.SetBounds(0, toolBarHeight, windowBr.Width(), windowBr.Height()-toolBarHeight)
+		width := windowBr.Width()
+		height := windowBr.Height() - toolBarHeight
+		// 最小化/窗口极端塌缩时 ClientRect 退化为 0 或负值,
+		// 退化边界会让 LCL 对齐器在约束面板(AlLeft/AlRight + MinWidth)间
+		// 反复震荡, 触发 InvalidatePreferredSize loop detected 弹窗;
+		// 跳过本次布局, 恢复正常尺寸后的 resize 事件会重新对齐
+		if width <= 0 || height <= 0 {
+			return
+		}
+		m.box.SetBounds(0, toolBarHeight, width, height)
 	}
 }
 

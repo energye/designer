@@ -112,12 +112,13 @@ func (m *TEngFormDesigner) RemoveComponentFormList(instance uintptr) {
 // message
 
 // setCursor 设计模式 LM_SETCURSOR: 命中缩放控制点→设置缩放光标;
-// 未命中→恢复默认箭头。必须显式管理: LCL 对设计模式窗口跳过默认
-// 光标流程(WindowProcHelper.HandleSetCursor 的 csDesigning 分支),
-// 且不为 WM_SETCURSOR 调 DefWindowProc(类光标), 不接管则光标停留。
+// 未命中→统一箭头光标(显式 CrArrow)。必须显式管理: LCL 对设计模式窗口
+// 跳过默认光标流程(WindowProcHelper.HandleSetCursor 的 csDesigning 分支),
+// 且 WM_SETCURSOR 会经 DefWindowProc 向父窗口链转发, 转发到非设计态
+// 父窗口后 LCL 默认光标流程解析到实际控件并套用其 Cursor 属性
+// (输入框=I-beam), 显式 CrArrow 使转发链各级直接落箭头;
 // 光标经 Screen 全局立即生效(见 setOverlayCursor 注释),
-// 残留由 overlayCursorGuard(OnUserInput)兜底复位。
-// 始终返回 true(接管本消息, 阻止默认流程)。
+// 离开设计画布后由 overlayCursorRestore 兜底复位为 CrDefault。
 func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessage) bool {
 	formTab := m.formTab()
 	if formTab == nil {
@@ -134,7 +135,15 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 		message.Result = 1
 		return true
 	}
-	resetOverlayCursor()
+	// 非控制点区域统一箭头光标: 显式 CrArrow 而非 CrDefault。
+	// WM_SETCURSOR 即便被设计钩子接管(Result=1), Win32 层仍会经
+	// DefWindowProc 向父窗口链转发; 转发到第一个非设计态父窗口后,
+	// LCL 默认光标流程用 ControlAtPos 解析到鼠标下实际控件并套用其
+	// Cursor 属性 —— 输入框即 I-beam, 这是设计画布出现 I 形指针的原因。
+	// Screen 置为 CrArrow 后, 转发链各级 HandleSetCursor 读到
+	// RealCursor=CrArrow 直接落箭头, 不再解析控件 Cursor 属性;
+	// 鼠标离开设计画布后由 overlayCursorRestore 兜底复位为 CrDefault。
+	lcl.Screen.SetCursor(types.CrArrow)
 	message.Result = 1
 	return true
 }
@@ -454,10 +463,9 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 		case messages.LM_CLOSEQUERY:
 			//logs.Debug("IsDesignMsg CLOSEQUERY", message.Msg, isDesign, sender.ToString())
 		case messages.LM_SETCURSOR:
-			// 未命中控制点: 交给 LCL 默认光标流程(控件 Cursor 属性恢复箭头)
-			if !m.setCursor(sender, message) {
-				result = false
-			}
+			// 命中缩放控制点→缩放光标; 未命中→统一箭头(CrArrow, 见 setCursor)
+			m.setCursor(sender, message)
+			result = true
 		case messages.LM_CONTEXTMENU:
 			//println("IsDesignMsg CONTEXTMENU", message.Msg, sender.ToString(), sender.Name())
 			contextMenu := (*types.TLMContextMenu)(unsafe.Pointer(dispatchMsg))

@@ -474,6 +474,13 @@ func (m *drag) alignmentTargets(comp *TDesigningComponent) designerAlignment {
 		if sibling == nil || sibling == comp || sibling.ComponentType == consts.CtNonVisual {
 			continue
 		}
+		// 随拖移动的组件(当前选中集及其子树)不作为吸附目标:
+		// 组内组件的边缘随拖动同步移动, 吸附差值随已应用位置漂移,
+		// 在网格中段会反复进出对齐阈值, 造成组件上下窜
+		if sibling.FormTab != nil &&
+			(sibling.FormTab.IsComponentSelected(sibling) || sibling.FormTab.HasSelectedAncestor(sibling)) {
+			continue
+		}
 		control := sibling.Control()
 		if control == nil || !control.IsValid() || !control.Visible() {
 			continue

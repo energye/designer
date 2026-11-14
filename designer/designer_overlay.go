@@ -325,22 +325,47 @@ func resetOverlayCursor() {
 // overlayCursorRestore 光标兜底复位: 缩放拖拽中保持方向光标;
 // 否则 Screen 光标为缩放样式且鼠标不在缩放控制点上 → 恢复默认箭头。
 // 悬停在控制点上时不动作(悬停设置由覆盖层/设计钩子的 mousemove 负责)。
+// 设计画布箭头(CrArrow, 见 TEngFormDesigner.setCursor)在鼠标离开
+// 设计画布客户区后同样复位为默认, 避免全局箭头影响设计器之外
+// 的光标(如代码编辑器的 I-beam)。
 func overlayCursorRestore() {
 	if atomic.LoadInt32(&overlayCursorResize) >= 0 {
 		return // 缩放拖拽进行中: 光标固定方向样式
 	}
-	if !isOverlayResizeCursor(lcl.Screen.Cursor()) {
+	cur := lcl.Screen.Cursor()
+	if cur == types.CrDefault {
 		return
 	}
 	tab := activeFormTab()
 	pos, ok := overlayGuardMousePos(tab)
-	if !ok {
-		lcl.Screen.SetCursor(types.CrDefault)
+	if isOverlayResizeCursor(cur) {
+		if !ok {
+			lcl.Screen.SetCursor(types.CrDefault)
+			return
+		}
+		if _, _, hit := tab.dragHandleAt(pos); !hit {
+			lcl.Screen.SetCursor(types.CrDefault)
+		}
 		return
 	}
-	if _, _, hit := tab.dragHandleAt(pos); !hit {
-		lcl.Screen.SetCursor(types.CrDefault)
+	// 设计画布箭头(CrArrow): 鼠标不在设计画布客户区内时复位为默认
+	if cur == types.CrArrow {
+		if !ok || !posInDesignCanvas(tab, pos) {
+			lcl.Screen.SetCursor(types.CrDefault)
+		}
 	}
+}
+
+// posInDesignCanvas pos(设计画布客户区坐标)是否在设计画布客户区内
+func posInDesignCanvas(tab *FormTab, pos types.TPoint) bool {
+	if tab == nil || tab.FormRoot == nil {
+		return false
+	}
+	root := tab.FormRoot.Control()
+	if root == nil || !root.IsValid() {
+		return false
+	}
+	return pos.X >= 0 && pos.Y >= 0 && pos.X < root.ClientWidth() && pos.Y < root.ClientHeight()
 }
 
 // isOverlayResizeCursor 是否为本设计器设置的缩放方向光标
