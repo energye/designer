@@ -134,6 +134,12 @@ func recoverDesignerComponentProperty(component *TDesigningComponent) {
 		propNodeData := component.FindNodeDataByNamePaths(property)
 		if propNodeData != nil {
 			if propNodeData.Type() == consts.PdtCheckBoxList {
+				// set 属性值必须是逗号分隔字符串(TEditLinkNodeData.SetEditValue
+				// 按 string 断言), 数组等异常格式先归一化, 否则 panic 会中断
+				// 整个窗体恢复并连锁触发后续空指针
+				if _, ok := property.Value.(string); !ok {
+					property.Value = tool.SetToString(property.Value)
+				}
 				// 转换 set 集合为 hashSet
 				set := tool.SetToHashSet(property.Value)
 				for _, checkBox := range propNodeData.EditNodeData.CheckBoxValue {

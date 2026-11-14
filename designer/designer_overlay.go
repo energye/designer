@@ -132,7 +132,9 @@ func (m *FormTab) overlayPaneMouseDown(button types.TMouseButton, shift types.TS
 		return
 	}
 	if comp, dir, ok := m.dragHandleAt(pos); ok && comp.drag != nil {
-		comp.drag.beginResize(dir, pos)
+		// 覆盖层按下即捕获鼠标, 缩放期间鼠标事件不依赖组件设计模式路由,
+		// 可安全摘除设计模式走快速 SetBounds(见 beginResize)
+		comp.drag.beginResize(dir, pos, true)
 		return
 	}
 	// 次选边框上的点击: 转发组件选中 (Ctrl 切换 / Shift 追加 / 无修饰单选)
@@ -215,12 +217,6 @@ func (m *FormTab) updateOverlayPane() {
 	if !overlayPaneSupported() {
 		return
 	}
-	logs.Debug("PERF updateOverlayPane enter primary:", func() any {
-		if m.primary != nil {
-			return m.primary.Name()
-		}
-		return "nil"
-	}(), "dragActive:", m.selectionDragActive)
 	m.mustOverlayPane()
 	if m.overlayPane == nil || !m.overlayPane.IsValid() {
 		return
@@ -240,11 +236,14 @@ func (m *FormTab) updateOverlayPane() {
 	}
 	if !m.overlayPane.Visible() {
 		m.overlayPane.SetVisible(true)
+		// Z 序只在重新显示时提升: 拖动/缩放期间覆盖层 Z 序不变,
+		// 每帧 BringToFront 会触发一次 SetWindowPos 系统调用与 Z 序变更,
+		// 是缩放/框选每帧固定开销之一。
+		m.overlayPane.BringToFront()
 	}
 	// 重新显示前复位光标: 上一次悬停/缩放可能残留方向光标,
 	// 鼠标位置未变时不会触发 mousemove 设置, 先清一次避免错样。
 	resetOverlayCursor()
-	m.overlayPane.BringToFront()
 	paneOff := m.canvasToPaneOffset()
 	paneRects := make([]types.TRect, 0, len(glyphs))
 	for _, g := range glyphs {
@@ -253,7 +252,6 @@ func (m *FormTab) updateOverlayPane() {
 	}
 	applyOverlayRegion(m.overlayPane, paneRects)
 	m.overlayPane.Invalidate()
-	logs.Debug("PERF updateOverlayPane glyphs:", len(glyphs))
 }
 
 // overlayPaneSupported 当前平台是否支持覆盖层窗口区域。
@@ -306,12 +304,17 @@ func applyOverlayRegion(p lcl.IPanel, rects []types.TRect) {
 // 而仍悬停在锚点上时覆盖层 mousemove 会随后重新设置方向光标。
 var overlayCursorResize int32 = -1
 
-// setOverlayCursor 设置锚点缩放光标(全局, 立即生效)
+// setOverlayCursor 设置锚点缩放光标(全局, 立即生效)。
+// WM_SETCURSOR 在每次 mousemove 都会到达, 仅在方向样式变化时调用
+// Windows.SetCursor, 避免重复系统调用。
 func setOverlayCursor(dir int) {
-	if cur := resizeCursor(dir); cur != types.CrDefault {
-		lcl.Screen.SetCursor(cur)
-	} else {
+	cur := resizeCursor(dir)
+	if cur == types.CrDefault {
 		resetOverlayCursor()
+		return
+	}
+	if lcl.Screen.Cursor() != cur {
+		lcl.Screen.SetCursor(cur)
 	}
 }
 

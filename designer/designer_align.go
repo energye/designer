@@ -281,7 +281,7 @@ func (m *FormTab) applyDesignerBounds(changes []designerBoundsChange) {
 		control.SetWidth(change.rect.Width())
 		control.SetHeight(change.rect.Height())
 		actual := control.BoundsRect()
-		if comp.SyncBoundsToProperties(actual) {
+		if comp.SyncBoundsToProperties(actual, true) {
 			changed = true
 			if first == nil {
 				first = comp

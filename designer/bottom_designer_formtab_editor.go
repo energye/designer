@@ -504,6 +504,11 @@ func (m *TFormDesignPage) syncRulers() {
 	if m.formTab.formDesigner == nil || m.formTab.formDesigner.Form == nil {
 		return
 	}
+	// 窗体页签初始化被异常中断(如恢复布局 panic)时滚动容器可能尚未创建,
+	// 定时器/异步调用仍会到达这里, 无守卫会连锁空指针
+	if m.formDesignScroll == nil || !m.formDesignScroll.IsValid() {
+		return
+	}
 	form := m.formTab.formDesigner.Form
 	x := m.formDesignScroll.HorzScrollBar().Position()
 	y := m.formDesignScroll.VertScrollBar().Position()

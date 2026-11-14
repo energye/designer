@@ -341,7 +341,9 @@ func (m *TDesigningComponent) OnMouseUp(sender lcl.IObject, button types.TMouseB
 // 异步或乱序写入会让 .ui 捕获到旧的坐标。
 // 注意: 属性列表(PropertyList)是序列化数据源, 组件从未成为主选时 page 为空,
 // 此时仍必须写属性数据, 只跳过属性面板刷新, 否则整组拖动会丢失非主选组件坐标。
-func (m *TDesigningComponent) SyncPointToProperties(x, y int32) bool {
+// repaintPanel 控制是否刷新属性面板显示: 数据每步照常写入,
+// 拖动/缩放中可传节流标志减少面板重绘, 结束时传 true 补最终值。
+func (m *TDesigningComponent) SyncPointToProperties(x, y int32, repaintPanel bool) bool {
 	var (
 		left *vtedit.TEditNodeData
 		top  *vtedit.TEditNodeData
@@ -362,7 +364,7 @@ func (m *TDesigningComponent) SyncPointToProperties(x, y int32) bool {
 	}
 	left.SetEditValue(x)
 	top.SetEditValue(y)
-	if m.propertyTree != nil && m.propertyTree.IsValid() {
+	if repaintPanel && m.propertyTree != nil && m.propertyTree.IsValid() {
 		m.propertyTree.InvalidateNode(left.AffiliatedNode)
 		m.propertyTree.InvalidateNode(top.AffiliatedNode)
 	}
@@ -372,7 +374,7 @@ func (m *TDesigningComponent) SyncPointToProperties(x, y int32) bool {
 // 更新节点数据, Left Top，并触发 UI 生成。
 // 只在操作结束时调用，避免拖动过程中反复写 .ui。
 func (m *TDesigningComponent) UpdateNodeDataPoint(x, y int32) {
-	if m.SyncPointToProperties(x, y) {
+	if m.SyncPointToProperties(x, y, true) {
 		triggerUIGeneration(m, nil, event.CodeGenUI)
 	}
 }
@@ -405,7 +407,8 @@ func (m *TDesigningComponent) SyncSizeToProperties(w, h int32) bool {
 // SyncBoundsToProperties 把控件实时边界同步到属性列表，不触发 UI 生成。
 // 构建前 flush 用它兜底：快速释放/丢失 MouseUp 时，属性可能落后于控件真实边界。
 // 与 SyncPointToProperties 相同: page 为空时仍写属性数据, 只跳过面板刷新。
-func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
+// repaintPanel 控制是否刷新属性面板显示(拖动/缩放中可节流, 见 SyncPointToProperties)。
+func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect, repaintPanel bool) bool {
 	var (
 		left, top     *vtedit.TEditNodeData
 		width, height *vtedit.TEditNodeData
@@ -422,7 +425,7 @@ func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
 			height = prop
 		}
 	}
-	treeValid := m.propertyTree != nil && m.propertyTree.IsValid()
+	treeValid := repaintPanel && m.propertyTree != nil && m.propertyTree.IsValid()
 	changed := false
 	if left != nil && top != nil {
 		left.SetEditValue(br.Left)
@@ -448,7 +451,7 @@ func (m *TDesigningComponent) SyncBoundsToProperties(br types.TRect) bool {
 // 更新节点数据, Left/Top/Width/Height。
 // 从左侧/上侧拖拽缩放时控件位置也会变化，必须与宽高一起写回属性列表。
 func (m *TDesigningComponent) UpdateNodeDataBounds(br types.TRect) {
-	if m.SyncBoundsToProperties(br) {
+	if m.SyncBoundsToProperties(br, true) {
 		triggerUIGeneration(m, nil, event.CodeGenUI)
 	}
 }

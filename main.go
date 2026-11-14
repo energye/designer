@@ -56,9 +56,13 @@ func main() {
 	api.SetDebug(true)
 	//go tool pprof http://localhost:8080/debug/pprof/profile?seconds=15
 	//go http.ListenAndServe(":8080", nil)
-	logs.Level = logs.LevelDebug
-	//logs.Level = logs.LevelInfo
-	//logs.Level = logs.LevelError
+	// 日志默认 Info: Debug 级别会在拖动/缩放/框选期间每帧同步写 stdout+文件,
+	// 叠加在画布操作的关键路径上造成卡顿, 需要调试时用 DESIGNER_LOG=debug 打开
+	if os.Getenv("DESIGNER_LOG") == "debug" {
+		logs.Level = logs.LevelDebug
+	} else {
+		logs.Level = logs.LevelInfo
+	}
 	libname.LibName = frameworks.ExtractLibrary()
 	lcl.Init()
 	logs.Debug(strings.Join(os.Args, " "))

@@ -28,6 +28,10 @@ import (
 
 var dragBorder int32 = 6
 
+// dragVisualSyncInterval 拖动/缩放中纯视觉信息(跟随气泡/状态栏/属性面板重绘)
+// 的刷新节流间隔。属性数据源每步照常写入, 只有视觉刷新被节流。
+const dragVisualSyncInterval = 40 * time.Millisecond
+
 // 拖拽控制
 // 缩放控制点绘制在页签级覆盖层(玻璃层, 见 designer_overlay.go):
 // 普通组件(DsAll)与窗体根节点(DsRightBottom)的控制点/次选边框都在覆盖层上,
@@ -52,6 +56,10 @@ type drag struct {
 	lastResizeL, lastResizeT, lastResizeR, lastResizeB int32
 	// 多选拖动时其余选中组件的起始边界
 	groupItems []dragGroupItem
+	// 缩放期间被摘除设计模式的实例(主选组件及其子树), 结束时统一恢复
+	resizeStripped []uintptr
+	// 视觉信息刷新节流时间戳(跟随气泡/状态栏/属性面板重绘)
+	lastVisualSync time.Time
 }
 
 type dragGroupItem struct {
@@ -109,6 +117,61 @@ func (m *drag) restoreGroupDesignModes() {
 	}
 }
 
+// stripResizeDesignModes 缩放开始时摘除主选组件及其子树的设计模式。
+// 缩放的鼠标事件由覆盖层玻璃层接收(按下即捕获), 不依赖组件设计模式路由;
+// 设计模式下组件每次真实 bounds 变更都走消息通知慢路径(单次 20ms+),
+// 容器缩放还会连带每个锚定子组件踩慢路径 —— 摘除后整棵子树走快速
+// SetBounds, 结束时由 restoreResizeDesignModes 统一恢复。
+// 窗体根节点不摘除: 它就是设计画布, 摘除会改变画布的消息路由与绘制路径。
+func (m *drag) stripResizeDesignModes() {
+	if m.relation == nil || m.relation.FormTab == nil || m.relation == m.relation.FormTab.FormRoot {
+		return
+	}
+	var strip func(comp *TDesigningComponent)
+	strip = func(comp *TDesigningComponent) {
+		if instance := comp.Instance(); instance != 0 {
+			StripComponentDesignMode(instance)
+			m.resizeStripped = append(m.resizeStripped, instance)
+		}
+		if ctrl := comp.Control(); ctrl != nil && ctrl.IsValid() {
+			// 渲染路径切换后强制重绘一次, 避免保留设计模式的旧渲染状态
+			ctrl.Invalidate()
+		}
+		for _, child := range comp.Child {
+			strip(child)
+		}
+	}
+	strip(m.relation)
+}
+
+// restoreResizeDesignModes 恢复缩放期间被摘除设计模式的组件(所有结束路径)。
+func (m *drag) restoreResizeDesignModes() {
+	if len(m.resizeStripped) == 0 {
+		return
+	}
+	for _, instance := range m.resizeStripped {
+		RestoreComponentDesignMode(instance)
+	}
+	m.resizeStripped = m.resizeStripped[:0]
+	if m.relation != nil && m.relation.FormTab != nil {
+		if box := m.relation.FormTab.designerBox; box != nil && box.IsValid() {
+			box.Invalidate()
+		}
+	}
+}
+
+// visualSyncDue 视觉信息刷新节流: 到间隔返回 true。
+// 跟随气泡/状态栏/属性面板重绘在拖动中按间隔刷新即可,
+// 最终值在拖拽结束路径上强制补一次。
+func (m *drag) visualSyncDue() bool {
+	now := time.Now()
+	if now.Sub(m.lastVisualSync) < dragVisualSyncInterval {
+		return false
+	}
+	m.lastVisualSync = now
+	return true
+}
+
 // cancelStaleDrag 结束可能残留的移动拖拽状态。
 // MouseUp 被缩放控制点截获时 OnMouseUp 不会执行, isDown/groupItems/设计模式摘除
 // 会一直残留, 后续 mousemove 会驱动陈旧拖拽移动整组组件。
@@ -117,6 +180,8 @@ func (m *drag) cancelStaleDrag() {
 		return
 	}
 	m.restoreGroupDesignModes()
+	// 缩放被中断(MouseUp 被截获/失焦)时同样恢复被摘除设计模式的组件
+	m.restoreResizeDesignModes()
 	m.groupItems = m.groupItems[:0]
 	m.moved = false
 	m.isDown = false
@@ -205,12 +270,15 @@ func (m *drag) handleRects() []dragHandleRect {
 	return rects
 }
 
-// beginResize 从画布控制点命中开始缩放, pos 为设计窗体客户区坐标
-func (m *drag) beginResize(dir int, pos types.TPoint) {
+// beginResize 开始缩放, pos 为设计窗体客户区坐标。
+// fromOverlay 表示缩放从覆盖层玻璃层锚点按下(Win32/GTK2/Qt5 常规路径):
+// 此时鼠标事件被覆盖层捕获, 不依赖组件设计模式路由, 可安全摘除设计模式
+// 走快速 SetBounds; 画布回退路径(Cocoa/覆盖层不可见)保持原行为。
+func (m *drag) beginResize(dir int, pos types.TPoint, fromOverlay bool) {
 	if m.relation == nil {
 		return
 	}
-	logs.Debug("PERF beginResize dir:", dir, "pos:", pos.X, pos.Y)
+	logs.Debug("PERF beginResize dir:", dir, "pos:", pos.X, pos.Y, "fromOverlay:", fromOverlay)
 	m.resizeDir = dir
 	atomic.StoreInt32(&overlayCursorResize, int32(dir))
 	m.dx, m.dy = pos.X, pos.Y
@@ -219,6 +287,10 @@ func (m *drag) beginResize(dir int, pos types.TPoint) {
 	m.lastResizeL, m.lastResizeT, m.lastResizeR, m.lastResizeB = br.Left, br.Top, br.Right, br.Bottom
 	m.isDown = false
 	m.moved = false
+	if fromOverlay {
+		// 缩放主路径: 摘除主选组件子树设计模式, applyResize 走快速 SetBounds
+		m.stripResizeDesignModes()
+	}
 	if m.relation.FormTab != nil {
 		m.relation.FormTab.hideGuides()
 	}
@@ -370,13 +442,17 @@ func (m *drag) applyResize(shift types.TShiftState, X, Y int32) {
 	if !m.moved && (br.Left != m.dcx || br.Top != m.dcy || br.Width() != m.dcw || br.Height() != m.dch) {
 		m.moved = true
 	}
+	// 视觉信息(气泡/状态栏/属性面板重绘)按节流间隔刷新, 属性数据每步照常写入
+	sync := m.visualSyncDue()
 	// 缩放中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
-	m.relation.SyncBoundsToProperties(br)
+	m.relation.SyncBoundsToProperties(br, sync)
 	// 覆盖层窗口(锚点绘制于其上)跟随主选组件边界更新区域与重绘
 	m.relation.FormTab.updateOverlayPane()
-	msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
-	message.Follow(msgContent)
-	m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
+	if sync {
+		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", br.Left, br.Top, br.Width(), br.Height())
+		message.Follow(msgContent)
+		m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
+	}
 }
 
 const designerAlignThreshold = 5
@@ -670,11 +746,14 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 			// 拖动期间隐藏次选边框，MouseUp 时统一恢复一次。
 			sender.FormTab.beginSelectionDrag()
 		}
-		msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
-		message.Follow(msgContent)
-		sender.SetStatusText(actual.Left, actual.Top, actual.Width(), actual.Height())
-		// 拖动中只刷新属性面板，不触发 uigen，避免 .ui 在鼠标未松开时落盘。
-		sender.SyncPointToProperties(actual.Left, actual.Top)
+		// 视觉信息(气泡/状态栏/属性面板重绘)按节流间隔刷新, 属性数据每步照常写入
+		sync := m.visualSyncDue()
+		sender.SyncPointToProperties(actual.Left, actual.Top, sync)
+		if sync {
+			msgContent := fmt.Sprintf("X: %v Y: %v\nW: %v H: %v", actual.Left, actual.Top, actual.Width(), actual.Height())
+			message.Follow(msgContent)
+			sender.SetStatusText(actual.Left, actual.Top, actual.Width(), actual.Height())
+		}
 	}
 }
 
@@ -682,14 +761,11 @@ func (m *drag) OnMouseMove(sender *TDesigningComponent, shift types.TShiftState,
 func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButton, shift types.TShiftState, X int32, Y int32) {
 	logs.Debug("OnMouseDown 设计组件", sender.ClassName())
 	m.relation.mustComponentPropertyPage()
-	// placeComponent 需要点击点相对组件父容器客户区的坐标: 画布坐标减去组件画布偏移
-	px, py := X, Y
-	if sctrl := sender.Control(); sctrl != nil && sctrl.IsValid() {
-		off := sender.FormTab.overlayOffset(sender, sender.FormTab.FormRoot)
-		px -= off.X
-		py -= off.Y
-	}
-	if !sender.FormTab.placeComponent(sender, px, py) {
+	// placeComponent 统一接收设计画布客户区坐标, 放置目标(owner)客户区坐标
+	// 的换算在 placeComponent 内部完成: 新组件 SetParent(owner) 后 Left/Top
+	// 相对 owner 客户区。此前在这里减 sender 父容器偏移漏掉了 sender 自身
+	// 位置, 组件放进容器时坐标按画布解释, 子组件跑到容器右下。
+	if !sender.FormTab.placeComponent(sender, X, Y) {
 		formTab := sender.FormTab
 		if sender.ComponentType != consts.CtForm {
 			// Ctrl 切换选中, Shift 追加选中; 无修饰键时保持已有多选否则单选
@@ -762,7 +838,11 @@ func (m *drag) finishResize() {
 	if m.moved {
 		br := m.relation.BoundsRect()
 		m.relation.UpdateNodeDataBounds(br)
+		// 状态栏/气泡在拖拽中被节流, 结束时补一次最终值(气泡随后隐藏)
+		m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
 	}
+	// 恢复缩放期间被摘除设计模式的主选组件子树
+	m.restoreResizeDesignModes()
 	m.resizeDir = -1
 	m.moved = false
 	atomic.StoreInt32(&overlayCursorResize, -1)

@@ -130,6 +130,13 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 		message.Result = 1
 		return true
 	}
+	// 框选进行中: 光标固定箭头, 跳过控制点命中测试 —— 框选时每条
+	// WM_SETCURSOR 都省掉 GetMousePos/dragHandleAt 的 cgo 往返。
+	if m.band.down {
+		setArrowCursor()
+		message.Result = 1
+		return true
+	}
 	if comp, dir, ok := formTab.dragHandleAt(m.GetMousePos()); ok && comp.drag != nil {
 		setOverlayCursor(dir)
 		message.Result = 1
@@ -143,9 +150,16 @@ func (m *TEngFormDesigner) setCursor(sender lcl.IControl, message *types.TLMessa
 	// Screen 置为 CrArrow 后, 转发链各级 HandleSetCursor 读到
 	// RealCursor=CrArrow 直接落箭头, 不再解析控件 Cursor 属性;
 	// 鼠标离开设计画布后由 overlayCursorRestore 兜底复位为 CrDefault。
-	lcl.Screen.SetCursor(types.CrArrow)
+	setArrowCursor()
 	message.Result = 1
 	return true
+}
+
+// setArrowCursor 设计画布统一箭头光标(变化时才调用系统, 见 setCursor 注释)
+func setArrowCursor() {
+	if lcl.Screen.Cursor() != types.CrArrow {
+		lcl.Screen.SetCursor(types.CrArrow)
+	}
 }
 
 // formTab 返回设计器所属的设计窗体
@@ -185,7 +199,9 @@ func (m *TEngFormDesigner) mouseDown(sender lcl.IControl, message *types.TLMMous
 			"sender:", sender.Name(), sender.ClassName())
 		if hit && comp.drag != nil {
 			m.MouseDownComponent = comp
-			comp.drag.beginResize(dir, m.MouseDownPos)
+			// 画布回退路径(Cocoa/覆盖层不可见): 鼠标消息依赖设计模式路由,
+			// 不摘除设计模式, 保持原行为
+			comp.drag.beginResize(dir, m.MouseDownPos, false)
 			*message.Result() = 1
 			return
 		}

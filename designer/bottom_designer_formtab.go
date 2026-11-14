@@ -162,6 +162,7 @@ func (m *FormTab) SwitchComponentEditing(targetComp *TDesigningComponent) {
 }
 
 // 放置设计组件到设计面板或父组件容器
+// x, y 为设计画布客户区坐标(与拖动/缩放同一坐标系)
 func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 	// 放置设计组件
 	isAcceptsControl := false
@@ -173,6 +174,27 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 		SetStatusCenterText("-")
 		logs.Debug("选中设计组件:", selectComponent.name)
 		m.SwitchComponentEditing(m.FormRoot)
+
+		// 新组件 SetParent(owner) 后 Left/Top 相对 owner 客户区,
+		// 传入前先把画布坐标换算到 owner 客户区, 否则组件放进容器时
+		// 按画布坐标解释, 出现在容器右下(偏移=容器在画布中的位置)。
+		// owner 为窗体根节点时两者原点重合, 无需换算。
+		if owner != nil && owner != m.FormRoot {
+			if octrl := owner.Control(); octrl != nil && octrl.IsValid() {
+				if rctrl := m.FormRoot.Control(); rctrl != nil && rctrl.IsValid() {
+					ro, oo := rctrl.ClientOrigin(), octrl.ClientOrigin()
+					x += ro.X - oo.X
+					y += ro.Y - oo.Y
+				}
+			}
+			// 点击落在容器边框/bevel 外缘时换算结果可能为负, 夹到客户区内
+			if x < 0 {
+				x = 0
+			}
+			if y < 0 {
+				y = 0
+			}
+		}
 
 		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
 			// 交互放置的组件立即开启设计模式
