@@ -217,7 +217,7 @@ func recoverDesignerComponentProperty(component *TDesigningComponent) {
 	}
 }
 
-// anyToInt32 将布局文件中的数值属性值转为 int32
+// anyToInt32 将布局文件/内存属性值中的数值转为 int32
 func anyToInt32(v any) int32 {
 	switch x := v.(type) {
 	case float64:

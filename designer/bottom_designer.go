@@ -252,6 +252,8 @@ func (m *Designer) ActiveFormTab(tab *FormTab) {
 	}
 	// 设为设计窗体
 	tab.IsDesigner = true
+	// 撤销/恢复按钮跟随当前页签的快照栈状态
+	updateUndoRedoUI()
 	// 隐藏过的窗体页签必须连顶部按钮一起恢复，否则只会显示内容区。
 	if formTabNeedsRestore(tab.State) {
 		tab.ShowTabPage()

@@ -52,20 +52,21 @@ func (m *TNonVisualComponentWrap) Free() {
 	}
 }
 
-func (m *TNonVisualComponentWrap) TextFollowHide() {
-	//m.text.SetVisible(false) // 注释: 因为需要一个中间组件才起作用
-	m.text.SetCaption("") // 设计模式使用空字串来隐藏
-}
-
 func (m *TNonVisualComponentWrap) SetImage() {
 	m.icon.SetImageIndex(m.comp.IconIndex())
 }
 
 func (m *TNonVisualComponentWrap) TextFollowShow() {
+	if m.icon == nil || !m.icon.IsValid() || m.text == nil || !m.text.IsValid() {
+		return
+	}
 	caption := m.comp.Name()
 	m.text.SetCaption(caption)
 	br := m.icon.BoundsRect()
-	textWidth := m.text.Canvas().TextWidthWithStr(caption)
+	textWidth := int32(0)
+	if canvas := m.text.Canvas(); canvas != nil && canvas.IsValid() {
+		textWidth = canvas.TextWidthWithStr(caption)
+	}
 	x := br.Left + br.Width()/2
 	y := br.Top + br.Height()
 	m.text.SetLeft(x - textWidth/2)

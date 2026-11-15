@@ -44,6 +44,26 @@ func (m *FormTab) NewFormDesigner() {
 	// 创建组件属性树
 	m.FormRoot.mustComponentPropertyPage()
 
+	// 设计模式边框底板: 先于设计窗体创建(同为滚动容器子控件, 创建序靠前 Z 序在后),
+	// 窗体覆盖底板中部, 四周露出环带+常驻抓手, 标识设计中的窗体边界
+	frame := lcl.NewPanel(m.formDesignPage.formDesignScroll)
+	frame.SetParent(m.formDesignPage.formDesignScroll)
+	frame.SetBevelOuter(types.BvNone)
+	frame.SetColor(designerFrameBgColor)
+	frame.SetDoubleBuffered(true)
+	frame.SetOnPaint(func(sender lcl.IObject) {
+		m.paintDesignFrame(frame)
+	})
+	frame.SetOnMouseDown(func(sender lcl.IObject, button types.TMouseButton, shift types.TShiftState, X, Y int32) {
+		// 点击设计边框/抓手: 选中窗体根节点(与 Delphi 点击窗体边框选中窗体一致)
+		if button == types.MbLeft {
+			m.SwitchComponentEditing(m.FormRoot)
+		}
+	})
+	frame.SetBounds(0, 0, 1, 1)
+	frame.SendToBack() // 显式压底, 不依赖创建序的隐式 Z 序规则(跨平台)
+	m.designFrame = frame
+
 	// 创建设计窗体实例
 	formInstance := api.NewInstanceByComponentClass(lcl.TEngFormClass())
 	//SetComponentDesignMode(formInstance)
@@ -101,6 +121,80 @@ func (m *FormTab) NewFormDesigner() {
 	// 窗体拖拽
 	m.FormRoot.drag = newDrag(consts.DsRightBottom)
 	m.FormRoot.drag.SetRelation(m.FormRoot)
+
+	// 设计模式边框跟随设计窗体初始边界
+	m.syncDesignFrame()
+}
+
+// syncDesignFrame 设计模式边框跟随设计窗体边界:
+// 边框底板外扩 designFrameMargin 像素置于窗体后(先于窗体创建),
+// 四周露出环带+常驻抓手, 常驻标识设计中的窗体
+// (设计窗体为 BsNone 无边框, 否则与工作区背景融为一体)。
+// 边框与窗体同为滚动容器子控件, 滚动时一起平移, 任意滚动位置下边界始终贴合。
+// 全平台生效(覆盖层平台与 Cocoa 容器画布回退路径); 几何变化后经
+// updateOverlayPane 重新调用。
+func (m *FormTab) syncDesignFrame() {
+	if m.designFrame == nil || !m.designFrame.IsValid() ||
+		m.FormRoot == nil || m.formDesignPage == nil {
+		return
+	}
+	root := m.FormRoot.Control()
+	if root == nil || !root.IsValid() {
+		return
+	}
+	br := root.BoundsRect() // 滚动容器客户区坐标(随滚动一起平移)
+	m.designFrame.SetBounds(br.Left-designFrameMargin, br.Top-designFrameMargin,
+		br.Width()+designFrameMargin*2, br.Height()+designFrameMargin*2)
+}
+
+// paintDesignFrame 绘制设计模式边框环带(Delphi 风格设计态外框):
+// 底板中部被窗体盖住, 可见部分 = 浅蓝环带底色 + 紧贴窗体边缘的设计蓝边界线
+// + 四角/四边中点的 8 个常驻抓手方块(全部位于窗体外侧环带内)。
+// "蓝色 = 设计器元素"与运行时窗体外观明确区分, 避免误认为窗体的真实样子。
+// 抓手边长与窗体根节点缩放锚点(dragBorder)一致且位置重合 ——
+// 窗体选中时覆盖层黑色锚点精确叠加在右下三个抓手之上(与 Delphi 一致);
+// 未选中时抓手为纯装饰, 点击底板选中窗体(见底板 OnMouseDown)。
+func (m *FormTab) paintDesignFrame(p lcl.IPanel) {
+	canvas := p.Canvas()
+	if canvas == nil || !canvas.IsValid() || m.FormRoot == nil {
+		return
+	}
+	root := m.FormRoot.Control()
+	if root == nil || !root.IsValid() {
+		return
+	}
+	brush := canvas.BrushToBrush()
+	// 环带底色
+	brush.SetColor(designerFrameBgColor)
+	canvas.FillRectWithRect(types.Rect(0, 0, p.ClientWidth(), p.ClientHeight()))
+	br := root.BoundsRect()
+	mg := int32(designFrameMargin)
+	// 窗体矩形(底板客户区坐标): 底板 = 窗体 ± designFrameMargin
+	f := types.Rect(mg, mg, mg+br.Width(), mg+br.Height())
+	// 窗体边界线(紧贴窗体边缘, 全部位于窗体外侧不被遮挡)
+	brush.SetColor(designerFrameColor)
+	canvas.FillRectWithRect(types.Rect(f.Left, f.Top-1, f.Right, f.Top))
+	canvas.FillRectWithRect(types.Rect(f.Left, f.Bottom, f.Right, f.Bottom+1))
+	canvas.FillRectWithRect(types.Rect(f.Left-1, f.Top-1, f.Left, f.Bottom+1))
+	canvas.FillRectWithRect(types.Rect(f.Right, f.Top-1, f.Right+1, f.Bottom+1))
+	// 常驻抓手: 四角 + 四边中点, 白底设计蓝边框
+	cx, cy := f.Left+f.Width()/2, f.Top+f.Height()/2
+	g, h := int32(designGripSize), int32(designGripSize/2)
+	for _, r := range []types.TRect{
+		types.Rect(f.Left-g, f.Top-g, f.Left, f.Top),         // 左上角
+		types.Rect(f.Right, f.Top-g, f.Right+g, f.Top),       // 右上角
+		types.Rect(f.Left-g, f.Bottom, f.Left, f.Bottom+g),   // 左下角
+		types.Rect(f.Right, f.Bottom, f.Right+g, f.Bottom+g), // 右下角
+		types.Rect(cx-h, f.Top-g, cx+h, f.Top),               // 上中
+		types.Rect(cx-h, f.Bottom, cx+h, f.Bottom+g),         // 下中
+		types.Rect(f.Left-g, cy-h, f.Left, cy+h),             // 左中
+		types.Rect(f.Right, cy-h, f.Right+g, cy+h),           // 右中
+	} {
+		brush.SetColor(designerFrameColor)
+		canvas.FillRectWithRect(r)
+		brush.SetColor(designerGripFillColor)
+		canvas.FillRectWithRect(types.Rect(r.Left+1, r.Top+1, r.Right-1, r.Bottom-1))
+	}
 }
 
 const (
@@ -142,6 +236,10 @@ func (m *FormTab) handleDesignKey(keyCode int32, shift types.TShiftState) bool {
 		comps := m.movableSelectedComponents()
 		if len(comps) == 0 {
 			return false
+		}
+		// 方向键移动撤销点: 连按合并(换键或超时才捕获一次)
+		if m.undoPushDue(keyCode) {
+			m.saveUndoPoint()
 		}
 		step := int32(1)
 		if shift.In(types.SsShift) {
@@ -193,12 +291,31 @@ func (m *FormTab) movableSelectedComponents() []*TDesigningComponent {
 	return result
 }
 
+// deletableSelectedComponents 返回可删除的选中组件:
+// 排除窗体根节点与被选中祖先的子组件, 包含非可视组件
+// (OpenDialog 等非显示控件与可视组件一样可被删除/剪切)。
+func (m *FormTab) deletableSelectedComponents() []*TDesigningComponent {
+	var result []*TDesigningComponent
+	for _, comp := range m.SelectedComponents() {
+		if comp == m.FormRoot || comp.ComponentType == consts.CtForm {
+			continue
+		}
+		if m.HasSelectedAncestor(comp) {
+			continue
+		}
+		result = append(result, comp)
+	}
+	return result
+}
+
 // DeleteSelectedComponents 删除所有选中组件并更新布局
 func (m *FormTab) DeleteSelectedComponents() bool {
-	targets := m.movableSelectedComponents()
+	targets := m.deletableSelectedComponents()
 	if len(targets) == 0 {
 		return false
 	}
+	// 删除撤销点: 删除前捕获
+	m.saveUndoPoint()
 	targetSet := make(map[*TDesigningComponent]struct{}, len(targets))
 	for _, comp := range targets {
 		targetSet[comp] = struct{}{}
@@ -246,6 +363,8 @@ func DeleteDesignComponent(comp *TDesigningComponent) {
 	parent := comp.parent
 	formTab := comp.FormTab
 	if formTab != nil {
+		// 删除撤销点: 删除前捕获
+		formTab.saveUndoPoint()
 		formTab.RemoveComponentFromSelection(comp)
 	}
 	parent.FormTab.SwitchComponentEditing(parent)

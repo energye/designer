@@ -221,9 +221,15 @@ func (m *TToolbarToolBtn) onSave(sender lcl.IObject) {
 }
 
 func (m *TToolbarToolBtn) onUndo(sender lcl.IObject) {
-
+	logs.Debug("工具栏按钮, 撤销")
+	if tab := activeFormTab(); tab != nil && tab.IsDesigner {
+		tab.Undo()
+	}
 }
 
 func (m *TToolbarToolBtn) onRedo(sender lcl.IObject) {
-
+	logs.Debug("工具栏按钮, 恢复")
+	if tab := activeFormTab(); tab != nil && tab.IsDesigner {
+		tab.Redo()
+	}
 }

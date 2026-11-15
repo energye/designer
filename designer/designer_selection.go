@@ -15,7 +15,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/consts"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 	"github.com/energye/lcl/types/colors"
@@ -213,17 +212,15 @@ func (m *FormTab) RemoveComponentFromSelection(comp *TDesigningComponent) {
 	m.selectComponents(filtered, primary, true)
 }
 
-// SelectAllComponents 全选设计组件（不含窗体根节点和非可视组件）
+// SelectAllComponents 全选设计组件（不含窗体根节点, 含非可视组件图标）
 func (m *FormTab) SelectAllComponents() {
 	var comps []*TDesigningComponent
 	var walk func(comp *TDesigningComponent)
 	walk = func(comp *TDesigningComponent) {
 		for _, child := range comp.Child {
-			if child.ComponentType != consts.CtNonVisual {
-				control := child.Control()
-				if control != nil && control.IsValid() && control.Visible() {
-					comps = append(comps, child)
-				}
+			control := child.Control()
+			if control != nil && control.IsValid() && control.Visible() {
+				comps = append(comps, child)
 			}
 			walk(child)
 		}

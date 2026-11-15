@@ -179,6 +179,7 @@ func (m *FormTab) AlignSelected(kind designerAlignKind) {
 	if len(comps) < 2 {
 		return
 	}
+	m.saveUndoPoint()
 	ref := m.alignReference(comps)
 	refRect := m.formDesigner.GetRelativeBounds(ref)
 	changes := make([]designerBoundsChange, 0, len(comps))
@@ -198,6 +199,7 @@ func (m *FormTab) SameSizeSelected(kind designerSameSizeKind) {
 	if len(comps) < 2 {
 		return
 	}
+	m.saveUndoPoint()
 	ref := m.alignReference(comps)
 	refRect := m.formDesigner.GetRelativeBounds(ref)
 	changes := make([]designerBoundsChange, 0, len(comps))
@@ -217,6 +219,7 @@ func (m *FormTab) DistributeSelected(horizontal bool) {
 	if len(comps) < 3 {
 		return
 	}
+	m.saveUndoPoint()
 	items := make([]designerBoundsChange, 0, len(comps))
 	for _, comp := range comps {
 		items = append(items, designerBoundsChange{comp: comp, rect: m.formDesigner.GetRelativeBounds(comp)})

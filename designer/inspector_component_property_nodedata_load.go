@@ -70,10 +70,17 @@ var (
 )
 
 func (m *TDesigningComponent) SwitchDefaultTreeTabPage() {
+	if m.page == nil || !m.page.IsValid() {
+		return
+	}
 	m.page.SetActivePageIndex(gSwitchDefaultTreeTabPage)
 }
 
 func (m *TDesigningComponent) UpdatePropertyTreeWidth() {
+	// 属性页未创建(组件从未成为主选)时 propertyTree 为 nil, 直接跳过
+	if m.propertyTree == nil || !m.propertyTree.IsValid() {
+		return
+	}
 	propertyTreeWidth := config.Config.WindowLayout.ContentLayout.InspectorLayout.PropertyTreeWidth
 	if propertyTreeWidth <= 50 {
 		propertyTreeWidth = 50
@@ -91,6 +98,10 @@ func (m *TDesigningComponent) UpdatePropertyTreeWidth() {
 }
 
 func (m *TDesigningComponent) UpdateEventTreeWidth() {
+	// 事件页未创建时 eventTree 为 nil, 直接跳过
+	if m.eventTree == nil || !m.eventTree.IsValid() {
+		return
+	}
 	eventTreeWidth := config.Config.WindowLayout.ContentLayout.InspectorLayout.EventTreeWidth
 	if eventTreeWidth <= 50 {
 		eventTreeWidth = 50

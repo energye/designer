@@ -21,6 +21,7 @@ import (
 	"github.com/energye/designer/designer/editor"
 	"github.com/energye/designer/designer/editor/webview"
 	projBean "github.com/energye/designer/options/bean"
+	"github.com/energye/designer/pkg/logs"
 	"github.com/energye/designer/pkg/tool"
 	"github.com/energye/designer/resources/metadata"
 	"github.com/energye/energy/v3/core"
@@ -310,16 +311,30 @@ func (m *TFormDesignPage) rulerOriginX() int32 {
 	if m.formTab == nil || m.formTab.formDesigner == nil || m.formTab.formDesigner.Form == nil {
 		return 0
 	}
+	if m.formDesignScroll == nil || !m.formDesignScroll.IsValid() {
+		return 0
+	}
+	// 滚动条 getter 可能返回 nil 包装器(对象失效), 先判空
+	hBar := m.formDesignScroll.HorzScrollBar()
+	if hBar == nil || !hBar.IsValid() {
+		return 0
+	}
 	// 顶部标尺从页面 x=0 开始，而滚动框在左侧标尺右边，需要补上滚动框 Left。
-	return m.formDesignScroll.Left() + m.formTab.formDesigner.Form.Left() -
-		m.formDesignScroll.HorzScrollBar().Position()
+	return m.formDesignScroll.Left() + m.formTab.formDesigner.Form.Left() - hBar.Position()
 }
 
 func (m *TFormDesignPage) rulerOriginY() int32 {
 	if m.formTab == nil || m.formTab.formDesigner == nil || m.formTab.formDesigner.Form == nil {
 		return 0
 	}
-	return m.formTab.formDesigner.Form.Top() - m.formDesignScroll.VertScrollBar().Position()
+	if m.formDesignScroll == nil || !m.formDesignScroll.IsValid() {
+		return 0
+	}
+	vBar := m.formDesignScroll.VertScrollBar()
+	if vBar == nil || !vBar.IsValid() {
+		return 0
+	}
+	return m.formTab.formDesigner.Form.Top() - vBar.Position()
 }
 
 func rulerBucketLength(required int32) int32 {
@@ -492,6 +507,13 @@ func (m *TFormDesignPage) invalidateRulers() {
 }
 
 func (m *TFormDesignPage) syncRulers() {
+	// 轮询定时器兜底: 任何失效状态(对象销毁竞态等)的 panic 只跳过本轮,
+	// 不能拖垮整个应用
+	defer func() {
+		if r := recover(); r != nil {
+			logs.Error("syncRulers panic recovered:", r)
+		}
+	}()
 	if m.rulerClosed || m.rulerStop == nil {
 		return
 	}
@@ -501,7 +523,7 @@ func (m *TFormDesignPage) syncRulers() {
 	if m.formDesignPage == nil || !m.formDesignPage.Visible() {
 		return
 	}
-	if m.formTab.formDesigner == nil || m.formTab.formDesigner.Form == nil {
+	if m.formTab.formDesigner == nil || m.formTab.formDesigner.Form == nil || !m.formTab.formDesigner.Form.IsValid() {
 		return
 	}
 	// 窗体页签初始化被异常中断(如恢复布局 panic)时滚动容器可能尚未创建,
@@ -509,13 +531,28 @@ func (m *TFormDesignPage) syncRulers() {
 	if m.formDesignScroll == nil || !m.formDesignScroll.IsValid() {
 		return
 	}
+	// 滚动条 getter 对失效对象返回 nil 包装器: 直接解引用 Position()
+	// 会在提升方法 IsValid() 读取嵌入字段时 panic(nil 接收器),
+	// 这里必须先判空(滚动容器销毁后定时器在途回调仍可能到达)
+	hBar := m.formDesignScroll.HorzScrollBar()
+	vBar := m.formDesignScroll.VertScrollBar()
+	if hBar == nil || vBar == nil || !hBar.IsValid() || !vBar.IsValid() {
+		return
+	}
 	form := m.formTab.formDesigner.Form
-	x := m.formDesignScroll.HorzScrollBar().Position()
-	y := m.formDesignScroll.VertScrollBar().Position()
+	x := hBar.Position()
+	y := vBar.Position()
 	w, h := form.Width(), form.Height()
 	if x == m.lastRulerX && y == m.lastRulerY && w == m.lastRulerW && h == m.lastRulerH {
 		return
 	}
 	m.lastRulerX, m.lastRulerY, m.lastRulerW, m.lastRulerH = x, y, w, h
 	m.invalidateRulers()
+	// 滚动/窗体尺寸变化后同步覆盖层(玻璃层)与设计模式边框: 常规路径下
+	// 覆盖层/边框与画布随滚动等量平移, 区域无需重建; 这里按当前几何重建
+	// 是平台差异兜底(个别组件集滚动时未平移子控件或触发重新对齐时,
+	// 避免锚点区域/边框错位)
+	if m.formTab != nil {
+		m.formTab.updateOverlayPane()
+	}
 }

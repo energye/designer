@@ -15,7 +15,6 @@
 package designer
 
 import (
-	"github.com/energye/designer/consts"
 	"github.com/energye/lcl/lcl"
 	"github.com/energye/lcl/types"
 )
@@ -142,7 +141,9 @@ func (m *TEngFormDesigner) bandEnd(current types.TPoint) {
 	selectedSet := make(map[*TDesigningComponent]struct{})
 	var walk func(comp *TDesigningComponent)
 	walk = func(comp *TDesigningComponent) {
-		if comp != root && comp.ComponentType != consts.CtNonVisual {
+		if comp != root {
+			// 包含非可视组件: 其画布表现为包裹图标(Control()=icon),
+			// 框选覆盖图标即选中(与可视组件一致)
 			control := comp.Control()
 			if control != nil && control.IsValid() && control.Visible() {
 				if rectsIntersect(rect, m.GetRelativeBounds(comp)) && !hasSelectedAncestorInSet(comp, selectedSet) {

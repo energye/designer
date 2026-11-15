@@ -303,17 +303,18 @@ func (m *TEngFormDesigner) paint(sender lcl.IControl, message *types.TLMPaint) {
 	}
 }
 func (m *TEngFormDesigner) popupMenu(sender lcl.IControl, message *types.TLMContextMenu) {
-	//instance := sender.Instance()
-	//comp := m.GetComponentFormList(instance)
-	//if comp != nil {
-	//	x, y := int32(*message.XPos()), int32(*message.YPos())
-	//	if x == -1 && y == -1 {
-	//		point := sender.ClientToScreenWithPoint(types.TPoint{}) // todo types.TPoint{} 参数需要传递一个正确的值
-	//		x, y = point.X, point.Y
-	//	}
-	//	comp.FormTab.componentMenu.treePopupMenu.PopUpWithIntX2(x, y)
-	//}
+	// 吞掉系统默认右键菜单
 	*message.Result() = 1
+	// 组件的右键菜单由组件 OnMouseUp 弹出(content_layout_project.componentMenu),
+	// 这里只处理空白画布(无组件命中): 弹出同一组件菜单(粘贴/全选等)
+	if m.GetComponentFormList(sender.Instance()) != nil {
+		return
+	}
+	if MainWindow.contentLayout == nil || MainWindow.contentLayout.layoutProject == nil {
+		return
+	}
+	cursor := lcl.Mouse.CursorPos()
+	MainWindow.contentLayout.layoutProject.componentMenu.treePopupMenu.PopUpWithIntX2(cursor.X, cursor.Y)
 }
 
 func (m *TEngFormDesigner) GetMouseMsgShift(message *types.TLMMouse) (shift types.TShiftState, button types.TMouseButton) {
@@ -441,12 +442,23 @@ func (m *TEngFormDesigner) paintContainerOverlays(sender lcl.IControl, paint *ty
 
 // on event
 
-func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *types.TLMessage) bool {
-	result := false // 标记行为 false: 未处理, true: 已处理
+// designerOnIsDesignMsg 设计模式消息分发。
+// panic 兜底: lcl 事件回调链没有 recover(eventCallbackProc 中已注释),
+// 画布消息处理里的任何 panic 都会穿透 cgo 直接终止整个设计器;
+// 且中断会留下半套交互状态(设计模式被摘除未恢复/框选未结束等),
+// 表现为画布整体失去响应。这里恢复 panic 并复位交互状态, 保证画布始终可用。
+func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *types.TLMessage) (result bool) {
 	isDesign := sender.ComponentState().In(types.CsDesigning)
 	//println("IsDesignMsg", message.Msg, "isDesign:", isDesign)
 	if isDesign {
 		result = true
+		defer func() {
+			if r := recover(); r != nil {
+				logs.Error("设计器消息处理 panic 已恢复, msg:", message.Msg, "sender:", sender.Name(), "err:", r)
+				m.resetInteractionState()
+				result = true
+			}
+		}()
 		dispatchMsg := (*uintptr)(unsafe.Pointer(message))
 		switch message.Msg {
 		case messages.LM_PAINT:
@@ -513,6 +525,19 @@ func (m *TEngFormDesigner) designerOnIsDesignMsg(sender lcl.IControl, message *t
 		}
 	}
 	return result
+}
+
+// resetInteractionState 复位画布交互状态(消息处理 panic 兜底):
+// 结束残留拖拽/缩放(恢复被摘除的设计模式)、放弃框选、清空按下组件引用,
+// 避免"设计模式被摘除未恢复"等半套状态导致画布整体失去响应
+// (表现为点击任何组件都没有反应)。
+func (m *TEngFormDesigner) resetInteractionState() {
+	if m.MouseDownComponent != nil && m.MouseDownComponent.drag != nil {
+		m.MouseDownComponent.drag.cancelStaleDrag()
+	}
+	m.MouseDownComponent = nil
+	m.MouseMoveComponent = nil
+	m.bandCancel()
 }
 
 func (m *TEngFormDesigner) designerOnUTF8KeyPress(uTF8Key *string) {

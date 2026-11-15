@@ -149,6 +149,11 @@ func (m *TDesigningComponent) mustComponentPropertyPage() {
 	if m.page != nil {
 		return
 	}
+	// 布局未就绪(启动早期/页签初始化被中断)时跳过创建,
+	// 调用方(检查器加载等)需对 page/树为 nil 做好防护
+	if MainWindow.contentLayout == nil || MainWindow.contentLayout.layoutInspector == nil {
+		return
+	}
 	m.page = lcl.NewPageControl(MainWindow.contentLayout.layoutInspector.box)
 	m.page.SetTabStop(true)
 	m.page.SetAlign(types.AlClient)
@@ -298,6 +303,10 @@ func (m *TDesigningComponent) SetBounds(x, y, w, h int32) {
 	control := m.Control()
 	if m.ComponentType == consts.CtNonVisual {
 		control.SetBounds(x, y, nonWrapW, nonWrapH)
+		// 非可视组件: 名称标签跟随图标位置(单选/多选拖动统一在此同步)
+		if m.objectNonWrap != nil {
+			m.objectNonWrap.TextFollowShow()
+		}
 	} else {
 		control.SetBounds(x, y, w, h)
 	}
@@ -500,6 +509,8 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 		logs.Error("加载组件属性/事件失败, 设计组件为空")
 		return
 	}
+	// 属性页不存在时先创建(粘贴等路径可能对非主选组件直接调用)
+	m.mustComponentPropertyPage()
 	// 属性列表为空时获取属性列表
 	m.GetProps()
 	// 加载属性列表
@@ -512,8 +523,10 @@ func (m *TDesigningComponent) LoadPropertyToInspector() {
 
 	m.SwitchDefaultTreeTabPage()
 
-	br := m.Control().BoundsRect()
-	m.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
+	if ctrl := m.Control(); ctrl != nil && ctrl.IsValid() {
+		br := ctrl.BoundsRect()
+		m.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
+	}
 	logs.Debug("加载组件属性完成", m.ClassName())
 }
 
@@ -701,14 +714,14 @@ func (m *TDesigningComponent) GetProps() {
 	}
 }
 
-// 拖拽开始调用
+// 拖拽开始调用。
+// 非可视组件的名称标签跟随图标移动(TDesigningComponent.SetBounds 同步),
+// 不再在拖动期间隐藏 —— 隐藏/恢复的配对在某些结束路径上不同步会导致
+// 标签停留在隐藏状态不再显示。
 func (m *TDesigningComponent) DragBegin() {
-	if m.ComponentType == consts.CtNonVisual {
-		m.objectNonWrap.TextFollowHide()
-	}
 }
 
-// 拖拽结束调用，或创建后调用
+// 拖拽结束调用，或创建后调用：按图标当前位置重排并显示名称标签
 func (m *TDesigningComponent) DragEnd() {
 	if m.ComponentType == consts.CtNonVisual {
 		m.objectNonWrap.TextFollowShow()
@@ -721,6 +734,14 @@ func (m *TDesigningComponent) Parent() *TDesigningComponent {
 
 // 删除当前节点
 func (m *TDesigningComponent) Remove() {
+	// 从组件实例列表移除(非可视组件注册的是包裹面板实例),
+	// 避免控件 Free 后实例地址被复用导致陈旧映射
+	if m.FormTab != nil {
+		m.FormTab.RemoveComponentFormList(m.Instance())
+		if m.objectNonWrap != nil {
+			m.FormTab.RemoveComponentFormList(m.objectNonWrap.Instance())
+		}
+	}
 	// 父组件删除
 	if m.parent != nil {
 		idx := m.Index()

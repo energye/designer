@@ -58,6 +58,8 @@ type drag struct {
 	groupItems []dragGroupItem
 	// 缩放期间被摘除设计模式的实例(主选组件及其子树), 结束时统一恢复
 	resizeStripped []uintptr
+	// 拖动/缩放按下时暂存的撤销快照, 真正发生位移才提交(普通点击不产生撤销点)
+	pendingUndo *designerSnapshot
 	// 视觉信息刷新节流时间戳(跟随气泡/状态栏/属性面板重绘)
 	lastVisualSync time.Time
 }
@@ -98,6 +100,8 @@ func (m *drag) flushParentRepaints() {
 
 // restoreGroupDesignModes 恢复拖动期间被摘除设计模式的组件。
 // mouseup 可能被缩放控制点面板截获而走不到 OnMouseUp, 必须在所有结束路径上恢复。
+// 非可视组件的名称标签随 SetBounds 实时跟随图标(见 TDesigningComponent.SetBounds),
+// 无需在此恢复显示。
 func (m *drag) restoreGroupDesignModes() {
 	restored := false
 	for i := range m.groupItems {
@@ -185,6 +189,8 @@ func (m *drag) cancelStaleDrag() {
 	m.groupItems = m.groupItems[:0]
 	m.moved = false
 	m.isDown = false
+	// 残留拖拽被兜底终止: 未提交的撤销快照一并丢弃
+	m.pendingUndo = nil
 	m.resizeDir = -1
 	atomic.StoreInt32(&overlayCursorResize, -1)
 	resetOverlayCursor()
@@ -287,6 +293,10 @@ func (m *drag) beginResize(dir int, pos types.TPoint, fromOverlay bool) {
 	m.lastResizeL, m.lastResizeT, m.lastResizeR, m.lastResizeB = br.Left, br.Top, br.Right, br.Bottom
 	m.isDown = false
 	m.moved = false
+	// 缩放撤销快照暂存: 只有真正改变边界才在结束时提交
+	if m.relation.FormTab != nil {
+		m.pendingUndo = m.relation.FormTab.captureSnapshot()
+	}
 	if fromOverlay {
 		// 缩放主路径: 摘除主选组件子树设计模式, applyResize 走快速 SetBounds
 		m.stripResizeDesignModes()
@@ -783,6 +793,8 @@ func (m *drag) OnMouseDown(sender *TDesigningComponent, button types.TMouseButto
 		}
 		m.isDown = true
 		m.moved = false
+		// 移动撤销快照暂存: 只有拖动真正发生位移才在抬起时提交
+		m.pendingUndo = formTab.captureSnapshot()
 		// 恢复上一次未正常结束拖动遗留的摘除状态, 再重建多选拖动组
 		m.restoreGroupDesignModes()
 		// 记录多选拖动组，拖动时整组同 delta 位移
@@ -840,7 +852,12 @@ func (m *drag) finishResize() {
 		m.relation.UpdateNodeDataBounds(br)
 		// 状态栏/气泡在拖拽中被节流, 结束时补一次最终值(气泡随后隐藏)
 		m.relation.SetStatusText(br.Left, br.Top, br.Width(), br.Height())
+		// 真正发生过缩放才提交按下时暂存的撤销快照
+		if m.pendingUndo != nil {
+			m.relation.FormTab.commitUndoPoint(m.pendingUndo)
+		}
 	}
+	m.pendingUndo = nil
 	// 恢复缩放期间被摘除设计模式的主选组件子树
 	m.restoreResizeDesignModes()
 	m.resizeDir = -1
@@ -877,7 +894,12 @@ func (m *drag) OnMouseUp(sender *TDesigningComponent, button types.TMouseButton,
 				actual := item.comp.BoundsRect()
 				item.comp.UpdateNodeDataPoint(actual.Left, actual.Top)
 			}
+			// 真正发生过移动才提交按下时暂存的撤销快照
+			if m.pendingUndo != nil {
+				sender.FormTab.commitUndoPoint(m.pendingUndo)
+			}
 		}
+		m.pendingUndo = nil
 		m.groupItems = m.groupItems[:0]
 		m.moved = false
 		if sender.FormTab != nil {

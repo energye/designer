@@ -88,6 +88,28 @@ func (m *TComponentMenu) selectedFormTab() *FormTab {
 	return comp.FormTab
 }
 
+// targetFormTab 解析菜单操作的目标设计页:
+// 优先使用画布当前选中(主选组件), 否则回退组件树选中节点。
+func (m *TComponentMenu) targetFormTab() *FormTab {
+	if tab := activeFormTab(); tab != nil && tab.IsDesigner && tab.primary != nil && tab.primary != tab.FormRoot {
+		return tab
+	}
+	if comp := m.ComponentTreeSelectComponent(); comp != nil && comp.FormTab != nil && comp.FormTab.IsDesigner {
+		return comp.FormTab
+	}
+	return nil
+}
+
+// ensureTargetSelected 画布无选中但组件树有选中节点时, 同步画布选择
+func (m *TComponentMenu) ensureTargetSelected(tab *FormTab) {
+	if tab == nil || tab.primary != nil {
+		return
+	}
+	if comp := m.ComponentTreeSelectComponent(); comp != nil && comp.FormTab == tab {
+		tab.SwitchComponentEditing(comp)
+	}
+}
+
 func setMenuItemsEnabled(items []lcl.IMenuItem, enabled bool) {
 	for _, item := range items {
 		if item != nil {
@@ -96,11 +118,17 @@ func setMenuItemsEnabled(items []lcl.IMenuItem, enabled bool) {
 	}
 }
 
-// OnPopup 弹出前按当前选中数量刷新对齐菜单可用状态。
+// OnPopup 弹出前按当前选中数量刷新对齐菜单可用状态,
+// 并按选中/剪贴板状态刷新剪切/复制/粘贴/删除可用状态。
 func (m *TComponentMenu) OnPopup(sender lcl.IObject) {
 	count := 0
-	if formTab := m.selectedFormTab(); formTab != nil {
-		count = len(formTab.alignableSelectedComponents())
+	hasSelection := false
+	tab := m.targetFormTab()
+	if tab != nil {
+		m.ensureTargetSelected(tab)
+		selected := tab.clipboardTopComponents()
+		hasSelection = len(selected) > 0
+		count = len(tab.alignableSelectedComponents())
 	}
 	alignEnabled := count >= 2
 	distEnabled := count >= 3
@@ -116,6 +144,19 @@ func (m *TComponentMenu) OnPopup(sender lcl.IObject) {
 	setMenuItemsEnabled(m.alignItems, alignEnabled)
 	setMenuItemsEnabled(m.sameSizeItems, alignEnabled)
 	setMenuItemsEnabled(m.distributeItems, distEnabled)
+	editEnabled := hasSelection && tab != nil
+	if m.cut != nil {
+		m.cut.SetEnabled(editEnabled)
+	}
+	if m.copy != nil {
+		m.copy.SetEnabled(editEnabled)
+	}
+	if m.paste != nil {
+		m.paste.SetEnabled(tab != nil && designClipboardHasContent())
+	}
+	if m.delete != nil {
+		m.delete.SetEnabled(editEnabled)
+	}
 }
 
 func (m *TComponentMenu) alignSelected(kind designerAlignKind) {
@@ -145,6 +186,9 @@ func (m *TComponentMenu) OnLevelFront(sender lcl.IObject) {
 		if control == nil {
 			return
 		}
+		if comp.FormTab != nil {
+			comp.FormTab.saveUndoPoint()
+		}
 		control.BringToFront()
 		comp.Order(consts.CLevelFront)
 	}
@@ -158,6 +202,9 @@ func (m *TComponentMenu) OnLevelBack(sender lcl.IObject) {
 		control := comp.Control()
 		if control == nil {
 			return
+		}
+		if comp.FormTab != nil {
+			comp.FormTab.saveUndoPoint()
 		}
 		control.SendToBack()
 		comp.Order(consts.CLevelBack)
@@ -177,6 +224,9 @@ func (m *TComponentMenu) OnLevelForwardOne(sender lcl.IObject) {
 		if parent == nil || !parent.IsValid() {
 			return
 		}
+		if comp.FormTab != nil {
+			comp.FormTab.saveUndoPoint()
+		}
 		parent.SetControlIndex(control, parent.GetControlIndex(control)+1)
 		comp.Order(consts.CLevelForwardOne)
 	}
@@ -195,6 +245,9 @@ func (m *TComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 		if parent == nil || !parent.IsValid() {
 			return
 		}
+		if comp.FormTab != nil {
+			comp.FormTab.saveUndoPoint()
+		}
 		parent.SetControlIndex(control, parent.GetControlIndex(control)-1)
 		parent.ReAlign()
 		comp.Order(consts.CLevelBackOne)
@@ -203,30 +256,44 @@ func (m *TComponentMenu) OnLevelBackOne(sender lcl.IObject) {
 
 // 剪切
 func (m *TComponentMenu) OnCut(sender lcl.IObject) {
-	comp := m.ComponentTreeSelectComponent()
-	if comp != nil {
-		logs.Debug("组件菜单-剪切 组件名:", comp.Name())
+	if tab := m.targetFormTab(); tab != nil {
+		m.ensureTargetSelected(tab)
+		logs.Debug("组件菜单-剪切")
+		tab.CutSelectedComponents()
 	}
 }
 
 // 复制
 func (m *TComponentMenu) OnCopy(sender lcl.IObject) {
-	comp := m.ComponentTreeSelectComponent()
-	if comp != nil {
-		logs.Debug("组件菜单-复制 组件名:", comp.Name())
+	if tab := m.targetFormTab(); tab != nil {
+		m.ensureTargetSelected(tab)
+		logs.Debug("组件菜单-复制")
+		tab.CopySelectedComponents()
 	}
 }
 
 // 粘贴
 func (m *TComponentMenu) OnPaste(sender lcl.IObject) {
-	comp := m.ComponentTreeSelectComponent()
-	if comp != nil {
-		logs.Debug("组件菜单-粘贴 组件名:", comp.Name())
+	tab := m.targetFormTab()
+	if tab == nil {
+		tab = activeFormTab()
+	}
+	if tab != nil && tab.IsDesigner {
+		logs.Debug("组件菜单-粘贴")
+		tab.PasteComponents()
 	}
 }
 
 // 删除
 func (m *TComponentMenu) OnDelete(sender lcl.IObject) {
+	// 画布有选中: 删除全部选中组件(与 Delete 键一致)
+	if tab := m.targetFormTab(); tab != nil {
+		m.ensureTargetSelected(tab)
+		logs.Debug("组件菜单-删除")
+		tab.DeleteSelectedComponents()
+		return
+	}
+	// 回退: 删除组件树选中节点对应的单个组件
 	comp := m.ComponentTreeSelectComponent()
 	if comp != nil && comp.ComponentType != consts.CtForm {
 		logs.Debug("组件菜单-删除 组件名:", comp.Name())
@@ -319,7 +386,6 @@ func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	cut.SetCaption("剪切")
 	cut.SetImageIndex(imageItem.ImageIndex("item_cut.png"))
 	cut.SetOnClick(menu.OnCut)
-	cut.SetEnabled(false) // TODO 先禁用未实现
 	menu.cut = cut
 	menuItems.Add(cut)
 
@@ -327,7 +393,6 @@ func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	copy.SetCaption("复制")
 	copy.SetImageIndex(imageItem.ImageIndex("item_copy.png"))
 	copy.SetOnClick(menu.OnCopy)
-	copy.SetEnabled(false) // TODO 先禁用未实现
 	menu.copy = copy
 	menuItems.Add(copy)
 
@@ -335,7 +400,6 @@ func initComponentMenu(owner lcl.IComponent) *TComponentMenu {
 	paste.SetCaption("粘贴")
 	paste.SetImageIndex(imageItem.ImageIndex("item_paste.png"))
 	paste.SetOnClick(menu.OnPaste)
-	paste.SetEnabled(false) // TODO 先禁用未实现
 	menu.paste = paste
 	menuItems.Add(paste)
 

@@ -81,9 +81,15 @@ func (m *FormTab) overlayGlyphs() []overlayGlyph {
 	return glyphs
 }
 
-// mustOverlayPane 创建页签级覆盖层窗口(启用 + AlClient + 置顶)。
-// 父容器为滚动容器(而非设计画布): 覆盖层略大于设计画布,
-// 窗体边缘的锚点(跨在窗体边缘)不会被画布边界裁剪。
+// overlayPaneMargin 覆盖层超出设计画布边缘的余量:
+// 窗体根节点缩放控制点绘制在画布外侧 dragBorder 像素处,
+// 覆盖层窗口必须覆盖到控制点, 否则窗口区域被自身边界裁剪。
+var overlayPaneMargin int32 = dragBorder + 4
+
+// mustOverlayPane 创建页签级覆盖层窗口(启用 + 置顶)。
+// 父容器为滚动容器(而非设计画布), 尺寸覆盖整个设计画布外加余量:
+// 画布大于可视视口出现滚动条后, 画布右下角的缩放控制点仍位于
+// 覆盖层窗口内, 不会被窗口自身边界裁剪(updateOverlayPaneBounds)。
 // 窗口区域=锚点矩形并集: 区域内点击由覆盖层处理(缩放/选中),
 // 区域外鼠标穿透到下层组件(选中/移动等设计交互不受影响)。
 func (m *FormTab) mustOverlayPane() {
@@ -97,7 +103,6 @@ func (m *FormTab) mustOverlayPane() {
 	p := lcl.NewPanel(scroll)
 	p.SetBevelOuter(types.BvNone)
 	p.SetParent(scroll)
-	p.SetAlign(types.AlClient)
 	p.SetOnPaint(func(sender lcl.IObject) {
 		m.paintOverlayPane(p)
 	})
@@ -114,8 +119,30 @@ func (m *FormTab) mustOverlayPane() {
 	p.SetOnMouseLeave(func(sender lcl.IObject) {
 		resetOverlayCursor()
 	})
-	p.BringToFront()
 	m.overlayPane = p
+	p.BringToFront()
+	m.updateOverlayPaneBounds()
+}
+
+// updateOverlayPaneBounds 覆盖层覆盖整个设计画布(外加锚点余量), 而非可视视口。
+// 覆盖层与设计画布同为滚动容器的子控件: 滚动时二者一起平移
+// (Win32 ScrollWindowEx(SW_SCROLLCHILDREN) 平移子窗口, GTK2/Qt5 viewport 平移内容),
+// 以画布当前边界定位覆盖层, 即可保证任意滚动位置下 锚点/边框矩形
+// 始终落在覆盖层窗口内, 不会被窗口自身边界裁剪 ——
+// 画布大于视口出现滚动条后, 窗体右下角的三个缩放控制点不再消失。
+// 画布尺寸/位置变化后经 updateOverlayPane 重新调用。
+func (m *FormTab) updateOverlayPaneBounds() {
+	if m.overlayPane == nil || !m.overlayPane.IsValid() ||
+		m.FormRoot == nil || m.formDesignPage == nil {
+		return
+	}
+	root := m.FormRoot.Control()
+	if root == nil || !root.IsValid() {
+		return
+	}
+	br := root.BoundsRect() // 滚动容器客户区坐标(随滚动一起平移)
+	m.overlayPane.SetBounds(br.Left-overlayPaneMargin, br.Top-overlayPaneMargin,
+		br.Width()+overlayPaneMargin*2, br.Height()+overlayPaneMargin*2)
 }
 
 // panePosToCanvas 覆盖层客户区坐标 → 设计画布客户区坐标
@@ -213,7 +240,9 @@ func (m *FormTab) paintOverlayPane(p lcl.IPanel) {
 
 // updateOverlayPane 覆盖层跟随当前选中状态: 重建窗口区域并重绘。
 // 几何变化(选中变化/移动/缩放/对齐)后调用; 拖动期间由 selectionDragActive 隐藏。
+// 设计模式边框同步在平台判断之前执行(回退平台也需要跟随画布几何)。
 func (m *FormTab) updateOverlayPane() {
+	m.syncDesignFrame()
 	if !overlayPaneSupported() {
 		return
 	}
@@ -244,6 +273,8 @@ func (m *FormTab) updateOverlayPane() {
 	// 重新显示前复位光标: 上一次悬停/缩放可能残留方向光标,
 	// 鼠标位置未变时不会触发 mousemove 设置, 先清一次避免错样。
 	resetOverlayCursor()
+	// 覆盖层尺寸/位置跟随设计画布边界(窗体缩放后锚点仍需落在窗口内)
+	m.updateOverlayPaneBounds()
 	paneOff := m.canvasToPaneOffset()
 	paneRects := make([]types.TRect, 0, len(glyphs))
 	for _, g := range glyphs {

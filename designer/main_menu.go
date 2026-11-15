@@ -286,6 +286,143 @@ func (m *TMainMenu) editMenu(owner lcl.IComponent) {
 	m.editDel = lcl.NewMenuItem(owner)
 	m.editDel.SetAction(m.editing.DeleteAction)
 	m.edit.Add(m.editDel)
+
+	// 设计上下文接管: 焦点位于设计画布内时, 编辑菜单操作设计组件
+	// (撤销/恢复/剪切/复制/粘贴/删除); 否则回退文本编辑 Action
+	// (作用于焦点文本控件, 行为与原先一致)。
+	// 通过覆写 Action 的 OnExecute/OnUpdate 实现, 菜单项与快捷键绑定不变。
+	undoAction, redoAction := m.editing.UndoAction, m.editing.RedoAction
+	undoAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.Undo()
+			return
+		}
+		m.editing.UndoActionOnExecute(sender)
+	})
+	undoAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			undoAction.SetEnabled(tab.CanUndo())
+			return
+		}
+		m.editing.UndoActionOnUpdate(sender)
+	})
+	redoAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.Redo()
+			return
+		}
+		m.editing.RedoActionOnExecute(sender)
+	})
+	redoAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			redoAction.SetEnabled(tab.CanRedo())
+			return
+		}
+		m.editing.RedoActionOnUpdate(sender)
+	})
+	cutAction, copyAction := m.editing.CutAction, m.editing.CopyAction
+	cutAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.CutSelectedComponents()
+			return
+		}
+		m.editing.CutActionOnExecute(sender)
+	})
+	cutAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			cutAction.SetEnabled(len(tab.clipboardTopComponents()) > 0)
+			return
+		}
+		m.editing.CutActionOnUpdate(sender)
+	})
+	copyAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.CopySelectedComponents()
+			return
+		}
+		m.editing.CopyActionOnExecute(sender)
+	})
+	copyAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			copyAction.SetEnabled(len(tab.clipboardTopComponents()) > 0)
+			return
+		}
+		m.editing.CopyActionOnUpdate(sender)
+	})
+	pasteAction := m.editing.PasteAction
+	pasteAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.PasteComponents()
+			return
+		}
+		m.editing.PasteActionOnExecute(sender)
+	})
+	pasteAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			pasteAction.SetEnabled(designClipboardHasContent())
+			return
+		}
+		m.editing.PasteActionOnUpdate(sender)
+	})
+	deleteAction := m.editing.DeleteAction
+	deleteAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.DeleteSelectedComponents()
+			return
+		}
+		// 文本编辑回退(TMenuEditing 未为 Delete 配置 OnExecute, 直接走默认目标)
+		if ctrl := lcl.Screen.ActiveControl(); ctrl != nil && ctrl.IsValid() {
+			deleteAction.ExecuteTarget(ctrl)
+		}
+	})
+	deleteAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			deleteAction.SetEnabled(len(tab.deletableSelectedComponents()) > 0)
+			return
+		}
+		// 回退文本编辑时保持可用, 由焦点控件自行处理
+		deleteAction.SetEnabled(true)
+	})
+	selectAllAction := m.editing.SelectAllAction
+	selectAllAction.SetOnExecute(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			tab.SelectAllComponents()
+			return
+		}
+		m.editing.SelectAllActionOnExecute(sender)
+	})
+	selectAllAction.SetOnUpdate(func(sender lcl.IObject) {
+		if tab := designerFocusedFormTab(); tab != nil {
+			selectAllAction.SetEnabled(true)
+			return
+		}
+		m.editing.SelectAllActionOnUpdate(sender)
+	})
+}
+
+// designerFocusedFormTab 焦点位于设计画布内时的设计页(编辑菜单的设计上下文):
+// 从焦点控件沿父链查找设计窗体根控件; 焦点在检查器/代码编辑器等
+// 文本控件时返回 nil, 编辑菜单回退文本编辑行为。
+func designerFocusedFormTab() *FormTab {
+	tab := activeFormTab()
+	if tab == nil || !tab.IsDesigner || tab.FormRoot == nil {
+		return nil
+	}
+	ctrl := lcl.Screen.ActiveControl()
+	if ctrl == nil || !ctrl.IsValid() {
+		return nil
+	}
+	root := tab.FormRoot.Control()
+	if root == nil || !root.IsValid() {
+		return nil
+	}
+	rootInstance := root.Instance()
+	for c := ctrl; c != nil && c.IsValid(); c = c.Parent() {
+		if c.Instance() == rootInstance {
+			return tab
+		}
+	}
+	return nil
 }
 
 func (m *TMainMenu) viewMenu(owner lcl.IComponent) {

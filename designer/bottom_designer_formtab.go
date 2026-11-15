@@ -16,6 +16,7 @@ package designer
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/energye/designer/consts"
 	"github.com/energye/designer/event"
@@ -46,6 +47,21 @@ const (
 var (
 	designerGridColor  = colors.RGBToColor(205, 205, 205)
 	designerGuideColor = colors.RGBToColor(255, 80, 80)
+	// 设计模式边框配色(Delphi 风格设计态外框, 设计态视觉语言):
+	// 边界线/抓手边框与选中框同用设计蓝(designerSelectionColor),
+	// 环带底色为浅蓝, 抓手白底 —— "蓝色 = 设计器元素"与运行时窗体外观
+	// 明确区分, 避免用户把边框误认为窗体的真实样子。见 paintDesignFrame。
+	designerFrameColor    = designerSelectionColor
+	designerFrameBgColor  = colors.RGBToColor(219, 234, 254)
+	designerGripFillColor = colors.ClWhite
+)
+
+const (
+	// designFrameMargin 设计边框底板外扩像素(环带宽度, 容纳常驻抓手)
+	designFrameMargin = 8
+	// designGripSize 抓手方块边长(与 dragBorder 缩放锚点同尺寸,
+	// 窗体选中时覆盖层黑色锚点精确叠加在右下三个抓手位置上)
+	designGripSize = 6
 )
 
 // 设计窗体的 tab
@@ -71,12 +87,26 @@ type FormTab struct {
 	// overlayPane 覆盖层(玻璃层): 禁用的置顶面板, 绘制锚点/边框(区域外穿透),
 	// 每页签一个窗口, 任意组件数量/多组锚点不增加窗口。见 designer_overlay.go。
 	overlayPane lcl.IPanel
+	// designFrame 设计模式边框: 设计窗体四周常驻的边框底板(置于窗体后),
+	// 环带+常驻抓手, 把设计画布与工作区背景区分开(设计窗体为 BsNone 无边框),
+	// 点击边框选中窗体根节点。见 syncDesignFrame/paintDesignFrame。
+	designFrame lcl.IPanel
 	//scroll         lcl.IScrollBox       // 外 滚动条
 	formDesigner   *TEngFormDesigner    // 设计器处理器
 	FormRoot       *TDesigningComponent // 设计器, 窗体 Form, 组件树的根节点
 	recover        *TRecoverForm        // 恢复模式
 	recvMethods    []*dast.TFuncInfo    // 属于设计窗体的自引用方法列表, 动态更新
 	formDesignPage *TFormDesignPage     // 窗体设计页, 只针对设计窗体和对应的代码 tab page
+
+	// 撤销/恢复操作快照栈(见 designer_undo.go):
+	// undoStack 撤销点(变更前状态), redoStack 恢复点(撤销后状态),
+	// undoRestoring 快照重建中(抑制属性更新等路径的撤销点捕获),
+	// lastUndoKey/lastUndoTime 方向键移动的撤销点合并。
+	undoStack     []*designerSnapshot
+	redoStack     []*designerSnapshot
+	undoRestoring bool
+	lastUndoKey   int32
+	lastUndoTime  time.Time
 }
 
 // UIFile 返回UI文件名 xxx.ui
@@ -199,6 +229,8 @@ func (m *FormTab) placeComponent(owner *TDesigningComponent, x, y int32) bool {
 		if newDesComp := GetDesignerComponent(m, x, y, selectComponent.name); newDesComp != nil {
 			// 交互放置的组件立即开启设计模式
 			EnableDeferredDesignMode(m)
+			// 放置撤销点: 组件挂接前捕获(组件树尚未变化)
+			m.saveUndoPoint()
 			// 创建设计组件
 			newDesComp.SetParent(owner)
 			newDesComp.FormTab.SwitchComponentEditing(newDesComp)
@@ -410,6 +442,8 @@ func (m *FormTab) Remove() {
 	m.selected = nil
 	m.primary = nil
 	m.selectionDragActive = false
+	// 清空撤销/恢复栈(快照为纯数据, 随页签关闭一并丢弃)
+	m.undoStack, m.redoStack = nil, nil
 	m.freeGridTile()
 	m.designerBox = nil
 	if m.formDesignPage != nil {

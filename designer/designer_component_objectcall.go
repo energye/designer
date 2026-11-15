@@ -67,6 +67,11 @@ func (m *TDesigningComponent) recoverCallAPI(propertyName string, property *vted
 			switch strings.ToLower(propertyName) {
 			case "name":
 				m.SetName(property.EditStringValue())
+			case "left", "top":
+				// 非可视组件位置变更: 名称标签跟随图标
+				if m.ComponentType == consts.CtNonVisual && m.objectNonWrap != nil {
+					m.objectNonWrap.TextFollowShow()
+				}
 			}
 		}
 	}
@@ -101,6 +106,11 @@ func (m *TDesigningComponent) doUpdateComponentPropertyToObject(updateNodeData *
 			// 成功
 			logs.Info("调用 API 更新组件属性成功, 更新节点数据")
 			m.UpdateTreeNode(updateNodeData)
+			// 非可视组件 Left/Top 变更: 名称标签跟随图标
+			if m.ComponentType == consts.CtNonVisual && m.objectNonWrap != nil &&
+				tool.Equal(updateNodeData.Name(), "Left", "Top") {
+				m.objectNonWrap.TextFollowShow()
+			}
 			// 属性修改-UI布局
 			triggerUIGeneration(m, updateNodeData, event.CodeGenUI)
 		}
@@ -129,6 +139,10 @@ func (m *TDesigningComponent) UpdateComponentPropertyToObject(updateNodeData *vt
 		return
 	}
 	updateComponentMutex.Store(true)
+	// 属性修改撤销点: 变更应用前捕获当前状态
+	if m.FormTab != nil {
+		m.FormTab.saveUndoPoint()
+	}
 	lcl.RunOnMainThreadAsync(func(id uint32) {
 		m.doUpdateComponentPropertyToObject(updateNodeData)
 		updateComponentMutex.Store(false)
