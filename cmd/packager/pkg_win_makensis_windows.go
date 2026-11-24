@@ -174,7 +174,7 @@ func (m *Package) packageNSIS() bool {
 	if buildOption.WinDefaultInstall != "" {
 		data["DefaultInstall"] = buildOption.WinDefaultInstall // 自定义安装目录
 	}
-	data["RuntimeLibEnergy"] = libEnergyPath // runtime lib energy dll
+	data["RuntimeLibEnergy"] = libEnergyCopyPath // 必须使用打包后的运行时库名：Release 为 libenergy.dll
 	// 判断是否使用的 webview2
 	if proj.GUIRenderFramework == "WV" {
 		data["RuntimeWebView2Loader"] = libWebView2LoaderPath           // runtime lib webview2  dll
