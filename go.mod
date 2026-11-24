@@ -3,22 +3,23 @@ module github.com/energye/designer
 go 1.20
 
 require (
-	github.com/energye/energy/v3 v3.0.16
-	github.com/energye/lcl v1.0.9
+	github.com/energye/energy/v3 v3.0.17
+	github.com/energye/lcl v1.0.10
 	github.com/energye/wv v1.0.10
 )
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.3.4
+	github.com/charmbracelet/lipgloss v1.0.0
 	golang.org/x/image v0.24.0
+	golang.org/x/sys v0.30.0
 )
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
-	github.com/charmbracelet/lipgloss v1.0.0 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
@@ -35,7 +36,5 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.30.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
